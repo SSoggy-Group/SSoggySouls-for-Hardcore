@@ -56,6 +56,20 @@ Wearing a dead player's head grants Speed II and Night Vision to help you delive
 
 ---
 
+## Quick Start Summary
+
+1. **Download** the plugin and place it in your `plugins/` folder.
+2. **Start your server** to generate the `config.yml`.
+3. **Select your database:** 
+   - *Single server:* Just leave it as `type: "sqlite"`. 
+   - *Two servers:* Set `type: "mysql"` and enter your identical credentials on both servers.
+4. **If using two servers**, configure the main and limbo roles (`is-limbo-server`).
+5. **Restart and test!**
+
+For the full, detailed step-by-step setup (including proxy configuration and Limbo spawn setting), refer to our **[Quick Start Guide on the Wiki!](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/quick-start)**
+
+---
+
 ## Complete Documentation
 
 To save space and avoid cluttering this page, the full configuration files, installation steps, and command lists have been moved to our comprehensive wiki.
