@@ -12,7 +12,9 @@ This guide will help you get SSoggySouls up and running in 8 simple steps. For m
 Before you begin, ensure you have:
 
 - Two Minecraft 1.21.X servers (Spigot/Paper/Purpur) behind a Velocity proxy
+
 - MySQL 5.7+ or MariaDB 10.2+ database
+
 - Java 21 or higher
 
 ## Installation Steps
@@ -22,6 +24,7 @@ Before you begin, ensure you have:
 Download the latest `SSoggySouls-1.3.6.jar` from:
 
 - [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases)
+
 - [Modrinth](https://modrinth.com/project/Pb03qu6T)
 
 ### Step 2: Install Plugin
@@ -29,6 +32,7 @@ Download the latest `SSoggySouls-1.3.6.jar` from:
 Place `SSoggySouls-1.3.6.jar` in the `plugins/` folder of **both** servers:
 
 - Main server: `/plugins/SSoggySouls-1.3.6.jar`
+
 - Limbo server: `/plugins/SSoggySouls-1.3.6.jar`
 
 > **Important:** Install on backend servers only, NOT on the Velocity proxy!
@@ -47,13 +51,20 @@ Edit `config.yml` on **both servers** with **identical** database credentials:
 ```yaml
 database:
   host: "localhost"        # Your database host
+
   port: 3306               # Your database port
+
   name: "ssoggysouls"       # Your database name
+
   username: "root"         # Your MySQL username
+
   password: "your_password" # Your MySQL password
+
   pool-size: 5
   table-name: "hardcore_players"
+
 ```
+
 **For Pterodactyl users:**
 
 1. Go to your panel → Databases tab
@@ -66,16 +77,24 @@ database:
 
 ```yaml
 is-limbo-server: false        # This is the Main server
+
 main-server-name: "main"      # Must match your Velocity config
+
 limbo-server-name: "limbo"    # Must match your Velocity config
+
 ```
+
 **On Limbo server (`config.yml`):**
 
 ```yaml
 is-limbo-server: true         # This is the Limbo server
+
 main-server-name: "main"      # Must match your Velocity config
+
 limbo-server-name: "limbo"    # Must match your Velocity config
+
 ```
+
 > **Tip:** The server names must exactly match the server names in your `velocity.toml` file.
 
 ### Step 6: Set Limbo Spawn
@@ -94,11 +113,15 @@ Edit `velocity.toml`:
 
 ```toml
 player-info-forwarding-mode = "modern"
+
 ```
+
 **For BungeeCord/Waterfall:**
 
 - Enable IP forwarding in BungeeCord's `config.yml`
+
 - Set `bungeecord: true` in `spigot.yml` on both backend servers
+
 - Configure Paper forwarding if using Paper
 
 ### Step 8: Restart & Test
@@ -107,10 +130,15 @@ player-info-forwarding-mode = "modern"
 1. Check console for successful database connection messages
 1. Test the complete flow:
    - Join the Main server
+
    - Use `/pstatus` to check your lives
+
    - Kill yourself enough times to lose all lives
+
    - Verify you're transferred to Limbo
+
    - Use `/psadmin revive <player>` to revive yourself
+
    - Verify you're returned to Main
 
 ## What's Next?
@@ -120,9 +148,13 @@ player-info-forwarding-mode = "modern"
 Review and customize these important settings in `config.yml`:
 
 - **Lives settings** (`default`, `max-lives`, `on-revive`)
+
 - **Death mode** (`limbo`, `spectator`, or `hybrid`)
+
 - **Grace period** duration for new players
+
 - **Extra Life recipe** materials
+
 - **Messages** and colors
 
 See the [Configuration Reference](configuration) for details on all options.
@@ -130,7 +162,9 @@ See the [Configuration Reference](configuration) for details on all options.
 ### Learn About Features
 
 - [Revival System](revival-system) - Learn how to revive players using ritual structures and items
+
 - [Commands](commands) - Full list of available commands
+
 - [Death Modes](configuration.md#death-modes) - Understand the three death mode options
 
 ### Troubleshooting
@@ -143,14 +177,18 @@ Having issues? Check the [Troubleshooting Guide](troubleshooting) for solutions 
 
 | Mode                 | Behavior                                                                              |
 | -------------------- | ------------------------------------------------------------------------------------- |
+
 | **hybrid** (default) | Dead players get 5 minutes in spectator mode to be revived, then transferred to Limbo |
+
 | **spectator**        | Dead players stay on Main in spectator mode indefinitely until revived                |
+
 | **limbo**            | Dead players immediately transferred to Limbo upon losing all lives                   |
 
 ### Essential Commands
 
 | Command                            | Description            |
 | ---------------------------------- | ---------------------- |
+
 | `/pstatus [player]`                | Check lives and status |
 | `/revive <player>`                 | Revive a dead player   |
 | `/psadmin lives <player> <amount>` | Set player's lives     |
@@ -162,12 +200,15 @@ For the complete command list, see [Commands](commands).
 ## Need Help?
 
 - [Full Installation Guide](installation)
+
 - [Configuration Reference](configuration)
+
 - [Troubleshooting](troubleshooting)
+
 - [FAQ](faq)
+
 - [Report Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)
 
 ______________________________________________________________________
 
 [← Back to Home](index) | [Installation Guide →](installation)
-

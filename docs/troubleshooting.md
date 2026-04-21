@@ -30,7 +30,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - Players lose all lives but stay on Main server
+
 - No automatic transfer to Limbo occurs
+
 - Console shows no errors
 
 ### Solutions
@@ -41,12 +43,16 @@ ______________________________________________________________________
 
 ```yaml
 is-limbo-server: false
+
 ```
+
 **On Limbo server:**
 
 ```yaml
 is-limbo-server: true
+
 ```
+
 #### - Verify Server Names Match Proxy
 
 **In your `config.yml` (both servers):**
@@ -54,14 +60,18 @@ is-limbo-server: true
 ```yaml
 main-server-name: "main"
 limbo-server-name: "limbo"
+
 ```
+
 **In your `velocity.toml`:**
 
 ```toml
 [servers]
   main = "localhost:25566"
   limbo = "localhost:25567"
+
 ```
+
 The names must **exactly match** (case-sensitive).
 
 #### - Check Database Connection
@@ -78,16 +88,23 @@ Both servers must connect to the same database:
 
 ```toml
 player-info-forwarding-mode = "modern"
+
 ```
+
 **For BungeeCord:**
 
 ```yaml
+
 # config.yml
+
 ip_forward: true
 
 # spigot.yml on both servers
+
 bungeecord: true
+
 ```
+
 #### - Check Death Mode Configuration
 
 **In Main server config:**
@@ -95,7 +112,9 @@ bungeecord: true
 ```yaml
 main:
   death-mode: "hybrid"  # or "limbo" for immediate transfer
+
 ```
+
 If using `spectator` mode, players won't transfer to Limbo automatically.
 
 #### - Look for Plugin Messaging Errors
@@ -103,7 +122,9 @@ If using `spectator` mode, players won't transfer to Limbo automatically.
 Check console logs for:
 
 - "Failed to send player to server"
+
 - "PluginMessageException"
+
 - BungeeCord channel errors
 
 ______________________________________________________________________
@@ -113,7 +134,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - Using `/revive` or ritual structure doesn't work
+
 - Player stays dead in database
+
 - No automatic return to Main server
 
 ### Solutions
@@ -124,19 +147,29 @@ ______________________________________________________________________
 hrm:
   enabled: true
   structure-revive: true  # For ritual structures
+
 ```
+
 #### - Verify Ritual Structure is Correct
 
 **Structure Requirements:**
 
 - **Bottom layer (3x3):**
+
   - 4 Soul Sand blocks at corners
+
   - 4 Stair blocks at edges
+
   - 1 Ore block in center (Gold/Diamond/Emerald/etc.)
+
 - **Middle layer:**
+
   - 4 Wither Roses on Soul Sand corners
+
   - 1 Fence on center ore block
+
 - **Top layer:**
+
   - Dead player's head on fence
 
 #### - Enable Structure Detection
@@ -146,14 +179,19 @@ hrm:
 ```yaml
 main:
   detect-hrm-revive: true
+
 ```
+
 #### - Check Database Connectivity
 
 Try manual revival to test database:
 
-```
+```text
+
 /psadmin revive <player>
+
 ```
+
 If this works but structures don't, the issue is with structure detection.
 
 #### - Verify Both Servers Access Same Database
@@ -167,7 +205,9 @@ If this works but structures don't, the issue is with structure detection.
 The Limbo server must be running to process revivals:
 
 - Verify Limbo server is online
+
 - Check Limbo console for revival check messages
+
 - Default check interval: 3 seconds
 
 ______________________________________________________________________
@@ -177,7 +217,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - New players lose lives even with grace period configured
+
 - Grace period doesn't seem to be working
+
 - Status shows grace period but lives still decrease
 
 ### Solutions
@@ -187,34 +229,47 @@ ______________________________________________________________________
 ```yaml
 lives:
   grace-period: "24h"  # NOT "0" which disables it
+
 ```
+
 Formats:
 
 - `"24h"` = 24 hours
+
 - `"2h30m"` = 2 hours 30 minutes
+
 - `"90m"` = 90 minutes
+
 - `"0"` = Disabled
 
 #### - Verify Grace Period Status
 
-```
+```text
+
 /pstatus <player>
+
 ```
+
 Should show grace period remaining time.
 
 #### - Set Grace Period Manually
 
 For players who joined before enabling grace period:
 
-```
+```text
+
 /psadmin grace <player> 24
+
 ```
+
 #### - Remember: Online Time Only
 
 Grace period only counts while player is online:
 
 - Playing 3 hours → 21 hours remaining
+
 - Logging off → timer pauses
+
 - Logging back in → timer resumes
 
 ______________________________________________________________________
@@ -224,7 +279,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - `/revive` or `/psadmin` commands don't work on Limbo server
+
 - "Security Error: On the Limbo server, OP status cannot be used..." message
+
 - Commands work on Main server but not Limbo
 
 ### Solution
@@ -238,48 +295,65 @@ Edit `config.yml`:
 ```yaml
 limbo-trusted-admins:
   - "069a79f4-44e9-4726-a5be-fca90e38aaf5"  # UUID (recommended)
+
   - "PlayerName"                              # or username
-```
-Then reload from **console** (or from an already whitelisted/bypass-enabled admin):
 
 ```
+
+Then reload from **console** (or from an already whitelisted/bypass-enabled admin):
+
+```text
+
 /psadmin reload
+
 ```
+
 Or simply restart the server to apply the changes.
 
 #### - Grant Bypass Permission (Requires LuckPerms)
 
 Use a permissions plugin like LuckPerms:
 
-```
+```text
+
 /lp user <player> permission set ssoggysouls.bypass-limbo-op-security true
+
 ```
+
 This allows the OP to use admin commands on Limbo.
 
 #### - Alternative: Remove OP and Use Explicit Permissions
 
-```
+```text
+
 /deop <player>
 /lp user <player> permission set ssoggysouls.admin true
 /lp user <player> permission set ssoggysouls.revive true
+
 ```
+
 #### - Disable Security Check (Not Recommended)
 
 In `config.yml`:
 
 ```yaml
 limbo-op-security-check: false
+
 ```
+
 **Warning:** This removes the security protection and allows any OP on Limbo to revive/modify player data.
 
 #### - Use Console
 
 Console commands always work on both servers:
 
-```
+```text
+
 /psadmin revive <player>
 /revive <player>
+
 ```
+
 ______________________________________________________________________
 
 ## Version Mismatch Warnings
@@ -287,7 +361,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - Console shows "Version mismatch detected"
+
 - Plugin might not work correctly
+
 - Strange behavior between servers
 
 ### Solutions
@@ -297,15 +373,19 @@ ______________________________________________________________________
 1. Download the latest SSoggySouls JAR
 1. Stop both servers
 1. Replace the JAR on **both** servers
+
 1. Start both servers
 
 #### - Verify Versions Match
 
 Check console logs on both servers:
 
-```
+```text
+
 [SSoggySouls] Version 1.3.6 enabled
+
 ```
+
 Both must show the same version number.
 
 #### - Clear Old Database Records (If Needed)
@@ -314,7 +394,9 @@ If switching from old version, you may need to:
 
 ```sql
 DELETE FROM hardcore_players WHERE plugin_version IS NOT NULL;
+
 ```
+
 **Warning:** This will reset all player data!
 
 ______________________________________________________________________
@@ -326,8 +408,11 @@ ______________________________________________________________________
 ### Symptoms
 
 - "Failed to connect to database"
+
 - "Communications link failure"
+
 - "Access denied for user"
+
 - "Unknown database"
 
 ### Solutions
@@ -335,21 +420,30 @@ ______________________________________________________________________
 #### - Verify MySQL/MariaDB is Running
 
 ```bash
+
 # Linux
+
 sudo systemctl status mysql
+
 # or
+
 sudo systemctl status mariadb
 
 # Windows
+
 Check Services for MySQL
+
 ```
+
 #### - Test Database Credentials
 
 Use MySQL client to test:
 
 ```bash
 mysql -h localhost -P 3306 -u ssoggysouls_user -p
+
 ```
+
 Enter password when prompted. If this fails, your credentials are wrong.
 
 #### - Check Firewall Rules
@@ -357,11 +451,17 @@ Enter password when prompted. If this fails, your credentials are wrong.
 Ensure backend servers can reach database:
 
 ```bash
+
 # Test connection
+
 telnet database_host 3306
+
 # or
+
 nc -zv database_host 3306
+
 ```
+
 #### - For Pterodactyl: Use Panel Host
 
 Don't use "localhost" - use the host provided by your panel:
@@ -369,20 +469,29 @@ Don't use "localhost" - use the host provided by your panel:
 ```yaml
 database:
   host: "mysql.example.com"  # From panel, not "localhost"
+
   port: 3306
+
 ```
+
 #### - Ensure Database Exists
 
 ```sql
 CREATE DATABASE IF NOT EXISTS ssoggysouls;
+
 ```
+
 #### - Check User Permissions
 
 ```sql
 -- Restrict to the host your backend uses (e.g. 127.0.0.1 or your server IP)
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON ssoggysouls.* TO 'ssoggysouls_user'@'127.0.0.1';
+
 FLUSH PRIVILEGES;
+
 ```
+
 #### - Verify Connection Pool Size
 
 For high-traffic servers, increase pool size:
@@ -390,7 +499,9 @@ For high-traffic servers, increase pool size:
 ```yaml
 database:
   pool-size: 10  # Default is 5
+
 ```
+
 ______________________________________________________________________
 
 ## Players Reconnecting Go Straight to Limbo
@@ -398,7 +509,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - Player dies and enters spectator mode
+
 - Player disconnects
+
 - Upon reconnecting, player is in Limbo (skipped spectator)
 
 ### Solution
@@ -408,7 +521,9 @@ ______________________________________________________________________
 In hybrid mode:
 
 - Dying → Spectator mode for timeout period
+
 - Disconnecting while dead → Skip spectator on reconnect
+
 - Reconnecting → Go straight to Limbo
 
 **If you want different behavior:**
@@ -418,7 +533,9 @@ Use `spectator` mode instead:
 ```yaml
 main:
   death-mode: "spectator"  # Dead players stay in spectator indefinitely
+
 ```
+
 ______________________________________________________________________
 
 ## Extra Life Items Not Working
@@ -426,7 +543,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - Crafting Extra Life item doesn't work
+
 - Using Extra Life item does nothing
+
 - No lives gained
 
 ### Solutions
@@ -436,7 +555,9 @@ ______________________________________________________________________
 ```yaml
 extra-life:
   enabled: true
+
 ```
+
 #### - Check Recipe Configuration
 
 Verify all materials are valid Minecraft material names:
@@ -449,11 +570,14 @@ extra-life:
     row3: "GEG"
     ingredients:
       G: "GOLD_BLOCK"      # Must be valid material
+
       E: "EMERALD_BLOCK"
       N: "NETHER_STAR"
       D: "DIAMOND_BLOCK"
       I: "NETHERITE_INGOT"
+
 ```
+
 #### - Verify Player is Not at Max Lives
 
 Extra Life cannot exceed max lives:
@@ -461,12 +585,17 @@ Extra Life cannot exceed max lives:
 ```yaml
 lives:
   max-lives: 5  # Player can't gain lives beyond this
-```
-Check with:
 
 ```
+
+Check with:
+
+```text
+
 /pstatus
+
 ```
+
 #### - Ensure Player is Alive
 
 Can't use Extra Life while dead.
@@ -482,6 +611,7 @@ ______________________________________________________________________
 ### Symptoms
 
 - Hearts appear normal, not hardcore style
+
 - Expected hardcore (half-heart) appearance
 
 ### Solutions
@@ -490,29 +620,39 @@ ______________________________________________________________________
 
 ```yaml
 hardcore-hearts: true
+
 ```
+
 #### - Understand It's Cosmetic Only
 
 Hardcore hearts:
 
 - Are purely visual
+
 - Don't affect gameplay
+
 - Lives system works regardless
+
 - May require client support or resource pack
 
 #### - Restart Server
 
 After enabling, restart the server:
 
-```
+```text
+
 /psadmin reload
+
 ```
+
 #### - Note: Client-Side Feature
 
 This feature may require:
 
 - Specific client mods
+
 - Resource pack support
+
 - May not work for all clients
 
 ______________________________________________________________________
@@ -522,7 +662,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - Built correct structure
+
 - Placed head on top
+
 - Nothing happens
 
 ### Solutions
@@ -532,14 +674,19 @@ ______________________________________________________________________
 **Common mistakes:**
 
 - Using wrong blocks (must be Soul Sand at corners)
+
 - Fence not placed directly on ore block
+
 - Wither Roses not on Soul Sand corners
+
 - Structure size wrong (must be exactly 3x3x3)
 
 #### - Check Player Head is Correct
 
 - Must be the actual dead player's head
+
 - Use Revive Skull to get correct head
+
 - Or use `/give @s player_head{SkullOwner:"PlayerName"}`
 
 #### - Ensure Detection is Enabled
@@ -547,21 +694,28 @@ ______________________________________________________________________
 ```yaml
 main:
   detect-hrm-revive: true
+
 ```
+
 #### - Verify HRM is Enabled
 
 ```yaml
 hrm:
   enabled: true
   structure-revive: true
+
 ```
+
 #### - Check Plugin is Listening for Block Places
 
 Restart server if needed:
 
-```
+```text
+
 /psadmin reload
+
 ```
+
 ______________________________________________________________________
 
 ## Revive Skull Recipe Not Working
@@ -569,7 +723,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - Can't craft Revive Skull
+
 - Recipe doesn't appear
+
 - Items don't combine
 
 ### Solutions
@@ -579,14 +735,19 @@ ______________________________________________________________________
 ```yaml
 hrm:
   revive-skull-recipe: true
+
 ```
+
 #### - Use Correct Recipe (Shapeless)
 
 Place anywhere in crafting grid:
 
 - 4 Obsidian
+
 - 2 Ghast Tear
+
 - 2 Totem of Undying
+
 - 1 Any Skull/Head
 
 **Note:** Order doesn't matter (shapeless recipe).
@@ -595,9 +756,12 @@ Place anywhere in crafting grid:
 
 After enabling:
 
-```
+```text
+
 /psadmin reload
+
 ```
+
 ______________________________________________________________________
 
 ## Players Can't Visit Limbo
@@ -605,7 +769,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - `/limbo` command doesn't work
+
 - "You don't have permission" error
+
 - Nothing happens
 
 ### Solutions
@@ -615,12 +781,17 @@ ______________________________________________________________________
 ```yaml
 permissions:
   ssoggysouls.visit: true  # Should default to true
-```
-Grant permission:
 
 ```
+
+Grant permission:
+
+```text
+
 /lp user <player> permission set ssoggysouls.visit true
+
 ```
+
 #### - Verify Limbo Server is Online
 
 Limbo server must be running for visits.
@@ -629,7 +800,9 @@ Limbo server must be running for visits.
 
 ```yaml
 limbo-server-name: "limbo"  # Must match proxy config
+
 ```
+
 #### - Ensure Player is Alive
 
 Dead players can't use `/limbo` - they're already there!
@@ -641,7 +814,9 @@ ______________________________________________________________________
 ### Symptoms
 
 - Plugin doesn't show in `/plugins`
+
 - No console messages from SSoggySouls
+
 - Commands don't work
 
 ### Solutions
@@ -652,20 +827,27 @@ Requires Java 21 or higher:
 
 ```bash
 java -version
+
 ```
+
 #### - Verify Minecraft Version
 
 Plugin supports 1.21.X only. Check server version:
 
-```
+```text
+
 /version
+
 ```
+
 #### - Check Console for Errors
 
 Look for:
 
 - "UnsupportedClassVersionError" → Java version too old
+
 - "NoClassDefFoundError" → Missing dependency
+
 - Other error messages
 
 #### - Verify Plugin File is Not Corrupted
@@ -688,17 +870,23 @@ If your issue isn't covered here:
 
    ```yaml
    debug: true
-```
+
+```text
 
 Restart both servers and reproduce the issue.
 
 1. **Collect Information**
 
    - SSoggySouls version
+
    - Minecraft version
+
    - Proxy type (Velocity/BungeeCord)
+
    - Relevant config sections
+
    - Console errors/logs
+
    - Steps to reproduce
 
 1. **Search Existing Issues**
@@ -710,8 +898,11 @@ Restart both servers and reproduce the issue.
 ## Related Resources
 
 - [Installation Guide](installation)
+
 - [Configuration Reference](configuration)
+
 - [Commands](commands)
+
 - [FAQ](faq)
 
 ______________________________________________________________________
