@@ -28,6 +28,7 @@ A hardcore lives system plugin for Velocity proxy networks. When you die enough 
 Two servers behind a **Velocity proxy** (might work on BungeeCord/Waterfall but not tested): **Main** (play) and **Limbo** (dead zone). Both talk to same MySQL database.
 
 **Flow:**
+
 1. Start with 2 lives (configurable)
 2. Die = -1 life
 3. Grace period protects newbies (only ticks online)
@@ -51,15 +52,19 @@ All work with ritual structures, Revive Skull, and `/revive`.
 ---
 
 ## Built-in Revival System
+
 *(ripped from [Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod))*
 
 ### Player Head Drops
+
 When you're fully dead, your head drops where you died with coords in chat.
 
 ### Revival Ritual
+
 Build a 3x3x3 beacon-ish thing:
 
 **Structure:**
+
 - **Bottom:** 4 Soul Sand corners, 4 Stairs at edges, 1 Ore in middle
 - **Middle:** 4 Wither Roses on Soul Sand, 1 Fence on ore
 - **Top:** Dead player's head on fence = revival
@@ -71,6 +76,7 @@ Plugin auto-detects and revives them!
 **Revive Skull** - right-click for a menu of dead players, get their head for rituals.
 
 **Recipe:**
+
 ```
 Obsidian | Ghast Tear | Obsidian
 Totem    | Any Skull  | Totem
@@ -80,6 +86,7 @@ Obsidian | Ghast Tear | Obsidian
 **Extra Life** - right-click for +1 life (max cap applies). Recipe is fully customizable!
 
 **Default:**
+
 ```
 Diamond Block  | Emerald Block | Diamond Block
 Netherite Ingot| Nether Star   | Netherite Ingot
@@ -87,6 +94,7 @@ Gold Block     | Emerald Block | Gold Block
 ```
 
 ### Head Effects
+
 Wear a dead player's head = Speed II and Night Vision.
 
 ---
@@ -114,6 +122,7 @@ Wear a dead player's head = Speed II and Night Vision.
 3. **Generate config** - Start both servers to create `config.yml`, then stop them
 
 4. **Configure database** - Edit `config.yml` on **both servers** with **identical** credentials:
+
    ```yaml
    database:
      host: "localhost"
@@ -135,7 +144,7 @@ Wear a dead player's head = Speed II and Night Vision.
    - Death mode (hybrid/spectator/limbo)
    - HRM features (revival structures, heads, recipes)
    - Messages and colors
-   
+
    See the **Configuration** section below for key settings. If you need help, reach out via [GitHub Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues).
 
 8. **Restart & test** - Start both servers and test the full death → Limbo → revival flow!
@@ -201,6 +210,7 @@ All messages are customizable with Minecraft color codes!
 ## Commands
 
 ### Player Commands
+
 | Command | Description | Permission |
 |---------|-------------|------------|
 | `/pstatus [player]` | Check lives and status | `ssoggysouls.status` |
@@ -209,6 +219,7 @@ All messages are customizable with Minecraft color codes!
 | `/leavelimbo` | Return from Limbo | `ssoggysouls.visit` |
 
 ### Admin Commands
+
 | Command | Description |
 |---------|-------------|
 | `/psadmin lives <player> <amount>` | Set player's lives |
@@ -240,11 +251,14 @@ All messages are customizable with Minecraft color codes!
 **Important:** OP users on the Limbo server are blocked from using `/revive` and `/psadmin` commands by default to prevent abuse.
 
 **To allow an OP on Limbo (choose one):**
+
 1. **Whitelist** (easiest - no permissions plugin needed):
+
    ```yaml
    limbo-trusted-admins:
      - "your-uuid-here"  # or username
    ```
+
 2. **Permission**: `/lp user <player> permission set ssoggysouls.bypass-limbo-op-security true`
 3. **Disable check**: `limbo-op-security-check: false` (not recommended)
 
@@ -253,20 +267,24 @@ All messages are customizable with Minecraft color codes!
 ## Troubleshooting
 
 **Players not transferring to Limbo?**
+
 - Check `is-limbo-server` is set correctly on both servers
 - Verify both servers use identical database credentials
 - Confirm server names match proxy config
 
 **Revivals not working?**
+
 - Ensure `hrm.enabled: true` and `hrm.structure-revive: true`
 - Verify revival structure is built correctly
 - Check `detect-hrm-revive: true` in Main config
 
 **Version mismatch warnings?**
+
 - Both servers MUST run the same SSoggySouls version
 - Update both simultaneously
 
 **Need more help?**
+
 - [Full Documentation Wiki](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)
 - [Troubleshooting Guide](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/troubleshooting.html)
 - [FAQ](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/faq.html)
@@ -277,6 +295,7 @@ All messages are customizable with Minecraft color codes!
 ## Update Checking
 
 SSoggySouls includes automatic update checking via Modrinth:
+
 - Checks for new versions on startup
 - Displays notifications in console
 - Can be disabled: `check-for-updates: false`

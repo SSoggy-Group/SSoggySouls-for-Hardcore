@@ -3,34 +3,34 @@ layout: default
 title: Revival System Guide
 ---
 
-# Revival System Guide
+## Revival System Guide
 
 Complete guide to the multiple revival methods available in SSoggySouls, including ritual structures, items, and commands.
 
 ## Table of Contents
 
 1. [Revival Methods Overview](#revival-methods-overview)
-2. [Ritual Structure Revival](#ritual-structure-revival)
-3. [Revive Skull Item](#revive-skull-item)
-4. [Extra Life Item](#extra-life-item)
-5. [Command-Based Revival](#command-based-revival)
-6. [Head Mechanics](#head-mechanics)
-7. [Revival Configuration](#revival-configuration)
+1. [Ritual Structure Revival](#ritual-structure-revival)
+1. [Revive Skull Item](#revive-skull-item)
+1. [Extra Life Item](#extra-life-item)
+1. [Command-Based Revival](#command-based-revival)
+1. [Head Mechanics](#head-mechanics)
+1. [Revival Configuration](#revival-configuration)
 
 ## Revival Methods Overview
 
 SSoggySouls supports **four ways** to revive dead players:
 
-| Method | User | Requirement | Speed | Risk |
-|--------|------|-------------|-------|------|
-| **Ritual Structure** | Any player | Build 3x3x3 structure + head | Slow | None (repeatable) |
-| **Revive Skull** | Any player | Craft item + dead player head | Medium | None (repeatable) |
-| **Revive Command** | Mod/Admin | Permission + command | Instant | None (authority needed) |
-| **Admin Command** | Admin | `ssoggysouls.admin` permission | Instant | Highest privilege |
+| Method               | User       | Requirement                    | Speed   | Risk                    |
+| -------------------- | ---------- | ------------------------------ | ------- | ----------------------- |
+| **Ritual Structure** | Any player | Build 3x3x3 structure + head   | Slow    | None (repeatable)       |
+| **Revive Skull**     | Any player | Craft item + dead player head  | Medium  | None (repeatable)       |
+| **Revive Command**   | Mod/Admin  | Permission + command           | Instant | None (authority needed) |
+| **Admin Command**    | Admin      | `ssoggysouls.admin` permission | Instant | Highest privilege       |
 
 All methods work together - you can use any combination!
 
----
+______________________________________________________________________
 
 ## Ritual Structure Revival
 
@@ -42,39 +42,39 @@ The complete structure has three layers:
 
 #### Layer 1: Base (3x3 grid)
 
-```
+````text
 [Soul Sand]  [Stair]       [Soul Sand]
 [Stair]      [Ore Block]   [Stair]
 [Soul Sand]  [Stair]       [Soul Sand]
-```
-
+```text
 **Components:**
+
 - **4 Soul Sand blocks** at the corners
 - **4 Stair blocks** at the edges (any stairs work: oak, stone, etc.)
 - **1 Ore block** in the center (Gold/Diamond/Emerald/Iron/etc. - any ore works!)
 
 #### Layer 2: Middle
 
-```
+```text
 [Wither Rose]  [Empty]  [Wither Rose]
 [Empty]        [Fence]  [Empty]
 [Wither Rose]  [Empty]  [Wither Rose]
-```
-
+```text
 **Components:**
+
 - **4 Wither Roses** placed on top of the Soul Sand corners
 - **1 Fence** placed on top of the center ore block
 - Rest is empty air
 
 #### Layer 3: Top
 
-```
+```text
 [Empty]  [Empty]  [Empty]
 [Empty]  [Head]   [Empty]
 [Empty]  [Empty]  [Empty]
-```
-
+```text
 **Components:**
+
 - **Dead player's head** placed on top of the fence
 
 ### Step-by-Step Building
@@ -82,45 +82,45 @@ The complete structure has three layers:
 **Step 1: Build the Base Layer**
 
 1. Dig a 3x3 pit or find a flat area
-2. Place Soul Sand in all 4 corners (positions 1, 3, 7, 9 if you number them)
-3. Place any Stair blocks in the 4 edge positions (2, 4, 6, 8)
-4. Place any Ore block in the center (5)
+1. Place Soul Sand in all 4 corners (positions 1, 3, 7, 9 if you number them)
+1. Place any Stair blocks in the 4 edge positions (2, 4, 6, 8)
+1. Place any Ore block in the center (5)
 
 Visual (from top, numbers 1-9):
-```
+
+```text
 1 2 3
 4 5 6
 7 8 9
-```
-
+```text
 Placement:
-```
+
+```text
 Soul Sand    Stair       Soul Sand
 Stair        Ore Block   Stair
 Soul Sand    Stair       Soul Sand
-```
-
+```text
 **Step 2: Add Middle Layer**
 
 1. Look up at the Soul Sand blocks in the 4 corners
-2. Place Wither Roses on top of each Soul Sand corner
-3. Look up at the ore block in the center
-4. Place a Fence on top of it
+1. Place Wither Roses on top of each Soul Sand corner
+1. Look up at the ore block in the center
+1. Place a Fence on top of it
 
 **Step 3: Place the Player Head**
 
 1. Get the dead player's head (find it on the ground or from Revive Skull)
-2. Look up at the fence in the center of layer 2
-3. Place the head on top of the fence
+1. Look up at the fence in the center of layer 2
+1. Place the head on top of the fence
 
 ### Automatic Revision
 
 Once the head is placed on the fence, the plugin **automatically detects** the completed structure and:
 
 1. - Revives the dead player (database updated)
-2. - Teleports the player back to Main server
-3. - Restores lives (default: 1)
-4. - Optionally destroys the structure (configurable)
+1. - Teleports the player back to Main server
+1. - Restores lives (default: 1)
+1. - Optionally destroys the structure (configurable)
 
 ### Configuration Options
 
@@ -130,15 +130,14 @@ hrm:
   leave-structure-base: true      # Keep base after revival?
   drop-heads: true                # Players drop heads on death
   detect-hrm-revive: true         # Auto-detect completed structures
-```
-
+```text
 **leave-structure-base:** If true, the base structure stays (only head removed). If false, the entire structure is destroyed.
 
 ### Example: Complete Structure
 
 Here's a complete visual example from the side:
 
-```
+```text
 Layer 3:          [Head]
                     |
 Layer 2:   [Rose]- [Fence] -[Rose]
@@ -153,9 +152,8 @@ S  O  O  S
   W     W
 Soul  Stair  Soul
 Stair Ore   Stair
-```
-
----
+```text
+______________________________________________________________________
 
 ## Revive Skull Item
 
@@ -165,13 +163,14 @@ A special crafted item that provides an easy way to get dead player heads and re
 
 **Shapeless recipe:**
 
-| | | |
-|---|---|---|
-| Obsidian | Ghast Tear | Obsidian |
+|                  |                |                  |
+| ---------------- | -------------- | ---------------- |
+| Obsidian         | Ghast Tear     | Obsidian         |
 | Totem of Undying | Any Skull/Head | Totem of Undying |
-| Obsidian | Ghast Tear | Obsidian |
+| Obsidian         | Ghast Tear     | Obsidian         |
 
 **Materials needed:**
+
 - 4× Obsidian
 - 2× Ghast Tear (from Ghasts in the Nether)
 - 2× Totem of Undying (from Evokers)
@@ -182,16 +181,16 @@ A special crafted item that provides an easy way to get dead player heads and re
 ### Using the Revive Skull
 
 1. Right-click the Revive Skull in your inventory
-2. A GUI menu opens showing all currently dead players
-3. Click on a player's name in the menu
-4. You receive their player head (item drops in your inventory or on ground)
-5. Use the head in the ritual structure to revive them
+1. A GUI menu opens showing all currently dead players
+1. Click on a player's name in the menu
+1. You receive their player head (item drops in your inventory or on ground)
+1. Use the head in the ritual structure to revive them
 
 ### GUI Menu
 
 When you right-click a Revive Skull, you see:
 
-```
+```text
 ═══════════════════════════════════════
         DEAD PLAYERS - REVIVE MENU
 ═══════════════════════════════════════
@@ -199,8 +198,7 @@ When you right-click a Revive Skull, you see:
   👤 DeadPlayer2
   👤 DeadPlayer3
 ═══════════════════════════════════════
-```
-
+```text
 Click on any player to get their head.
 
 ### Features
@@ -216,9 +214,8 @@ Click on any player to get their head.
 ```yaml
 hrm:
   revive-skull-recipe: true  # Enable/disable crafting
-```
-
----
+```text
+______________________________________________________________________
 
 ## Extra Life Item
 
@@ -226,13 +223,14 @@ A craftable item that grants players +1 life when used.
 
 ### Default Recipe
 
-| | | |
-|---|---|---|
-| Diamond Block | Emerald Block | Diamond Block |
-| Netherite Ingot | Nether Star | Netherite Ingot |
-| Gold Block | Emerald Block | Gold Block |
+|                 |               |                 |
+| --------------- | ------------- | --------------- |
+| Diamond Block   | Emerald Block | Diamond Block   |
+| Netherite Ingot | Nether Star   | Netherite Ingot |
+| Gold Block      | Emerald Block | Gold Block      |
 
 **Materials needed:**
+
 - 2× Diamond Block
 - 2× Emerald Block
 - 2× Netherite Ingot
@@ -244,9 +242,9 @@ A craftable item that grants players +1 life when used.
 ### Using the Extra Life Item
 
 1. Craft or obtain an Extra Life item
-2. Right-click it in your inventory
-3. **Success:** You gain +1 life (if not at maximum)
-4. **Failure:** Message if already at max lives
+1. Right-click it in your inventory
+1. **Success:** You gain +1 life (if not at maximum)
+1. **Failure:** Message if already at max lives
 
 ### Features
 
@@ -273,8 +271,7 @@ extra-life:
       N: "NETHER_STAR"          # Define what letter N means
       D: "DIAMOND_BLOCK"        # Define what letter D means
       I: "NETHERITE_INGOT"      # Define what letter I means
-```
-
+```text
 ### Example: Simple Diamond Recipe
 
 ```yaml
@@ -286,8 +283,7 @@ extra-life:
     ingredients:
       D: "DIAMOND_BLOCK"
       E: "EMERALD_BLOCK"
-```
-
+```text
 This creates a diamond shape with emerald in the center.
 
 ### Example: Emerald-Only Recipe
@@ -300,8 +296,7 @@ extra-life:
     row3: "EEE"
     ingredients:
       E: "EMERALD_BLOCK"
-```
-
+```text
 Simply 9 Emerald Blocks (easiest recipe).
 
 ### Disabling the Extra Life Item
@@ -309,9 +304,8 @@ Simply 9 Emerald Blocks (easiest recipe).
 ```yaml
 extra-life:
   enabled: false
-```
-
----
+```text
+______________________________________________________________________
 
 ## Command-Based Revival
 
@@ -325,8 +319,7 @@ Regular command for reviving a dead player. Less powerful than admin version.
 
 ```bash
 /revive DeadPlayer
-```
-
+```text
 ### `/psadmin revive <player>`
 
 **Permission:** `ssoggysouls.admin` (op only)
@@ -335,16 +328,15 @@ Admin command for reviving. Same result as `/revive` but requires admin permissi
 
 ```bash
 /psadmin revive DeadPlayer
-```
-
+```text
 ### How Command Revival Works
 
 1. Player must exist in database
-2. Player must be marked as dead
-3. Command instantly marks player as alive
-4. Player is teleported to Main server spawn
-5. Lives are restored (configured in `on-revive` setting)
-6. Revive cooldown starts (30 seconds default)
+1. Player must be marked as dead
+1. Command instantly marks player as alive
+1. Player is teleported to Main server spawn
+1. Lives are restored (configured in `on-revive` setting)
+1. Revive cooldown starts (30 seconds default)
 
 ### Command Revival Benefits
 
@@ -366,9 +358,8 @@ Admin command for reviving. Same result as `/revive` but requires admin permissi
 # Revive multiple players
 /psadmin revive Player1
 /psadmin revive Player2
-```
-
----
+```text
+______________________________________________________________________
 
 ## Head Mechanics
 
@@ -378,7 +369,7 @@ Dead players' heads are central to the HRM revival system.
 
 When a player loses all lives, the plugin spawns their head near the death location. There are two modes for how this works, controlled by `hrm.head-place-as-block` in `config.yml`.
 
----
+______________________________________________________________________
 
 #### Block Mode (`head-place-as-block: true`, default)
 
@@ -390,12 +381,12 @@ The head is placed as a **permanent skull block** in the world.
 - On revival the plugin **removes the block automatically** (see Cleanup below).
 
 **Configuration:**
+
 ```yaml
 hrm:
   head-place-as-block: true
-```
-
----
+```text
+______________________________________________________________________
 
 #### Item Entity Mode (`head-place-as-block: false`)
 
@@ -403,20 +394,20 @@ The head is dropped as a standard **item entity** on the ground — the traditio
 
 Two extra options control its survival:
 
-| Option | What it does |
-|---|---|
-| `head-no-despawn: true` | Cancels the natural 5-minute despawn timer. The item stays until picked up. |
-| `head-fireproof: true` | Marks the item as invulnerable. Fire, lava, and explosions can't destroy it. |
+| Option                  | What it does                                                                 |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `head-no-despawn: true` | Cancels the natural 5-minute despawn timer. The item stays until picked up.  |
+| `head-fireproof: true`  | Marks the item as invulnerable. Fire, lava, and explosions can't destroy it. |
 
 **Configuration:**
+
 ```yaml
 hrm:
   head-place-as-block: false
   head-no-despawn: true    # item never despawns
   head-fireproof: true     # item survives lava/fire
-```
-
----
+```text
+______________________________________________________________________
 
 ### Head Cleanup on Revival
 
@@ -432,7 +423,7 @@ Scans across all worlds to catch anything Pass 1 missed: item entities, item fra
 
 In item-entity mode the chunk block scan is skipped entirely (no skull blocks to find), making cleanup faster.
 
----
+______________________________________________________________________
 
 ### Wearing Head Effects
 
@@ -442,34 +433,35 @@ When a living player **wears a dead player's head**, they receive:
 - **Night Vision** — see in darkness en route
 
 **Configuration:**
+
 ```yaml
 hrm:
   head-wearing-effects: true
-```
-
+```text
 ### Getting Heads Without a Physical Drop
 
 If the original head was lost, burned, or simply too far away, use the **Revive Skull** to get a fresh copy:
 
 1. Right-click a Revive Skull
-2. Select the dead player from the menu
-3. Receive their head instantly
+1. Select the dead player from the menu
+1. Receive their head instantly
 
 The database always holds a permanent record of which players are dead, so a new head can be obtained at any time regardless of what happened to the original.
 
----
+______________________________________________________________________
 
 ## Revival Configuration
 
 ### Enabling/Disabling Features
 
 **Master HRM Toggle:**
+
 ```yaml
 hrm:
   enabled: true  # Master on/off for all HRM features
-```
-
+```text
 **Individual Toggles:**
+
 ```yaml
 hrm:
   drop-heads: true              # Drop heads on death
@@ -481,16 +473,15 @@ hrm:
   head-place-as-block: true     # Place head as permanent block (recommended)
   head-no-despawn: true         # (item-entity mode) head item never despawns
   head-fireproof: true          # (item-entity mode) head item survives fire/lava
-```
-
+```text
 ### Lives on Revival
 
 ```yaml
 lives:
   on-revive: 1  # How many lives restored per revival
-```
-
+```text
 Options:
+
 - `0` = Revived with 0 lives (must use extra life item immediately)
 - `1` = Revived with 1 life (standard)
 - `2+` = More forgiving
@@ -500,17 +491,16 @@ Options:
 ```yaml
 lives:
   revive-cooldown-seconds: 30  # Post-revival death protection
-```
-
+```text
 After revival, player has this many seconds of protection where they cannot lose lives.
 
----
+______________________________________________________________________
 
 ## Revival Flow Examples
 
 ### Scenario 1: Using Ritual Structure
 
-```
+```text
 1. Player dies
    ↓
 2. Head drops at death location
@@ -524,11 +514,10 @@ After revival, player has this many seconds of protection where they cannot lose
 6. Plugin detects structure and revives player
    ↓
 7. Player appears on Main server with 1 life restored
-```
-
+```text
 ### Scenario 2: Using Revive Skull
 
-```
+```text
 1. Player dies
    ↓
 2. Head drops at death location
@@ -544,11 +533,10 @@ After revival, player has this many seconds of protection where they cannot lose
 7. Plugin revives player
    ↓
 8. Player appears on Main server
-```
-
+```text
 ### Scenario 3: Using Command
 
-```
+```text
 1. Player dies
    ↓
 2. Moderator/admin runs /revive PlayerName
@@ -558,9 +546,8 @@ After revival, player has this many seconds of protection where they cannot lose
 4. Player teleported to Main server
    ↓
 5. Lives restored to 1
-```
-
----
+```text
+______________________________________________________________________
 
 ## Tips & Tricks
 
@@ -588,13 +575,14 @@ After revival, player has this many seconds of protection where they cannot lose
 - Create a dedicated farm for extra life materials
 - 🤝 Distribute extra life items to team members
 
----
+______________________________________________________________________
 
 ## Troubleshooting Revival
 
 ### Structure Not Triggering
 
 **Check:**
+
 - [ ] Structure is exactly 3x3x3 (verify with blocks)
 - [ ] Head is placed on fence (top layer center)
 - [ ] Correct block types used (soul sand, wither roses, etc.)
@@ -606,6 +594,7 @@ After revival, player has this many seconds of protection where they cannot lose
 ### Revive Skull Not Opening Menu
 
 **Check:**
+
 - [ ] `hrm.revive-skull-recipe: true` in config
 - [ ] You have the right item (Nether Star with "Revive Skull" name)
 - [ ] Dead players exist in database
@@ -615,6 +604,7 @@ After revival, player has this many seconds of protection where they cannot lose
 ### Heads Not Dropping
 
 **Check:**
+
 - [ ] `hrm.drop-heads: true` in config
 - [ ] Player actually lost all lives (check with `/pstatus`)
 - [ ] Check ground at death location
@@ -624,6 +614,7 @@ After revival, player has this many seconds of protection where they cannot lose
 ### Extra Life Not Working
 
 **Check:**
+
 - [ ] `extra-life.enabled: true` in config
 - [ ] You're not already at maximum lives
 - [ ] You're not dead (can't use while dead)
@@ -631,7 +622,7 @@ After revival, player has this many seconds of protection where they cannot lose
 
 **Solution:** Check console for errors, verify recipe materials.
 
----
+______________________________________________________________________
 
 ## See Also
 
@@ -639,6 +630,7 @@ After revival, player has this many seconds of protection where they cannot lose
 - [Configuration Reference](configuration)
 - [FAQ](faq)
 
----
+______________________________________________________________________
 
 [← Configuration Reference](configuration) | [Back to Home](index) | [FAQ →](faq)
+````

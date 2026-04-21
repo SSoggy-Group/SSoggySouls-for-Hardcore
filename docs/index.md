@@ -4,7 +4,7 @@ title: SSoggySouls Documentation
 description: Hardcore lives system plugin for Minecraft 1.21.X
 ---
 
-# SSoggySouls Documentation
+## SSoggySouls Documentation
 
 Hardcore lives system plugin for Minecraft 1.21.X with Limbo exile, revival mechanics, and cross-server persistence.
 
@@ -45,11 +45,11 @@ SSoggySouls is designed for Velocity proxy networks and provides a high-stakes h
 ## Quick Start Summary
 
 1. Install the plugin on both backend servers.
-2. Configure identical DB credentials on both servers.
-3. Set `is-limbo-server` correctly on each server.
-4. Ensure names match your `velocity.toml` server names.
-5. Set Limbo spawn with `/setlimbospawn`.
-6. Restart and verify with `/pstatus` and a revive test.
+1. Configure identical DB credentials on both servers.
+1. Set `is-limbo-server` correctly on each server.
+1. Ensure names match your `velocity.toml` server names.
+1. Set Limbo spawn with `/setlimbospawn`.
+1. Restart and verify with `/pstatus` and a revive test.
 
 ## Support
 

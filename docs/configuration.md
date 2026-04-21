@@ -10,16 +10,16 @@ Complete guide to configuring SSoggySouls to match your server's needs.
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Server Role](#server-role)
-3. [Security Settings](#security-settings)
-4. [Database Configuration](#database-configuration)
-5. [Lives System](#lives-system)
-6. [Death Modes](#death-modes)
-7. [Limbo Settings](#limbo-settings)
-8. [HRM Features](#hrm-features)
-9. [Extra Life Item](#extra-life-item)
-10. [Messages & Colors](#messages--colors)
-11. [Advanced Options](#advanced-options)
+1. [Server Role](#server-role)
+1. [Security Settings](#security-settings)
+1. [Database Configuration](#database-configuration)
+1. [Lives System](#lives-system)
+1. [Death Modes](#death-modes)
+1. [Limbo Settings](#limbo-settings)
+1. [HRM Features](#hrm-features)
+1. [Extra Life Item](#extra-life-item)
+1. [Messages & Colors](#messages--colors)
+1. [Advanced Options](#advanced-options)
 
 ## Overview
 
@@ -28,11 +28,11 @@ SSoggySouls uses a `config.yml` file that is automatically generated when you fi
 **Location:** `plugins/SSoggySouls/config.yml` on both servers
 
 > **Important:** After editing the config file, either:
-> 
+>
 > - Restart both servers, or
 > - Run `/psadmin reload` to reload without restart (some changes may require restart)
 
----
+______________________________________________________________________
 
 ## Server Role
 
@@ -40,15 +40,14 @@ These settings identify what role each server plays in your network.
 
 ### Main Server Configuration
 
-```yaml
-# CRITICAL: Set this correctly!
+````yaml
+## CRITICAL: Set this correctly!
 is-limbo-server: false    # This is the Main server (survival)
 
 # Must match your Velocity/proxy configuration
 main-server-name: "main"     # Name of Main server in proxy config
 limbo-server-name: "limbo"   # Name of Limbo server in proxy config
-```
-
+```text
 ### Limbo Server Configuration
 
 ```yaml
@@ -58,11 +57,10 @@ is-limbo-server: true     # This is the Limbo server (purgatory)
 # Must match your Velocity/proxy configuration
 main-server-name: "main"     # Name of Main server in proxy config
 limbo-server-name: "limbo"   # Name of Limbo server in proxy config
-```
-
+```text
 > **Tip:** The server names must exactly match the server names in your `velocity.toml` file.
 
----
+______________________________________________________________________
 
 ## Security Settings
 
@@ -70,8 +68,7 @@ limbo-server-name: "limbo"   # Name of Limbo server in proxy config
 
 ```yaml
 limbo-op-security-check: true  # Prevent Limbo-only OPs from using admin commands
-```
-
+```text
 **Important Security Feature:** This setting prevents a critical security vulnerability where users with OP status **only on the Limbo server** could execute privileged commands like `/revive` and `/psadmin`.
 
 #### Why This Matters
@@ -89,10 +86,10 @@ If you give someone OP on the Limbo server (for example, to manage the Limbo wor
 When enabled (recommended), this security check will:
 
 1. **Block** all OP users on the Limbo server from executing admin/revive commands
-2. **Allow** OP users with the bypass permission `ssoggysouls.bypass-limbo-op-security`
-3. **Allow** non-OP users with explicit permission nodes
-4. **Allow** commands on the Main server regardless of how permissions are granted
-5. **Allow** console to always execute commands
+1. **Allow** OP users with the bypass permission `ssoggysouls.bypass-limbo-op-security`
+1. **Allow** non-OP users with explicit permission nodes
+1. **Allow** commands on the Main server regardless of how permissions are granted
+1. **Allow** console to always execute commands
 
 #### Granting Proper Permissions
 
@@ -100,14 +97,12 @@ To allow a user to execute admin commands on the Limbo server, you have three op
 
 ### Option 1: Use the Whitelist (Easiest - No permissions plugin required)
 
-
 ```yaml
 # In config.yml
 limbo-trusted-admins:
   - "069a79f4-44e9-4726-a5be-fca90e38aaf5"  # UUID format (recommended)
   - "YourUsername"                          # Username format also works
-```
-
+```text
 - UUIDs are recommended (won't break if player changes name)
 - Usernames are easier to manage
 - No permissions plugin required
@@ -115,16 +110,13 @@ limbo-trusted-admins:
 
 ### Option 2: Grant bypass permission (requires LuckPerms or similar)
 
-
-```
+```text
 # Allows OP users to execute commands on Limbo server
 /lp user <player> permission set ssoggysouls.bypass-limbo-op-security true
-```
-
+```text
 ### Option 3: Grant explicit permissions without OP
 
-
-```
+```text
 # Remove OP status first, then grant explicit permissions
 /deop <player>
 
@@ -133,16 +125,14 @@ limbo-trusted-admins:
 
 # For all admin commands:
 /lp user <player> permission set ssoggysouls.admin true
-```
-
+```text
 > **Tip:** Use Option 1 (whitelist) if you don't have a permissions plugin installed. It's the simplest and works out-of-the-box.
 
 #### Disabling the Security Check
 
 ```yaml
 limbo-op-security-check: false  # NOT RECOMMENDED
-```
-
+```text
 Set to `false` only if:
 
 - You trust all OPs on your Limbo server completely
@@ -151,7 +141,7 @@ Set to `false` only if:
 
 > **Security Recommendation:** Keep this enabled (`true`) in production environments.
 
----
+______________________________________________________________________
 
 ## Database Configuration
 
@@ -167,8 +157,7 @@ database:
   password: "changeme"           # MySQL password - CHANGE THIS!
   pool-size: 5                   # Connection pool size
   table-name: "hardcore_players" # Table name (default is fine)
-```
-
+```text
 ### Pool Size Recommendations
 
 - **Small servers (1-20 players):** 5
@@ -186,9 +175,8 @@ database:
   name: "s123_ssoggysouls"
   username: "u123_admin"
   password: "your_secure_password"
-```
-
----
+```text
+______________________________________________________________________
 
 ## Lives System
 
@@ -201,15 +189,14 @@ lives:
   on-revive: 1                    # Lives restored when revived
   grace-period: "24h"             # New player protection period
   revive-cooldown-seconds: 30     # Post-revival death protection
-```
-
+```text
 ### Default Lives
 
 ```yaml
 default: 2
-```
-
+```text
 Starting number of lives for newly joined players. Common values:
+
 - `1` - Hardcore (one life)
 - `2` - Standard (two lives)
 - `3` - Casual (three lives)
@@ -218,8 +205,7 @@ Starting number of lives for newly joined players. Common values:
 
 ```yaml
 max-lives: 5
-```
-
+```text
 The highest number of lives a player can have. They cannot use extra life items or commands to exceed this cap.
 
 ### Lives on Revival
@@ -227,9 +213,9 @@ The highest number of lives a player can have. They cannot use extra life items 
 ```yaml
 
 on-revive: 1
-```
-
+```text
 How many lives a dead player gets back when revived. Options:
+
 - `1` - Revived players get 1 life (requires teamwork to get more)
 - `2` - Revived players get 2 lives (more forgiving)
 - Set to any value that makes sense for your server
@@ -238,11 +224,11 @@ How many lives a dead player gets back when revived. Options:
 
 ```yaml
 grace-period: "24h"
-```
-
+```text
 New player protection that prevents losing lives during the grace period. The timer counts **only when the player is online** (pauses when offline).
 
 **Format Options:**
+
 - `"24h"` = 24 hours
 - `"2h30m"` = 2 hours 30 minutes
 - `"90m"` = 90 minutes
@@ -254,11 +240,10 @@ New player protection that prevents losing lives during the grace period. The ti
 
 ```yaml
 revive-cooldown-seconds: 30
-```
-
+```text
 After being revived, a player is protected for this duration and cannot lose lives from deaths. Gives them time to get situated.
 
----
+______________________________________________________________________
 
 ## Death Modes
 
@@ -271,16 +256,15 @@ main:
   spectator-on-death: false       # Put in spectator before Limbo
   detect-hrm-revive: true         # Auto-detect ritual structure revivals
   send-to-limbo-delay-ticks: 20   # Delay before Limbo transfer (1 sec)
-```
-
+```text
 ### Hybrid Mode (Default - Recommended)
 
 ```yaml
 death-mode: "hybrid"
 hybrid-timeout-seconds: 300
-```
-
+```text
 **Behavior:**
+
 - Player loses a life and enters spectator mode on Main
 - Team has 5 minutes (configurable) to revive them
 - If not revived within timeout, player transfers to Limbo
@@ -289,6 +273,7 @@ hybrid-timeout-seconds: 300
 **Best For:** Servers wanting tension and urgency - gives teams a limited rescue window.
 
 **Timeout Options:**
+
 - `300` = 5 minutes (default)
 - `180` = 3 minutes (faster)
 - `600` = 10 minutes (more generous)
@@ -299,9 +284,9 @@ hybrid-timeout-seconds: 300
 
 death-mode: "spectator"
 spectator-on-death: true
-```
-
+```text
 **Behavior:**
+
 - Player loses a life and enters spectator mode
 - Player stays on Main server indefinitely
 - Never auto-transfers to Limbo
@@ -313,9 +298,9 @@ spectator-on-death: true
 
 ```yaml
 death-mode: "limbo"
-```
-
+```text
 **Behavior:**
+
 - Player loses a life
 - Upon reaching 0 lives, player immediately transfers to Limbo
 - No spectator window
@@ -326,20 +311,17 @@ death-mode: "limbo"
 
 ```yaml
 detect-hrm-revive: true
-```
-
+```text
 When enabled, the plugin automatically detects when a ritual structure is completed and performs the revival. Leave this enabled unless troubleshooting.
 
 ### Limbo Transfer Delay
 
-
 ```yaml
 send-to-limbo-delay-ticks: 20
-```
-
+```text
 Delay in ticks before sending a player to Limbo (20 ticks = 1 second). Gives time for other events to process. Usually no need to change.
 
----
+______________________________________________________________________
 
 ## Limbo Settings
 
@@ -355,14 +337,12 @@ limbo:
     z: 0.5
     yaw: 0.0
     pitch: 0.0
-```
-
+```text
 ### Check Interval
 
 ```yaml
 check-interval-seconds: 3
-```
-
+```text
 How frequently the Limbo server checks the database for revival requests. Lower = more responsive, higher = less database load.
 
 - `1` - Very responsive (high database load)
@@ -379,15 +359,14 @@ spawn:
   z: 0.5            # Z coordinate
   yaw: 0.0          # Horizontal rotation (0 = north)
   pitch: 0.0        # Vertical rotation (0 = level, 90 = down)
-```
-
+```text
 Set the spawn location where dead players appear on Limbo. **Use the `/setlimbospawn` command** to set this automatically:
 
 1. Stand at desired spawn location on Limbo
-2. Run `/setlimbospawn`
-3. Coordinates are automatically saved
+1. Run `/setlimbospawn`
+1. Coordinates are automatically saved
 
----
+______________________________________________________________________
 
 ## HRM Features
 
@@ -402,61 +381,55 @@ hrm:
   leave-structure-base: true      # Don't destroy structure after revive
   head-wearing-effects: true      # Speed/night vision when wearing heads
   revive-skull-recipe: true       # Enable Revive Skull crafting
-```
-
+```text
 ### Enable/Disable HRM
 
 ```yaml
 enabled: true
-```
-
+```text
 Master toggle for all HRM features. Set to `false` to disable everything related to HRM.
 
 ### Player Head Drops
 
 ```yaml
 drop-heads: true
-```
-
+```text
 When a player loses all lives, their head drops at the death location. These heads are used in ritual structures for revival.
 
 ### Death Location Messages
 
 ```yaml
 death-location-message: true
-```
-
+```text
 When a player dies, send them a message with the death coordinates to help their teammates locate their dropped head.
 
 **Example Message:**
-```
-Death coordinates: X: 1234 Y: 64 Z: -5678
-```
 
+```text
+Death coordinates: X: 1234 Y: 64 Z: -5678
+```text
 ### Structure-Based Revival
 
 ```yaml
 structure-revive: true
-```
-
+```text
 Enable the 3x3x3 ritual structure revival system. When disabled, ritual structures won't trigger revivals.
 
 ### Leave Structure Base
 
 ```yaml
 leave-structure-base: true
-```
-
-If true, the base structure remains after revival (only the player head is removed).  
+```text
+If true, the base structure remains after revival (only the player head is removed).\
 If false, the entire structure is destroyed upon successful revival.
 
 ### Head Wearing Effects
 
 ```yaml
 head-wearing-effects: true
-```
-
+```text
 When a player wears a dead player's head, they receive:
+
 - **Speed II** effect
 - **Night Vision** effect
 
@@ -466,18 +439,17 @@ Tactical advantage while carrying heads to revival structures.
 
 ```yaml
 revive-skull-recipe: true
-```
-
+```text
 Enable crafting of Revive Skull items. The recipe is:
 
-| | | |
-|---|---|---|
+|     |     |     |
+| --- | --- | --- |
 
 | Obsidian | Ghast Tear | Obsidian |
 | Totem of Undying | Any Skull/Head | Totem of Undying |
 | Obsidian | Ghast Tear | Obsidian |
 
----
+______________________________________________________________________
 
 ## Extra Life Item
 
@@ -497,22 +469,19 @@ extra-life:
       N: "NETHER_STAR"
       D: "DIAMOND_BLOCK"
       I: "NETHERITE_INGOT"
-```
-
+```text
 ### Enable/Disable
 
 ```yaml
 enabled: true
-```
-
+```text
 Set to `false` to disable extra life crafting entirely.
 
 ### Item Icon
 
 ```yaml
 item-material: "NETHER_STAR"
-```
-
+```text
 The item used as the icon in menus and crafting results. Any valid Minecraft material works (common choices: `NETHER_STAR`, `GOLDEN_APPLE`, `DIAMOND`, `EMERALD`).
 
 ### Custom Recipe
@@ -520,7 +489,7 @@ The item used as the icon in menus and crafting results. Any valid Minecraft mat
 To create a custom recipe:
 
 1. Define the layout in `row1`, `row2`, `row3` using letters
-2. Map each letter to a material in `ingredients`
+1. Map each letter to a material in `ingredients`
 
 **Example: Simple Diamond Recipe**
 
@@ -532,13 +501,13 @@ recipe:
   ingredients:
     D: "DIAMOND_BLOCK"
     E: "EMERALD_BLOCK"
-```
-
+```text
 Result: 9 Diamond Blocks with 1 Emerald Block in the center.
 
 **Valid Material Names:**
 
 Any Minecraft material name in SCREAMING_SNAKE_CASE:
+
 - Blocks: `DIAMOND_BLOCK`, `GOLD_BLOCK`, `EMERALD_BLOCK`, `OBSIDIAN`, etc.
 - Items: `NETHER_STAR`, `GOLDEN_APPLE`, `DRAGON_EGG`, etc.
 
@@ -546,7 +515,7 @@ Any Minecraft material name in SCREAMING_SNAKE_CASE:
 
 Check [Minecraft Material Constants](https://papermc.io/javadocs/paper/latest/) or look at `org.bukkit.Material` enum.
 
----
+______________________________________________________________________
 
 ## Messages & Colors
 
@@ -560,8 +529,7 @@ messages:
   death-last-life: "&c&l⚠ FINAL WARNING! &cYou are on your last life. Be careful!"
   revive-success: "&a&l✦ REVIVED! &aReturning to the world of the living..."
   # ... many more messages
-```
-
+```text
 ### Color Codes
 
 - `&0` = Black
@@ -600,9 +568,8 @@ messages:
   death-last-life: "&c&l💀 CRITICAL! &cThis is your LAST life!"
   revive-success: "&a&l✓ &aYou have been revived! Stay alive this time!"
   grace-remaining: "&eYou are protected for &a%time_remaining%"
-```
-
----
+```text
+______________________________________________________________________
 
 ## Advanced Options
 
@@ -610,22 +577,19 @@ messages:
 check-for-updates: true          # Check for new versions on Modrinth
 hardcore-hearts: true            # Display hardcore hearts cosmetically
 debug: false                     # Enable debug logging (dev only)
-```
-
+```text
 ### Update Checking
 
 ```yaml
 check-for-updates: true
-```
-
+```text
 When enabled, the plugin checks Modrinth on startup for newer versions and displays update notices in console.
 
 ### Hardcore Hearts
 
 ```yaml
 hardcore-hearts: true
-```
-
+```text
 Display Minecraft's hardcore-style hearts (half-hearts instead of full hearts). This is **cosmetic only** and doesn't affect gameplay.
 
 > Requires client mod support or resource pack to display properly
@@ -634,11 +598,10 @@ Display Minecraft's hardcore-style hearts (half-hearts instead of full hearts). 
 
 ```yaml
 debug: false
-```
-
+```text
 Enable detailed debug logging to console. Only useful for troubleshooting. Turn on if you're having issues and need more information.
 
----
+______________________________________________________________________
 
 ## Configuration Examples
 
@@ -652,8 +615,7 @@ lives:
 
 main:
   death-mode: "limbo"  # Immediate exile
-```
-
+```text
 ### Casual Server (Three Lives)
 
 ```yaml
@@ -666,8 +628,7 @@ lives:
 main:
   death-mode: "hybrid"
   hybrid-timeout-seconds: 600  # 10 minute timeout
-```
-
+```text
 ### Competitive Server (Spectator Focus)
 
 ```yaml
@@ -678,9 +639,8 @@ lives:
 
 main:
   death-mode: "spectator"  # Dead players watch forever
-```
-
----
+```text
+______________________________________________________________________
 
 ## Reloading Configuration
 
@@ -688,14 +648,14 @@ To reload configuration without restarting:
 
 ```bash
 /psadmin reload
-```
-
+```text
 **Note:** Some changes take effect immediately, others may require:
+
 - Player rejoin
 - Server restart
 - Plugin reload
 
----
+______________________________________________________________________
 
 ## Need Help?
 
@@ -704,6 +664,7 @@ To reload configuration without restarting:
 - 📋 [Commands Reference](commands)
 - [FAQ](faq)
 
----
+______________________________________________________________________
 
 [← Commands Reference](commands) | [Back to Home](index) | [Revival System →](revival-system)
+````
