@@ -24,7 +24,7 @@ A hardcore lives system plugin. When you die enough times, you get exiled to a L
 
 ## Built-in Revival System
 
-> **Credit:** The revival mechanics—including player head drops, ritual structures, and the Revive Skull—are adapted from the [Hardcore Revive Mod by JakeCCz](https://modrinth.com/plugin/hardcore-revive-mod).
+> **Credit:** The revival mechanics—including player head drops, ritual structures, and the Revive Skull are forked from the [Hardcore Revive Mod by JakeCCz](https://modrinth.com/plugin/hardcore-revive-mod).
 
 **Player Head Drops:** When you lose all your lives, your head drops where you died and your coordinates are posted in chat.
 
@@ -66,7 +66,7 @@ Wearing a dead player's head grants Speed II and Night Vision to help you delive
 4. **If using two servers**, configure the main and limbo roles (`is-limbo-server`).
 5. **Restart and test!**
 
-For the full, detailed step-by-step setup (including proxy configuration and Limbo spawn setting), refer to our **[Quick Start Guide on the Wiki!](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/quick-start)**
+For the full, detailed step-by-step setup (including proxy configuration and Limbo spawn setting), refer to our **[Quick Start Guide on the Wiki!](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/quick-start) This is also where you can find other detailed guides about installing, configurating, troubleshooting, and more.**
 
 ---
 
