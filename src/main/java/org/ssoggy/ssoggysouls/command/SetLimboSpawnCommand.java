@@ -1,7 +1,5 @@
 package org.ssoggy.ssoggysouls.command;
 
-import java.util.logging.Level;
-
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -12,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.CommandUtil;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.AdminLogger;
 
 public class SetLimboSpawnCommand implements CommandExecutor {
 
@@ -49,12 +48,9 @@ public class SetLimboSpawnCommand implements CommandExecutor {
         World world = loc.getWorld();
         String worldName = world != null ? world.getName() : "unknown";
 
-        plugin.getLogger().log(Level.INFO, "{0} set the limbo spawn to {1} in {2}",
-                new Object[]{
-                        player.getName(),
-                        String.format("%.1f, %.1f, %.1f", loc.getX(), loc.getY(), loc.getZ()),
-                        worldName
-                });
+        org.bukkit.Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            AdminLogger.log(plugin, player.getName(), "set the limbo spawn to " + String.format("%.1f, %.1f, %.1f", loc.getX(), loc.getY(), loc.getZ()) + " in " + worldName);
+        });
 
         return true;
     }

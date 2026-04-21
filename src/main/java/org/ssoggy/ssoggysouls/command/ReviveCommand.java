@@ -2,7 +2,6 @@ package org.ssoggy.ssoggysouls.command;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -18,6 +17,7 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.PermissionUtil;
 import org.ssoggy.ssoggysouls.util.PlayerRevivalUtil;
 import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
+import org.ssoggy.ssoggysouls.util.AdminLogger;
 
 public class ReviveCommand implements CommandExecutor, TabCompleter {
 
@@ -69,8 +69,7 @@ public class ReviveCommand implements CommandExecutor, TabCompleter {
             boolean success = db.revivePlayer(data.getUuid(), livesToRestore);
 
             if (success) {
-                plugin.getLogger().log(Level.INFO, "{0} revived {1} (lives: {2})",
-                        new Object[]{sender.getName(), data.getUsername(), livesToRestore});
+                AdminLogger.log(plugin, sender.getName(), "revived " + data.getUsername() + " (lives: " + livesToRestore + ")");
                 sender.sendMessage(MessageUtil.get("revive-admin-success",
                         KEY_PLAYER, data.getUsername(),
                         "lives", livesToRestore));

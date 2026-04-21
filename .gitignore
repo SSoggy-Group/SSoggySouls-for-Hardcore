@@ -3,3 +3,7 @@ target/
 *.iml
 *.zip
 .vscode/
+env/
+__pycache__/
+.DS_Store
+.markdownlint.json

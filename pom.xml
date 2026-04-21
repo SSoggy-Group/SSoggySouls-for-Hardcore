@@ -7,7 +7,7 @@
 
     <groupId>org.ssoggy</groupId>
     <artifactId>SSoggySouls</artifactId>
-    <version>2.2.1</version>
+    <version>2.4.2</version>
     <packaging>jar</packaging>
 
     <name>SSoggySouls</name>
@@ -50,6 +50,14 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- SQLite JDBC -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.45.3.0</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- SLF4J (required by HikariCP, provided by server) -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -88,6 +96,20 @@
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>shaded</shadedClassifierName>
                             <minimizeJar>true</minimizeJar>
+                            <filters>
+                                <filter>
+                                    <artifact>org.xerial:sqlite-jdbc</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>com.mysql:mysql-connector-j</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                            </filters>
                             <relocations>
                                 <!-- Relocate to avoid conflicts with other plugins -->
                                 <relocation>

@@ -9,14 +9,14 @@ import org.bukkit.entity.Player;
 public final class PlayerRevivalUtil {
 
     private PlayerRevivalUtil() {
-        // Private constructor to prevent instantiation
     }
 
     /**
-     * restores an online spectator to survival and optionally transfers them from limbo.
+     * restores an online spectator to survival and optionally transfers them from
+     * limbo.
      *
      * @param plugin the SSoggySouls plugin instance
-     * @param data the player data
+     * @param data   the player data
      */
     public static void restoreOnlineSpectator(SSoggySouls plugin, PlayerData data) {
         Player target = Bukkit.getPlayer(data.getUuid());

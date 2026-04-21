@@ -12,7 +12,7 @@ import org.bukkit.plugin.Plugin;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-// i know damn well the ascii art is crack and overlaps but i really dont care its the thought that counts am i right
+// i know the ascii art is crack and overlaps but i really dont care its the thought that counts am i right
 public class UpdateChecker {
     private static final String GITHUB_API = "https://api.github.com/repos/SSoggy-Group/SSoggySouls-for-Hardcore/releases/latest";
     private static final String DOWNLOAD_PAGE = "https://modrinth.com/project/Pb03qu6T";
@@ -39,7 +39,8 @@ public class UpdateChecker {
 
                 int responseCode = connection.getResponseCode();
                 if (responseCode != 200) {
-                    plugin.getLogger().log(Level.WARNING, "Failed to check for updates. HTTP response code: {0}", responseCode);
+                    plugin.getLogger().log(Level.WARNING, "Failed to check for updates. HTTP response code: {0}",
+                            responseCode);
                     return;
                 }
 

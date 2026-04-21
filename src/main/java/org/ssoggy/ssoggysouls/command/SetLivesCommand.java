@@ -3,7 +3,6 @@ package org.ssoggy.ssoggysouls.command;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -18,6 +17,7 @@ import org.ssoggy.ssoggysouls.util.CommandUtil;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.PermissionUtil;
 import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
+import org.ssoggy.ssoggysouls.util.AdminLogger;
 
 public class SetLivesCommand implements CommandExecutor, TabCompleter {
 
@@ -78,8 +78,7 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
 
             db.setLives(data.getUuid(), lives);
 
-            plugin.getLogger().log(Level.INFO, "{0} set {1}''s lives to {2}",
-                    new Object[]{sender.getName(), data.getUsername(), lives});
+            AdminLogger.log(plugin, sender.getName(), "set " + data.getUsername() + "'s lives to " + lives);
             sender.sendMessage(MessageUtil.get("lives-set",
                     "player", data.getUsername(),
                     "lives", lives));

@@ -42,6 +42,12 @@ commands:
     permission: ssoggysouls.admin
     permission-message: "&cYou don't have permission to use this command."
 
+  adminlog:
+    description: View the admin action log in-game
+    usage: /adminlog [lines]
+    permission: ssoggysouls.adminlog
+    permission-message: "&cYou don't have permission to view the admin log."
+
   limbo:
     description: Visit the Limbo world as a living player
     usage: /limbo
@@ -63,6 +69,10 @@ permissions:
 
   ssoggysouls.admin:
     description: Full admin access to SSoggySouls
+    default: op
+
+  ssoggysouls.adminlog:
+    description: View the admin log
     default: op
 
   ssoggysouls.status:
