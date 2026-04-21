@@ -7,6 +7,8 @@ title: Revival System Guide
 
 Complete guide to the multiple revival methods available in SSoggySouls, including ritual structures, items, and commands.
 
+> **Credit:** The Hardcore Revive Mode (HRM) mechanics—including player head drops, ritual structures, and revive items—are heavily inspired by and adapted from the excellent [Hardcore Revive Mod by JakeCCz](https://modrinth.com/plugin/hardcore-revive-mod).
+
 ## Table of Contents
 
 1. [Revival Methods Overview](#revival-methods-overview)

@@ -4,371 +4,64 @@
 
 **Version 1.3.6** | Minecraft 1.21.X | Spigot/Paper/Purpur
 
-A hardcore lives system plugin for Velocity proxy networks. When you die enough times, you get exiled to a Limbo server until your teammates revive you.
+A hardcore **lives system** plugin for Minecraft 1.21.X servers.
+When you lose all your lives, you get exiled to a dedicated **Limbo** server (or placed into spectator mode) until your teammates manage to revive you through dark rituals!
 
-> **[Read the Full Documentation →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Complete installation guides, configuration reference, troubleshooting, and more!
-
----
-
-## Features
-
-- **Lives System** - start with 2 lives (configurable), max 5
-
-- **Three Death Modes** - instant Limbo, permanent spectator, or hybrid timeout
-
-- **Multiple Revival Methods** - ritual structures, Revive Skull, or commands
-
-- **Grace Period** - newbies get protected time (only counts online time)
-
-- **Extra Life Items** - craftable items for more lives (fully customizable)
-
-- **Cross-Server** - MySQL syncs Main and Limbo
-
-- **Auto Transfer** - dead go to Limbo, revived come back
-
-- **Limbo Visiting** - living players can visit dead teammates
+> **[📝 Read the Full Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)**
+> Complete installation guides, configuration reference, and troubleshooting!
 
 ---
 
-## How It Works
+## ✨ Features
 
-Two servers behind a **Velocity proxy** (might work on BungeeCord/Waterfall but not tested): **Main** (play) and **Limbo** (dead zone). Both talk to same MySQL database.
-
-**Flow:**
-
-1. Start with 2 lives (configurable)
-2. Die = -1 life
-3. Grace period protects newbies (only ticks online)
-4. At 0 lives = depends on death mode
-5. Revival methods: ritual structures, Revive Skull, or `/revive`
-6. Revived = auto-teleport back to Main with lives
-7. Living players can `/limbo` and `/leavelimbo`
+- ❤️ **Configurable Lives System:** Start with 2 lives (customizable, up to a max cap).
+- 👻 **Three configurable Death Modes:**
+  - `Hybrid`: Dead players spectate their team for a timeout window, then get transferred to Limbo.
+  - `Spectator`: Dead players stay on the server as spectators forever.
+  - `Limbo`: Instant exile for dead players. No spectating allowed.
+- 🛡️ **Grace Period:** Protects newbies with an online-only timer.
+- 🔗 **Cross-Server Integration:** Seamlessly banish players to a Limbo server using MySQL and Velocity.
+- 💻 **Single-Server Support:** Don't want a Limbo server? Use the built-in drop-in SQLite database instead!
+- 🕯️ **Extensive Revival System:** Teammates can rescue you through ritual structures or items.
 
 ---
 
-## Death Modes
+## 🕯️ Hardcore Revive Mechanics
 
-| Mode | What happens | Good for |
-|------|----------|----------|
-| **hybrid** (default) | Dead players chill in spectator on Main for 5 min. Team has that long or they get sent to Limbo. Log out = skip straight to Limbo. | Tension and urgency |
+> **Credit:** The revival mechanics (player head drops, ritual structures, and revive items) are adapted from the excellent [Hardcore Revive Mod by JakeCCz](https://modrinth.com/plugin/hardcore-revive-mod).
 
-| **spectator** | Dead players stay on Main as spectators forever until revived. | Dead people watching team 24/7 |
+When a player dies, their **head drops** at the location of their death (fireproof and persistent!). Their teammates can recover the head and use it to bring them back!
 
-| **limbo** | Dead = straight to Limbo. | Hardcore strict separation |
-
-All work with ritual structures, Revive Skull, and `/revive`.
-
----
-
-## Built-in Revival System
-
-*(ripped from [Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod))*
-
-### Player Head Drops
-
-When you're fully dead, your head drops where you died with coords in chat.
-
-### Revival Ritual
-
-Build a 3x3x3 beacon-ish thing:
-
-**Structure:**
-
-- **Bottom:** 4 Soul Sand corners, 4 Stairs at edges, 1 Ore in middle
-
-- **Middle:** 4 Wither Roses on Soul Sand, 1 Fence on ore
-
-- **Top:** Dead player's head on fence = revival
-
-Plugin auto-detects and revives them!
-
-### Craftable Items
-
-**Revive Skull** - right-click for a menu of dead players, get their head for rituals.
-
-**Recipe:**
-
-```text
-
-Obsidian | Ghast Tear | Obsidian
-Totem    | Any Skull  | Totem
-Obsidian | Ghast Tear | Obsidian
-
-```
-
-**Extra Life** - right-click for +1 life (max cap applies). Recipe is fully customizable!
-
-**Default:**
-
-```text
-
-Diamond Block  | Emerald Block | Diamond Block
-Netherite Ingot| Nether Star   | Netherite Ingot
-Gold Block     | Emerald Block | Gold Block
-
-```
-
-### Head Effects
-
-Wear a dead player's head = Speed II and Night Vision.
+- **Ritual Structures:** Build a mystical 3x3x3 beacon (using blocks like Soul Sand, Wither Roses, and Ore) and place the dead player's head on top to trigger an instant revival!
+- **Revive Skull:** Craftable item that provides a GUI menu to easily select dead players to receive their head for rituals.
+- **Extra Life:** Craftable item that grants an extra life up to the configured max limit.
+- **Wield the Head:** Wearing a fallen teammate's head grants Speed II and Night Vision to help you deliver it safely.
 
 ---
 
-## Requirements
+## 🚀 Quick Setup
 
+Check out our [Quick Start Guide](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/quick-start) on the wiki to get your database configured and Limbo set up in 5 minutes!
+
+### Minimum Requirements
 - **Minecraft:** 1.21.X (Spigot, Paper, or Purpur)
-
-- **Proxy:** Velocity (BungeeCord/Waterfall untested)
-
-- **Database:** MySQL 5.7+ or MariaDB 10.2+
-
 - **Java:** 21+
+- **Database:** SQLite (built-in, for single servers) OR MySQL 5.7+ / MariaDB 10.2+ (for 2-server setups)
 
-- **Servers:** Two backend (Main + Limbo)
+### Optional multi-server requirements:
+- **Proxy:** Velocity
+- **Servers:** Two backend servers (Main + Limbo)
 
-> **Important:** Do NOT enable `hardcore=true` in `server.properties`. Keep it `false` - the plugin handles that.
-
----
-
-## Installation
-
-### Quick Start (8 Steps)
-
-1. **Download** `SSoggySouls-1.3.6.jar` from [Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases)
-
-2. **Install** the JAR in `plugins/` folder of **both** servers (Main and Limbo)
-
-3. **Generate config** - Start both servers to create `config.yml`, then stop them
-
-4. **Configure database** - Edit `config.yml` on **both servers** with **identical** credentials:
-
-   ```yaml
-   database:
-     host: "localhost"
-     port: 3306
-     name: "ssoggysouls"
-     username: "root"
-     password: "your_password"
-   ```
-
-5. **Set server roles:**
-   - Main server: `is-limbo-server: false`
-
-   - Limbo server: `is-limbo-server: true`
-
-   - Both: Set `main-server-name` and `limbo-server-name` to match your Velocity config
-
-6. **Set Limbo spawn** - Join Limbo server, stand at spawn point, run `/setlimbospawn`
-
-7. **Configure remaining options** - The `config.yml` has detailed comments explaining each setting. Review and customize:
-
-   - Lives system (default lives, max cap, grace period)
-
-   - Death mode (hybrid/spectator/limbo)
-
-   - HRM features (revival structures, heads, recipes)
-
-   - Messages and colors
-
-   See the **Configuration** section below for key settings. If you need help, reach out via [GitHub Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues).
-
-8. **Restart & test** - Start both servers and test the full death → Limbo → revival flow!
-
-### Proxy Configuration
-
-**For Velocity:** Set `player-info-forwarding-mode = "modern"` in `velocity.toml`
-
-**For BungeeCord/Waterfall:** Enable IP forwarding in `config.yml` and set `bungeecord: true` in `spigot.yml`
-
-> **Note:** Install SSoggySouls ONLY on backend servers, NOT on the proxy!
+> **Important:** Do NOT enable `hardcore=true` in `server.properties`. Keep it `false` - the plugin natively handles these interactions.
 
 ---
 
-## Config
+## 💬 Commands & Permissions
 
-Check `config.yml` for everything. Key stuff:
+SSoggySouls packs standard commands for your users (`/pstatus` to check their lives, `/limbo` to visit exiled teammates) and a suite of admin tools (`/psadmin lives`, `/psadmin revive`, `/psadmin grace`) to help you manage the playing field.
 
-```yaml
-
-# server role (important!)
-
-is-limbo-server: false    # false on Main, true on Limbo
-
-# lives
-
-lives:
-  default: 2              # starting lives
-
-  max-lives: 5            # cap
-
-  on-revive: 1            # lives back on revival
-
-  grace-period: "24h"     # newbie protection
-
-  revive-cooldown-seconds: 30
-
-# death mode
-
-main:
-  death-mode: "hybrid"    # hybrid | spectator | limbo
-
-  hybrid-timeout-seconds: 300
-
-# HRM features
-
-hrm:
-  enabled: true
-  drop-heads: true
-  structure-revive: true
-  head-wearing-effects: true
-  revive-skull-recipe: true
-
-# Extra Life recipe (fully customizable!)
-
-extra-life:
-  enabled: true
-  recipe:
-    row1: "DED"    # D=Diamond, E=Emerald
-
-    row2: "INI"    # I=Netherite, N=Nether Star
-
-    row3: "GEG"    # G=Gold
-
-    ingredients:
-      G: "GOLD_BLOCK"
-      E: "EMERALD_BLOCK"
-      N: "NETHER_STAR"
-      D: "DIAMOND_BLOCK"
-      I: "NETHERITE_INGOT"
-
-```
-
-All messages are customizable with Minecraft color codes!
+For a full list, check out our [Commands Reference](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/commands) on the wiki.
 
 ---
 
-## Commands
-
-### Player Commands
-
-| Command | Description | Permission |
-|---------|-------------|------------|
-| `/pstatus [player]` | Check lives and status | `ssoggysouls.status` |
-| `/revive <player>` | Revive a dead player | `ssoggysouls.revive` |
-| `/limbo` | Visit Limbo server | `ssoggysouls.visit` |
-| `/leavelimbo` | Return from Limbo | `ssoggysouls.visit` |
-
-### Admin Commands
-
-| Command | Description |
-|---------|-------------|
-| `/psadmin lives <player> <amount>` | Set player's lives |
-| `/psadmin revive <player>` | Revive a player |
-| `/psadmin kill <player>` | Force-kill a player |
-| `/psadmin grace <player> <hours>` | Set grace period |
-| `/psadmin reset <player>` | Reset player data |
-| `/psadmin info <player>` | View player details |
-| `/psadmin reload` | Reload config |
-| `/setlimbospawn` | Set Limbo spawn point |
-
-**Aliases:** `/psadmin` = `/psa`, `/leavelimbo` = `/hub`, `/limbo` = `/visitlimbo`
-
----
-
-## Permissions
-
-| Permission | Description | Default |
-|------------|-------------|---------|
-| `ssoggysouls.admin` | Full admin access | op |
-| `ssoggysouls.revive` | Can revive dead players | op |
-| `ssoggysouls.status` | Can check player status | true |
-| `ssoggysouls.visit` | Can visit Limbo as living player | true |
-| `ssoggysouls.bypass` | Bypass all death mechanics | false |
-| `ssoggysouls.bypass-limbo-op-security` | Allow OPs to use admin commands on Limbo | false |
-
-### Limbo OP Security
-
-**Important:** OP users on the Limbo server are blocked from using `/revive` and `/psadmin` commands by default to prevent abuse.
-
-**To allow an OP on Limbo (choose one):**
-
-1. **Whitelist** (easiest - no permissions plugin needed):
-
-   ```yaml
-   limbo-trusted-admins:
-     - "your-uuid-here"  # or username
-
-   ```
-
-2. **Permission**: `/lp user <player> permission set ssoggysouls.bypass-limbo-op-security true`
-3. **Disable check**: `limbo-op-security-check: false` (not recommended)
-
----
-
-## Troubleshooting
-
-**Players not transferring to Limbo?**
-
-- Check `is-limbo-server` is set correctly on both servers
-
-- Verify both servers use identical database credentials
-
-- Confirm server names match proxy config
-
-**Revivals not working?**
-
-- Ensure `hrm.enabled: true` and `hrm.structure-revive: true`
-
-- Verify revival structure is built correctly
-
-- Check `detect-hrm-revive: true` in Main config
-
-**Version mismatch warnings?**
-
-- Both servers MUST run the same SSoggySouls version
-
-- Update both simultaneously
-
-**Need more help?**
-
-- [Full Documentation Wiki](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)
-
-- [Troubleshooting Guide](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/troubleshooting.html)
-
-- [FAQ](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/faq.html)
-
-- [Open an issue](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues) with your version, Minecraft version, proxy type, and console errors
-
----
-
-## Update Checking
-
-SSoggySouls includes automatic update checking via Modrinth:
-
-- Checks for new versions on startup
-
-- Displays notifications in console
-
-- Can be disabled: `check-for-updates: false`
-
-- Manual download required
-
----
-
-## License
-
-**GPL-3.0** - See [LICENSE](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/blob/main/LICENSE)
-
----
-
-## Credits
-
-- Revival mechanics inspired by [Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod)
-
-- Author: SSoggyTacoMan
-
-- GitHub: [SSoggy-Group/SSoggySouls-for-Hardcore](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
-
----
-
-**Enjoying SSoggySouls?** Heart it on Modrinth and star the [GitHub repo](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)!
+**Enjoying SSoggySouls?** Heart it on Modrinth and star our [GitHub repo](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)!
