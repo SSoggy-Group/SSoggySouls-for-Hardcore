@@ -203,7 +203,6 @@ extra-life:
       D: "DIAMOND_BLOCK"
       I: "NETHERITE_INGOT"
 
-```
 
 Change letters in `row1/row2/row3` and define your own materials in `ingredients`. All Minecraft material names work.
 
