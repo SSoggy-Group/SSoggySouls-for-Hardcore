@@ -2,7 +2,7 @@
 
 <img src="https://cdn.modrinth.com/data/Pb03qu6T/images/70ce5f45786d4716bb6d47d242ee3238a2b4ec4a.jpeg" alt="SSoggySouls Banner">
 
-**Version 1.3.6** | Minecraft 1.21.X | Spigot/Paper/Purpur
+**Version 3.2.6** | Minecraft 1.21.X | Spigot/Paper/Purpur
 
 A hardcore lives system plugin. When you die enough times, you get exiled to a Limbo server (multi-server) or enter spectator mode (single-server) until your teammates revive you.
 

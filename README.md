@@ -343,11 +343,11 @@ Download the latest release (`SSoggySouls-2.1.2.jar`) from the [Releases page](h
 
 ### Step 2: Install Plugin
 
-Place `SSoggySouls-1.3.6.jar` in the `plugins/` folder of **both** servers:
+Place `SSoggySouls-3.2.6.jar` in the `plugins/` folder of **both** servers:
 
-- Main server: `/plugins/SSoggySouls-1.3.6.jar`
+- Main server: `/plugins/SSoggySouls-3.2.6.jar`
 
-- Limbo server: `/plugins/SSoggySouls-1.3.6.jar`
+- Limbo server: `/plugins/SSoggySouls-3.2.6.jar`
 
 ### Step 3: Generate Config
 

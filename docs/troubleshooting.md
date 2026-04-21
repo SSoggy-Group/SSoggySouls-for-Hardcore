@@ -382,7 +382,7 @@ Check console logs on both servers:
 
 ```text
 
-[SSoggySouls] Version 1.3.6 enabled
+[SSoggySouls] Version 3.2.6 enabled
 
 ```
 
