@@ -103,6 +103,8 @@ limbo-op-security-check: true
 #       • Run /psadmin reload from an already whitelisted/bypass-permission admin, or
 #       • Restart the server to load the new whitelist
 # NOTE: Newly added OPs on Limbo cannot run /psadmin until after the whitelist reloads.
+limbo-trusted-admins: []
+
 # Admin Log Access
 # Configure who can use the /adminlog command to view the abuse log in-game.
 # By default, server Operators (OPs) and users with the 'ssoggysouls.adminlog' permission can use it.
