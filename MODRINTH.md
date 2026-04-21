@@ -60,8 +60,8 @@ Wearing a dead player's head grants Speed II and Night Vision to help you delive
 
 1. **Download** the plugin and place it in your `plugins/` folder.
 2. **Start your server** to generate the `config.yml`.
-3. **Select your database:** 
-   - *Single server:* Just leave it as `type: "sqlite"`. 
+3. **Select your database:**
+   - *Single server:* Just leave it as `type: "sqlite"`.
    - *Two servers:* Set `type: "mysql"` and enter your identical credentials on both servers.
 4. **If using two servers**, configure the main and limbo roles (`is-limbo-server`).
 5. **Restart and test!**

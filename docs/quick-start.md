@@ -10,10 +10,12 @@ This guide will help you get SSoggySouls up and running in 8 simple steps. For m
 ## Prerequisites
 
 **For a Single Server Setup (Easy):**
+
 - One Minecraft 1.21.X server (Spigot/Paper/Purpur)
 - Java 21+
 
 **For a 2-Server Setup (Advanced):**
+
 - Two Minecraft 1.21.X servers (Spigot/Paper/Purpur)
 - A Velocity Proxy connecting them
 - MySQL 5.7+ / MariaDB 10.2+ database
@@ -34,6 +36,7 @@ Download the latest `SSoggySouls-1.3.6.jar` from:
 Place `SSoggySouls-1.3.6.jar` in your server's `plugins/` folder.
 
 If using a 2-server setup, install it on **both** backend servers:
+
 - Main server: `/plugins/SSoggySouls-1.3.6.jar`
 - Limbo server: `/plugins/SSoggySouls-1.3.6.jar`
 
