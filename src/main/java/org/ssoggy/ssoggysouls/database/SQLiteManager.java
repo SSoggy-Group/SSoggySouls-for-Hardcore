@@ -22,8 +22,7 @@ public class SQLiteManager implements DatabaseManager {
     private static final String COL_IS_DEAD = "is_dead";
     private static final String SELECT_ALL = "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
     private static final String UPDATE = "UPDATE ";
-    private static final int MYSQL_DUPLICATE_COLUMN = 1060;
-    
+
     // Simple cache for death status with TTL to reduce DB queries
     private static final long CACHE_TTL_MS = 2000; // 2 second cache
     private final Map<UUID, CachedDeathStatus> deathStatusCache = new ConcurrentHashMap<>();
@@ -83,7 +82,7 @@ public class SQLiteManager implements DatabaseManager {
     public void shutdown() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
-            plugin.getLogger().info("MySQL connection pool closed.");
+            plugin.getLogger().info("SQLite connection pool closed.");
         }
     }
 
@@ -419,4 +418,3 @@ public class SQLiteManager implements DatabaseManager {
         }
     }
 }
-

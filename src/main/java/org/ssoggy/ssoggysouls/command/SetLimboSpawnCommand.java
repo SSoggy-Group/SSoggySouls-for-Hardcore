@@ -1,7 +1,5 @@
 package org.ssoggy.ssoggysouls.command;
 
-import java.util.logging.Level;
-
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;

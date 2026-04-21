@@ -3,7 +3,6 @@ package org.ssoggy.ssoggysouls.command;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
