@@ -43,7 +43,7 @@ These settings identify what role each server plays in your network.
 
 ```yaml
 
-## CRITICAL: Set this correctly!
+# CRITICAL: Set this correctly!
 
 is-limbo-server: false    # This is the Main server (survival)
 
