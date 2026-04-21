@@ -264,7 +264,7 @@ Living players can check out Limbo using `/limbo`.
 
 - **Proxy:** Velocity (BungeeCord/Waterfall might work but not tested)
 
-- **Database:** MySQL 5.7+ or MariaDB 10.2+ (can share with other plugins like CoreProtect)
+- **Database:** SQLite (built-in, for single server) OR MySQL 5.7+ / MariaDB 10.2+ (for 2-server networked setup)
 
 - **Java:** 21+
 
@@ -353,23 +353,27 @@ Place `SSoggySouls-1.3.6.jar` in the `plugins/` folder of **both** servers:
 
 Start both servers to generate default `config.yml` files. Stop them after generation.
 
-### Step 4: Configure Database (BOTH servers)
+### Step 4: Configure Database
 
-Edit `config.yml` on **both servers** with **identical** database credentials:
-
+**Option A: Single Server (SQLite)**
+If you are only running one server, just set the database type to `sqlite` in your `config.yml`. No other setup is required!
 ```yaml
 database:
+  type: "sqlite"
+```
+
+**Option B: 2-Server Setup (MySQL)**
+If you are running the Main + Limbo network setup, edit `config.yml` on **both servers** with **identical** database credentials:
+```yaml
+database:
+  type: "mysql"
   host: "localhost"
   port: 3306
   name: "ssoggysouls"        # Your database name
-
   username: "root"           # Your MySQL username
-
   password: "your_password"  # Your MySQL password
-
   pool-size: 5
   table-name: "hardcore_players"
-
 ```
 
 **For Pterodactyl users:**
