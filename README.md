@@ -875,6 +875,24 @@ SSoggySouls includes automatic update checking via Modrinth:
 
 - Does not auto-update - manual download required
 
+## Changelog
+
+### v3.2.6
+
+**What's Changed:**
+
+- **Head drop config options** - Added `head-place-as-block`, `head-no-despawn`, and `head-fireproof` to `config.yml` so you can control exactly how heads behave on death. See [Head Mechanics](#head-drop-configuration-options) for details.
+
+- **SQLite support** - You can now run the plugin without MySQL. Set `database.type: "sqlite"` and it uses a local database file instead. MySQL still works for the two-server networked setup, SQLite is just for single-server.
+
+- **Admin Abuse Logging** - Admin command usage gets logged to a file now. Use `/adminlog` to view it in-game. Access via the `config.yml` whitelist or `ssoggysouls.adminlog` permission.
+
+- **Auto-build workflow** - GitHub Actions now builds the JAR automatically on every push.
+
+- **Rename: PolarSouls to SSoggySouls** - Finished renaming everything internally. No config changes needed.
+
+**Full Changelog:** [v1...v3.2.6](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v3.2.6)
+
 ## Credits
 
 - **Revival mechanics** forked from [JakeCCz's Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod)

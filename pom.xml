@@ -110,6 +110,13 @@
                                     </includes>
                                 </filter>
                             </filters>
+                            <transformers>
+                                <!-- Merge META-INF/services files instead of overwriting -->
+                                <!-- This fixes the overlapping java.sql.Driver service descriptor -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <!-- Merge MANIFEST.MF files -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
+                            </transformers>
                             <relocations>
                                 <!-- Relocate to avoid conflicts with other plugins -->
                                 <relocation>
@@ -119,6 +126,12 @@
                                 <relocation>
                                     <pattern>com.mysql</pattern>
                                     <shadedPattern>org.ssoggy.ssoggysouls.libs.mysql</shadedPattern>
+                                </relocation>
+                                <!-- Relocate protobuf (transitive dep of mysql-connector-j) -->
+                                <!-- to avoid classloader conflicts with other shaded plugins -->
+                                <relocation>
+                                    <pattern>com.google.protobuf</pattern>
+                                    <shadedPattern>org.ssoggy.ssoggysouls.libs.protobuf</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
