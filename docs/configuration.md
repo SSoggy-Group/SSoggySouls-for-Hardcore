@@ -193,13 +193,16 @@ ______________________________________________________________________
 This plugin supports two types of databases:
 
 ### 1. SQLite (Local - Single Server)
+
 Ideal for standard, single-server setups. No extra setup required. Data is stored locally.
+
 ```yaml
 database:
   type: "sqlite"
 ```
 
 ### 2. MySQL (Network - 2-Server Setup)
+
 REQUIRED if you are using the true 2-server (Main + Limbo) functionality.
 Both servers must use **identical** database credentials or player records will be split!
 
