@@ -195,22 +195,26 @@ Download `SSoggySouls-1.3.6.jar` (or latest version).
 
 ### Installation Steps
 
-1. **Stop both servers** if they're running
+1. **Stop your server(s)** if they are running.
 
-1. **Place the JAR file** in the `plugins/` folder of both servers:
+1. **Place the JAR file** in the `plugins/` folder:
 
+**For Single Server Setups:**
 ```text
-
-Main Server: /plugins/SSoggySouls-1.3.6.jar
-Limbo Server: /plugins/SSoggySouls-1.3.6.jar
-
+Server: /plugins/SSoggySouls-1.3.6.jar
 ```
 
-1. **Start both servers** to generate config files
+**For 2-Server Setups (Main + Limbo):**
+```text
+Main Server: /plugins/SSoggySouls-1.3.6.jar
+Limbo Server: /plugins/SSoggySouls-1.3.6.jar
+```
 
-1. **Stop both servers** to edit configuration
+1. **Start your server(s)** to generate config files
 
-1. **Edit `config.yml`** on both servers (see next section)
+1. **Stop your server(s)** to edit configuration
+
+1. **Edit `config.yml`** (see next section)
 
 ### Critical Setup Rules
 
@@ -222,12 +226,10 @@ Limbo Server: /plugins/SSoggySouls-1.3.6.jar
 
 - Do NOT place in Velocity/BungeeCord plugins folder
 
-**DO install on both backend servers:**
+**DO install on both backend servers (if using Limbo):**
 
 - Must be installed on Main server
-
 - Must be installed on Limbo server
-
 - Both servers must use the SAME version
 
 ## Proxy Configuration
@@ -283,6 +285,8 @@ settings:
 ```
 
 ## Server Configuration
+
+> **Note for Single Servers (SQLite):** If you are running a single server with SQLite, you can safely ignore `is-limbo-server` and the server names. Just leave them as default and scroll down!
 
 ### Main Server Configuration
 
