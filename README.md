@@ -339,7 +339,7 @@ After setup, test everything:
 
 ### Step 1: Download
 
-Download the latest release (`SSoggySouls-2.1.2.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
+Download the latest release (`SSoggySouls-3.2.6.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
 
 ### Step 2: Install Plugin
 
