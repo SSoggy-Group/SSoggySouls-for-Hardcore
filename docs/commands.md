@@ -3,7 +3,7 @@ layout: default
 title: Commands Reference
 ---
 
-## Commands Reference
+# Commands Reference
 
 Complete list of all SSoggySouls commands for players and administrators, with examples and permission requirements.
 

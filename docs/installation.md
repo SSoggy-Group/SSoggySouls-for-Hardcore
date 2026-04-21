@@ -3,7 +3,7 @@ layout: default
 title: Installation Guide
 ---
 
-## Installation Guide
+# Installation Guide
 
 This comprehensive guide covers everything you need to know to properly install and configure SSoggySouls on your Velocity proxy network.
 
@@ -158,12 +158,10 @@ Download `SSoggySouls-1.3.6.jar` (or latest version).
 
 1. **Place the JAR file** in the `plugins/` folder of both servers:
 
-````
-
+```text
 Main Server: /plugins/SSoggySouls-1.3.6.jar
 Limbo Server: /plugins/SSoggySouls-1.3.6.jar
-
-````
+```
 
 1. **Start both servers** to generate config files
 
@@ -332,11 +330,9 @@ Before testing, verify:
 
 1. **Check Initial Status**
 
-````
-
+```text
 /pstatus
-
-````
+```
 
 Should show: "Lives: 2 - Status: Alive"
 

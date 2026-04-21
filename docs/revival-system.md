@@ -3,7 +3,7 @@ layout: default
 title: Revival System Guide
 ---
 
-## Revival System Guide
+# Revival System Guide
 
 Complete guide to the multiple revival methods available in SSoggySouls, including ritual structures, items, and commands.
 

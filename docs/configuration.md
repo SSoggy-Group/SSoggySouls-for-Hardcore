@@ -3,7 +3,7 @@ layout: default
 title: Configuration Reference
 ---
 
-## Configuration Reference
+# Configuration Reference
 
 Complete guide to configuring SSoggySouls to match your server's needs.
 
@@ -40,14 +40,14 @@ These settings identify what role each server plays in your network.
 
 ### Main Server Configuration
 
-````yaml
+```yaml
 ## CRITICAL: Set this correctly!
 is-limbo-server: false    # This is the Main server (survival)
 
 # Must match your Velocity/proxy configuration
 main-server-name: "main"     # Name of Main server in proxy config
 limbo-server-name: "limbo"   # Name of Limbo server in proxy config
-```text
+```
 ### Limbo Server Configuration
 
 ```yaml

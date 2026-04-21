@@ -3,7 +3,7 @@ layout: default
 title: Troubleshooting
 ---
 
-## Troubleshooting Guide
+# Troubleshooting Guide
 
 This guide covers common issues and their solutions. If you don't find your issue here, check the [FAQ](faq) or [open an issue](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues).
 
