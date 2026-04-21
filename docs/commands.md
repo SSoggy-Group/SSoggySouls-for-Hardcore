@@ -27,18 +27,18 @@ Check your or another player's lives, death status, and grace period remaining.
 
 **Usage:**
 
-````bash
+```bash
 # Check your own status
 /pstatus
 
 # Check another player's status
 /pstatus YourUsername
-```text
+```
 **Output Example:**
 
-```text
+```
 YourUsername - Lives: 2 - Status: Alive
-```text
+```
 ______________________________________________________________________
 
 ### `/revive <player>`
@@ -52,7 +52,7 @@ Revive a dead player and return them from Limbo to the Main server. Can be used 
 
 ```bash
 /revive YourUsername
-```text
+```
 **Output:**
 
 - Success: Revived player is automatically teleported back to Main server
@@ -71,7 +71,7 @@ Visit the Limbo server as a living player to interact with dead teammates. You c
 
 ```bash
 /limbo
-```text
+```
 **Features:**
 
 - - Alive players can visit anytime
@@ -94,7 +94,7 @@ Return from Limbo to Main server. Only works for living players visiting Limbo.
 /leavelimbo
 # or
 /hub
-```text
+```
 ______________________________________________________________________
 
 ## Admin Commands
@@ -119,7 +119,7 @@ Set a player's life count to a specific value.
 
 # Reset to 0 lives (sends to Limbo)
 /psadmin lives TestPlayer 0
-```text
+```
 ______________________________________________________________________
 
 ### `/psadmin revive <player>`
@@ -133,7 +133,7 @@ Revive a dead player and return them to the Main server with restored lives.
 
 ```bash
 /psadmin revive YourUsername
-```text
+```
 **Result:**
 
 - Player is marked as alive in database
@@ -155,7 +155,7 @@ Force-kill a player by setting their lives to 0 and sending them to Limbo immedi
 ```bash
 # Force kill a player for testing
 /psadmin kill TestPlayer
-```text
+```
 **Result:**
 
 - Player's lives set to 0
@@ -182,7 +182,7 @@ Set or modify a player's grace period manually.
 
 # Remove grace period
 /psadmin grace PlayerName 0
-```text
+```
 **Format Options:**
 
 - Number only (e.g., `24`) = hours
@@ -201,7 +201,7 @@ Reset a player to defaults: restore default lives count and clear any custom gra
 
 ```bash
 /psadmin reset YourUsername
-```text
+```
 **Result:**
 
 - Lives reset to default (configured in `config.yml`)
@@ -222,10 +222,10 @@ View detailed player information including UUID, lives, death state, timestamps,
 
 ```bash
 /psadmin info YourUsername
-```text
+```
 **Output Example:**
 
-```text
+```
 === Player Information ===
 Username: YourUsername
 UUID: a1b2c3d4-e5f6-7890-abcd-ef1234567890
@@ -234,7 +234,7 @@ Status: Alive
 Last Seen: 2024-01-15 14:30:00
 Joined: 2024-01-10 08:15:30
 Grace Period Remaining: 18h 45m
-```text
+```
 ______________________________________________________________________
 
 ### `/psadmin reload`
@@ -248,7 +248,7 @@ Reload the configuration file from disk without restarting the server.
 
 ```bash
 /psadmin reload
-```text
+```
 **Result:**
 
 - Configuration file is reloaded
@@ -269,7 +269,7 @@ View the admin abuse action log directly in-game. By default, reads the last 15 
 ```bash
 /adminlog
 /adminlog 25
-```text
+```
 **Result:**
 
 - Displays recent admin actions (such as giving lives, reviving, killing).
@@ -290,7 +290,7 @@ This command still works but is deprecated in favor of the newer admin command s
 
 ```bash
 /psetlives YourUsername 5
-```text
+```
 ______________________________________________________________________
 
 ### `/setlimbospawn`
@@ -305,7 +305,7 @@ Set the Limbo server spawn location to your current position. Must be executed o
 ```bash
 # Stand at desired location, then:
 /setlimbospawn
-```text
+```
 **Result:**
 
 - Spawn location saved to config
@@ -330,7 +330,7 @@ Output: Steve - Lives: 1 - Status: Dead
 # A new player with grace period
 /pstatus NewPlayer
 Output: NewPlayer - Lives: 2 - Status: Alive (Grace: 23h 45m remaining)
-```text
+```
 ### Revival Operations
 
 ```bash
@@ -344,7 +344,7 @@ Output: NewPlayer - Lives: 2 - Status: Alive (Grace: 23h 45m remaining)
 /psadmin revive Player1
 /psadmin revive Player2
 /psadmin revive Player3
-```text
+```
 ### Life Management
 
 ```bash
@@ -359,7 +359,7 @@ Output: NewPlayer - Lives: 2 - Status: Alive (Grace: 23h 45m remaining)
 
 # Emergency: set to 0 (sends to Limbo)
 /psadmin kill Player
-```text
+```
 ### Grace Period Configuration
 
 ```bash
@@ -374,7 +374,7 @@ Output: NewPlayer - Lives: 2 - Status: Alive (Grace: 23h 45m remaining)
 
 # Check remaining grace
 /pstatus Player
-```text
+```
 ### Player Information Lookup
 
 ```bash
@@ -388,7 +388,7 @@ Output: NewPlayer - Lives: 2 - Status: Alive (Grace: 23h 45m remaining)
 # - Last seen timestamp
 # - Join date
 # - Grace period remaining
-```text
+```
 ### Limbo Visits
 
 ```bash
@@ -403,7 +403,7 @@ Output: NewPlayer - Lives: 2 - Status: Alive (Grace: 23h 45m remaining)
 # You are teleported back to Main server
 
 # Note: Dead players cannot use /leavelimbo - only alive visitors can leave
-```text
+```
 ### Configuration Management
 
 ```bash
@@ -412,7 +412,7 @@ Output: NewPlayer - Lives: 2 - Status: Alive (Grace: 23h 45m remaining)
 
 # Set new Limbo spawn point
 /setlimbospawn
-```text
+```
 ______________________________________________________________________
 
 ## Permissions
@@ -439,13 +439,13 @@ ______________________________________________________________________
 
 # Remove admin permission
 /lp user PlayerName permission set ssoggysouls.admin false
-```text
+```
 **Using PermissionsEx:**
 
 ```bash
 /pex user YourUsername add ssoggysouls.admin
 /pex user ModName add ssoggysouls.revive
-```text
+```
 ______________________________________________________________________
 
 ## Tips & Tricks
@@ -458,7 +458,7 @@ If you need to revive multiple dead players:
 /psadmin revive Player1
 /psadmin revive Player2
 /psadmin revive Player3
-```text
+```
 Each revive will succeed independently.
 
 ### Checking Before Revival
@@ -469,7 +469,7 @@ Always check player status before reviving:
 /pstatus DeadPlayer
 # If output shows "Status: Dead", they can be revived
 /revive DeadPlayer
-```text
+```
 ### Grace Period Management
 
 Monitor new players' grace periods:
@@ -480,7 +480,7 @@ Monitor new players' grace periods:
 
 # Extend grace if needed
 /psadmin grace NewPlayer 48
-```text
+```
 ### Limbo Visiting Restrictions
 
 - - Living players can visit Limbo anytime
@@ -499,10 +499,10 @@ For quick help in-game, many servers support:
 /help ssoggysouls
 /help revive
 /help psadmin
-```text
+```
 (Availability depends on your help plugin)
 
 ______________________________________________________________________
 
 [← Back to Home](index) | [Configuration Reference →](configuration)
-````
+

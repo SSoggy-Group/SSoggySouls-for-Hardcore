@@ -44,7 +44,7 @@ You should see a `plugins/SSoggySouls/config.yml` file on each server.
 
 Edit `config.yml` on **both servers** with **identical** database credentials:
 
-````yaml
+```yaml
 database:
   host: "localhost"        # Your database host
   port: 3306               # Your database port
@@ -53,7 +53,7 @@ database:
   password: "your_password" # Your MySQL password
   pool-size: 5
   table-name: "hardcore_players"
-```text
+```
 **For Pterodactyl users:**
 
 1. Go to your panel → Databases tab
@@ -68,14 +68,14 @@ database:
 is-limbo-server: false        # This is the Main server
 main-server-name: "main"      # Must match your Velocity config
 limbo-server-name: "limbo"    # Must match your Velocity config
-```text
+```
 **On Limbo server (`config.yml`):**
 
 ```yaml
 is-limbo-server: true         # This is the Limbo server
 main-server-name: "main"      # Must match your Velocity config
 limbo-server-name: "limbo"    # Must match your Velocity config
-```text
+```
 > **Tip:** The server names must exactly match the server names in your `velocity.toml` file.
 
 ### Step 6: Set Limbo Spawn
@@ -94,7 +94,7 @@ Edit `velocity.toml`:
 
 ```toml
 player-info-forwarding-mode = "modern"
-```text
+```
 **For BungeeCord/Waterfall:**
 
 - Enable IP forwarding in BungeeCord's `config.yml`
@@ -170,4 +170,4 @@ For the complete command list, see [Commands](commands).
 ______________________________________________________________________
 
 [← Back to Home](index) | [Installation Guide →](installation)
-````
+

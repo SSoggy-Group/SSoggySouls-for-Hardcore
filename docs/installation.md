@@ -52,7 +52,7 @@ If you already have it enabled:
 
 ### How SSoggySouls Works
 
-````text
+```
                     ┌─────────────────┐
                     │  Velocity Proxy │
                     └────────┬────────┘
@@ -63,7 +63,7 @@ If you already have it enabled:
         │   Main    │◄───────────────►│   Limbo   │
         │  Server   │   MySQL/MariaDB │  Server   │
         └───────────┘                 └───────────┘
-```text
+```
 - Both servers connect to the same MySQL database
 - Players automatically transfer between servers based on death state
 - Limbo server checks database periodically for revivals
@@ -107,7 +107,7 @@ CREATE DATABASE ssoggysouls CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER 'ssoggysouls_user'@'localhost' IDENTIFIED BY 'your_secure_password';
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER ON ssoggysouls.* TO 'ssoggysouls_user'@'localhost';
 FLUSH PRIVILEGES;
-```text
+```
 **For shared hosting (Pterodactyl, etc.):**
 
 1. Go to your hosting panel
@@ -130,7 +130,7 @@ database:
   password: "your_secure_password" # Database password
   pool-size: 5                   # Connection pool size (5 is recommended)
   table-name: "hardcore_players" # Table name (default is fine)
-```text
+```
 > **Tip:** The database can be shared with other plugins like CoreProtect. SSoggySouls uses its own table.
 
 ### Connection Pool Settings (MySQL only)
@@ -158,7 +158,7 @@ Download `SSoggySouls-1.3.6.jar` (or latest version).
 
 1. **Place the JAR file** in the `plugins/` folder of both servers:
 
-```text
+```
 Main Server: /plugins/SSoggySouls-1.3.6.jar
 Limbo Server: /plugins/SSoggySouls-1.3.6.jar
 ```
@@ -200,7 +200,7 @@ limbo = "localhost:25567"  # Your Limbo server
 try = [
 "main"  # Players join Main by default
 ]
-```text
+```
 ### For BungeeCord/Waterfall
 
 > **Note:** BungeeCord/Waterfall support is untested. Please [report](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues) if you test it!
@@ -209,20 +209,20 @@ try = [
 
 ```yaml
 ip_forward: true
-```text
+```
 **On both backend servers in `spigot.yml`:**
 
 ```yaml
 settings:
 bungeecord: true
-```text
+```
 **If using Paper, also configure `paper.yml`:**
 
 ```yaml
 settings:
 velocity-support:
  enabled: false  # Disable for BungeeCord
-```text
+```
 ## Server Configuration
 
 ### Main Server Configuration
@@ -263,7 +263,7 @@ hybrid-timeout-seconds: 300    # 5 minutes for hybrid mode
 spectator-on-death: false
 detect-hrm-revive: true        # Enable ritual structure detection
 send-to-limbo-delay-ticks: 20  # 1 second delay before transfer
-```text
+```
 ### Limbo Server Configuration
 
 Edit `/plugins/SSoggySouls/config.yml` on the **Limbo server**:
@@ -297,7 +297,7 @@ spawn:
  z: 0.5
  yaw: 0.0
  pitch: 0.0
-```text
+```
 ### Setting Limbo Spawn
 
 1. Start the Limbo server
@@ -330,7 +330,7 @@ Before testing, verify:
 
 1. **Check Initial Status**
 
-```text
+```
 /pstatus
 ```
 
@@ -442,4 +442,4 @@ Now that SSoggySouls is installed:
 ______________________________________________________________________
 
 [← Quick Start](quick-start) | [Back to Home](index) | [Configuration →](configuration)
-````
+

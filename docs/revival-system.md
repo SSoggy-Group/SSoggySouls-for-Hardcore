@@ -42,11 +42,11 @@ The complete structure has three layers:
 
 #### Layer 1: Base (3x3 grid)
 
-````text
+```
 [Soul Sand]  [Stair]       [Soul Sand]
 [Stair]      [Ore Block]   [Stair]
 [Soul Sand]  [Stair]       [Soul Sand]
-```text
+```
 **Components:**
 
 - **4 Soul Sand blocks** at the corners
@@ -55,11 +55,11 @@ The complete structure has three layers:
 
 #### Layer 2: Middle
 
-```text
+```
 [Wither Rose]  [Empty]  [Wither Rose]
 [Empty]        [Fence]  [Empty]
 [Wither Rose]  [Empty]  [Wither Rose]
-```text
+```
 **Components:**
 
 - **4 Wither Roses** placed on top of the Soul Sand corners
@@ -68,11 +68,11 @@ The complete structure has three layers:
 
 #### Layer 3: Top
 
-```text
+```
 [Empty]  [Empty]  [Empty]
 [Empty]  [Head]   [Empty]
 [Empty]  [Empty]  [Empty]
-```text
+```
 **Components:**
 
 - **Dead player's head** placed on top of the fence
@@ -88,18 +88,18 @@ The complete structure has three layers:
 
 Visual (from top, numbers 1-9):
 
-```text
+```
 1 2 3
 4 5 6
 7 8 9
-```text
+```
 Placement:
 
-```text
+```
 Soul Sand    Stair       Soul Sand
 Stair        Ore Block   Stair
 Soul Sand    Stair       Soul Sand
-```text
+```
 **Step 2: Add Middle Layer**
 
 1. Look up at the Soul Sand blocks in the 4 corners
@@ -130,14 +130,14 @@ hrm:
   leave-structure-base: true      # Keep base after revival?
   drop-heads: true                # Players drop heads on death
   detect-hrm-revive: true         # Auto-detect completed structures
-```text
+```
 **leave-structure-base:** If true, the base structure stays (only head removed). If false, the entire structure is destroyed.
 
 ### Example: Complete Structure
 
 Here's a complete visual example from the side:
 
-```text
+```
 Layer 3:          [Head]
                     |
 Layer 2:   [Rose]- [Fence] -[Rose]
@@ -152,7 +152,7 @@ S  O  O  S
   W     W
 Soul  Stair  Soul
 Stair Ore   Stair
-```text
+```
 ______________________________________________________________________
 
 ## Revive Skull Item
@@ -190,7 +190,7 @@ A special crafted item that provides an easy way to get dead player heads and re
 
 When you right-click a Revive Skull, you see:
 
-```text
+```
 ═══════════════════════════════════════
         DEAD PLAYERS - REVIVE MENU
 ═══════════════════════════════════════
@@ -198,7 +198,7 @@ When you right-click a Revive Skull, you see:
   👤 DeadPlayer2
   👤 DeadPlayer3
 ═══════════════════════════════════════
-```text
+```
 Click on any player to get their head.
 
 ### Features
@@ -214,7 +214,7 @@ Click on any player to get their head.
 ```yaml
 hrm:
   revive-skull-recipe: true  # Enable/disable crafting
-```text
+```
 ______________________________________________________________________
 
 ## Extra Life Item
@@ -271,7 +271,7 @@ extra-life:
       N: "NETHER_STAR"          # Define what letter N means
       D: "DIAMOND_BLOCK"        # Define what letter D means
       I: "NETHERITE_INGOT"      # Define what letter I means
-```text
+```
 ### Example: Simple Diamond Recipe
 
 ```yaml
@@ -283,7 +283,7 @@ extra-life:
     ingredients:
       D: "DIAMOND_BLOCK"
       E: "EMERALD_BLOCK"
-```text
+```
 This creates a diamond shape with emerald in the center.
 
 ### Example: Emerald-Only Recipe
@@ -296,7 +296,7 @@ extra-life:
     row3: "EEE"
     ingredients:
       E: "EMERALD_BLOCK"
-```text
+```
 Simply 9 Emerald Blocks (easiest recipe).
 
 ### Disabling the Extra Life Item
@@ -304,7 +304,7 @@ Simply 9 Emerald Blocks (easiest recipe).
 ```yaml
 extra-life:
   enabled: false
-```text
+```
 ______________________________________________________________________
 
 ## Command-Based Revival
@@ -319,7 +319,7 @@ Regular command for reviving a dead player. Less powerful than admin version.
 
 ```bash
 /revive DeadPlayer
-```text
+```
 ### `/psadmin revive <player>`
 
 **Permission:** `ssoggysouls.admin` (op only)
@@ -328,7 +328,7 @@ Admin command for reviving. Same result as `/revive` but requires admin permissi
 
 ```bash
 /psadmin revive DeadPlayer
-```text
+```
 ### How Command Revival Works
 
 1. Player must exist in database
@@ -358,7 +358,7 @@ Admin command for reviving. Same result as `/revive` but requires admin permissi
 # Revive multiple players
 /psadmin revive Player1
 /psadmin revive Player2
-```text
+```
 ______________________________________________________________________
 
 ## Head Mechanics
@@ -385,7 +385,7 @@ The head is placed as a **permanent skull block** in the world.
 ```yaml
 hrm:
   head-place-as-block: true
-```text
+```
 ______________________________________________________________________
 
 #### Item Entity Mode (`head-place-as-block: false`)
@@ -406,7 +406,7 @@ hrm:
   head-place-as-block: false
   head-no-despawn: true    # item never despawns
   head-fireproof: true     # item survives lava/fire
-```text
+```
 ______________________________________________________________________
 
 ### Head Cleanup on Revival
@@ -437,7 +437,7 @@ When a living player **wears a dead player's head**, they receive:
 ```yaml
 hrm:
   head-wearing-effects: true
-```text
+```
 ### Getting Heads Without a Physical Drop
 
 If the original head was lost, burned, or simply too far away, use the **Revive Skull** to get a fresh copy:
@@ -459,7 +459,7 @@ ______________________________________________________________________
 ```yaml
 hrm:
   enabled: true  # Master on/off for all HRM features
-```text
+```
 **Individual Toggles:**
 
 ```yaml
@@ -473,13 +473,13 @@ hrm:
   head-place-as-block: true     # Place head as permanent block (recommended)
   head-no-despawn: true         # (item-entity mode) head item never despawns
   head-fireproof: true          # (item-entity mode) head item survives fire/lava
-```text
+```
 ### Lives on Revival
 
 ```yaml
 lives:
   on-revive: 1  # How many lives restored per revival
-```text
+```
 Options:
 
 - `0` = Revived with 0 lives (must use extra life item immediately)
@@ -491,7 +491,7 @@ Options:
 ```yaml
 lives:
   revive-cooldown-seconds: 30  # Post-revival death protection
-```text
+```
 After revival, player has this many seconds of protection where they cannot lose lives.
 
 ______________________________________________________________________
@@ -500,7 +500,7 @@ ______________________________________________________________________
 
 ### Scenario 1: Using Ritual Structure
 
-```text
+```
 1. Player dies
    ↓
 2. Head drops at death location
@@ -514,10 +514,10 @@ ______________________________________________________________________
 6. Plugin detects structure and revives player
    ↓
 7. Player appears on Main server with 1 life restored
-```text
+```
 ### Scenario 2: Using Revive Skull
 
-```text
+```
 1. Player dies
    ↓
 2. Head drops at death location
@@ -533,10 +533,10 @@ ______________________________________________________________________
 7. Plugin revives player
    ↓
 8. Player appears on Main server
-```text
+```
 ### Scenario 3: Using Command
 
-```text
+```
 1. Player dies
    ↓
 2. Moderator/admin runs /revive PlayerName
@@ -546,7 +546,7 @@ ______________________________________________________________________
 4. Player teleported to Main server
    ↓
 5. Lives restored to 1
-```text
+```
 ______________________________________________________________________
 
 ## Tips & Tricks
@@ -633,4 +633,4 @@ ______________________________________________________________________
 ______________________________________________________________________
 
 [← Configuration Reference](configuration) | [Back to Home](index) | [FAQ →](faq)
-````
+

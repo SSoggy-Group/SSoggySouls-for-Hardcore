@@ -137,14 +137,14 @@ ______________________________________________________________________
 
 **A:** Yes! If you're alive, you can visit Limbo:
 
-````bash
+```bash
 /limbo
 # You teleport to Limbo server
 
 /leavelimbo
 # or /hub
 # You teleport back to Main
-```text
+```
 **Restrictions:**
 
 - - Living players can visit anytime
@@ -194,25 +194,25 @@ ______________________________________________________________________
 
 **Layer 1 (Base):**
 
-```text
+```
 Soul Sand | Stair | Soul Sand
 Stair    | Ore   | Stair
 Soul Sand | Stair | Soul Sand
-```text
+```
 **Layer 2 (Middle):**
 
-```text
+```
 Wither Rose | (air) | Wither Rose
 (air)       | Fence | (air)
 Wither Rose | (air) | Wither Rose
-```text
+```
 **Layer 3 (Top):**
 
-```text
+```
 (air)  | (air) | (air)
 (air)  | Head  | (air)
 (air)  | (air) | (air)
-```text
+```
 Once the head is placed, the plugin auto-detects and revives the player!
 
 ______________________________________________________________________
@@ -269,7 +269,7 @@ extra-life:
       N: "NETHER_STAR"
       G: "GOLD_BLOCK"
       I: "NETHERITE_INGOT"
-```text
+```
 Change letters and materials to create your own recipe!
 
 ______________________________________________________________________
@@ -308,7 +308,7 @@ psadmin revive PlayerName
 psadmin lives PlayerName 5
 psadmin info PlayerName
 psadmin grace PlayerName 48
-```text
+```
 (Drop the `/` when running from console)
 
 ______________________________________________________________________
@@ -337,7 +337,7 @@ ______________________________________________________________________
 
 # Give admin permission to a trusted admin
 /lp user AdminName permission set ssoggysouls.admin true
-```text
+```
 ______________________________________________________________________
 
 ## Configuration & Customization
@@ -352,7 +352,7 @@ messages:
   death-life-lost: "&cYou lost a life! &7Remaining: &e%lives%"
   death-last-life: "&c&l⚠ FINAL WARNING!"
   # ... many more
-```text
+```
 **Color codes:**
 
 - `&c` = Red, `&a` = Green, `&e` = Yellow
@@ -368,7 +368,7 @@ ______________________________________________________________________
 ```yaml
 lives:
   grace-period: "0"
-```text
+```
 New players will lose lives immediately on death.
 
 ______________________________________________________________________
@@ -380,7 +380,7 @@ ______________________________________________________________________
 ```yaml
 lives:
   on-revive: 1  # Change to any number
-```text
+```
 - `0` = Revived with no lives (must use Extra Life item)
 - `1` = Revived with 1 life (standard)
 - `2+` = More forgiving
@@ -407,7 +407,7 @@ ______________________________________________________________________
 
 ```bash
 /psadmin reload
-```text
+```
 Most settings reload immediately. Some may require player rejoin or server restart.
 
 ______________________________________________________________________
@@ -465,7 +465,7 @@ ______________________________________________________________________
 
   ```bash
   /psadmin grace PlayerName 48
-````
+```
 
 ______________________________________________________________________
 
@@ -568,14 +568,14 @@ ______________________________________________________________________
 
 **A:** Yes! Toggle each individually:
 
-````yaml
+```yaml
 hrm:
   enabled: true              # Master toggle
   drop-heads: false          # Don't drop heads
   structure-revive: false    # Disable ritual structures
   revive-skull-recipe: false # Disable Revive Skull crafting
   head-wearing-effects: false # Disable Speed/Night Vision
-```text
+```
 Or set `enabled: false` to disable everything.
 
 ______________________________________________________________________
@@ -591,4 +591,4 @@ ______________________________________________________________________
 ______________________________________________________________________
 
 [← Revival System Guide](revival-system) | [Back to Home](index)
-````
+
