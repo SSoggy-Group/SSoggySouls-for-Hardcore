@@ -3,3 +3,9 @@ target/
 *.iml
 *.zip
 .vscode/
+
+# Python / Node Virtual Env
+env/
+node_modules/
+__pycache__/
+.DS_Store
