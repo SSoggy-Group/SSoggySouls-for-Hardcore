@@ -200,11 +200,13 @@ Download `SSoggySouls-1.3.6.jar` (or latest version).
 1. **Place the JAR file** in the `plugins/` folder:
 
 **For Single Server Setups:**
+
 ```text
 Server: /plugins/SSoggySouls-1.3.6.jar
 ```
 
 **For 2-Server Setups (Main + Limbo):**
+
 ```text
 Main Server: /plugins/SSoggySouls-1.3.6.jar
 Limbo Server: /plugins/SSoggySouls-1.3.6.jar
