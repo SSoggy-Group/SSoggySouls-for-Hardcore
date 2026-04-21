@@ -49,7 +49,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
     private DatabaseManager databaseManager;
     private boolean isLimboServer;
     private boolean debugMode;
-    
+
     // Store listeners to call refresh methods on config reload
     private MainServerListener mainServerListener;
     private LimboServerListener limboServerListener;
@@ -123,7 +123,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(this, this);
 
         String dbType = getConfig().getString("database.type", "mysql").toLowerCase();
-        
+
         if (dbType.equals("sqlite") || dbType.equals("local")) {
             databaseManager = new org.ssoggy.ssoggysouls.database.SQLiteManager(this);
         } else {
@@ -150,7 +150,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
 
         String mode = isLimboServer ? "LIMBO SERVER" : "MAIN SERVER";
         String version = getDescription().getVersion();
-        
+
         // you see this ascii art is alot better than the updatechecker one am i right
         getLogger().info("");
         getLogger().info(BORDER_TOP);
@@ -303,31 +303,28 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
         reloadConfig();
         FileConfiguration cfg = getConfig();
 
-        isLimboServer       = cfg.getBoolean("is-limbo-server", false);
-        debugMode           = cfg.getBoolean("debug", false);
-        mainServerName      = cfg.getString("main-server-name", "main");
-        limboServerName     = cfg.getString("limbo-server-name", MODE_LIMBO);
+        isLimboServer = cfg.getBoolean("is-limbo-server", false);
+        debugMode = cfg.getBoolean("debug", false);
+        mainServerName = cfg.getString("main-server-name", "main");
+        limboServerName = cfg.getString("limbo-server-name", MODE_LIMBO);
 
-        defaultLives        = cfg.getInt("lives.default", 2);
-        gracePeriodMillis   = loadGracePeriod(cfg);
-        livesOnRevive       = cfg.getInt("lives.on-revive", 1);
-        maxLives            = cfg.getInt("lives.max-lives", 5);
+        defaultLives = cfg.getInt("lives.default", 2);
+        gracePeriodMillis = loadGracePeriod(cfg);
+        livesOnRevive = cfg.getInt("lives.on-revive", 1);
+        maxLives = cfg.getInt("lives.max-lives", 5);
 
         sendToLimboDelayTicks = cfg.getInt("main.send-to-limbo-delay-ticks", 60);
-        spectatorOnDeath    = cfg.getBoolean("main.spectator-on-death", true);
-        detectHrmRevive     = cfg.getBoolean("main.detect-hrm-revive", true);
-        deathMode           = cfg.getString("main.death-mode", MODE_HYBRID);
+        spectatorOnDeath = cfg.getBoolean("main.spectator-on-death", true);
+        detectHrmRevive = cfg.getBoolean("main.detect-hrm-revive", true);
+        deathMode = cfg.getString("main.death-mode", MODE_HYBRID);
         hybridTimeoutSeconds = cfg.getInt("main.hybrid-timeout-seconds", 300);
         reviveCooldownSeconds = cfg.getInt("lives.revive-cooldown-seconds", 30);
-        extraLifeEnabled    = cfg.getBoolean("extra-life.enabled", true);
-        hardcoreHearts      = cfg.getBoolean("hardcore-hearts", true);
+        extraLifeEnabled = cfg.getBoolean("extra-life.enabled", true);
+        hardcoreHearts = cfg.getBoolean("hardcore-hearts", true);
         limboOpSecurityEnabled = cfg.getBoolean("limbo-op-security-check", true);
-        limboTrustedAdmins  = ConcurrentHashMap.newKeySet();
-        // Normalize whitelist entries: trim whitespace and lowercase non-UUID entries (usernames)
+        limboTrustedAdmins = ConcurrentHashMap.newKeySet();
         for (String entry : cfg.getStringList("limbo-trusted-admins")) {
             String trimmed = entry.trim();
-            // Normalize all entries to lowercase for consistent comparison
-            // UUID.toString() returns lowercase, so UUIDs must also be stored lowercase
             limboTrustedAdmins.add(trimmed.toLowerCase());
         }
 
@@ -335,8 +332,6 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
         adminLogTrustedViewers = ConcurrentHashMap.newKeySet();
         for (String entry : cfg.getStringList("admin-log.trusted-viewers")) {
             String trimmed = entry.trim();
-            // Normalize all entries to lowercase for consistent comparison
-            // UUID.toString() returns lowercase, so UUIDs must also be stored lowercase
             adminLogTrustedViewers.add(trimmed.toLowerCase());
         }
 
@@ -345,24 +340,23 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
             world.setHardcore(hardcoreHearts || original);
         }
 
-        hrmEnabled            = cfg.getBoolean("hrm.enabled", true);
-        hrmDropHeads          = cfg.getBoolean("hrm.drop-heads", true);
-        hrmDeathLocationMsg   = cfg.getBoolean("hrm.death-location-message", true);
-        hrmStructureRevive    = cfg.getBoolean("hrm.structure-revive", true);
+        hrmEnabled = cfg.getBoolean("hrm.enabled", true);
+        hrmDropHeads = cfg.getBoolean("hrm.drop-heads", true);
+        hrmDeathLocationMsg = cfg.getBoolean("hrm.death-location-message", true);
+        hrmStructureRevive = cfg.getBoolean("hrm.structure-revive", true);
         hrmLeaveStructureBase = cfg.getBoolean("hrm.leave-structure-base", true);
-        hrmHeadEffects        = cfg.getBoolean("hrm.head-wearing-effects", true);
-        hrmReviveSkullRecipe  = cfg.getBoolean("hrm.revive-skull-recipe", true);
-        hrmHeadPlaceAsBlock   = cfg.getBoolean("hrm.head-place-as-block", true);
-        hrmHeadNoDespawn      = cfg.getBoolean("hrm.head-no-despawn", true);
-        hrmHeadFireproof      = cfg.getBoolean("hrm.head-fireproof", true);
+        hrmHeadEffects = cfg.getBoolean("hrm.head-wearing-effects", true);
+        hrmReviveSkullRecipe = cfg.getBoolean("hrm.revive-skull-recipe", true);
+        hrmHeadPlaceAsBlock = cfg.getBoolean("hrm.head-place-as-block", true);
+        hrmHeadNoDespawn = cfg.getBoolean("hrm.head-no-despawn", true);
+        hrmHeadFireproof = cfg.getBoolean("hrm.head-fireproof", true);
 
         if (isLimboServer) {
             loadLimboSpawn();
         }
 
         MessageUtil.loadMessages(cfg);
-        
-        // Refresh cached config values in listeners after config reload
+
         if (mainServerListener != null) {
             mainServerListener.refreshConfigCache();
         }
@@ -372,7 +366,6 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
     }
 
     private long loadGracePeriod(FileConfiguration cfg) {
-        // Try new string format first (e.g., "1h30m")
         String gracePeriodStr = cfg.getString("lives.grace-period");
         if (gracePeriodStr != null) {
             long millis = TimeUtil.parseTimeToMillis(gracePeriodStr);
@@ -438,7 +431,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
         cfg.set(CFG_SPAWN_YAW, (double) loc.getYaw());
         cfg.set(CFG_SPAWN_PITCH, (double) loc.getPitch());
         saveConfig();
-        
+
         // Refresh cached limbo spawn in listener
         if (limboServerListener != null) {
             limboServerListener.refreshLimboSpawnCache();
@@ -608,15 +601,16 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
         String storedVersion = databaseManager.getPluginVersion(versionKey);
         String otherServerVersion = databaseManager.getPluginVersion(otherVersionKey);
 
-        // Always update our version in database (allows version changes to be detected immediately)
+        // Always update our version in database (allows version changes to be detected
+        // immediately)
         databaseManager.savePluginVersion(versionKey, currentVersion);
 
         if (storedVersion != null && !currentVersion.equals(storedVersion)) {
             getLogger().log(Level.INFO, "Plugin version updated from {0} to {1}",
-                    new Object[]{storedVersion, currentVersion});
+                    new Object[] { storedVersion, currentVersion });
         } else if (storedVersion == null) {
             getLogger().log(Level.INFO, "Plugin version {0} registered in database for {1} server.",
-                    new Object[]{currentVersion, isLimboServer ? "Limbo" : "Main"});
+                    new Object[] { currentVersion, isLimboServer ? "Limbo" : "Main" });
         }
 
         // Check if the other server (Main vs Limbo) has a different version
@@ -626,10 +620,10 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
             getLogger().warning("╔════════════════════════════════════════╗");
             getLogger().warning("║  ⚠️  VERSION MISMATCH DETECTED!       ║");
             getLogger().warning("╠════════════════════════════════════════╣");
-            getLogger().log(Level.WARNING, "║ {0} Server: {1}", new Object[]{
-                    String.format("%-6s", ourRole), String.format("%-27s", currentVersion)});
-            getLogger().log(Level.WARNING, "║ {0} Server: {1}", new Object[]{
-                    String.format("%-6s", otherRole), String.format("%-27s", otherServerVersion)});
+            getLogger().log(Level.WARNING, "║ {0} Server: {1}", new Object[] {
+                    String.format("%-6s", ourRole), String.format("%-27s", currentVersion) });
+            getLogger().log(Level.WARNING, "║ {0} Server: {1}", new Object[] {
+                    String.format("%-6s", otherRole), String.format("%-27s", otherServerVersion) });
             getLogger().warning("║                                        ║");
             getLogger().warning("║ ENSURE both Main and Limbo servers    ║");
             getLogger().warning("║ run the SAME plugin version!          ║");

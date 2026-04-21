@@ -16,7 +16,6 @@ public class AdminLogger {
     private static final Object WRITE_LOCK = new Object();
 
     private AdminLogger() {
-        // Utility class
     }
 
     public static void log(SSoggySouls plugin, String sender, String action) {
@@ -28,15 +27,13 @@ public class AdminLogger {
         File logFile = new File(dataFolder, LOG_FILE_NAME);
         synchronized (WRITE_LOCK) {
             try (FileWriter fw = new FileWriter(logFile, java.nio.charset.StandardCharsets.UTF_8, true);
-                 PrintWriter pw = new PrintWriter(fw)) {
+                    PrintWriter pw = new PrintWriter(fw)) {
 
                 String timestamp = DATE_FORMAT.format(LocalDateTime.now());
                 String logEntry = String.format("[%s] ADMIN ACTION - %s: %s", timestamp, sender, action);
                 pw.println(logEntry);
+                plugin.getLogger().log(Level.INFO, "[Admin Log] {0}: {1}", new Object[] { sender, action });
 
-                // Also log to console if debugging is enabled, or just at INFO level anyway since they were doing it before
-                plugin.getLogger().log(Level.INFO, "[Admin Log] {0}: {1}", new Object[]{sender, action});
-                
             } catch (IOException e) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to write to admin log file", e);
             }

@@ -23,23 +23,23 @@ public class SQLiteManager implements DatabaseManager {
     private static final String SELECT_ALL = "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
     private static final String UPDATE = "UPDATE ";
 
-    // Simple cache for death status with TTL to reduce DB queries
+    // simple cache for death status with TTL to reduce DB queries
     private static final long CACHE_TTL_MS = 2000; // 2 second cache
     private final Map<UUID, CachedDeathStatus> deathStatusCache = new ConcurrentHashMap<>();
 
     private final SSoggySouls plugin;
     private HikariDataSource dataSource;
     private String tableName;
-    
+
     private static class CachedDeathStatus {
         final boolean isDead;
         final long timestamp;
-        
+
         CachedDeathStatus(boolean isDead) {
             this.isDead = isDead;
             this.timestamp = System.currentTimeMillis();
         }
-        
+
         boolean isExpired() {
             return System.currentTimeMillis() - timestamp > CACHE_TTL_MS;
         }
@@ -63,7 +63,7 @@ public class SQLiteManager implements DatabaseManager {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(jdbcUrl);
             config.setDriverClassName("org.sqlite.JDBC");
-            config.setMaximumPoolSize(1); // SQLite supports 1 writer effectively
+            config.setMaximumPoolSize(1);
             config.setConnectionTimeout(10_000);
             config.setPoolName("SSoggySouls-SQLite-Pool");
 
@@ -99,7 +99,7 @@ public class SQLiteManager implements DatabaseManager {
                 + ");";
 
         try (Connection conn = dataSource.getConnection();
-              Statement stmt = conn.createStatement()) {
+                Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sql);
             ensureLastSeenColumn(conn);
             ensureGraceUntilColumn(conn);
@@ -118,9 +118,10 @@ public class SQLiteManager implements DatabaseManager {
     /**
      * ensures a column exists in the table, ignoring duplicate-column errors.
      *
-     * @param conn database connection
+     * @param conn       database connection
      * @param columnName name of the column to add
-     * @param definition SQL definition of the column (for example, "BIGINT NOT NULL DEFAULT 0")
+     * @param definition SQL definition of the column (for example, "BIGINT NOT NULL
+     *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
@@ -128,7 +129,8 @@ public class SQLiteManager implements DatabaseManager {
             stmt.executeUpdate(sql);
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
         } catch (SQLException e) {
-            boolean duplicateColumn = e.getMessage() != null && e.getMessage().toLowerCase().contains("duplicate column name");
+            boolean duplicateColumn = e.getMessage() != null
+                    && e.getMessage().toLowerCase().contains("duplicate column name");
             if (!duplicateColumn) {
                 plugin.getLogger().log(Level.WARNING, "Failed to ensure " + columnName + " column", e);
             }
@@ -144,15 +146,14 @@ public class SQLiteManager implements DatabaseManager {
                 rs.getLong("first_join"),
                 rs.getLong("last_death"),
                 rs.getLong("last_seen"),
-                rs.getLong("grace_until")
-        );
+                rs.getLong("grace_until"));
     }
 
     public PlayerData getPlayer(UUID uuid) {
         String sql = SELECT_ALL + tableName + " WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -170,7 +171,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = SELECT_ALL + tableName + " WHERE LOWER(username) = LOWER(?)";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -197,7 +198,7 @@ public class SQLiteManager implements DatabaseManager {
                 + "grace_until = excluded.grace_until";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, data.getUuid().toString());
             ps.setString(2, data.getUsername());
@@ -210,33 +211,26 @@ public class SQLiteManager implements DatabaseManager {
 
             ps.executeUpdate();
 
-            // Always invalidate cache after save to ensure consistency
             deathStatusCache.remove(data.getUuid());
-
-            // Avoid string concatenation overhead unless debug is enabled
             if (plugin.isDebugMode()) {
                 plugin.debug("Saved player data: " + data);
             }
 
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, () -> "Failed to save player " + data.getUuid());
-            // Invalidate cache on failure too to force fresh read on next check
             deathStatusCache.remove(data.getUuid());
         }
     }
 
     public boolean isPlayerDead(UUID uuid) {
-        // Check cache first
         CachedDeathStatus cached = deathStatusCache.get(uuid);
         if (cached != null && !cached.isExpired()) {
             return cached.isDead;
         }
-        
-        // Cache miss or expired, query database
         String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -258,19 +252,17 @@ public class SQLiteManager implements DatabaseManager {
                 + " SET is_dead = FALSE, lives = ? WHERE uuid = ? AND is_dead = TRUE";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, livesToRestore);
             ps.setString(2, uuid.toString());
 
             int rows = ps.executeUpdate();
-            
-            // Invalidate cache on death status change
+
+            // invalidate cache on death status change
             if (rows > 0) {
                 deathStatusCache.remove(uuid);
             }
-            
-            // Avoid string concatenation overhead unless debug is enabled
             if (plugin.isDebugMode()) {
                 plugin.debug("Revived player " + uuid + " (rows affected: " + rows + ")");
             }
@@ -286,7 +278,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET lives = ?, is_dead = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             boolean dead = lives <= 0;
             ps.setInt(1, Math.max(0, lives));
@@ -294,8 +286,8 @@ public class SQLiteManager implements DatabaseManager {
             ps.setString(3, uuid.toString());
 
             ps.executeUpdate();
-            
-            // Invalidate cache on death status change
+
+            // invalidate cache on death status change again
             deathStatusCache.remove(uuid);
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, () -> "Failed to set lives for " + uuid);
@@ -306,7 +298,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET first_join = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, firstJoin);
             ps.setString(2, uuid.toString());
@@ -320,7 +312,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET last_seen = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, lastSeen);
             ps.setString(2, uuid.toString());
@@ -334,7 +326,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET grace_until = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, graceUntil);
             ps.setString(2, uuid.toString());
@@ -344,10 +336,6 @@ public class SQLiteManager implements DatabaseManager {
         }
     }
 
-    /**
-     * manually invalidates a player's death status cache entry.
-     * use this when external changes bypass savePlayer(), revivePlayer(), or setLives().
-     */
     public void invalidateDeathStatusCache(UUID uuid) {
         deathStatusCache.remove(uuid);
     }
@@ -357,8 +345,8 @@ public class SQLiteManager implements DatabaseManager {
 
         List<PlayerData> result = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 result.add(mapResultSet(rs));
             }
@@ -369,7 +357,8 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     // gets plugin version from db, returns null if first time running
-    // The key parameter allows tracking different versions per server role (main/limbo)
+    // The key parameter allows tracking different versions per server role
+    // (main/limbo)
     public String getPluginVersion(String key) {
         String metaTable = "ssoggysouls_meta";
         try (Connection conn = dataSource.getConnection()) {

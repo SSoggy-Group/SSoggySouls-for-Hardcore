@@ -9,7 +9,6 @@ import java.util.List;
 public final class TabCompleteUtil {
 
     private TabCompleteUtil() {
-        // Private constructor to prevent instantiation
     }
 
     /**
@@ -33,7 +32,7 @@ public final class TabCompleteUtil {
      * filters options by prefix (case-insensitive).
      *
      * @param options list of options to filter
-     * @param prefix the prefix to match
+     * @param prefix  the prefix to match
      * @return list of matching options
      */
     public static List<String> filterStartsWith(List<String> options, String prefix) {
