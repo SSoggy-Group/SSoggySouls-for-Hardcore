@@ -31,7 +31,7 @@ ______________________________________________________________________
 
 1. **Velocity Proxy** - Routes players between servers
 
-1. **MySQL Database** - Stores player data (can be shared with other plugins)
+1. **Database** - Stores player data (MySQL for 2-server networks, or built-in SQLite for single-server)
 
 **Exception:** If using `spectator` death mode, the Limbo server is optional.
 
@@ -65,7 +65,7 @@ ______________________________________________________________________
 
 ### Q: Can I share my database with other plugins?
 
-**A:** Yes! The database can be shared with other plugins (CoreProtect, etc.). SSoggySouls creates its own table and won't interfere.
+**A:** Yes, if using MySQL! The database can be shared with other plugins (CoreProtect, etc.). SSoggySouls creates its own table and won't interfere. (The SQLite option is local and dedicated only to SSoggySouls).
 
 ______________________________________________________________________
 

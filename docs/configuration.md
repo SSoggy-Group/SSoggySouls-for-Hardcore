@@ -190,24 +190,29 @@ ______________________________________________________________________
 
 ## Database Configuration
 
-Both servers must use **identical** database credentials.
+This plugin supports two types of databases:
+
+### 1. SQLite (Local - Single Server)
+Ideal for standard, single-server setups. No extra setup required. Data is stored locally.
+```yaml
+database:
+  type: "sqlite"
+```
+
+### 2. MySQL (Network - 2-Server Setup)
+REQUIRED if you are using the true 2-server (Main + Limbo) functionality.
+Both servers must use **identical** database credentials or player records will be split!
 
 ```yaml
 database:
+  type: "mysql"
   host: "localhost"              # Database host
-
   port: 3306                     # Database port (default: 3306)
-
   name: "ssoggysouls"             # Database name
-
   username: "root"               # MySQL username
-
   password: "changeme"           # MySQL password - CHANGE THIS!
-
   pool-size: 5                   # Connection pool size
-
   table-name: "hardcore_players" # Table name (default is fine)
-
 ```
 
 ### Pool Size Recommendations

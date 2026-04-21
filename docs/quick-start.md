@@ -46,23 +46,25 @@ You should see a `plugins/SSoggySouls/config.yml` file on each server.
 
 ### Step 4: Configure Database
 
-Edit `config.yml` on **both servers** with **identical** database credentials:
-
+**Option A: Single Server (SQLite)**
+If you only run one server, just verify your `config.yml` is set to `sqlite`:
 ```yaml
 database:
+  type: "sqlite"
+```
+
+**Option B: 2-Server Setup (MySQL)**
+If you run Main + Limbo, edit `config.yml` on **both servers** with **identical** database credentials:
+```yaml
+database:
+  type: "mysql"
   host: "localhost"        # Your database host
-
   port: 3306               # Your database port
-
   name: "ssoggysouls"       # Your database name
-
   username: "root"         # Your MySQL username
-
   password: "your_password" # Your MySQL password
-
   pool-size: 5
   table-name: "hardcore_players"
-
 ```
 
 **For Pterodactyl users:**
