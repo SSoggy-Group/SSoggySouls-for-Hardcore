@@ -74,7 +74,7 @@ All modes work with all revival methods:
 
 ## Built-in HRM (Hardcore Revive Mode)
 
-*(revival mechanics forked from [JakeCCz's Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod))*
+> **Credit:** The revival mechanics—including player head drops, ritual structures, and the Revive Skull—are adapted from the excellent [Hardcore Revive Mod by JakeCCz](https://modrinth.com/plugin/hardcore-revive-mod).
 
 Comes with a full revival system:
 

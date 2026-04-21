@@ -9,13 +9,17 @@ This guide will help you get SSoggySouls up and running in 8 simple steps. For m
 
 ## Prerequisites
 
-Before you begin, ensure you have:
+**For a Single Server Setup (Easy):**
 
-- Two Minecraft 1.21.X servers (Spigot/Paper/Purpur) behind a Velocity proxy
+- One Minecraft 1.21.X server (Spigot/Paper/Purpur)
+- Java 21+
 
-- MySQL 5.7+ / MariaDB 10.2+ (for multi-server) OR SQLite (for single-server)
+**For a 2-Server Setup (Advanced):**
 
-- Java 21 or higher
+- Two Minecraft 1.21.X servers (Spigot/Paper/Purpur)
+- A Velocity Proxy connecting them
+- MySQL 5.7+ / MariaDB 10.2+ database
+- Java 21+
 
 ## Installation Steps
 
@@ -29,13 +33,14 @@ Download the latest `SSoggySouls-1.3.6.jar` from:
 
 ### Step 2: Install Plugin
 
-Place `SSoggySouls-1.3.6.jar` in the `plugins/` folder of **both** servers:
+Place `SSoggySouls-1.3.6.jar` in your server's `plugins/` folder.
+
+If using a 2-server setup, install it on **both** backend servers:
 
 - Main server: `/plugins/SSoggySouls-1.3.6.jar`
-
 - Limbo server: `/plugins/SSoggySouls-1.3.6.jar`
 
-> **Important:** Install on backend servers only, NOT on the Velocity proxy!
+> **Important:** If using a proxy, install on backend servers only, NOT on Velocity!
 
 ### Step 3: Generate Config
 
@@ -75,7 +80,9 @@ database:
 1. Create a new database
 1. Use the provided host, port, username, and password in config
 
-### Step 5: Configure Server Roles
+### Step 5: Configure Server Roles (2-Server Setup Only)
+
+If you are only running a single server, you can leave these as default and skip to Step 8!
 
 **On Main server (`config.yml`):**
 
