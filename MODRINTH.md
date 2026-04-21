@@ -4,64 +4,70 @@
 
 **Version 1.3.6** | Minecraft 1.21.X | Spigot/Paper/Purpur
 
-A hardcore **lives system** plugin for Minecraft 1.21.X servers.
-When you lose all your lives, you get exiled to a dedicated **Limbo** server (or placed into spectator mode) until your teammates manage to revive you through dark rituals!
+A hardcore lives system plugin. When you die enough times, you get exiled to a Limbo server (multi-server) or enter spectator mode (single-server) until your teammates revive you.
 
-> **[📝 Read the Full Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)**
-> Complete installation guides, configuration reference, and troubleshooting!
+> **[Read the Full Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Complete installation guides, configuration reference, troubleshooting, and more!
 
 ---
 
-## ✨ Features
+## Features
 
-- ❤️ **Configurable Lives System:** Start with 2 lives (customizable, up to a max cap).
-- 👻 **Three configurable Death Modes:**
-  - `Hybrid`: Dead players spectate their team for a timeout window, then get transferred to Limbo.
-  - `Spectator`: Dead players stay on the server as spectators forever.
-  - `Limbo`: Instant exile for dead players. No spectating allowed.
-- 🛡️ **Grace Period:** Protects newbies with an online-only timer.
-- 🔗 **Cross-Server Integration:** Seamlessly banish players to a Limbo server using MySQL and Velocity.
-- 💻 **Single-Server Support:** Don't want a Limbo server? Use the built-in drop-in SQLite database instead!
-- 🕯️ **Extensive Revival System:** Teammates can rescue you through ritual structures or items.
+- **Lives System** - Start with 2 lives (configurable), max 5.
+- **Three Death Modes** - Instant Limbo, permanent spectator, or hybrid timeout.
+- **Multiple Revival Methods** - Ritual structures, Revive Skull, or admin commands.
+- **Grace Period** - Newbies get protected time (only counts online time).
+- **Extra Life Items** - Craftable items for more lives (fully customizable).
+- **Flexible Database** - Use built-in SQLite for a single server, or MySQL to sync between Main and Limbo.
+- **Limbo Visiting** - Living players can visit dead teammates.
 
 ---
 
-## 🕯️ Hardcore Revive Mechanics
+## Built-in Revival System
 
-> **Credit:** The revival mechanics (player head drops, ritual structures, and revive items) are adapted from the excellent [Hardcore Revive Mod by JakeCCz](https://modrinth.com/plugin/hardcore-revive-mod).
+> **Credit:** The revival mechanics—including player head drops, ritual structures, and the Revive Skull—are adapted from the [Hardcore Revive Mod by JakeCCz](https://modrinth.com/plugin/hardcore-revive-mod).
 
-When a player dies, their **head drops** at the location of their death (fireproof and persistent!). Their teammates can recover the head and use it to bring them back!
+**Player Head Drops:** When you lose all your lives, your head drops where you died and your coordinates are posted in chat.
 
-- **Ritual Structures:** Build a mystical 3x3x3 beacon (using blocks like Soul Sand, Wither Roses, and Ore) and place the dead player's head on top to trigger an instant revival!
-- **Revive Skull:** Craftable item that provides a GUI menu to easily select dead players to receive their head for rituals.
-- **Extra Life:** Craftable item that grants an extra life up to the configured max limit.
-- **Wield the Head:** Wearing a fallen teammate's head grants Speed II and Night Vision to help you deliver it safely.
+**Revival Ritual:**
+Build a 3x3x3 beacon-like structure:
+- **Bottom:** 4 Soul Sand corners, 4 Stairs at edges, 1 Ore block in the center.
+- **Middle:** 4 Wither Roses on the Soul Sand, 1 Fence on the ore.
+- **Top:** Place the dead player's head on the fence to trigger a revival.
+
+**Craftable Items:**
+- **Revive Skull:** Right-click to open a GUI menu of dead players and receive their head for rituals.
+- **Extra Life:** Right-click to gain +1 life (max cap applies). The recipe is fully customizable.
+
+**Head Effects:**
+Wearing a dead player's head grants Speed II and Night Vision to help you deliver it to a ritual safely.
 
 ---
 
-## 🚀 Quick Setup
+## Requirements
 
-Check out our [Quick Start Guide](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/quick-start) on the wiki to get your database configured and Limbo set up in 5 minutes!
-
-### Minimum Requirements
 - **Minecraft:** 1.21.X (Spigot, Paper, or Purpur)
 - **Java:** 21+
-- **Database:** SQLite (built-in, for single servers) OR MySQL 5.7+ / MariaDB 10.2+ (for 2-server setups)
+- **Database:** SQLite (built-in, zero setup) OR MySQL/MariaDB (required for multi-server)
+- *(Optional)* **Proxy:** Velocity with two backend servers
 
-### Optional multi-server requirements:
-- **Proxy:** Velocity
-- **Servers:** Two backend servers (Main + Limbo)
-
-> **Important:** Do NOT enable `hardcore=true` in `server.properties`. Keep it `false` - the plugin natively handles these interactions.
+> **Important:** Do NOT enable `hardcore=true` in `server.properties`. Keep it `false` - the plugin natively handles these mechanics.
 
 ---
 
-## 💬 Commands & Permissions
+## Complete Documentation
 
-SSoggySouls packs standard commands for your users (`/pstatus` to check their lives, `/limbo` to visit exiled teammates) and a suite of admin tools (`/psadmin lives`, `/psadmin revive`, `/psadmin grace`) to help you manage the playing field.
+To save space and avoid cluttering this page, the full configuration files, installation steps, and command lists have been moved to our comprehensive wiki. 
 
-For a full list, check out our [Commands Reference](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/commands) on the wiki.
+Please visit the **[SSoggySouls Wiki](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** for:
+- [Quick Start Guide](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/quick-start)
+- [Configuration Reference](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/configuration)
+- [Commands & Permissions](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/commands)
+- [Troubleshooting & FAQ](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/faq)
 
 ---
 
-**Enjoying SSoggySouls?** Heart it on Modrinth and star our [GitHub repo](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)!
+## Credits
+
+- Revival mechanics heavily inspired by and adapted from the [Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod) by JakeCCz.
+- Author: SSoggyTacoMan
+- GitHub: [SSoggy-Group/SSoggySouls-for-Hardcore](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
