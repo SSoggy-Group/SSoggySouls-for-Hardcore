@@ -103,8 +103,28 @@ limbo-op-security-check: true
 #       • Run /psadmin reload from an already whitelisted/bypass-permission admin, or
 #       • Restart the server to load the new whitelist
 # NOTE: Newly added OPs on Limbo cannot run /psadmin until after the whitelist reloads.
-# Leave empty [] to rely only on the permission-based system
-limbo-trusted-admins: []
+# Admin Log Access
+# Configure who can use the /adminlog command to view the abuse log in-game.
+# By default, server Operators (OPs) and users with the 'ssoggysouls.adminlog' permission can use it.
+# [CONFIG] BOTH SERVERS
+admin-log:
+  # Set to true to allow ALL players to view the admin log using /adminlog
+  allow-all-players: false
+  
+  # Whitelist of specific non-OP users allowed to view the admin log.
+  # This is the easiest way to give one or more moderators log access without giving them full OP 
+  # and without needing a permissions plugin. You can add as many people here as you want.
+  # Supports both UUIDs and usernames.
+  # 
+  # IMPORTANT: To use this, delete the "[]" on the trusted-viewers line and create a new 
+  # line below it starting with a hyphen (-) for each player. 
+  # 
+  # Example formatting:
+  # trusted-viewers:
+  #   - "069a79f4-44e9-4726-a5be-fca90e38aaf5" # Player 1 (UUID recommended)
+  #   - "Moderator123"                        # Player 2 (Username)
+  #   - "HelperSteve"                         # Player 3 (Username)
+  trusted-viewers: []
 
 # ───────────────────────────────────────────────────────────────────────────────
 # MySQL Database Configuration
@@ -130,6 +150,12 @@ limbo-trusted-admins: []
 #      Database: your_db_name
 #
 database:
+  # Type of storage to use.
+  # Options:
+  # - "sqlite": Ideal for single-server setups where you don't have a MySQL database. No setup required. Data is stored locally in plugins/SSoggySouls/database.db
+  # - "mysql": High performance, REQUIRED if you use the 2-server (Main + Limbo) exile functionality! 
+  type: "mysql"
+
   # MySQL server address (usually localhost for Pterodactyl)
   host: "localhost"
   

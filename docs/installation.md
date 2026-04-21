@@ -26,7 +26,7 @@ This comprehensive guide covers everything you need to know to properly install 
 - **Server Software:** Spigot, Paper, or Purpur
 - **Proxy Software:** Velocity (BungeeCord/Waterfall untested but may work)
 - **Java Version:** 21 or higher
-- **Database:** MySQL 5.7+ or MariaDB 10.2+
+- **Database:** MySQL 5.7+ / MariaDB 10.2+ (for multi-server) OR SQLite (built-in, zero setup for single-server)
 
 ### Server Setup
 
@@ -69,9 +69,30 @@ If you already have it enabled:
 - Main server handles deaths and sends players to Limbo
 
 ## Database Setup
+The plugin supports two database types depending on your setup. You must choose one based on your network architecture:
 
-### Creating the Database
+| Feature | `sqlite` (Local) | `mysql` (External) |
+|---------|-----------------|-------------------|
+| **Best For** | Single servers | 2-Server Proxy Networks |
+| **Performance** | High (Lightweight / Local I/O) | Maximum (Multi-threaded Dedicated Service) |
+| **Network Latency** | None (Zero Ping) | Varies (Dependent on Host) |
+| **Setup Required** | None (Plug & Play) | Advanced (User/Grants) |
+| **Lives & HRM Systems** | ✅ Works Perfectly | ✅ Works Perfectly |
+| **Main + Limbo Syncing** | ❌ **NOT SUPPORTED** | ✅ Supported |
+| **Plugin Sharing (CoreProtect)** | ❌ No | ✅ Yes (Same Database) |
+| **Data Editing / Viewing** | Requires 3rd Party SQLite Editor | PhpMyAdmin / Pterodactyl Panels |
+| **Backups** | Copy `database.db` file | Requires `mysqldump` |
+| **Portability** | High (Single `.db` file) | Low (External Server) |
 
+### Option A: SQLite (Zero Setup / Local)
+Ideal for a single server setup if you just want lives, HRM features, and extra-life items without worrying about setting up an external database.
+- **No external server required**
+- **Zero configuration needed**
+- The plugin handles the creation of `database.db` inside its data folder automatically.
+- *Note:* Does not support true cross-server exile functionality natively.
+
+### Option B: MySQL (Cross-server)
+REQUIRED if you are using the true 2-server (Main + Limbo) functionality.
 SSoggySouls will automatically create the necessary table, but you need to create the database first.
 
 **Using MySQL command line:**
@@ -90,11 +111,12 @@ FLUSH PRIVILEGES;
 4. Note down the host, port, database name, username, and password
 
 ### Database Configuration
-
-Both servers must use **identical** database credentials:
+If using SQLite, simply set `type: "sqlite"`.
+If using MySQL, both servers must use **identical** database credentials:
 
 ```yaml
 database:
+  type: "mysql"                  # Database type: "mysql" or "sqlite"
   host: "localhost"              # Database host (use panel host for Pterodactyl)
   port: 3306                     # Database port
   name: "ssoggysouls"             # Database name
@@ -106,7 +128,7 @@ database:
 
 > **Tip:** The database can be shared with other plugins like CoreProtect. SSoggySouls uses its own table.
 
-### Connection Pool Settings
+### Connection Pool Settings (MySQL only)
 
 The `pool-size` setting controls how many database connections are maintained:
 - **Small servers (1-20 players):** 5 connections
@@ -208,6 +230,7 @@ limbo-server-name: "limbo"       # Name of Limbo server in proxy config
 
 # DATABASE (must be identical on both servers)
 database:
+  type: "mysql"
   host: "localhost"
   port: 3306
   name: "ssoggysouls"
@@ -247,6 +270,7 @@ limbo-server-name: "limbo"
 
 # DATABASE (must be identical to Main server)
 database:
+  type: "mysql"
   host: "localhost"
   port: 3306
   name: "ssoggysouls"

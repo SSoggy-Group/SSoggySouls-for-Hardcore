@@ -250,6 +250,26 @@ Reload the configuration file from disk without restarting the server.
 
 ---
 
+### `/adminlog [lines]`
+
+View the admin abuse action log directly in-game. By default, reads the last 15 lines.
+
+**Permission:** `ssoggysouls.adminlog` (default: op)  
+**Aliases:** None
+
+**Usage:**
+```bash
+/adminlog
+/adminlog 25
+```
+
+**Result:**
+- Displays recent admin actions (such as giving lives, reviving, killing).
+- This command is restricted to OPs by default.
+- To allow specific non-ops to view logs without giving them OP, add them to `admin-log.trusted-viewers` in the config or grant the `ssoggysouls.adminlog` permission. Set `allow-all-players: true` to make it public.
+
+---
+
 ### `/psetlives <player> <amount>`
 
 **Legacy Command** - Use `/psadmin lives` instead
@@ -398,6 +418,7 @@ Output: NewPlayer - Lives: 2 - Status: Alive (Grace: 23h 45m remaining)
 | Permission | Description | Default | Commands |
 |------------|-------------|---------|----------|
 | `ssoggysouls.admin` | Full admin access | op | All `/psadmin` commands, `/setlimbospawn` |
+| `ssoggysouls.adminlog` | View admin logs | op | `/adminlog` |
 | `ssoggysouls.revive` | Revive dead players | op | `/revive`, `/psadmin revive` |
 | `ssoggysouls.status` | Check player status | true | `/pstatus` |
 | `ssoggysouls.visit` | Visit Limbo as living player | true | `/limbo`, `/leavelimbo`, `/hub` |

@@ -314,6 +314,8 @@ DELETE FROM hardcore_players WHERE plugin_version IS NOT NULL;
 
 ## Database Connection Errors
 
+**(Note: This largely applies to `type: "mysql"`. If you are using `type: "sqlite"`, make sure your server has write permissions to the `plugins/SSoggySouls/` folder to generate the database.)**
+
 ### Symptoms
 - "Failed to connect to database"
 - "Communications link failure"

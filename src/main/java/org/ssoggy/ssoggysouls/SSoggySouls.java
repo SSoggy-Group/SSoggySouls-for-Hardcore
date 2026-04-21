@@ -20,6 +20,7 @@ import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import org.ssoggy.ssoggysouls.command.AdminCommand;
+import org.ssoggy.ssoggysouls.command.AdminLogCommand;
 import org.ssoggy.ssoggysouls.command.LeaveLimboCommand;
 import org.ssoggy.ssoggysouls.command.ReviveCommand;
 import org.ssoggy.ssoggysouls.command.SetLimboSpawnCommand;
@@ -95,6 +96,10 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
     private boolean hardcoreHearts;
     private boolean limboOpSecurityEnabled;
     private Set<String> limboTrustedAdmins;
+
+    private boolean adminLogAllowAll;
+    private Set<String> adminLogTrustedViewers;
+
     private final Map<String, Boolean> originalWorldHardcore = new HashMap<>();
     private ReviveSkullManager reviveSkullManager;
     private ExtraLifeManager extraLifeManager;
@@ -117,9 +122,16 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
 
-        databaseManager = new DatabaseManager(this);
+        String dbType = getConfig().getString("database.type", "mysql").toLowerCase();
+        
+        if (dbType.equals("sqlite") || dbType.equals("local")) {
+            databaseManager = new org.ssoggy.ssoggysouls.database.SQLiteManager(this);
+        } else {
+            databaseManager = new org.ssoggy.ssoggysouls.database.MySQLManager(this);
+        }
+
         if (!databaseManager.initialize()) {
-            getLogger().severe("Failed to connect to MySQL! Disabling plugin.");
+            getLogger().severe("Failed to connect to " + (dbType.equals("sqlite") ? "SQLite" : "MySQL") + "! Disabling plugin.");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -270,6 +282,10 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
         hladmin.setExecutor(adminCmd);
         hladmin.setTabCompleter(adminCmd);
 
+        AdminLogCommand adminLogCmd = new AdminLogCommand(this);
+        PluginCommand adminlog = Objects.requireNonNull(getCommand("adminlog"));
+        adminlog.setExecutor(adminLogCmd);
+
         if (isLimboServer) {
             PluginCommand setSpawn = Objects.requireNonNull(getCommand("setlimbospawn"));
             setSpawn.setExecutor(new SetLimboSpawnCommand(this));
@@ -314,6 +330,17 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
                 limboTrustedAdmins.add(trimmed); // UUID format, keep as-is
             } else {
                 limboTrustedAdmins.add(trimmed.toLowerCase()); // Username, normalize to lowercase
+            }
+        }
+
+        adminLogAllowAll = cfg.getBoolean("admin-log.allow-all-players", false);
+        adminLogTrustedViewers = ConcurrentHashMap.newKeySet();
+        for (String entry : cfg.getStringList("admin-log.trusted-viewers")) {
+            String trimmed = entry.trim();
+            if (trimmed.contains("-")) {
+                adminLogTrustedViewers.add(trimmed);
+            } else {
+                adminLogTrustedViewers.add(trimmed.toLowerCase());
             }
         }
 
@@ -559,6 +586,14 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
 
     public Set<String> getLimboTrustedAdmins() {
         return Collections.unmodifiableSet(limboTrustedAdmins);
+    }
+
+    public boolean isAdminLogAllowAll() {
+        return adminLogAllowAll;
+    }
+
+    public Set<String> getAdminLogTrustedViewers() {
+        return Collections.unmodifiableSet(adminLogTrustedViewers);
     }
 
     public void removeDroppedHeads(UUID ownerUuid) {

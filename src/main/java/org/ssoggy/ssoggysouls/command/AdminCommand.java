@@ -34,6 +34,7 @@ import org.ssoggy.ssoggysouls.util.PlayerRevivalUtil;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
 import org.ssoggy.ssoggysouls.util.TimeUtil;
+import org.ssoggy.ssoggysouls.util.AdminLogger;
 
 public class AdminCommand implements CommandExecutor, TabCompleter {
 
@@ -165,8 +166,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
         databaseManager.setLives(playerData.getUuid(), newLives);
 
-        plugin.getLogger().log(Level.INFO, "{0} {1} lives for {2}: now {3}",
-                new Object[]{sender.getName(), action, playerData.getUsername(), newLives});
+        AdminLogger.log(plugin, sender.getName(), action + " lives for " + playerData.getUsername() + ": now " + newLives);
 
         sender.sendMessage(MessageUtil.get("admin-lives-updated",
                 KEY_PLAYER, playerData.getUsername(),
@@ -226,8 +226,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             // the legacy grace fallback behavior if needed. This prevents the legacy
             // grace calculation from being re-triggered after explicit removal.
             databaseManager.setGraceUntil(playerData.getUuid(), 0L);
-            plugin.getLogger().log(Level.INFO, "{0} removed grace period for {1}",
-                    new Object[]{sender.getName(), playerData.getUsername()});
+            AdminLogger.log(plugin, sender.getName(), "removed grace period for " + playerData.getUsername());
             sender.sendMessage(MessageUtil.get("admin-grace-removed",
                     KEY_PLAYER, playerData.getUsername()));
         } else {
@@ -271,8 +270,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         databaseManager.setGraceUntil(data.getUuid(), graceUntil);
 
         String formattedTime = TimeUtil.formatTime(millis);
-        plugin.getLogger().log(Level.INFO, "{0} set grace period for {1} ({2})",
-                new Object[]{sender.getName(), data.getUsername(), formattedTime});
+        AdminLogger.log(plugin, sender.getName(), "set grace period for " + data.getUsername() + " (" + formattedTime + ")");
         sender.sendMessage(MessageUtil.colorize(
                 "&aGrace period set for &e" + data.getUsername() + "&a (" + formattedTime + " from now)."));
     }
@@ -343,8 +341,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 databaseManager.setGraceUntil(pending.targetUuid(), graceUntil);
 
                 String formattedTime = TimeUtil.formatTime(pending.requestedMillis());
-                plugin.getLogger().log(Level.INFO, "{0} overwrote grace period for {1} ({2})",
-                        new Object[]{sender.getName(), pending.targetName(), formattedTime});
+                AdminLogger.log(plugin, sender.getName(), "overwrote grace period for " + pending.targetName() + " (" + formattedTime + ")");
                 // Build message before scheduling to reduce work on main thread
                 String message = MessageUtil.colorize(
                         "&aGrace period overwritten for &e" + pending.targetName()
@@ -358,8 +355,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 databaseManager.setGraceUntil(pending.targetUuid(), graceUntil);
 
                 String totalRemaining = TimeUtil.formatTime(graceUntil - now);
-                plugin.getLogger().log(Level.INFO, "{0} stacked grace period for {1} (total: {2})",
-                        new Object[]{sender.getName(), pending.targetName(), totalRemaining});
+                AdminLogger.log(plugin, sender.getName(), "stacked grace period for " + pending.targetName() + " (total: " + totalRemaining + ")");
                 // Build message before scheduling to reduce work on main thread
                 String message = MessageUtil.colorize(
                         "&aGrace period stacked for &e" + pending.targetName()
@@ -416,8 +412,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
         databaseManager.setLives(playerData.getUuid(), 0);
 
-        plugin.getLogger().log(Level.INFO, "{0} force-killed {1}",
-                new Object[]{sender.getName(), playerData.getUsername()});
+        AdminLogger.log(plugin, sender.getName(), "force-killed " + playerData.getUsername());
         sender.sendMessage(MessageUtil.get("admin-killed",
                 KEY_PLAYER, playerData.getUsername()));
 
@@ -513,8 +508,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
         boolean success = databaseManager.revivePlayer(playerData.getUuid(), livesToRestore);
         if (success) {
-            plugin.getLogger().log(Level.INFO, "{0} revived {1} (lives: {2})",
-                    new Object[]{sender.getName(), playerData.getUsername(), livesToRestore});
+            AdminLogger.log(plugin, sender.getName(), "revived " + playerData.getUsername() + " (lives: " + livesToRestore + ")");
             sender.sendMessage(MessageUtil.get("revive-admin-success",
                     KEY_PLAYER, playerData.getUsername(),
                     KEY_LIVES, livesToRestore));
@@ -551,8 +545,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 defaultLives, plugin.getGracePeriodMillis());
         databaseManager.savePlayer(fresh);
 
-        plugin.getLogger().log(Level.INFO, "{0} reset {1} to defaults ({2} lives)",
-                new Object[]{sender.getName(), playerData.getUsername(), defaultLives});
+        AdminLogger.log(plugin, sender.getName(), "reset " + playerData.getUsername() + " to defaults (" + defaultLives + " lives)");
         sender.sendMessage(MessageUtil.get("admin-reset",
                 KEY_PLAYER, playerData.getUsername(),
                 KEY_LIVES, defaultLives));

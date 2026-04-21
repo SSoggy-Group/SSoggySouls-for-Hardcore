@@ -3,7 +3,7 @@ layout: default
 title: Configuration Reference
 ---
 
-# Configuration Reference
+## Configuration Reference
 
 Complete guide to configuring SSoggySouls to match your server's needs.
 
@@ -28,6 +28,7 @@ SSoggySouls uses a `config.yml` file that is automatically generated when you fi
 **Location:** `plugins/SSoggySouls/config.yml` on both servers
 
 > **Important:** After editing the config file, either:
+> 
 > - Restart both servers, or
 > - Run `/psadmin reload` to reload without restart (some changes may require restart)
 
@@ -76,6 +77,7 @@ limbo-op-security-check: true  # Prevent Limbo-only OPs from using admin command
 #### Why This Matters
 
 If you give someone OP on the Limbo server (for example, to manage the Limbo world), they could potentially:
+
 - Revive any dead player using `/revive <player>`
 - Modify player lives with `/psadmin lives`
 - Force-kill players with `/psadmin kill`
@@ -85,6 +87,7 @@ If you give someone OP on the Limbo server (for example, to manage the Limbo wor
 #### How It Works
 
 When enabled (recommended), this security check will:
+
 1. **Block** all OP users on the Limbo server from executing admin/revive commands
 2. **Allow** OP users with the bypass permission `ssoggysouls.bypass-limbo-op-security`
 3. **Allow** non-OP users with explicit permission nodes
@@ -95,7 +98,9 @@ When enabled (recommended), this security check will:
 
 To allow a user to execute admin commands on the Limbo server, you have three options:
 
-**Option 1: Use the Whitelist (Easiest - No permissions plugin required)**
+### Option 1: Use the Whitelist (Easiest - No permissions plugin required)
+
+
 ```yaml
 # In config.yml
 limbo-trusted-admins:
@@ -108,13 +113,17 @@ limbo-trusted-admins:
 - No permissions plugin required
 - After editing config.yml, apply changes by running `/psadmin reload` from the server console or from an already bypassed/whitelisted account, or by restarting the server
 
-**Option 2: Grant bypass permission (requires LuckPerms or similar)**
+### Option 2: Grant bypass permission (requires LuckPerms or similar)
+
+
 ```
 # Allows OP users to execute commands on Limbo server
 /lp user <player> permission set ssoggysouls.bypass-limbo-op-security true
 ```
 
-**Option 3: Grant explicit permissions without OP**
+### Option 3: Grant explicit permissions without OP
+
+
 ```
 # Remove OP status first, then grant explicit permissions
 /deop <player>
@@ -135,6 +144,7 @@ limbo-op-security-check: false  # NOT RECOMMENDED
 ```
 
 Set to `false` only if:
+
 - You trust all OPs on your Limbo server completely
 - You have other security measures in place
 - You're testing the plugin in a development environment
@@ -151,6 +161,7 @@ Both servers must use **identical** database credentials.
 database:
   host: "localhost"              # Database host
   port: 3306                     # Database port (default: 3306)
+
   name: "ssoggysouls"             # Database name
   username: "root"               # MySQL username
   password: "changeme"           # MySQL password - CHANGE THIS!
@@ -214,6 +225,7 @@ The highest number of lives a player can have. They cannot use extra life items 
 ### Lives on Revival
 
 ```yaml
+
 on-revive: 1
 ```
 
@@ -284,6 +296,7 @@ hybrid-timeout-seconds: 300
 ### Spectator Mode
 
 ```yaml
+
 death-mode: "spectator"
 spectator-on-death: true
 ```
@@ -318,6 +331,7 @@ detect-hrm-revive: true
 When enabled, the plugin automatically detects when a ritual structure is completed and performs the revival. Leave this enabled unless troubleshooting.
 
 ### Limbo Transfer Delay
+
 
 ```yaml
 send-to-limbo-delay-ticks: 20
@@ -458,6 +472,7 @@ Enable crafting of Revive Skull items. The recipe is:
 
 | | | |
 |---|---|---|
+
 | Obsidian | Ghast Tear | Obsidian |
 | Totem of Undying | Any Skull/Head | Totem of Undying |
 | Obsidian | Ghast Tear | Obsidian |
@@ -539,6 +554,7 @@ Customize all player-facing messages and notification colors.
 
 ```yaml
 messages:
+
   prefix: "&8[&4☠&8] &r"
   death-life-lost: "&cYou lost a life! &7Remaining: &e%lives%"
   death-last-life: "&c&l⚠ FINAL WARNING! &cYou are on your last life. Be careful!"
