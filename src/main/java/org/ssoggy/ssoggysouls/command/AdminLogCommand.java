@@ -64,37 +64,44 @@ public class AdminLogCommand implements CommandExecutor {
             return true;
         }
 
-        sender.sendMessage(MessageUtil.colorize("&6&l══ Admin Action Log ══"));
-        try {
-            // Use a fixed-size Deque to stream only the last N lines, avoiding loading the entire file into memory
-            Deque<String> lastLines = readLastLines(logFile, linesToRead);
-            if (lastLines.isEmpty()) {
-                sender.sendMessage(MessageUtil.colorize("&7(Empty)"));
-            } else {
-                for (String line : lastLines) {
-                    // Format output nicely based on [Timestamp] ADMIN ACTION - Sender: Action
-                    if (line.contains("ADMIN ACTION - ")) {
-                        String[] parts = line.split("ADMIN ACTION - ", 2);
-                        String timestamp = parts[0].replace("[", "&8[").replace("]", "&8]");
-                        String details = parts[1];
-                        String[] detailParts = details.split(":", 2);
-                        if(detailParts.length == 2) {
-                            String adminName = detailParts[0].trim();
-                            String action = detailParts[1].trim();
-                            sender.sendMessage(MessageUtil.colorize(timestamp + " &c" + adminName + " &7- &e" + action));
-                        } else {
-                            sender.sendMessage(MessageUtil.colorize("&7" + line));
-                        }
+        final int finalLinesToRead = linesToRead;
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                // Use a fixed-size Deque to stream only the last N lines, avoiding loading the entire file into memory
+                Deque<String> lastLines = readLastLines(logFile, finalLinesToRead);
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    sender.sendMessage(MessageUtil.colorize("&6&l══ Admin Action Log ══"));
+                    if (lastLines.isEmpty()) {
+                        sender.sendMessage(MessageUtil.colorize("&7(Empty)"));
                     } else {
-                        sender.sendMessage(MessageUtil.colorize("&7" + line));
+                        for (String line : lastLines) {
+                            // Format output nicely based on [Timestamp] ADMIN ACTION - Sender: Action
+                            if (line.contains("ADMIN ACTION - ")) {
+                                String[] parts = line.split("ADMIN ACTION - ", 2);
+                                String timestamp = parts[0].replace("[", "&8[").replace("]", "&8]");
+                                String details = parts[1];
+                                String[] detailParts = details.split(":", 2);
+                                if(detailParts.length == 2) {
+                                    String adminName = detailParts[0].trim();
+                                    String action = detailParts[1].trim();
+                                    sender.sendMessage(MessageUtil.colorize(timestamp + " &c" + adminName + " &7- &e" + action));
+                                } else {
+                                    sender.sendMessage(MessageUtil.colorize("&7" + line));
+                                }
+                            } else {
+                                sender.sendMessage(MessageUtil.colorize("&7" + line));
+                            }
+                        }
                     }
-                }
+                    sender.sendMessage(MessageUtil.colorize("&6&l══════════════════════"));
+                });
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to read admin log", e);
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    sender.sendMessage(MessageUtil.colorize("&cFailed to read admin logs. Check console."));
+                });
             }
-        } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to read admin log", e);
-            sender.sendMessage(MessageUtil.colorize("&cFailed to read admin logs. Check console."));
-        }
-        sender.sendMessage(MessageUtil.colorize("&6&l══════════════════════"));
+        });
 
         return true;
     }

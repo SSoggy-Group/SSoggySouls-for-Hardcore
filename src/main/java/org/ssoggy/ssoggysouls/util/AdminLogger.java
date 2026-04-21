@@ -27,7 +27,7 @@ public class AdminLogger {
 
         File logFile = new File(dataFolder, LOG_FILE_NAME);
         synchronized (WRITE_LOCK) {
-            try (FileWriter fw = new FileWriter(logFile, true);
+            try (FileWriter fw = new FileWriter(logFile, java.nio.charset.StandardCharsets.UTF_8, true);
                  PrintWriter pw = new PrintWriter(fw)) {
 
                 String timestamp = DATE_FORMAT.format(LocalDateTime.now());

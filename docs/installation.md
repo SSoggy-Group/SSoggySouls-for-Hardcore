@@ -269,7 +269,7 @@ ip_forward: true
 
 ```yaml
 settings:
-bungeecord: true
+  bungeecord: true
 
 ```
 
@@ -277,8 +277,8 @@ bungeecord: true
 
 ```yaml
 settings:
-velocity-support:
- enabled: false  # Disable for BungeeCord
+  velocity-support:
+    enabled: false  # Disable for BungeeCord
 
 ```
 
@@ -303,39 +303,39 @@ limbo-server-name: "limbo"       # Name of Limbo server in proxy config
 # DATABASE (must be identical on both servers)
 
 database:
-type: "mysql"
-host: "localhost"
-port: 3306
-name: "ssoggysouls"
-username: "ssoggysouls_user"
-password: "your_secure_password"
-pool-size: 5
-table-name: "hardcore_players"
+  type: "mysql"
+  host: "localhost"
+  port: 3306
+  name: "ssoggysouls"
+  username: "ssoggysouls_user"
+  password: "your_secure_password"
+  pool-size: 5
+  table-name: "hardcore_players"
 
 # LIVES SYSTEM
 
 lives:
-default: 2                     # Starting lives for new players
+  default: 2                     # Starting lives for new players
 
-max-lives: 5                   # Maximum lives cap
+  max-lives: 5                   # Maximum lives cap
 
-on-revive: 1                   # Lives restored on revival
+  on-revive: 1                   # Lives restored on revival
 
-grace-period: "24h"            # New player protection
+  grace-period: "24h"            # New player protection
 
-revive-cooldown-seconds: 30    # Post-revival protection
+  revive-cooldown-seconds: 30    # Post-revival protection
 
 # DEATH HANDLING
 
 main:
-death-mode: "hybrid"           # hybrid | spectator | limbo
+  death-mode: "hybrid"           # hybrid | spectator | limbo
 
-hybrid-timeout-seconds: 300    # 5 minutes for hybrid mode
+  hybrid-timeout-seconds: 300    # 5 minutes for hybrid mode
 
-spectator-on-death: false
-detect-hrm-revive: true        # Enable ritual structure detection
+  spectator-on-death: false
+  detect-hrm-revive: true        # Enable ritual structure detection
 
-send-to-limbo-delay-ticks: 20  # 1 second delay before transfer
+  send-to-limbo-delay-ticks: 20  # 1 second delay before transfer
 
 ```
 
@@ -357,28 +357,28 @@ limbo-server-name: "limbo"
 # DATABASE (must be identical to Main server)
 
 database:
-type: "mysql"
-host: "localhost"
-port: 3306
-name: "ssoggysouls"
-username: "ssoggysouls_user"
-password: "your_secure_password"
-pool-size: 5
-table-name: "hardcore_players"
+  type: "mysql"
+  host: "localhost"
+  port: 3306
+  name: "ssoggysouls"
+  username: "ssoggysouls_user"
+  password: "your_secure_password"
+  pool-size: 5
+  table-name: "hardcore_players"
 
 # LIMBO SETTINGS
 
 limbo:
-check-interval-seconds: 3      # How often to check for revivals
+  check-interval-seconds: 3      # How often to check for revivals
 
-spawn:
- world: "world"               # Set with /setlimbospawn command
+  spawn:
+    world: "world"               # Set with /setlimbospawn command
 
- x: 0.5
- y: 65.0
- z: 0.5
- yaw: 0.0
- pitch: 0.0
+    x: 0.5
+    y: 65.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0
 
 ```
 

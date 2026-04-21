@@ -202,7 +202,7 @@ extra-life:
       N: "NETHER_STAR"
       D: "DIAMOND_BLOCK"
       I: "NETHERITE_INGOT"
-
+```
 
 Change letters in `row1/row2/row3` and define your own materials in `ingredients`. All Minecraft material names work.
 
@@ -894,5 +894,3 @@ This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
 See the [LICENSE](LICENSE) file for full details.
 
 (note: if you’re wondering why most commits are from one day, I rewrote the history cuz it was terrible)
-
-````

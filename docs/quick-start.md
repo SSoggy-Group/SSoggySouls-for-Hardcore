@@ -13,7 +13,7 @@ Before you begin, ensure you have:
 
 - Two Minecraft 1.21.X servers (Spigot/Paper/Purpur) behind a Velocity proxy
 
-- MySQL 5.7+ or MariaDB 10.2+ database
+- MySQL 5.7+ / MariaDB 10.2+ (for multi-server) OR SQLite (for single-server)
 
 - Java 21 or higher
 
