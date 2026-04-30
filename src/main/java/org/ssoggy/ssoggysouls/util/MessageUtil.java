@@ -3,7 +3,7 @@ package org.ssoggy.ssoggysouls.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -47,6 +47,7 @@ public final class MessageUtil {
 
     public static String colorize(String text) {
         if (text == null) return "";
-        return ChatColor.translateAlternateColorCodes('&', text);
+        return LegacyComponentSerializer.legacySection().serialize(
+                LegacyComponentSerializer.legacyAmpersand().deserialize(text));
     }
 }

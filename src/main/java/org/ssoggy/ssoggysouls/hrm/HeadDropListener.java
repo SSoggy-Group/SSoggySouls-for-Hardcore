@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -33,6 +32,10 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -64,10 +67,9 @@ public class HeadDropListener implements Listener {
         if (deathLoc == null) return;
 
         if (plugin.isHrmDeathLocationMsg()) {
-            player.sendMessage(ChatColor.GRAY.toString() + ChatColor.ITALIC
-                    + "You died at " + deathLoc.getBlockX() + ", "
+            player.sendRichMessage("<gray><italic>You died at " + deathLoc.getBlockX() + ", "
                     + deathLoc.getBlockY() + ", " + deathLoc.getBlockZ()
-                    + " in " + world.getName());
+                    + " in " + world.getName() + "</italic></gray>");
         }
 
         // only drop head if really dead (work pls)
@@ -168,10 +170,10 @@ public class HeadDropListener implements Listener {
         SkullMeta meta = (SkullMeta) head.getItemMeta();
         if (meta != null) {
             meta.setOwningPlayer(player);
-            meta.setDisplayName(ChatColor.YELLOW + player.getName() + "'s Head");
-            meta.setLore(List.of(
-                    ChatColor.DARK_RED.toString() + ChatColor.ITALIC + "A fallen player's head",
-                    ChatColor.GRAY + "Place on a revival structure to revive"));
+            meta.displayName(Component.text(player.getName() + "'s Head", NamedTextColor.YELLOW));
+            meta.lore(List.of(
+                    Component.text("A fallen player's head", NamedTextColor.DARK_RED).decorate(TextDecoration.ITALIC),
+                    Component.text("Place on a revival structure to revive", NamedTextColor.GRAY)));
             head.setItemMeta(meta);
         }
         return head;

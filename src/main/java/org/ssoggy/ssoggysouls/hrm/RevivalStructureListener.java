@@ -4,7 +4,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.EntityEffect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -229,14 +228,14 @@ public class RevivalStructureListener implements Listener {
         // partial match - fence+ore present but rest is wrong (for retarded people)
         if (Tag.FENCES.isTagged(fence.getType())
                 && Tag.BEACON_BASE_BLOCKS.isTagged(ore.getType())) {
-            placer.sendMessage(ChatColor.RED + "The revival structure is incomplete!");
+            placer.sendRichMessage("<red>The revival structure is incomplete!</red>");
             playErrorEffect(headBlock);
         }
     }
 
     private static void sendError(Player player, String message) {
         Bukkit.getScheduler().runTask(SSoggySouls.getInstance(), () ->
-                player.sendMessage(ChatColor.RED + message));
+                player.sendRichMessage("<red>" + message + "</red>"));
     }
 
     private static void playErrorEffect(Block block) {

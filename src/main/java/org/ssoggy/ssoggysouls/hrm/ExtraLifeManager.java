@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -22,6 +21,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -93,10 +96,10 @@ public class ExtraLifeManager implements Listener {
         ItemStack item = new ItemStack(itemMaterial);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GREEN.toString() + ChatColor.BOLD + "Extra Life");
-            meta.setLore(List.of(
-                    ChatColor.GRAY + "Right-click to gain " + ChatColor.GREEN + "+1 Life",
-                    ChatColor.DARK_GRAY.toString() + ChatColor.ITALIC + "Consumed on use"));
+            meta.displayName(Component.text("Extra Life", NamedTextColor.GREEN, TextDecoration.BOLD));
+            meta.lore(List.of(
+                    Component.text("Right-click to gain ", NamedTextColor.GRAY).append(Component.text("+1 Life", NamedTextColor.GREEN)),
+                    Component.text("Consumed on use", NamedTextColor.DARK_GRAY).decorate(TextDecoration.ITALIC)));
             meta.getPersistentDataContainer().set(extraLifeKey, PersistentDataType.BYTE, (byte) 1);
             item.setItemMeta(meta);
         }

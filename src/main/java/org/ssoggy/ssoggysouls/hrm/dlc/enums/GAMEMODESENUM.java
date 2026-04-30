@@ -38,8 +38,8 @@ public enum GAMEMODESENUM {
     private final int id;
     private final GameMode fallback;
 
-    private static final Map<Integer, GAMEMODESENUM> BY_ID = Maps.newHashMap(); // TODO: 3 statics
-    private final static String gmTable;
+    private static final Map<Integer, GAMEMODESENUM> BY_ID = Maps.newHashMap(); // Required: enum-level lookup + persistent storage state
+    private static final String gmTable; // NOSONAR: initialized in static block
     private final static RPStorage storage;
 
 

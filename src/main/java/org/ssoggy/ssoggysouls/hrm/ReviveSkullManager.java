@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -25,6 +24,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
@@ -32,7 +35,7 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 // craftable revive skull thingy from HRM
 public class ReviveSkullManager implements Listener {
 
-    private static final String MENU_TITLE = "\u00A75\u00A7lRevive - Select Player";
+    private static final Component MENU_TITLE = Component.text("Revive - Select Player", NamedTextColor.DARK_PURPLE, TextDecoration.BOLD);
 
     private final SSoggySouls plugin;
     private final NamespacedKey reviveSkullKey;
@@ -76,12 +79,12 @@ public class ReviveSkullManager implements Listener {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.LIGHT_PURPLE.toString() + ChatColor.BOLD + "Revive Skull");
-            meta.setLore(List.of(
-                    ChatColor.DARK_RED.toString() + ChatColor.ITALIC
-                            + "A mysterious skull imbued with revival power",
-                    "",
-                    ChatColor.GRAY + "Right-click to select a dead player's head"));
+            meta.displayName(Component.text("Revive Skull", NamedTextColor.LIGHT_PURPLE, TextDecoration.BOLD));
+            meta.lore(List.of(
+                    Component.text("A mysterious skull imbued with revival power", NamedTextColor.DARK_RED)
+                            .decorate(TextDecoration.ITALIC),
+                    Component.empty(),
+                    Component.text("Right-click to select a dead player's head", NamedTextColor.GRAY)));
             meta.getPersistentDataContainer().set(
                     reviveSkullKey, PersistentDataType.BYTE, (byte) 1);
             item.setItemMeta(meta);
@@ -118,7 +121,7 @@ public class ReviveSkullManager implements Listener {
             if (deadPlayers.isEmpty()) {
                 Bukkit.getScheduler().runTask(plugin, () ->
                         player.sendMessage(MessageUtil.colorize(
-                                "&7No dead players found.")));
+                                "\u00a77No dead players found.")));
                 return;
             }
 
@@ -145,11 +148,11 @@ public class ReviveSkullManager implements Listener {
         SkullMeta meta = (SkullMeta) head.getItemMeta();
         if (meta != null) {
             meta.setOwningPlayer(Bukkit.getOfflinePlayer(data.getUuid()));
-            meta.setDisplayName(ChatColor.RED + data.getUsername());
-            meta.setLore(List.of(
-                    ChatColor.GRAY + "Status: " + ChatColor.DARK_RED + "Dead",
-                    "",
-                    ChatColor.YELLOW + "Click to receive their head"));
+            meta.displayName(Component.text(data.getUsername(), NamedTextColor.RED));
+            meta.lore(List.of(
+                    Component.text("Status: ", NamedTextColor.GRAY).append(Component.text("Dead", NamedTextColor.DARK_RED)),
+                    Component.empty(),
+                    Component.text("Click to receive their head", NamedTextColor.YELLOW)));
             head.setItemMeta(meta);
         }
         return head;
@@ -157,7 +160,7 @@ public class ReviveSkullManager implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!MENU_TITLE.equals(event.getView().getTitle())) return;
+        if (!MENU_TITLE.equals(event.getView().title())) return;
         event.setCancelled(true);
 
         if (event.getClickedInventory() == null) return;
@@ -176,23 +179,23 @@ public class ReviveSkullManager implements Listener {
         SkullMeta headMeta = (SkullMeta) headItem.getItemMeta();
         if (headMeta != null) {
             headMeta.setOwningPlayer(owner);
-            headMeta.setDisplayName(ChatColor.YELLOW + owner.getName() + "'s Head");
-            headMeta.setLore(List.of(
-                    ChatColor.DARK_RED.toString() + ChatColor.ITALIC
-                            + "A fallen player's head",
-                    ChatColor.GRAY + "Place on a revival structure to revive"));
+            headMeta.displayName(Component.text(owner.getName() + "'s Head", NamedTextColor.YELLOW));
+            headMeta.lore(List.of(
+                    Component.text("A fallen player's head", NamedTextColor.DARK_RED)
+                            .decorate(TextDecoration.ITALIC),
+                    Component.text("Place on a revival structure to revive", NamedTextColor.GRAY)));
             headItem.setItemMeta(headMeta);
         }
 
         player.getInventory().addItem(headItem);
         player.closeInventory();
         player.sendMessage(MessageUtil.colorize(
-                "&aReceived &e" + owner.getName() + "&a's head."));
+                "\u0026aReceived \u0026e" + owner.getName() + "\u0026a's head."));
     }
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (MENU_TITLE.equals(event.getView().getTitle())) {
+        if (MENU_TITLE.equals(event.getView().title())) {
             event.setCancelled(true);
         }
     }

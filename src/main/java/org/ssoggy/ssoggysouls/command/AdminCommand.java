@@ -19,10 +19,8 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
+
+
 
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -277,22 +275,26 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private static void sendGraceConfirmOptions(CommandSender sender) {
         if (sender instanceof Player player) {
-            TextComponent overwrite = new TextComponent(MessageUtil.colorize("  &a[&lOverwrite&a]"));
-            overwrite.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/psadmin confirm overwrite"));
-            overwrite.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    new Text(MessageUtil.colorize("&7Overwrite with new grace period"))));
+            net.kyori.adventure.text.Component message = net.kyori.adventure.text.Component.text("  ")
+                    .append(net.kyori.adventure.text.Component.text("[", net.kyori.adventure.text.format.NamedTextColor.GREEN)
+                            .append(net.kyori.adventure.text.Component.text("Overwrite", net.kyori.adventure.text.format.NamedTextColor.GREEN, net.kyori.adventure.text.format.TextDecoration.BOLD))
+                            .append(net.kyori.adventure.text.Component.text("]", net.kyori.adventure.text.format.NamedTextColor.GREEN))
+                            .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/psadmin confirm overwrite"))
+                            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Overwrite with new grace period", net.kyori.adventure.text.format.NamedTextColor.GRAY))))
+                    .append(net.kyori.adventure.text.Component.text(" "))
+                    .append(net.kyori.adventure.text.Component.text("[", net.kyori.adventure.text.format.NamedTextColor.YELLOW)
+                            .append(net.kyori.adventure.text.Component.text("Stack", net.kyori.adventure.text.format.NamedTextColor.YELLOW, net.kyori.adventure.text.format.TextDecoration.BOLD))
+                            .append(net.kyori.adventure.text.Component.text("]", net.kyori.adventure.text.format.NamedTextColor.YELLOW))
+                            .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/psadmin confirm stack"))
+                            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Stack (add time to existing)", net.kyori.adventure.text.format.NamedTextColor.GRAY))))
+                    .append(net.kyori.adventure.text.Component.text(" "))
+                    .append(net.kyori.adventure.text.Component.text("[", net.kyori.adventure.text.format.NamedTextColor.RED)
+                            .append(net.kyori.adventure.text.Component.text("Cancel", net.kyori.adventure.text.format.NamedTextColor.RED, net.kyori.adventure.text.format.TextDecoration.BOLD))
+                            .append(net.kyori.adventure.text.Component.text("]", net.kyori.adventure.text.format.NamedTextColor.RED))
+                            .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/psadmin confirm cancel"))
+                            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Cancel the operation", net.kyori.adventure.text.format.NamedTextColor.GRAY))));
 
-            TextComponent stack = new TextComponent(MessageUtil.colorize(" &e[&lStack&e]"));
-            stack.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/psadmin confirm stack"));
-            stack.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    new Text(MessageUtil.colorize("&7Stack (add time to existing)"))));
-
-            TextComponent cancel = new TextComponent(MessageUtil.colorize(" &c[&lCancel&c]"));
-            cancel.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/psadmin confirm cancel"));
-            cancel.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    new Text(MessageUtil.colorize("&7Cancel the operation"))));
-
-            player.spigot().sendMessage(overwrite, stack, cancel);
+            player.sendMessage(message);
         } else {
             // Console fallback: plain text instructions
             sender.sendMessage(MessageUtil.colorize(
