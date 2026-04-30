@@ -86,17 +86,7 @@ public class MainServerListener implements Listener {
         boolean shouldSave = false;
 
         if (data.getLastSeen() > 0) {
-            // Pause grace period while offline: extend graceUntil by offline duration
-            // Only adjust if grace hasn't already expired before the player went offline
-            if (data.getGraceUntil() > 0 && data.getGraceUntil() > data.getLastSeen()) {
-                long offlineDuration = now - data.getLastSeen();
-                if (offlineDuration > 0) {
-                    long adjustedGraceUntil = data.getGraceUntil() + offlineDuration;
-                    data.setGraceUntil(adjustedGraceUntil);
-                    db.setGraceUntil(player.getUniqueId(), adjustedGraceUntil);
-                    shouldSave = true;
-                }
-            }
+            pauseGracePeriodForOffline(data, uuid, now);
             data.setLastSeen(0L);
             shouldSave = true;
         }
@@ -113,24 +103,40 @@ public class MainServerListener implements Listener {
         if (data.isDead()) {
             redirectToLimbo(player);
         } else {
-            // gamemode check must happen on the main thread
-            final boolean wasPreviouslyDead = data.getLastDeath() > 0;
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                if (!player.isOnline()) return;
-                if (player.getGameMode() != GameMode.SURVIVAL) {
-                    if (plugin.isDebugMode()) {
-                        plugin.debug(player.getName() + " returned alive, restoring to survival.");
-                    }
-                    grantReviveCooldown(uuid);
-                    hybridWindowUsed.remove(uuid);
-                    expectedGamemodeChanges.add(uuid);
-                    player.setGameMode(GameMode.SURVIVAL);
-                    if (wasPreviouslyDead) {
-                        player.sendMessage(MessageUtil.get("revive-success"));
-                    }
-                }
-            });
+            restoreGameModeIfNeeded(player, uuid, data);
         }
+    }
+
+    private void pauseGracePeriodForOffline(PlayerData data, UUID uuid, long now) {
+        // Pause grace period while offline: extend graceUntil by offline duration
+        // Only adjust if grace hasn't already expired before the player went offline
+        if (data.getGraceUntil() > 0 && data.getGraceUntil() > data.getLastSeen()) {
+            long offlineDuration = now - data.getLastSeen();
+            if (offlineDuration > 0) {
+                long adjustedGraceUntil = data.getGraceUntil() + offlineDuration;
+                data.setGraceUntil(adjustedGraceUntil);
+                db.setGraceUntil(uuid, adjustedGraceUntil);
+            }
+        }
+    }
+
+    private void restoreGameModeIfNeeded(Player player, UUID uuid, PlayerData data) {
+        final boolean wasPreviouslyDead = data.getLastDeath() > 0;
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (!player.isOnline()) return;
+            if (player.getGameMode() != GameMode.SURVIVAL) {
+                if (plugin.isDebugMode()) {
+                    plugin.debug(player.getName() + " returned alive, restoring to survival.");
+                }
+                grantReviveCooldown(uuid);
+                hybridWindowUsed.remove(uuid);
+                expectedGamemodeChanges.add(uuid);
+                player.setGameMode(GameMode.SURVIVAL);
+                if (wasPreviouslyDead) {
+                    player.sendMessage(MessageUtil.get("revive-success"));
+                }
+            }
+        });
     }
 
     private void handleFirstJoin(Player player) {
@@ -230,9 +236,9 @@ public class MainServerListener implements Listener {
         long now = System.currentTimeMillis();
         // Run async to avoid blocking the main thread with DB writes
         // Trade-off: may lose very recent quit timestamps on crash, but prevents lag
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            db.setLastSeen(uuid, now);
-        });
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
+            db.setLastSeen(uuid, now)
+        );
     }
 
     private void handleDeathAsync(Player player, UUID uuid) {
@@ -337,7 +343,7 @@ public class MainServerListener implements Listener {
 
     private void scheduleHybridTimeout(Player player, UUID uuid) {
         int timeoutSeconds = cachedHybridTimeout; // Use cached value
-        long delayTicks = (long) timeoutSeconds * 20L;
+        long delayTicks = timeoutSeconds * 20L;
         BukkitTask task = Bukkit.getScheduler().runTaskLater(plugin, () -> {
             hybridPendingTransfers.remove(uuid);
             if (player.isOnline()) {
@@ -366,20 +372,28 @@ public class MainServerListener implements Listener {
         // Handle protected deaths (grace period, revive cooldown, or lives remaining)
         // Restore to survival since hardcore mode sets them to spectator on respawn
         if (pendingSurvivalRestore.remove(uuid)) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                if (player.isOnline() && player.getGameMode() != GameMode.SURVIVAL) {
-                    expectedGamemodeChanges.add(uuid);
-                    player.setGameMode(GameMode.SURVIVAL);
-                    cancelHybridTransfer(uuid);
-                    plugin.debug(player.getName() + " restored to survival after protected death.");
-                }
-            }, 1L);
+            handleProtectedRespawn(player, uuid);
             return;
         }
 
         // only handle players who died their final actual death
         if (!pendingLimbo.remove(uuid)) return;
 
+        handleFinalDeathRespawn(player, uuid);
+    }
+
+    private void handleProtectedRespawn(Player player, UUID uuid) {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (player.isOnline() && player.getGameMode() != GameMode.SURVIVAL) {
+                expectedGamemodeChanges.add(uuid);
+                player.setGameMode(GameMode.SURVIVAL);
+                cancelHybridTransfer(uuid);
+                plugin.debug(player.getName() + " restored to survival after protected death.");
+            }
+        }, 1L);
+    }
+
+    private void handleFinalDeathRespawn(Player player, UUID uuid) {
         String deathMode = cachedDeathMode; // Use cached value
 
         // 1 tick delay so client doesn lag behind
