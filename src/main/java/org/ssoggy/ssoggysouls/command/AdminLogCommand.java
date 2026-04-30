@@ -23,40 +23,16 @@ public class AdminLogCommand implements CommandExecutor {
         this.plugin = plugin;
     }
 
+    @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        boolean allowed = false;
-
-        if (plugin.isAdminLogAllowAll() || sender.isOp() || sender.hasPermission("ssoggysouls.adminlog")) {
-            allowed = true;
-        } else if (sender instanceof org.bukkit.entity.Player player) {
-            String uuid = player.getUniqueId().toString();
-            String nameLower = player.getName().toLowerCase();
-            if (plugin.getAdminLogTrustedViewers().contains(uuid) || plugin.getAdminLogTrustedViewers().contains(nameLower)) {
-                allowed = true;
-            }
-        } else {
-            allowed = true; // Console always allowed
-        }
-
-        if (!allowed) {
+        if (!isAllowed(sender)) {
             sender.sendMessage(MessageUtil.colorize("&cYou don't have permission to view the admin log."));
             return true;
         }
 
-        int linesToRead = 15;
-        if (args.length > 0) {
-            try {
-                linesToRead = Integer.parseInt(args[0]);
-                if (linesToRead <= 0 || linesToRead > 100) {
-                    sender.sendMessage(MessageUtil.colorize("&cPlease specify a number between 1 and 100."));
-                    return true;
-                }
-            } catch (NumberFormatException e) {
-                sender.sendMessage(MessageUtil.colorize("&cInvalid number: " + args[0]));
-                return true;
-            }
-        }
+        int linesToRead = parseLineCount(sender, args);
+        if (linesToRead < 0) return true; // error already sent
 
         File logFile = new File(plugin.getDataFolder(), "admin_abuse.log");
         if (!logFile.exists()) {
@@ -64,46 +40,80 @@ public class AdminLogCommand implements CommandExecutor {
             return true;
         }
 
-        final int finalLinesToRead = linesToRead;
+        readAndDisplayLogAsync(sender, logFile, linesToRead);
+        return true;
+    }
+
+    private boolean isAllowed(CommandSender sender) {
+        if (plugin.isAdminLogAllowAll() || sender.isOp() || sender.hasPermission("ssoggysouls.adminlog")) {
+            return true;
+        }
+        if (sender instanceof org.bukkit.entity.Player player) {
+            String uuid = player.getUniqueId().toString();
+            String nameLower = player.getName().toLowerCase();
+            return plugin.getAdminLogTrustedViewers().contains(uuid)
+                    || plugin.getAdminLogTrustedViewers().contains(nameLower);
+        }
+        return true; // Console always allowed
+    }
+
+    /**
+     * Parses the optional line count argument. Returns -1 if invalid (error message already sent).
+     */
+    private int parseLineCount(CommandSender sender, String[] args) {
+        if (args.length == 0) return 15;
+        try {
+            int count = Integer.parseInt(args[0]);
+            if (count <= 0 || count > 100) {
+                sender.sendMessage(MessageUtil.colorize("&cPlease specify a number between 1 and 100."));
+                return -1;
+            }
+            return count;
+        } catch (NumberFormatException e) {
+            sender.sendMessage(MessageUtil.colorize("&cInvalid number: " + args[0]));
+            return -1;
+        }
+    }
+
+    private void readAndDisplayLogAsync(CommandSender sender, File logFile, int linesToRead) {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                // Use a fixed-size Deque to stream only the last N lines, avoiding loading the entire file into memory
-                Deque<String> lastLines = readLastLines(logFile, finalLinesToRead);
-                plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    sender.sendMessage(MessageUtil.colorize("&6&l══ Admin Action Log ══"));
-                    if (lastLines.isEmpty()) {
-                        sender.sendMessage(MessageUtil.colorize("&7(Empty)"));
-                    } else {
-                        for (String line : lastLines) {
-                            // Format output nicely based on [Timestamp] ADMIN ACTION - Sender: Action
-                            if (line.contains("ADMIN ACTION - ")) {
-                                String[] parts = line.split("ADMIN ACTION - ", 2);
-                                String timestamp = parts[0].replace("[", "&8[").replace("]", "&8]");
-                                String details = parts[1];
-                                String[] detailParts = details.split(":", 2);
-                                if(detailParts.length == 2) {
-                                    String adminName = detailParts[0].trim();
-                                    String action = detailParts[1].trim();
-                                    sender.sendMessage(MessageUtil.colorize(timestamp + " &c" + adminName + " &7- &e" + action));
-                                } else {
-                                    sender.sendMessage(MessageUtil.colorize("&7" + line));
-                                }
-                            } else {
-                                sender.sendMessage(MessageUtil.colorize("&7" + line));
-                            }
-                        }
-                    }
-                    sender.sendMessage(MessageUtil.colorize("&6&l══════════════════════"));
-                });
+                Deque<String> lastLines = readLastLines(logFile, linesToRead);
+                plugin.getServer().getScheduler().runTask(plugin, () ->
+                    displayLogEntries(sender, lastLines)
+                );
             } catch (IOException e) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to read admin log", e);
-                plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    sender.sendMessage(MessageUtil.colorize("&cFailed to read admin logs. Check console."));
-                });
+                plugin.getServer().getScheduler().runTask(plugin, () ->
+                    sender.sendMessage(MessageUtil.colorize("&cFailed to read admin logs. Check console."))
+                );
             }
         });
+    }
 
-        return true;
+    private void displayLogEntries(CommandSender sender, Deque<String> lastLines) {
+        sender.sendMessage(MessageUtil.colorize("&6&l══ Admin Action Log ══"));
+        if (lastLines.isEmpty()) {
+            sender.sendMessage(MessageUtil.colorize("&7(Empty)"));
+        } else {
+            for (String line : lastLines) {
+                sender.sendMessage(MessageUtil.colorize(formatLogLine(line)));
+            }
+        }
+        sender.sendMessage(MessageUtil.colorize("&6&l══════════════════════"));
+    }
+
+    private static String formatLogLine(String line) {
+        if (!line.contains("ADMIN ACTION - ")) {
+            return "&7" + line;
+        }
+        String[] parts = line.split("ADMIN ACTION - ", 2);
+        String timestamp = parts[0].replace("[", "&8[").replace("]", "&8]");
+        String[] detailParts = parts[1].split(":", 2);
+        if (detailParts.length == 2) {
+            return timestamp + " &c" + detailParts[0].trim() + " &7- &e" + detailParts[1].trim();
+        }
+        return "&7" + line;
     }
 
     /**

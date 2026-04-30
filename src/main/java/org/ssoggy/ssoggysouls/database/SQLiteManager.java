@@ -132,7 +132,7 @@ public class SQLiteManager implements DatabaseManager {
             boolean duplicateColumn = e.getMessage() != null
                     && e.getMessage().toLowerCase().contains("duplicate column name");
             if (!duplicateColumn) {
-                plugin.getLogger().log(Level.WARNING, "Failed to ensure " + columnName + " column", e);
+                plugin.getLogger().log(Level.WARNING, e, () -> "Failed to ensure " + columnName + " column");
             }
         }
     }

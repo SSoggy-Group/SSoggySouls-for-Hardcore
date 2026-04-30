@@ -179,7 +179,7 @@ public class LimboServerListener implements Listener {
         Player player = event.getPlayer();
 
         Location to = event.getTo();
-        if (to != null && to.getY() < -64) {
+        if (to.getY() < -64) {
             Location spawn = cachedLimboSpawn; // Use cached value
             if (spawn != null && spawn.getWorld() != null) {
                 player.teleport(spawn);
