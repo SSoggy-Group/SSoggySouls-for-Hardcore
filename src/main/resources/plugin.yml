@@ -62,6 +62,26 @@ commands:
     permission: ssoggysouls.visit
     permission-message: "&cYou don't have permission to use this command."
 
+  revivalconfig:
+    description: Configuration command for the RevivalPlusPlugin.
+    permission: 'revivalplus.commands'
+    usage: /revivalconfig <type:STRUCTURE/GAMERULE/TIMER> <setting:blocktag/configrule> <option:structoption/boolean/number> [blockid:block]
+  
+  trust:
+    description: Trust other players to see your death location when you have died.
+    permission: 'bukkit.command.plugins'
+    usage: /trust <action:trustoption/info> [target:player]
+  
+  deathlist:
+    description: Shows the avaliable public death locations on the server.
+    permission: 'bukkit.command.plugins'
+    usage: /deathlist [target:player]
+  
+  ghostmode:
+    description: Updates player gamemode to ghostmode.
+    permission: 'revivalplus.commands'
+    usage: /ghostmode [target:player]
+
 permissions:
   ssoggysouls.revive:
     description: Allows reviving dead players

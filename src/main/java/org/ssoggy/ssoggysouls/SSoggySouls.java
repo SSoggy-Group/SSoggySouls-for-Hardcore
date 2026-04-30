@@ -249,6 +249,9 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
             getServer().getPluginManager().registerEvents(extraLifeManager, this);
             getLogger().info("Extra Life recipe and listener registered.");
         }
+
+        // Initialize Hardcore Revive DLC features
+        org.ssoggy.ssoggysouls.hrm.dlc.RevivalPlus.enable(this);
     }
 
     private void enableLimboMode() {
