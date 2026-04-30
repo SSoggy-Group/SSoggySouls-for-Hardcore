@@ -30,19 +30,21 @@ import java.util.Map;
 public class RPStorage {
 
     private final File file;
-    public FileConfiguration config;
+    private FileConfiguration config;
 
 
-    public RPStorage(JavaPlugin plugin, String File) {
+    public RPStorage(JavaPlugin plugin, String fileName) {
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdirs();
         }
 
-        file = new File(plugin.getDataFolder(), File);
+        file = new File(plugin.getDataFolder(), fileName);
 
         if (!file.exists()) {
             try {
-                file.createNewFile();
+                if (!file.createNewFile()) {
+                    plugin.getLogger().log(java.util.logging.Level.WARNING, "Storage file already exists or could not be created: {0}", fileName);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
