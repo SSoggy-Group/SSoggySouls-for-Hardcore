@@ -13,6 +13,7 @@ public class PlayerData {
     private long lastSeen;     // epoch millis, 0 = currently online
     private long graceUntil;   // epoch millis when grace expires, 0 = no active grace
 
+    @SuppressWarnings("java:S107") // DB entity: all fields required for row hydration
     public PlayerData(UUID uuid, String username, int lives, boolean isDead,
                       long firstJoin, long lastDeath, long lastSeen, long graceUntil) {
         this.uuid = uuid;

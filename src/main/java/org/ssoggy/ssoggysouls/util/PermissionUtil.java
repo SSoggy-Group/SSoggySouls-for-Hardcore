@@ -54,14 +54,8 @@ public final class PermissionUtil {
             }
         }
 
-        // Player is OP on Limbo server - check if they have bypass permission
-        if (player.hasPermission("ssoggysouls.bypass-limbo-op-security")) {
-            return false;
-        }
-
-        // Player is OP without bypass permission or whitelist entry - block them
-        // This prevents the security vulnerability where Limbo-only OPs can abuse admin commands
-        return true;
+        // Player is OP on Limbo server - block unless they have bypass permission
+        return !player.hasPermission("ssoggysouls.bypass-limbo-op-security");
     }
 
     /**
