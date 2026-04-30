@@ -69,6 +69,8 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
     private static final String BORDER_EMPTY = "║                                                           ║";
     private static final String BORDER_TOP = "╔═══════════════════════════════════════════════════════════╗";
     private static final String BORDER_BOTTOM = "╚═══════════════════════════════════════════════════════════╝";
+    private static final String ROLE_LIMBO = "Limbo";
+    private static final String ROLE_MAIN = "Main";
 
     private int defaultLives;
     private long gracePeriodMillis;
@@ -612,15 +614,15 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
             getLogger().log(Level.INFO, "Plugin version updated from {0} to {1}",
                     new Object[] { storedVersion, currentVersion });
         } else if (storedVersion == null) {
-            String serverRole = isLimboServer ? "Limbo" : "Main";
+            String serverRole = isLimboServer ? ROLE_LIMBO : ROLE_MAIN;
             getLogger().log(Level.INFO, "Plugin version {0} registered in database for {1} server.",
                     new Object[] { currentVersion, serverRole });
         }
 
         // Check if the other server (Main vs Limbo) has a different version
         if (otherServerVersion != null && !currentVersion.equals(otherServerVersion)) {
-            String ourRole = isLimboServer ? "Limbo" : "Main";
-            String otherRole = isLimboServer ? "Main" : "Limbo";
+            String ourRole = isLimboServer ? ROLE_LIMBO : ROLE_MAIN;
+            String otherRole = isLimboServer ? ROLE_MAIN : ROLE_LIMBO;
             getLogger().warning("╔════════════════════════════════════════╗");
             getLogger().warning("║  ⚠️  VERSION MISMATCH DETECTED!       ║");
             getLogger().warning("╠════════════════════════════════════════╣");

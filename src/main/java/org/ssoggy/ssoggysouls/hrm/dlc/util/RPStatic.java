@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+@SuppressWarnings({"java:S1104", "java:S1444", "java:S3008", "java:S2386"}) // Intentional: runtime-initialized singletons, not true constants
 public class RPStatic {
     private RPStatic() {}
     public static String PREFIX = "<black>[</black><dark_purple>RevivalPlus</dark_purple><black>]</black>";

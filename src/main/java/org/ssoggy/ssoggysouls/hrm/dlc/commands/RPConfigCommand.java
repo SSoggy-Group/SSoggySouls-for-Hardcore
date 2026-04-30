@@ -47,8 +47,11 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     private static final String OPT_TIMER = "TIMER";
     private static final String OPT_RELOAD = "RELOAD";
     private static final String CMD_PREFIX = "/revivalconfig ";
+    private static final String ERR_MARKER_OPEN = " >>";
+    private static final String ERR_MARKER_CLOSE = "<<";
+    private static final String ERR_MARKER_EMPTY = " >><<";
+    private static final String AQUA_LABEL_SUFFIX = ":</aqua> ";
 
-    public RPConfigCommand() {}
     private static final List<String> LIST_BOOLEAN = List.of("true", "false");
     private static final List<String> LIST_BLOCKIDS = Arrays.stream(Material.values()).filter(Material::isBlock).map(Enum::name).toList();
     private static final Map<String, String> cmdKeywords = Map.ofEntries( // Keyword shortcuts used in the command
@@ -153,88 +156,21 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         String plOpt1 = args.length == 0 ? "" : args[0];
         String opt1 = cmdKeywords.getOrDefault(plOpt1.toLowerCase(), "");
 
-        switch(OPTIONCONFIGENUM.getEnumFromVal(opt1)) {
-            case null -> {}
-            case OPTIONCONFIGENUM.STRUCTURE -> { // STRUCTURE
-                switch(args.length) {
-                    case 0:
-                    case 1:
-                        result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = CMD_PREFIX + args[0] + " >><<";
-                        break;
-                    case 2:
-                        if (!RPStatic.BLOCK_TAGS.containsKey(args[1])) {
-                            result.success = COMMANDOUTPUTENUM.FALSE;
-                            result.message = CMD_PREFIX + args[0] + " >>" + args[1] + "<<";
-                            break;
-                        }
-
-                        result.success = COMMANDOUTPUTENUM.INFO;
-                        result.message = "Contents inside of <aqua>" + args[1] + ":</aqua> " + RPStatic.BLOCK_TAGS.getOrDefault(args[1], Set.of()).stream().map(Enum::name).toList();
-                        break;
-                    case 3:
-                        if (!Objects.equals(args[2], "reset")) {
-                            result.success = COMMANDOUTPUTENUM.FALSE;
-                            result.message = CMD_PREFIX + args[0] + " " + args[1] + " >>" + args[2] + "<<";
-                            break;
-                        }
-                    default:
-                        executeStructureCMD(args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result); // All params are successfully entered
-                        break;
+        OPTIONCONFIGENUM option = OPTIONCONFIGENUM.getEnumFromVal(opt1);
+        if (option == null) {
+            // No-op: null option is silently ignored
+        } else {
+            switch (option) {
+                case OPTIONCONFIGENUM.STRUCTURE -> handleStructure(args, result);
+                case OPTIONCONFIGENUM.GAMERULE -> handleGamerule(args, result);
+                case OPTIONCONFIGENUM.TIMER -> handleTimer(args, result);
+                case OPTIONCONFIGENUM.RELOAD -> executeReloadCMD(result);
+                default -> {
+                    result.success = COMMANDOUTPUTENUM.FALSE;
+                    result.message = "<red>Command Failed: " + CMD_PREFIX + ">>" + plOpt1 + "<</red>";
+                    cmdSender.sendRichMessage(result.toString());
+                    return true;
                 }
-            }
-            case OPTIONCONFIGENUM.GAMERULE -> { // GAMERULE
-                switch(args.length) {
-                    case 0:
-                    case 1:
-                        result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = CMD_PREFIX + args[0] + " >><<";
-                        result.details = "Command is incomplete."; // Optional
-                        break;
-                    case 2:
-                        if (!RPStatic.CONFIG_RULES.containsKey(args[1])) {
-                            result.success = COMMANDOUTPUTENUM.FALSE;
-                            result.message = CMD_PREFIX + args[0] + " >>" + args[1] +"<<";
-                            break;
-                        }
-
-                        result.success = COMMANDOUTPUTENUM.INFO;
-                        result.message = "<aqua>" + args[1] + ":</aqua> " + (RPStatic.CONFIG_RULES.get(args[1])).toString();
-                        break;
-                    default:
-                        executeGameruleCMD(args[2], args[1], result);
-                        break;
-                }
-            }
-            case OPTIONCONFIGENUM.TIMER -> { // TIMERS
-                switch(args.length) {
-                    case 0:
-                    case 1:
-                        result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = CMD_PREFIX + args[0] + " >><<";
-                        result.details = "Command is incomplete."; // Optional
-                        break;
-                    case 2:
-                        if (!RPStatic.CONFIG_TIMERS.containsKey(args[1])) {
-                            result.success = COMMANDOUTPUTENUM.FALSE;
-                            result.message = CMD_PREFIX + args[0] + " >>" + args[1] +"<<";
-                            break;
-                        }
-
-                        result.success = COMMANDOUTPUTENUM.INFO;
-                        result.message = "<aqua>" + args[1] + ":</aqua> " + (RPStatic.CONFIG_TIMERS.get(args[1])).toString() + "s";
-                        break;
-                    default:
-                        executeTimerCMD(args[2], args[1], result);
-                        break;
-                }
-            }
-            case OPTIONCONFIGENUM.RELOAD -> executeReloadCMD(result);
-            default -> {
-                result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = "<red>Command Failed: " + CMD_PREFIX + ">>" + plOpt1 + "<<</red>";
-                cmdSender.sendRichMessage(result.toString());
-                return true;
             }
         }
 
@@ -246,6 +182,80 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
 
         cmdSender.sendRichMessage(result.toString()); // feedback
         return true;
+    }
+
+    private void handleStructure(String[] args, RPCommandOutput result) {
+        switch (args.length) {
+            case 0, 1:
+                result.success = COMMANDOUTPUTENUM.FALSE;
+                result.message = CMD_PREFIX + args[0] + ERR_MARKER_EMPTY;
+                break;
+            case 2:
+                if (!RPStatic.BLOCK_TAGS.containsKey(args[1])) {
+                    result.success = COMMANDOUTPUTENUM.FALSE;
+                    result.message = CMD_PREFIX + args[0] + ERR_MARKER_OPEN + args[1] + ERR_MARKER_CLOSE;
+                    break;
+                }
+                result.success = COMMANDOUTPUTENUM.INFO;
+                result.message = "Contents inside of <aqua>" + args[1] + AQUA_LABEL_SUFFIX + RPStatic.BLOCK_TAGS.getOrDefault(args[1], Set.of()).stream().map(Enum::name).toList();
+                break;
+            case 3:
+                if (!Objects.equals(args[2], "reset")) {
+                    result.success = COMMANDOUTPUTENUM.FALSE;
+                    result.message = CMD_PREFIX + args[0] + " " + args[1] + ERR_MARKER_OPEN + args[2] + ERR_MARKER_CLOSE;
+                    break;
+                }
+                // fall through to default intentionally for reset action
+                executeStructureCMD(args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result);
+                break;
+            default:
+                executeStructureCMD(args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result); // All params are successfully entered
+                break;
+        }
+    }
+
+    private void handleGamerule(String[] args, RPCommandOutput result) {
+        switch (args.length) {
+            case 0, 1:
+                result.success = COMMANDOUTPUTENUM.FALSE;
+                result.message = CMD_PREFIX + args[0] + ERR_MARKER_EMPTY;
+                result.details = "Command is incomplete."; // Optional
+                break;
+            case 2:
+                if (!RPStatic.CONFIG_RULES.containsKey(args[1])) {
+                    result.success = COMMANDOUTPUTENUM.FALSE;
+                    result.message = CMD_PREFIX + args[0] + ERR_MARKER_OPEN + args[1] + ERR_MARKER_CLOSE;
+                    break;
+                }
+                result.success = COMMANDOUTPUTENUM.INFO;
+                result.message = "<aqua>" + args[1] + AQUA_LABEL_SUFFIX + (RPStatic.CONFIG_RULES.get(args[1])).toString();
+                break;
+            default:
+                executeGameruleCMD(args[2], args[1], result);
+                break;
+        }
+    }
+
+    private void handleTimer(String[] args, RPCommandOutput result) {
+        switch (args.length) {
+            case 0, 1:
+                result.success = COMMANDOUTPUTENUM.FALSE;
+                result.message = CMD_PREFIX + args[0] + ERR_MARKER_EMPTY;
+                result.details = "Command is incomplete."; // Optional
+                break;
+            case 2:
+                if (!RPStatic.CONFIG_TIMERS.containsKey(args[1])) {
+                    result.success = COMMANDOUTPUTENUM.FALSE;
+                    result.message = CMD_PREFIX + args[0] + ERR_MARKER_OPEN + args[1] + ERR_MARKER_CLOSE;
+                    break;
+                }
+                result.success = COMMANDOUTPUTENUM.INFO;
+                result.message = "<aqua>" + args[1] + AQUA_LABEL_SUFFIX + (RPStatic.CONFIG_TIMERS.get(args[1])).toString() + "s";
+                break;
+            default:
+                executeTimerCMD(args[2], args[1], result);
+                break;
+        }
     }
 
     @Override

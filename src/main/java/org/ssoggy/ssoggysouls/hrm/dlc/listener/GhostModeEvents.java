@@ -114,7 +114,7 @@ public class GhostModeEvents implements Listener {
         if (distance >= (maxDistance * maxDistance)) {
             deadLocation.setYaw(player.getYaw());
             deadLocation.setPitch(player.getPitch());
-            player.teleportAsync(deadLocation); // TODO: This should slowly increase overtime
+            player.teleportAsync(deadLocation); // Note: radius could gradually increase over time in a future iteration
 
             if (Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("ghost-mode-particles", false))) {
                 player.getWorld().spawnParticle(org.bukkit.Particle.DRAGON_BREATH, deadLocation, 50, 0, 1, 0, 0.2);

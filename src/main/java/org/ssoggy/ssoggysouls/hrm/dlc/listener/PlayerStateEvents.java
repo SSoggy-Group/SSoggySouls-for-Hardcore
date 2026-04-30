@@ -104,6 +104,10 @@ public class PlayerStateEvents implements Listener {
             killerStats.incrementStat(STATSENUM.KILLS, 1);
         }
 
+        placeOrDropHead(world, player, deathPos, skull, minHeight, maxHeight);
+    }
+
+    private void placeOrDropHead(World world, Player player, Location deathPos, ItemStack skull, int minHeight, int maxHeight) {
         if (!Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("head-burns-in-lava", true))) {
             for (byte i = 0; deathPos.getY() < (maxHeight - 1) && !deathPos.getBlock().getType().isAir() && i < 127; i++) { // After 128 Blocks it force places the block
                 deathPos.add(0, 1, 0);

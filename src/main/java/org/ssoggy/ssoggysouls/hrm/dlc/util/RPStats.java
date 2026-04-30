@@ -20,7 +20,8 @@ package org.ssoggy.ssoggysouls.hrm.dlc.util;
 
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.STATSENUM;
 
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class RPStats {
@@ -31,8 +32,8 @@ public class RPStats {
         this.table = uuid.toString().replace("-", "");
     }
 
-    public HashMap<STATSENUM, String> getAllStats() {
-        HashMap<STATSENUM, String> map = new HashMap<>();
+    public Map<STATSENUM, String> getAllStats() {
+        Map<STATSENUM, String> map = new EnumMap<>(STATSENUM.class);
         for (STATSENUM num : STATSENUM.values())
             map.put(num, this.storage.getValue(this.table, num.name()));
         return map;
