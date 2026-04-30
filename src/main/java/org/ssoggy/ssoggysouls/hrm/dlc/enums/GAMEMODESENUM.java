@@ -29,7 +29,6 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.Map;
 
 public enum GAMEMODESENUM {
-    //From import org.bukkit.GameMode;
     CREATIVE(1, GameMode.CREATIVE),
     SURVIVAL(0, GameMode.SURVIVAL),
     ADVENTURE(2, GameMode.ADVENTURE),
@@ -40,7 +39,7 @@ public enum GAMEMODESENUM {
 
     private static final Map<Integer, GAMEMODESENUM> BY_ID = Maps.newHashMap(); // Required: enum-level lookup + persistent storage state
     private static final String gmTable; // NOSONAR: initialized in static block
-    private final static RPStorage storage;
+    private static final RPStorage storage;
 
 
     GAMEMODESENUM(final int id, GameMode def) {
@@ -54,12 +53,6 @@ public enum GAMEMODESENUM {
     public static GameMode gmCast(GAMEMODESENUM gm) {
         return gm.fallback;
     }
-    /*public static List<OfflinePlayer> getPlayers(HRPXGAMEMODE gm) {
-        return switch(gm) {
-            case GHOSTMODE -> storage.getTable().stream().map(x -> {return Bukkit.getOfflinePlayer(UUID.fromString(x));}).toList();
-            default -> List.of(); // W I P...
-        };
-    }*/
     public static GAMEMODESENUM getPlayerGameMode(Player player) {
         if (storage.hasValue(gmTable, player.getUniqueId().toString())) { // slow
             return GAMEMODESENUM.GHOSTMODE;

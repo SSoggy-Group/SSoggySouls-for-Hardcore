@@ -44,8 +44,10 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     private static final String SUB_REVIVE = "revive";
     private static final String ERR_NUMBER = "&cInvalid number: ";
 
+    private static final String SUB_CONFIRM = "confirm";
+
     private static final List<String> SUB_COMMANDS = Arrays.asList(
-            SUB_LIVES, SUB_GRACE, "kill", SUB_REVIVE, "reset", "info", "reload", "confirm");
+            SUB_LIVES, SUB_GRACE, "kill", SUB_REVIVE, "reset", "info", "reload", SUB_CONFIRM);
     private static final List<String> LIVES_ACTIONS = Arrays.asList("set", "give", "take");
     private static final List<String> GRACE_ACTIONS = Arrays.asList("set", "remove");
     private static final List<String> CONFIRM_ACTIONS = Arrays.asList("overwrite", "stack", "cancel");
@@ -97,6 +99,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         pendingGraceConfirmations.entrySet().removeIf(entry -> (now - entry.getValue().createdAt()) > fiveMinutes);
     }
 
+    @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
@@ -126,7 +129,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             case "reset"    -> handleReset(sender, args);
             case "info"     -> handleInfo(sender, args);
             case "reload"   -> handleReload(sender);
-            case "confirm"  -> handleGraceConfirm(sender, args);
+            case SUB_CONFIRM  -> handleGraceConfirm(sender, args);
             default -> sender.sendMessage(MessageUtil.colorize(
                     "&cUsage: /psadmin <subcommand> [args]"));
         }
@@ -686,7 +689,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         return switch (sub) {
             case SUB_LIVES -> filterStartsWith(LIVES_ACTIONS, partial);
             case SUB_GRACE -> filterStartsWith(GRACE_ACTIONS, partial);
-            case "confirm" -> filterStartsWith(CONFIRM_ACTIONS, partial);
+            case SUB_CONFIRM -> filterStartsWith(CONFIRM_ACTIONS, partial);
             default -> playerNames(partial);
         };
     }

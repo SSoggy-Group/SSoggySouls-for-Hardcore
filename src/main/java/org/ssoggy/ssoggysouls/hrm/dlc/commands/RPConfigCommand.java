@@ -150,6 +150,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
     @Override
     public boolean onCommand(@NotNull CommandSender cmdSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         RPCommandOutput result = new RPCommandOutput();

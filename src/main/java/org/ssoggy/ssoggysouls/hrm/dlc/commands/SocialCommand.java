@@ -51,6 +51,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         cmdSender.sendRichMessage(cmdOutput.toString());
     }
 
+    @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
     @Override
     public boolean onCommand(@NotNull CommandSender cmdSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
@@ -73,7 +74,9 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         RPSocial social = new RPSocial(playerUUID);
         output.success = COMMANDOUTPUTENUM.TRUE;
 
-        if (tryRelationship(cmdSender, output, social, player, targetPlayer, playerUUID, targetPlayerUUID, args)) {
+        SocialContext ctx = new SocialContext(cmdSender, output, social, player, targetPlayer, playerUUID, targetPlayerUUID);
+
+        if (tryRelationship(ctx, args)) {
             social.saveChanges();
         } else {
             showTrustList(output, social, targetPlayerUUID);
@@ -84,31 +87,42 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
+     * Bundles all contextual state needed by social action handlers to avoid excessive method parameters.
+     */
+    private record SocialContext(
+            CommandSender sender,
+            RPCommandOutput output,
+            RPSocial social,
+            Entity player,
+            OfflinePlayer targetPlayer,
+            UUID playerUUID,
+            UUID targetPlayerUUID
+    ) {}
+
+    /**
      * Attempts to execute the trust action (block/revoke/grant).
      * Returns true if a relationship action was performed, false if should show trust list instead.
      */
-    private boolean tryRelationship(CommandSender cmdSender, RPCommandOutput output, RPSocial social,
-                                    Entity player, OfflinePlayer targetPlayer,
-                                    UUID playerUUID, UUID targetPlayerUUID, String[] args) {
+    private boolean tryRelationship(SocialContext ctx, String[] args) {
         try {
             TRUSTENUM action = TRUSTENUM.valueOf(args[0].toUpperCase(Locale.ROOT).trim());
             if (action == TRUSTENUM.INFO) {
                 return false; // Show trust list
             }
 
-            RPSocial targetSocial = new RPSocial(targetPlayerUUID);
-            SOCIALENUM currentRelation = social.getRelationTo(targetPlayerUUID);
-            SOCIALENUM theirRelation = targetSocial.getRelationTo(playerUUID);
+            RPSocial targetSocial = new RPSocial(ctx.targetPlayerUUID);
+            SOCIALENUM currentRelation = ctx.social.getRelationTo(ctx.targetPlayerUUID);
+            SOCIALENUM theirRelation = targetSocial.getRelationTo(ctx.playerUUID);
 
             switch (action) {
                 case TRUSTENUM.BLOCK:
-                    handleBlock(cmdSender, output, social, targetSocial, targetPlayer, playerUUID, targetPlayerUUID, currentRelation, theirRelation);
+                    handleBlock(ctx, targetSocial, currentRelation, theirRelation);
                     break;
                 case TRUSTENUM.REVOKE:
-                    handleRevoke(output, social, targetPlayer, targetPlayerUUID, currentRelation);
+                    handleRevoke(ctx.output, ctx.social, ctx.targetPlayer, ctx.targetPlayerUUID, currentRelation);
                     break;
                 case TRUSTENUM.GRANT:
-                    handleGrant(cmdSender, output, social, targetSocial, player, targetPlayer, playerUUID, targetPlayerUUID, currentRelation, theirRelation);
+                    handleGrant(ctx, targetSocial, currentRelation, theirRelation);
                     break;
                 default:
                     break;
@@ -119,20 +133,19 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void handleBlock(CommandSender cmdSender, RPCommandOutput output, RPSocial social, RPSocial targetSocial,
-                             OfflinePlayer targetPlayer, UUID playerUUID, UUID targetPlayerUUID,
+    private void handleBlock(SocialContext ctx, RPSocial targetSocial,
                              SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
-        if (playerUUID.equals(targetPlayerUUID)) {
-            executeFail(cmdSender, output, "Player has you blocked");
+        if (ctx.playerUUID.equals(ctx.targetPlayerUUID)) {
+            executeFail(ctx.sender, ctx.output, "Player has you blocked");
             return;
         }
         if (currentRelation == SOCIALENUM.BLOCKED) {
-            output.success = COMMANDOUTPUTENUM.INFO;
-            output.message = "You already blocked " + targetPlayer.getName(); // easter egg: You tryna double-block this dude?
+            ctx.output.success = COMMANDOUTPUTENUM.INFO;
+            ctx.output.message = "You already blocked " + ctx.targetPlayer.getName(); // easter egg: You tryna double-block this dude?
         } else {
-            social.setRelationTo(targetPlayerUUID, SOCIALENUM.BLOCKED);
-            if (theirRelation.isTrustworthy()) { targetSocial.setRelationTo(playerUUID, SOCIALENUM.UNTRUSTED); } // Unbind both players
-            output.message = "You have blocked " + targetPlayer.getName();
+            ctx.social.setRelationTo(ctx.targetPlayerUUID, SOCIALENUM.BLOCKED);
+            if (theirRelation.isTrustworthy()) { targetSocial.setRelationTo(ctx.playerUUID, SOCIALENUM.UNTRUSTED); } // Unbind both players
+            ctx.output.message = "You have blocked " + ctx.targetPlayer.getName();
         }
     }
 
@@ -147,34 +160,32 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void handleGrant(CommandSender cmdSender, RPCommandOutput output, RPSocial social, RPSocial targetSocial,
-                             Entity player, OfflinePlayer targetPlayer,
-                             UUID playerUUID, UUID targetPlayerUUID,
+    private void handleGrant(SocialContext ctx, RPSocial targetSocial,
                              SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
-        if (playerUUID.equals(targetPlayerUUID)) {
-            executeFail(cmdSender, output, "Player has you blocked");
+        if (ctx.playerUUID.equals(ctx.targetPlayerUUID)) {
+            executeFail(ctx.sender, ctx.output, "Player has you blocked");
             return;
         }
 
         if (currentRelation.isTrustworthy()) { // Already Trusted
-            output.success = COMMANDOUTPUTENUM.INFO;
-            output.message = "You have already entrusted " + targetPlayer.getName();
+            ctx.output.success = COMMANDOUTPUTENUM.INFO;
+            ctx.output.message = "You have already entrusted " + ctx.targetPlayer.getName();
         } else if (theirRelation == SOCIALENUM.BLOCKED) { // They Blocked you
-            executeFail(cmdSender, output, "Player has you blocked.");
+            executeFail(ctx.sender, ctx.output, "Player has you blocked.");
         } else if (theirRelation == SOCIALENUM.TRUSTED) { // Make Players Allies
-            social.setRelationTo(targetPlayerUUID, SOCIALENUM.FRIENDS);
-            targetSocial.setRelationTo(playerUUID, SOCIALENUM.FRIENDS);
-            output.message = "You are now friends with " + targetPlayer.getName();
+            ctx.social.setRelationTo(ctx.targetPlayerUUID, SOCIALENUM.FRIENDS);
+            targetSocial.setRelationTo(ctx.playerUUID, SOCIALENUM.FRIENDS);
+            ctx.output.message = "You are now friends with " + ctx.targetPlayer.getName();
 
-            if (targetPlayer.getPlayer() instanceof Player targetOnline) {
+            if (ctx.targetPlayer.getPlayer() instanceof Player targetOnline) {
                 RPCommandOutput targetMessage = new RPCommandOutput();
                 targetMessage.success = COMMANDOUTPUTENUM.TRUE;
-                targetMessage.message =  "You are now friends with " + player.getName();
+                targetMessage.message =  "You are now friends with " + ctx.player.getName();
                 targetOnline.sendRichMessage(targetMessage.toString());
             }
         } else { // Trust Player
-            social.setRelationTo(targetPlayerUUID, SOCIALENUM.TRUSTED);
-            output.message = "You have now entrusted " + targetPlayer.getName();
+            ctx.social.setRelationTo(ctx.targetPlayerUUID, SOCIALENUM.TRUSTED);
+            ctx.output.message = "You have now entrusted " + ctx.targetPlayer.getName();
         }
     }
 
