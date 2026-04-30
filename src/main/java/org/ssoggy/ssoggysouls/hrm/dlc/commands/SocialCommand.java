@@ -65,9 +65,9 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         OfflinePlayer targetPlayer = failArgs ? null : cmdSender.getServer().getOfflinePlayer(args[1].toLowerCase(Locale.ROOT).trim());
         if (!(player instanceof Player)) return true;
         UUID playerUUID = player.getUniqueId();
-        UUID targetPlayerUUID = failArgs ? null : targetPlayer.getUniqueId();
+        if (targetPlayer == null) return true;
+        UUID targetPlayerUUID = targetPlayer.getUniqueId();
         RPUtil.addUsernameToCache(playerUUID);
-        if (targetPlayerUUID == null) return true;
 
         RPUtil.addUsernameToCache(targetPlayerUUID);
         RPSocial social = new RPSocial(playerUUID);

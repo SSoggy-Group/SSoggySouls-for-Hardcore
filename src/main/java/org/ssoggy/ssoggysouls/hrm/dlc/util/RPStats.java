@@ -50,11 +50,11 @@ public class RPStats {
 
     public double incrementStat(STATSENUM option, double increment) {
         try {
-            String old_val = this.getStat(option);
+            String oldVal = this.getStat(option);
 
-            double new_val = (old_val == null || old_val.isBlank()) ? increment : Double.parseDouble(old_val) + increment;
-            this.overrideStat(option, new_val);
-            return new_val;
+            double newVal = (oldVal == null || oldVal.isBlank()) ? increment : Double.parseDouble(oldVal) + increment;
+            this.overrideStat(option, newVal);
+            return newVal;
         } catch (NumberFormatException e) {
             return Double.NEGATIVE_INFINITY;
         }

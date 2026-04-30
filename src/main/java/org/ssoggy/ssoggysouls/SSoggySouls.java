@@ -132,7 +132,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
 
         if (!databaseManager.initialize()) {
             boolean isSqlite = dbType.equals("sqlite") || dbType.equals("local");
-            getLogger().severe("Failed to connect to " + (isSqlite ? "SQLite" : "MySQL") + "! Disabling plugin.");
+            getLogger().log(Level.SEVERE, "Failed to connect to {0}! Disabling plugin.", isSqlite ? "SQLite" : "MySQL");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -149,7 +149,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
         }
 
         String mode = isLimboServer ? "LIMBO SERVER" : "MAIN SERVER";
-        String version = getDescription().getVersion();
+        String version = getPluginMeta().getVersion();
 
         // you see this ascii art is alot better than the updatechecker one am i right
         getLogger().info("");
@@ -218,7 +218,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(mainServerListener, this);
 
         int intervalSeconds = getConfig().getInt("limbo.check-interval-seconds", 3);
-        long intervalTicks = (long) intervalSeconds * 20L;
+        long intervalTicks = intervalSeconds * 20L;
         new MainReviveCheckTask(this).runTaskTimerAsynchronously(this, 60L, intervalTicks);
         getLogger().log(Level.INFO, "Main revive check task started (every {0}s).", intervalSeconds);
 
@@ -260,7 +260,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(limboServerListener, this);
 
         int intervalSeconds = getConfig().getInt("limbo.check-interval-seconds", 3);
-        long intervalTicks = (long) intervalSeconds * 20L;
+        long intervalTicks = intervalSeconds * 20L;
         new LimboCheckTask(this).runTaskTimerAsynchronously(this, 60L, intervalTicks);
         getLogger().log(Level.INFO, "Limbo check task started (every {0}s).", intervalSeconds);
     }
@@ -596,7 +596,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
 
     // checks if main and limbo are running same version, warns if not
     private void checkVersionCompatibility() {
-        String currentVersion = getDescription().getVersion();
+        String currentVersion = getPluginMeta().getVersion();
         // Use different keys for main and limbo servers to properly track each
         String versionKey = isLimboServer ? "limbo_version" : "main_version";
         String otherVersionKey = isLimboServer ? "main_version" : "limbo_version";
@@ -612,8 +612,9 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
             getLogger().log(Level.INFO, "Plugin version updated from {0} to {1}",
                     new Object[] { storedVersion, currentVersion });
         } else if (storedVersion == null) {
+            String serverRole = isLimboServer ? "Limbo" : "Main";
             getLogger().log(Level.INFO, "Plugin version {0} registered in database for {1} server.",
-                    new Object[] { currentVersion, isLimboServer ? "Limbo" : "Main" });
+                    new Object[] { currentVersion, serverRole });
         }
 
         // Check if the other server (Main vs Limbo) has a different version

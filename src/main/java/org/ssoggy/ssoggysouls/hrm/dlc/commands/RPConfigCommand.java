@@ -46,6 +46,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     private static final String OPT_GAMERULE = "GAMERULE";
     private static final String OPT_TIMER = "TIMER";
     private static final String OPT_RELOAD = "RELOAD";
+    private static final String CMD_PREFIX = "/revivalconfig ";
 
     public RPConfigCommand() {}
     private static final List<String> LIST_BOOLEAN = List.of("true", "false");
@@ -159,12 +160,12 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     case 0:
                     case 1:
                         result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = "/revivalconfig " + args[0] + " >><<";
+                        result.message = CMD_PREFIX + args[0] + " >><<";
                         break;
                     case 2:
                         if (!RPStatic.BLOCK_TAGS.containsKey(args[1])) {
                             result.success = COMMANDOUTPUTENUM.FALSE;
-                            result.message = "/revivalconfig " + args[0] + " >>" + args[1] + "<<";
+                            result.message = CMD_PREFIX + args[0] + " >>" + args[1] + "<<";
                             break;
                         }
 
@@ -174,7 +175,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     case 3:
                         if (!Objects.equals(args[2], "reset")) {
                             result.success = COMMANDOUTPUTENUM.FALSE;
-                            result.message = "/revivalconfig " + args[0] + " " + args[1] + " >>" + args[2] + "<<";
+                            result.message = CMD_PREFIX + args[0] + " " + args[1] + " >>" + args[2] + "<<";
                             break;
                         }
                     default:
@@ -187,13 +188,13 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     case 0:
                     case 1:
                         result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = "/revivalconfig " + args[0] + " >><<";
+                        result.message = CMD_PREFIX + args[0] + " >><<";
                         result.details = "Command is incomplete."; // Optional
                         break;
                     case 2:
                         if (!RPStatic.CONFIG_RULES.containsKey(args[1])) {
                             result.success = COMMANDOUTPUTENUM.FALSE;
-                            result.message = "/revivalconfig " + args[0] + " >>" + args[1] +"<<";
+                            result.message = CMD_PREFIX + args[0] + " >>" + args[1] +"<<";
                             break;
                         }
 
@@ -210,13 +211,13 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     case 0:
                     case 1:
                         result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = "/revivalconfig " + args[0] + " >><<";
+                        result.message = CMD_PREFIX + args[0] + " >><<";
                         result.details = "Command is incomplete."; // Optional
                         break;
                     case 2:
                         if (!RPStatic.CONFIG_TIMERS.containsKey(args[1])) {
                             result.success = COMMANDOUTPUTENUM.FALSE;
-                            result.message = "/revivalconfig " + args[0] + " >>" + args[1] +"<<";
+                            result.message = CMD_PREFIX + args[0] + " >>" + args[1] +"<<";
                             break;
                         }
 
@@ -231,7 +232,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             case OPTIONCONFIGENUM.RELOAD -> executeReloadCMD(result);
             default -> {
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = "<red>Command Failed: /revivalconfig >>" + plOpt1 + "<<</red>";
+                result.message = "<red>Command Failed: " + CMD_PREFIX + ">>" + plOpt1 + "<<</red>";
                 cmdSender.sendRichMessage(result.toString());
                 return true;
             }
@@ -273,7 +274,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                 yield Collections.emptyList();
             }
             case 4 -> {
-                if (Objects.equals(opt1, "STRUCTURE")) {
+                if (Objects.equals(opt1, OPT_STRUCTURE)) {
                     String opt = args[2];
 
                     if (Objects.equals(opt, "add")) {

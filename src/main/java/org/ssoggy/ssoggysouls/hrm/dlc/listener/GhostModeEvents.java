@@ -103,21 +103,21 @@ public class GhostModeEvents implements Listener {
         }
 
         UUID uuid = player.getUniqueId();
-        Location player_location = player.getLocation();
+        Location playerLocation = player.getLocation();
         Pair<Location, Instant> pair = RPStatic.DEAD_LOCATIONS.get(uuid);
 
-        Location dead_location = getLocation(pair, uuid, player); // See method below
-        if (dead_location == null) return;
+        Location deadLocation = getLocation(pair, uuid, player); // See method below
+        if (deadLocation == null) return;
 
-        double distance = dead_location.distanceSquared(player_location);
-        double max_distance = (double) RPStatic.CONFIG_TIMERS.getOrDefault("spectator-headrestrict-radius", 16);
-        if (distance >= (max_distance * max_distance)) {
-            dead_location.setYaw(player.getYaw());
-            dead_location.setPitch(player.getPitch());
-            player.teleportAsync(dead_location); // TODO: This should slowly increase overtime
+        double distance = deadLocation.distanceSquared(playerLocation);
+        double maxDistance = RPStatic.CONFIG_TIMERS.getOrDefault("spectator-headrestrict-radius", 16);
+        if (distance >= (maxDistance * maxDistance)) {
+            deadLocation.setYaw(player.getYaw());
+            deadLocation.setPitch(player.getPitch());
+            player.teleportAsync(deadLocation); // TODO: This should slowly increase overtime
 
-            if (RPStatic.CONFIG_RULES.getOrDefault("ghost-mode-particles", false)) {
-                player.getWorld().spawnParticle(org.bukkit.Particle.DRAGON_BREATH, dead_location, 50, 0, 1, 0, 0.2);
+            if (Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("ghost-mode-particles", false))) {
+                player.getWorld().spawnParticle(org.bukkit.Particle.DRAGON_BREATH, deadLocation, 50, 0, 1, 0, 0.2);
             }
             
             player.playSound(player, Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 0);
@@ -141,27 +141,27 @@ public class GhostModeEvents implements Listener {
         String holder = RPStatic.DEAD_STORAGE.getValue(uuid.toString(), "deathholder");
 
         if (holder != null) {
-            Location offline_location = Bukkit.getOfflinePlayer(UUID.fromString(holder)).getLocation();
-            if (offline_location != null)
-                return offline_location;
+            Location offlineLocation = Bukkit.getOfflinePlayer(UUID.fromString(holder)).getLocation();
+            if (offlineLocation != null)
+                return offlineLocation;
         }
 
-        String saved_time = RPStatic.DEAD_STORAGE.getValue(uuid.toString(), "deathtime");
-        String saved_pos = RPStatic.DEAD_STORAGE.getValue(uuid.toString(), "deathpos");
-        if (saved_pos == null || saved_time == null) {
+        String savedTime = RPStatic.DEAD_STORAGE.getValue(uuid.toString(), "deathtime");
+        String savedPos = RPStatic.DEAD_STORAGE.getValue(uuid.toString(), "deathpos");
+        if (savedPos == null || savedTime == null) {
             return null;
         }
 
-        String[] split = saved_pos.split("\\$");
+        String[] split = savedPos.split("\\$");
         if (split.length < 3) {
             return null;
         }
 
         try {
-            Location new_location = new Location(player.getWorld(),
+            Location newLocation = new Location(player.getWorld(),
                     (int) Double.parseDouble(split[0]) + 0.5, (int) Double.parseDouble(split[1]) + 0.5, (int) Double.parseDouble(split[2]) + 0.5); // center transforms (e.g. 4.79530 or 4.12405 to 4 to 4.5)
-            RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(new_location, Instant.parse(saved_time))); // This should be removed when playerhead block is destroyed
-            return new_location;
+            RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(newLocation, Instant.parse(savedTime))); // This should be removed when playerhead block is destroyed
+            return newLocation;
         } catch (Exception ignored) {
             return null;
         }

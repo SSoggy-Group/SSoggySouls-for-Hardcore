@@ -19,6 +19,7 @@ along with RevivePlus.  If not, see <https://www.gnu.org/licenses/>
 package org.ssoggy.ssoggysouls.hrm.dlc.action;
 
 import io.papermc.paper.entity.LookAnchor;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -42,14 +43,20 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class ReviveHelper {
+    private static final String TAG_FLOWER = "flower-blocktag";
+    private static final String TAG_STAIR = "stair-blocktag";
+    private static final String TAG_SOUL_SAND = "soul-sand-blocktag";
+
+    private ReviveHelper() {}
+
     public static boolean tryRevivePlayer(World world, Location pos, Player deadPlayer, Player alivePlayer) {
-        RPStats alive_stats = new RPStats(alivePlayer.getUniqueId());
-        alive_stats.incrementStat(STATSENUM.RITUAL_STARTED, 1);
+        RPStats aliveStats = new RPStats(alivePlayer.getUniqueId());
+        aliveStats.incrementStat(STATSENUM.RITUAL_STARTED, 1);
 
         Map<Location, Set<Material>> result = searchAround(world, pos, getRitualPattern(world));
-        if (result == null) {
+        if (result.isEmpty()) {
             Map<Location, Set<Material>> incompleteResult = searchAround(world, pos, getFailedRitualPattern(world));
-            if (incompleteResult != null) {
+            if (!incompleteResult.isEmpty()) {
                 spawnError("Something is missing...", world, pos, alivePlayer);
             }
             return false;
@@ -76,12 +83,12 @@ public class ReviveHelper {
         }
 
 
-        RPStats dead_stats = new RPStats(deadPlayer.getUniqueId());
-        alive_stats.incrementStat(STATSENUM.RITUAL_COMPLETED, 1);
-        dead_stats.incrementStat(STATSENUM.REVIVES, 1);
+        RPStats deadStats = new RPStats(deadPlayer.getUniqueId());
+        aliveStats.incrementStat(STATSENUM.RITUAL_COMPLETED, 1);
+        deadStats.incrementStat(STATSENUM.REVIVES, 1);
 
-        if (RPStatic.CONFIG_RULES.getOrDefault("ritual-lightning-strike", true)) {
-            world.strikeLightning(new Location(world, (float)pos.getBlockX() + 0.5F, pos.getBlockY() - 1, (float)pos.getBlockZ() - 0.5F));
+        if (Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("ritual-lightning-strike", true))) {
+            world.strikeLightning(new Location(world, pos.getBlockX() + 0.5, (double) pos.getBlockY() - 1, pos.getBlockZ() - 0.5));
         }
         spawnPlayer(world, pos, result, deadPlayer, alivePlayer);
         return true;
@@ -90,7 +97,7 @@ public class ReviveHelper {
     private static void spawnPlayer(World world, Location pos, Map<Location, Set<Material>> patternResult, Player deadPlayer, Player alivePlayer) {
         breakRitualPatternBlocks(world, pos, patternResult);
 
-        deadPlayer.teleport(new Location(world, (float) pos.getBlockX() + 0.5F, (float)pos.getBlockY() - 0.95F, (float)pos.getBlockZ() + 0.5F));
+        deadPlayer.teleport(new Location(world, pos.getBlockX() + 0.5, pos.getBlockY() - 0.95, pos.getBlockZ() + 0.5));
         deadPlayer.lookAt(alivePlayer, LookAnchor.FEET, LookAnchor.FEET);
         GAMEMODESENUM.setPlayerGameMode(deadPlayer, GAMEMODESENUM.SURVIVAL);
 
@@ -106,7 +113,7 @@ public class ReviveHelper {
             deadPlayer.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, glowingTicks, 1));
         }
 
-        if (RPStatic.CONFIG_RULES.getOrDefault("ritual-totem-effect", true)) {
+        if (Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("ritual-totem-effect", true))) {
             deadPlayer.sendEntityEffect(EntityEffect.TOTEM_RESURRECT, deadPlayer); // If this is removed in the newer versions then I will cry
         }
     }
@@ -114,21 +121,21 @@ public class ReviveHelper {
     private static void spawnError(String errorMessage, World world, Location pos, Player alivePlayer) {
         alivePlayer.sendActionBar(Component.text(errorMessage));
         world.playSound(pos, Sound.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.4F, 20.0F);
-        world.spawnParticle(Particle.SMOKE, new Location(world, (float)pos.getBlockX() + 0.5F, (float)pos.getBlockY() + 0.5F, (float)pos.getBlockZ() + 0.5F), 1);
+        world.spawnParticle(Particle.SMOKE, new Location(world, pos.getBlockX() + 0.5, pos.getBlockY() + 0.5, pos.getBlockZ() + 0.5), 1);
     }
 
     private static Map<Location, Set<Material>> searchAround(World world, Location pos, Map<Location, Set<Material>> blockOffsetMap) {
         for(Map.Entry<Location, Set<Material>> offset : blockOffsetMap.entrySet()) {
             Location offsetKey = offset.getKey();
-            Location offsetPos = new Location(world, pos.getBlockX() + offsetKey.getBlockX(), pos.getBlockY() + offsetKey.getBlockY(), pos.getBlockZ() + offsetKey.getBlockZ());
+            Location offsetPos = new Location(world, (double) pos.getBlockX() + offsetKey.getBlockX(), (double) pos.getBlockY() + offsetKey.getBlockY(), (double) pos.getBlockZ() + offsetKey.getBlockZ());
             Stream<Material> blockTag = offset.getValue().stream();
             if (offsetPos.getY() <= world.getMinHeight()) {
-                return null;
+                return Collections.emptyMap();
             }
 
             Block block = world.getBlockAt(offsetPos.toBlockLocation());
-            if (blockTag.noneMatch((blockType) -> blockType == block.getType())) {
-                return null;
+            if (blockTag.noneMatch(blockType -> blockType == block.getType())) {
+                return Collections.emptyMap();
             }
         }
 
@@ -136,12 +143,12 @@ public class ReviveHelper {
     }
 
     private static void breakRitualPatternBlocks(World world, Location pos, Map<Location, Set<Material>> patternResult) {
-        int deadzoneY = RPStatic.CONFIG_RULES.getOrDefault("keep-structure-base", false) ? 1 : 0;
+        int deadzoneY = Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("keep-structure-base", false)) ? 1 : 0;
 
         for(Map.Entry<Location, Set<Material>> offset : patternResult.entrySet()) {
             Location offsetKey = offset.getKey();
-            Location offsetPos = new Location(world, pos.getBlockX() + offsetKey.getBlockX(), pos.getBlockY() + offsetKey.getBlockY() + deadzoneY, pos.getBlockZ() + offsetKey.getBlockZ());
-            if (offsetPos.getY() > (double)world.getMinHeight() && offsetPos.getBlockY() <= pos.getBlockY()) {
+            Location offsetPos = new Location(world, (double) pos.getBlockX() + offsetKey.getBlockX(), (double) pos.getBlockY() + offsetKey.getBlockY() + deadzoneY, (double) pos.getBlockZ() + offsetKey.getBlockZ());
+            if (offsetPos.getY() > world.getMinHeight() && offsetPos.getBlockY() <= pos.getBlockY()) {
                 Block block = world.getBlockAt(offsetPos);
                 block.setType(Material.AIR);
             }
@@ -154,23 +161,23 @@ public class ReviveHelper {
         Map<Location, Set<Material>> patternMap = new HashMap<>();
         patternMap.put(new Location(world, 0.0F, 0.0F, 0.0F), Set.of(Material.PLAYER_HEAD));
         patternMap.put(new Location(world, 0.0F, -1.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("fence-blocktag", Set.of()));
-        patternMap.put(new Location(world, 0.0F, -1.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault("flower-blocktag", Set.of()));
-        patternMap.put(new Location(world, 0.0F, -1.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault("flower-blocktag", Set.of()));
-        patternMap.put(new Location(world, -1.0F, -1.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("flower-blocktag", Set.of()));
-        patternMap.put(new Location(world, 1.0F, -1.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("flower-blocktag", Set.of()));
+        patternMap.put(new Location(world, 0.0F, -1.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_FLOWER, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -1.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_FLOWER, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -1.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_FLOWER, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -1.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_FLOWER, Set.of()));
         patternMap.put(new Location(world, 0.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("ore-blocktag", Set.of()));
-        patternMap.put(new Location(world, 0.0F, -2.0F, 2.0F), RPStatic.BLOCK_TAGS.getOrDefault("stair-blocktag", Set.of()));
-        patternMap.put(new Location(world, 0.0F, -2.0F, -2.0F), RPStatic.BLOCK_TAGS.getOrDefault("stair-blocktag", Set.of()));
-        patternMap.put(new Location(world, 2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("stair-blocktag", Set.of()));
-        patternMap.put(new Location(world, -2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("stair-blocktag", Set.of()));
-        patternMap.put(new Location(world, 0.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, 0.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, 1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, -1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, -1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, -1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, 1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, 1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, 2.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, -2.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, -2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
         return patternMap;
     }
 
@@ -179,18 +186,18 @@ public class ReviveHelper {
         patternMap.put(new Location(world, 0.0F, 0.0F, 0.0F), Set.of(Material.PLAYER_HEAD));
         patternMap.put(new Location(world, 0.0F, -1.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("fence-blocktag", Set.of()));
         patternMap.put(new Location(world, 0.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("ore-blocktag", Set.of()));
-        patternMap.put(new Location(world, 0.0F, -2.0F, 2.0F), RPStatic.BLOCK_TAGS.getOrDefault("stair-blocktag", Set.of()));
-        patternMap.put(new Location(world, 0.0F, -2.0F, -2.0F), RPStatic.BLOCK_TAGS.getOrDefault("stair-blocktag", Set.of()));
-        patternMap.put(new Location(world, 2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("stair-blocktag", Set.of()));
-        patternMap.put(new Location(world, -2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("stair-blocktag", Set.of()));
-        patternMap.put(new Location(world, 0.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, 0.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, 1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, -1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, -1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, -1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, 1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
-        patternMap.put(new Location(world, 1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault("soul-sand-blocktag", Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, 2.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, -2.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, -2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
         return patternMap;
     }
 }

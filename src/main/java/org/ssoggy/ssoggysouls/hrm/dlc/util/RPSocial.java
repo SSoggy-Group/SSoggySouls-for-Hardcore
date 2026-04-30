@@ -27,18 +27,18 @@ import java.util.UUID;
 import java.util.function.BiPredicate;
 
 public class RPSocial {
-    private final UUID stored_uuid;
+    private final UUID storedUuid;
     public RPSocial(UUID uuid) {
-        this.stored_uuid = uuid;
+        this.storedUuid = uuid;
         RPStatic.SOCIAL_STORAGE.loadConfig();
     }
 
     public void setRelationTo(UUID uuid, @Nullable SOCIALENUM relationship) {
         if (relationship == null) { // technically could be another function but I enjoy flexible code
-            RPStatic.SOCIAL_STORAGE.removeValue(this.stored_uuid.toString(), uuid.toString());
+            RPStatic.SOCIAL_STORAGE.removeValue(this.storedUuid.toString(), uuid.toString());
             return;
         }
-        RPStatic.SOCIAL_STORAGE.setValue(this.stored_uuid.toString(), uuid.toString(), relationship.name());
+        RPStatic.SOCIAL_STORAGE.setValue(this.storedUuid.toString(), uuid.toString(), relationship.name());
     }
 
     private SOCIALENUM riskyOrDefault(String risky, SOCIALENUM def) {
@@ -50,15 +50,15 @@ public class RPSocial {
     }
 
     public SOCIALENUM getRelationTo(UUID uuid) {
-        return riskyOrDefault(RPStatic.SOCIAL_STORAGE.getValue(this.stored_uuid.toString(), uuid.toString()), SOCIALENUM.UNTRUSTED);
+        return riskyOrDefault(RPStatic.SOCIAL_STORAGE.getValue(this.storedUuid.toString(), uuid.toString()), SOCIALENUM.UNTRUSTED);
     }
 
     public Map<UUID, SOCIALENUM> getRelationsToAll(@Nullable BiPredicate<? super UUID, ? super SOCIALENUM> filter) {
         try {
             Map<UUID, SOCIALENUM> result = Maps.newHashMap();
-            RPStatic.SOCIAL_STORAGE.getTable(this.stored_uuid.toString()).forEach((Ok, Ov) -> {
-                UUID k = UUID.fromString(Ok);
-                SOCIALENUM v = riskyOrDefault((String)Ov, SOCIALENUM.UNTRUSTED);
+            RPStatic.SOCIAL_STORAGE.getTable(this.storedUuid.toString()).forEach((rawKey, rawValue) -> {
+                UUID k = UUID.fromString(rawKey);
+                SOCIALENUM v = riskyOrDefault((String) rawValue, SOCIALENUM.UNTRUSTED);
                 if (filter == null || filter.test(k, v)) {
                     result.put(k, v);
                 }

@@ -36,19 +36,14 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 
 public class RPUtil {
-    //public static final String DEATH_COORDS_TEXT = "Death Coordinates: [{y} {x} {z}]\nDimension: {dTypeName}";
-
-    private static void nonNullable(Object o, String name) {
-        if (o == null) {
-            throw new NullPointerException(name + " should not be null!");
-        }
-    }
+    private static final String KEY_USERNAME_CACHE = "usernamecache";
+    private RPUtil() {}
 
     public static String addUsernameToCache(UUID uuid) {
         String uuidString = uuid.toString();
         try {
             String username = Bukkit.getOfflinePlayer(uuid).getName();
-            RPStatic.USERNAME_CACHE.setValue("usernamecache", uuidString, username);
+            RPStatic.USERNAME_CACHE.setValue(KEY_USERNAME_CACHE, uuidString, username);
             RPStatic.USERNAME_CACHE.saveConfig();
             return username;
         } catch (Exception e) {
@@ -58,18 +53,18 @@ public class RPUtil {
 
     public static String getUsernameFromCache(UUID uuid) {
         String uuidString = uuid.toString();
-        if (!RPStatic.USERNAME_CACHE.hasValue("usernamecache", uuidString)) {
+        if (!RPStatic.USERNAME_CACHE.hasValue(KEY_USERNAME_CACHE, uuidString)) {
             return addUsernameToCache(uuid);
         }
-        return RPStatic.USERNAME_CACHE.getValue("usernamecache", uuidString);
+        return RPStatic.USERNAME_CACHE.getValue(KEY_USERNAME_CACHE, uuidString);
     }
     public static Map<UUID, String> getAllUsernamesFromCache(@Nullable BiPredicate<? super UUID, ? super String> filter) {
         try {
             Map<UUID, String> result = Maps.newHashMap();
-            RPStatic.USERNAME_CACHE.getTable("usernamecache").forEach((Ok, Ov) -> {
+            RPStatic.USERNAME_CACHE.getTable(KEY_USERNAME_CACHE).forEach((rawKey, rawValue) -> {
                 try {
-                    UUID k = UUID.fromString(Ok);
-                    String v = (String)Ov;
+                    UUID k = UUID.fromString(rawKey);
+                    String v = (String) rawValue;
                     if (filter == null || filter.test(k, v)) {
                         result.put(k, v);
                     }
@@ -97,7 +92,6 @@ public class RPUtil {
         Skull sBlockState = (Skull) sBlock.getState();
 
         sBlockState.setOwningPlayer(Bukkit.getOfflinePlayer(name));
-        //sBlockState.setPlayerProfile(skullMeta.getPlayerProfile());
         sBlockState.update(true);
         return sBlock;
     }

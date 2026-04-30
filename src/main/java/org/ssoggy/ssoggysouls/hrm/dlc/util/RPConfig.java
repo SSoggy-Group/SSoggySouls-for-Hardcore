@@ -28,6 +28,7 @@ import org.bukkit.Tag;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class RPConfig {
+    private RPConfig() {}
     private static final HashMap<String, Set<Material>> defaultBlockTag = new HashMap<>(Map.ofEntries(
             Map.entry("soul-sand-blocktag", Set.of(Material.CRYING_OBSIDIAN, Material.OBSIDIAN)),
             Map.entry("flower-blocktag", Set.of(Material.SOUL_TORCH, Material.REDSTONE_TORCH)),
@@ -56,9 +57,15 @@ public class RPConfig {
     );
 
     static {
-        RPStatic.BLOCK_TAGS = (Map<String, Set<Material>>) defaultBlockTag.clone(); // You forgot that java passes in references not objects
-        RPStatic.CONFIG_RULES = (Map<String, Boolean>) defaultConfigRules.clone(); // This broke some stuff without the cloning
-        RPStatic.CONFIG_TIMERS = (Map<String, Integer>) defaultConfigTimers.clone();
+        @SuppressWarnings("unchecked")
+        Map<String, Set<Material>> clonedTags = (Map<String, Set<Material>>) defaultBlockTag.clone();
+        @SuppressWarnings("unchecked")
+        Map<String, Boolean> clonedRules = (Map<String, Boolean>) defaultConfigRules.clone();
+        @SuppressWarnings("unchecked")
+        Map<String, Integer> clonedTimers = (Map<String, Integer>) defaultConfigTimers.clone();
+        RPStatic.BLOCK_TAGS = clonedTags;
+        RPStatic.CONFIG_RULES = clonedRules;
+        RPStatic.CONFIG_TIMERS = clonedTimers;
     }
 
     public static void init() {

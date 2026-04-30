@@ -44,6 +44,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class PlayerStateEvents implements Listener {
+    private static final String KEY_DEATHPOS = "deathpos";
+    private static final String KEY_DEATHTIME = "deathtime";
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent event) {
@@ -54,7 +56,7 @@ public class PlayerStateEvents implements Listener {
             return;
         }
 
-        if (RPStatic.CONFIG_RULES.getOrDefault("lose-inventory", false)) {
+        if (Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("lose-inventory", false))) {
             event.getDrops().clear();
         }
 
@@ -80,16 +82,16 @@ public class PlayerStateEvents implements Listener {
             return;
         }
 
-        if (gamemode == GAMEMODESENUM.CREATIVE && !RPStatic.CONFIG_RULES.getOrDefault("creative-players-drop-heads", false)) {
+        if (gamemode == GAMEMODESENUM.CREATIVE && !Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("creative-players-drop-heads", false))) {
             return;
         }
 
         Instant now = Instant.now();
         UUID uuid = player.getUniqueId();
         RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(deathPos, now));
-        RPStatic.DEAD_STORAGE.setValue(uuid.toString(), "deathpos",
+        RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHPOS,
                 deathPos.getBlockX() + "$" + deathPos.getBlockY() + "$" + deathPos.getBlockZ() + "$" + deathPos.getWorld().getName());
-        RPStatic.DEAD_STORAGE.setValue(uuid.toString(), "deathtime", now.toString());
+        RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHTIME, now.toString());
         RPStatic.DEAD_STORAGE.saveConfig();
         GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.GHOSTMODE);
 
@@ -102,7 +104,7 @@ public class PlayerStateEvents implements Listener {
             killerStats.incrementStat(STATSENUM.KILLS, 1);
         }
 
-        if (!RPStatic.CONFIG_RULES.getOrDefault("head-burns-in-lava", true)) {
+        if (!Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("head-burns-in-lava", true))) {
             for (byte i = 0; deathPos.getY() < (maxHeight - 1) && !deathPos.getBlock().getType().isAir() && i < 127; i++) { // After 128 Blocks it force places the block
                 deathPos.add(0, 1, 0);
             }
@@ -135,8 +137,8 @@ public class PlayerStateEvents implements Listener {
             boolean isRevived = ReviveHelper.tryRevivePlayer(world, deathPos, player, player);
             if (isRevived) {
                 RPStatic.DEAD_LOCATIONS.remove(player.getUniqueId());
-                RPStatic.DEAD_STORAGE.removeValue(player.getUniqueId().toString(), "deathpos");
-                RPStatic.DEAD_STORAGE.removeValue(player.getUniqueId().toString(), "deathtime");
+                RPStatic.DEAD_STORAGE.removeValue(player.getUniqueId().toString(), KEY_DEATHPOS);
+                RPStatic.DEAD_STORAGE.removeValue(player.getUniqueId().toString(), KEY_DEATHTIME);
                 RPStatic.DEAD_STORAGE.saveConfig();
             }
         }

@@ -31,6 +31,10 @@ public enum COMMANDOUTPUTENUM {
         this.index = i;
     }
 
+    public byte getIndex() {
+        return index;
+    }
+
     public static COMMANDOUTPUTENUM valueOf(byte i) {
         return switch(i) {
             case 0 -> COMMANDOUTPUTENUM.FALSE;

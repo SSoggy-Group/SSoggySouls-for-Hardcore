@@ -25,7 +25,7 @@ public class UpdateChecker {
 
     public UpdateChecker(Plugin plugin) {
         this.plugin = plugin;
-        this.currentVersion = plugin.getDescription().getVersion();
+        this.currentVersion = plugin.getPluginMeta().getVersion();
     }
 
     public void checkForUpdates() {
