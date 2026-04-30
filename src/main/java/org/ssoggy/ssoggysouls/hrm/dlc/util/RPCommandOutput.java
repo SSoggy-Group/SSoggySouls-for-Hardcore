@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("java:S1104") // Intentional: mutable DTO fields set directly by command handlers
 public class RPCommandOutput {
     public COMMANDOUTPUTENUM success = COMMANDOUTPUTENUM.NULL;
     public String message = "";
