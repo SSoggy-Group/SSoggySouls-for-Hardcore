@@ -58,7 +58,8 @@ public class PlayerStateEvents implements Listener {
             event.getDrops().clear();
         }
 
-        int minHeight = world.getMinHeight(), maxHeight = world.getMaxHeight();
+        int minHeight = world.getMinHeight();
+        int maxHeight = world.getMaxHeight();
         Location location = player.getLocation();
         Location deathPos = new Location(world, location.getBlockX(), Math.clamp(location.getY(), minHeight, maxHeight), location.getZ());
         String[] dimensionName = world.getKey().asString().split(":");
@@ -97,8 +98,8 @@ public class PlayerStateEvents implements Listener {
 
         Player killer = player.getKiller();
         if (killer != null) {
-            RPStats killer_stats = new RPStats(uuid);
-            killer_stats.incrementStat(STATSENUM.KILLS, 1);
+            RPStats killerStats = new RPStats(uuid);
+            killerStats.incrementStat(STATSENUM.KILLS, 1);
         }
 
         if (!RPStatic.CONFIG_RULES.getOrDefault("head-burns-in-lava", true)) {
@@ -151,15 +152,12 @@ public class PlayerStateEvents implements Listener {
     @EventHandler
     private void onGameModeChanged(PlayerGameModeChangeEvent event) {
         Player player = event.getPlayer();
-        switch (event.getCause()) { // Remember, these are different...
-            case HARDCORE_DEATH -> {
-                event.setCancelled(true);
-                GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.GHOSTMODE); // Uses the HRPXGAMEMODE class
-            }
-            case COMMAND -> {
-                event.setCancelled(true);
-                GAMEMODESENUM.setPlayerGameMode(player, event.getNewGameMode()); // Uses the GameMode class
-            }
+        if (event.getCause() == PlayerGameModeChangeEvent.Cause.HARDCORE_DEATH) {
+            event.setCancelled(true);
+            GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.GHOSTMODE); // Uses the HRPXGAMEMODE class
+        } else if (event.getCause() == PlayerGameModeChangeEvent.Cause.COMMAND) {
+            event.setCancelled(true);
+            GAMEMODESENUM.setPlayerGameMode(player, event.getNewGameMode()); // Uses the GameMode class
         }
     }
 }

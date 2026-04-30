@@ -23,7 +23,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
 import java.util.Collections;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,29 +40,34 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
-// Note to self, rewrite again later
 
-public class RPConfigCommand implements CommandExecutor, TabCompleter { // Lazy Command Write
-    private static final List<String> LIST_BOOLEAN = List.of("true", "false");// TODO: 3 statics
+public class RPConfigCommand implements CommandExecutor, TabCompleter {
+    private static final String OPT_STRUCTURE = "STRUCTURE";
+    private static final String OPT_GAMERULE = "GAMERULE";
+    private static final String OPT_TIMER = "TIMER";
+    private static final String OPT_RELOAD = "RELOAD";
+
+    public RPConfigCommand() {}
+    private static final List<String> LIST_BOOLEAN = List.of("true", "false");
     private static final List<String> LIST_BLOCKIDS = Arrays.stream(Material.values()).filter(Material::isBlock).map(Enum::name).toList();
     private static final Map<String, String> cmdKeywords = Map.ofEntries( // Keyword shortcuts used in the command
-            Map.entry("structure", "STRUCTURE"),
-            Map.entry("1", "STRUCTURE"),
-            Map.entry("s", "STRUCTURE"),
-            Map.entry("struc", "STRUCTURE"),
-            Map.entry("struct", "STRUCTURE"),
-            Map.entry("gamerule", "GAMERULE"),
-            Map.entry("gamerules", "GAMERULE"),
-            Map.entry("2", "GAMERULE"),
-            Map.entry("g", "GAMERULE"),
-            Map.entry("gr", "GAMERULE"),
-            Map.entry("gmr", "GAMERULE"),
-            Map.entry("reload", "RELOAD"),
-            Map.entry("r", "RELOAD"),
-            Map.entry("0", "RELOAD"),
-            Map.entry("timer", "TIMER"),
-            Map.entry("t", "TIMER"),
-            Map.entry("3", "TIMER")
+            Map.entry("structure", OPT_STRUCTURE),
+            Map.entry("1", OPT_STRUCTURE),
+            Map.entry("s", OPT_STRUCTURE),
+            Map.entry("struc", OPT_STRUCTURE),
+            Map.entry("struct", OPT_STRUCTURE),
+            Map.entry("gamerule", OPT_GAMERULE),
+            Map.entry("gamerules", OPT_GAMERULE),
+            Map.entry("2", OPT_GAMERULE),
+            Map.entry("g", OPT_GAMERULE),
+            Map.entry("gr", OPT_GAMERULE),
+            Map.entry("gmr", OPT_GAMERULE),
+            Map.entry("reload", OPT_RELOAD),
+            Map.entry("r", OPT_RELOAD),
+            Map.entry("0", OPT_RELOAD),
+            Map.entry("timer", OPT_TIMER),
+            Map.entry("t", OPT_TIMER),
+            Map.entry("3", OPT_TIMER)
     );
 
 
@@ -251,19 +255,19 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter { // Lazy 
         return switch(args.length) {
             case 1 -> Arrays.stream(OPTIONCONFIGENUM.values()).filter(x -> x.index > 0).map(x -> x.id).toList();
             case 2 -> {
-                if (Objects.equals(opt1, "STRUCTURE")) {
+                if (Objects.equals(opt1, OPT_STRUCTURE)) {
                     yield new java.util.ArrayList<>(RPStatic.BLOCK_TAGS.keySet());
-                } else if (Objects.equals(opt1, "GAMERULE")) {
+                } else if (Objects.equals(opt1, OPT_GAMERULE)) {
                     yield new java.util.ArrayList<>(RPStatic.CONFIG_RULES.keySet());
-                } else if (Objects.equals(opt1, "TIMER")) {
+                } else if (Objects.equals(opt1, OPT_TIMER)) {
                     yield new java.util.ArrayList<>(RPStatic.CONFIG_TIMERS.keySet());
                 }
                 yield Collections.emptyList();
             }
             case 3 -> {
-                if (Objects.equals(opt1, "STRUCTURE")) {
+                if (Objects.equals(opt1, OPT_STRUCTURE)) {
                     yield Arrays.stream(OPTIONEDITENUM.values()).map(x -> x.id).toList();
-                } else if (Objects.equals(opt1, "GAMERULE")) {
+                } else if (Objects.equals(opt1, OPT_GAMERULE)) {
                     yield LIST_BOOLEAN;
                 }
                 yield Collections.emptyList();

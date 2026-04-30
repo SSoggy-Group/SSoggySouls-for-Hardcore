@@ -29,6 +29,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class RevivalPlus {
+    private RevivalPlus() {}
+
     public static void enable(JavaPlugin plugin) {
         RPStatic.init(plugin);
         RPConfig.init();

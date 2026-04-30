@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 public class RPStatic {
+    private RPStatic() {}
     public static String PREFIX = "<black>[</black><dark_purple>RevivalPlus</dark_purple><black>]</black>";
     public static String PLUGIN_ID;
     public static JavaPlugin CLIENT;
@@ -38,8 +39,8 @@ public class RPStatic {
     public static boolean PLUGIN_HMODE;
 
     public static RPStorage DEAD_STORAGE;
-    public static HashMap<UUID, Pair<Location, Instant>> DEAD_LOCATIONS;
-    public static HashMap<UUID, UUID> DEAD_HOLDERS;
+    public static Map<UUID, Pair<Location, Instant>> DEAD_LOCATIONS;
+    public static Map<UUID, UUID> DEAD_HOLDERS;
 
     public static Map<String, Set<Material>> BLOCK_TAGS;
     public static Map<String, Boolean> CONFIG_RULES;

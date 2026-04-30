@@ -21,7 +21,6 @@ package org.ssoggy.ssoggysouls.hrm.dlc.commands;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
-import java.util.Collections;
 import java.util.List;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.SOCIALENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.COMMANDOUTPUTENUM;
@@ -34,14 +33,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
@@ -55,40 +52,40 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
         RPCommandOutput result = new RPCommandOutput();
         FileConfiguration config = RPStatic.CLIENT.getConfig();
 
-        long trusted_after = config.getLong("trusted-obituary-after");
-        long friends_after = config.getLong("friends-obituary-after");
-        long public_after = config.getLong("public-obituary-after");
+        long trustedAfter = config.getLong("trusted-obituary-after");
+        long friendsAfter = config.getLong("friends-obituary-after");
+        long publicAfter = config.getLong("public-obituary-after");
 
-        String start_string = "Here is a list of all the current public deaths";
-        StringBuilder public_deaths = new StringBuilder(start_string);
+        String startString = "Here is a list of all the current public deaths";
+        StringBuilder publicDeaths = new StringBuilder(startString);
         for (Map.Entry<UUID, Pair<Location, Instant>> death : RPStatic.DEAD_LOCATIONS.entrySet()) {
-            Pair<Location, Instant> death_details = death.getValue();
+            Pair<Location, Instant> deathDetails = death.getValue();
 
             UUID uuid = death.getKey();
             SOCIALENUM relationship = new RPSocial(uuid).getRelationTo(player.getUniqueId());
 
-            Instant death_time = death_details.getRight();
+            Instant deathTime = deathDetails.getRight();
             Instant now = Instant.now();
-            if (death_time.isBefore(now.minusSeconds(public_after * 60))
-                    || (relationship == SOCIALENUM.FRIENDS && death_time.isBefore(now.minusSeconds(friends_after * 60)))
-                    || (relationship == SOCIALENUM.TRUSTED && death_time.isBefore(now.minusSeconds(trusted_after * 60)))) {
+            if (deathTime.isBefore(now.minusSeconds(publicAfter * 60))
+                    || (relationship == SOCIALENUM.FRIENDS && deathTime.isBefore(now.minusSeconds(friendsAfter * 60)))
+                    || (relationship == SOCIALENUM.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfter * 60)))) {
                 String username = RPUtil.getUsernameFromCache(uuid);
-                Location death_location = death_details.getLeft();
-                public_deaths.append("\n<gold><bold>").append(username).append("</bold></gold><gray> has died at</gray><gold><bold>")
-                        .append(" X").append(death_location.getBlockX())
-                        .append(" Y").append(death_location.getBlockY())
-                        .append(" Z").append(death_location.getBlockZ())
+                Location deathLocation = deathDetails.getLeft();
+                publicDeaths.append("\n<gold><bold>").append(username).append("</bold></gold><gray> has died at</gray><gold><bold>")
+                        .append(" X").append(deathLocation.getBlockX())
+                        .append(" Y").append(deathLocation.getBlockY())
+                        .append(" Z").append(deathLocation.getBlockZ())
                         .append("</bold></gold><gray> in the </gray><gold><bold>")
-                        .append(death_location.getWorld().getName()).append("</bold></gold>");
+                        .append(deathLocation.getWorld().getName()).append("</bold></gold>");
             }
         }
 
-        if (public_deaths.length() <= start_string.length()) {
+        if (publicDeaths.length() <= startString.length()) {
             result.success = COMMANDOUTPUTENUM.FALSE;
             result.message = "There are no public deaths currently.";
         } else {
             result.success = COMMANDOUTPUTENUM.TRUE;
-            result.message = public_deaths.toString();
+            result.message = publicDeaths.toString();
         }
 
         cmdSender.sendRichMessage(result.toString());

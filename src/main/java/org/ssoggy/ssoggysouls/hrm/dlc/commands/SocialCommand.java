@@ -61,84 +61,77 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        Entity player = cmdSender instanceof Entity ? (Entity) cmdSender : null;
-        OfflinePlayer target_player = failArgs ? null : cmdSender.getServer().getOfflinePlayer(args[1].toLowerCase(Locale.ROOT).trim());
+        Entity player = cmdSender instanceof Entity entity ? entity : null;
+        OfflinePlayer targetPlayer = failArgs ? null : cmdSender.getServer().getOfflinePlayer(args[1].toLowerCase(Locale.ROOT).trim());
         if (!(player instanceof Player)) return true;
         UUID playerUUID = player.getUniqueId();
-        UUID target_playerUUID = failArgs ? null : target_player.getUniqueId();
+        UUID targetPlayerUUID = failArgs ? null : targetPlayer.getUniqueId();
         RPUtil.addUsernameToCache(playerUUID);
-        if (target_playerUUID == null) return true;
+        if (targetPlayerUUID == null) return true;
 
-        RPUtil.addUsernameToCache(target_playerUUID);
+        RPUtil.addUsernameToCache(targetPlayerUUID);
         RPSocial social = new RPSocial(playerUUID);
         output.success = COMMANDOUTPUTENUM.TRUE;
         // TODO: I guess make this respond nicer, maybe extract all the branching logic inside of a method `tryRelationship` inside like `/action/SocialHelper.java`
         try {
             TRUSTENUM action = TRUSTENUM.valueOf(args[0].toUpperCase(Locale.ROOT).trim());
-            RPSocial target_social = new RPSocial(target_playerUUID);
-            SOCIALENUM result = social.getRelationTo(target_playerUUID);
-            SOCIALENUM theMTU = target_social.getRelationTo(playerUUID);
+            RPSocial targetSocial = new RPSocial(targetPlayerUUID);
+            SOCIALENUM result = social.getRelationTo(targetPlayerUUID);
+            SOCIALENUM theMTU = targetSocial.getRelationTo(playerUUID);
 
             switch (action) {
                 case TRUSTENUM.BLOCK:
-                    if (playerUUID == target_playerUUID) {
+                    if (playerUUID.equals(targetPlayerUUID)) {
                         executeFail(cmdSender, output, "Player has you blocked");
                         return true;
                     }
                     if (result == SOCIALENUM.BLOCKED) {
                         output.success = COMMANDOUTPUTENUM.INFO;
-                        output.message = "You already blocked " + target_player.getName(); // easter egg: You tryna double-block this dude?
+                        output.message = "You already blocked " + targetPlayer.getName(); // easter egg: You tryna double-block this dude?
                     } else {
-                        social.setRelationTo(target_playerUUID, SOCIALENUM.BLOCKED);
-                        if (theMTU.isTrustworthy()) { target_social.setRelationTo(playerUUID, SOCIALENUM.UNTRUSTED); } // Unbind both players
-                        output.message = "You have blocked " + target_player.getName();
+                        social.setRelationTo(targetPlayerUUID, SOCIALENUM.BLOCKED);
+                        if (theMTU.isTrustworthy()) { targetSocial.setRelationTo(playerUUID, SOCIALENUM.UNTRUSTED); } // Unbind both players
+                        output.message = "You have blocked " + targetPlayer.getName();
                     }
                     break;
                 case TRUSTENUM.REVOKE:
                     if (result == SOCIALENUM.UNTRUSTED) {
                         output.success = COMMANDOUTPUTENUM.INFO;
-                        output.message = "You have no relations with " + target_player.getName();
+                        output.message = "You have no relations with " + targetPlayer.getName();
                     } else {
-                        social.setRelationTo(target_playerUUID, null); // Ensures that you don't get stray "Untrusted" values (saves memory)
-                        output.message = "You no longer trust " + target_player.getName();
+                        social.setRelationTo(targetPlayerUUID, null); // Ensures that you don't get stray "Untrusted" values (saves memory)
+                        output.message = "You no longer trust " + targetPlayer.getName();
                     }
                     break;
                 case TRUSTENUM.GRANT:
-                    if (playerUUID == target_playerUUID) {
+                    if (playerUUID.equals(targetPlayerUUID)) {
                         executeFail(cmdSender, output, "Player has you blocked");
                         return true;
                     }
 
                     if (result.isTrustworthy()) { // Already Trusted
                         output.success = COMMANDOUTPUTENUM.INFO;
-                        output.message = "You have already entrusted " + target_player.getName();
+                        output.message = "You have already entrusted " + targetPlayer.getName();
                     } else if (theMTU == SOCIALENUM.BLOCKED) { // They Blocked you
                         executeFail(cmdSender, output, "Player has you blocked.");
                         return true;
                     } else if (theMTU == SOCIALENUM.TRUSTED) { // Make Players Allies
-                        social.setRelationTo(target_playerUUID, SOCIALENUM.FRIENDS);
-                        target_social.setRelationTo(playerUUID, SOCIALENUM.FRIENDS);
-                        output.message = "You are now friends with " + target_player.getName();
+                        social.setRelationTo(targetPlayerUUID, SOCIALENUM.FRIENDS);
+                        targetSocial.setRelationTo(playerUUID, SOCIALENUM.FRIENDS);
+                        output.message = "You are now friends with " + targetPlayer.getName();
 
-                        if (target_player.getPlayer() instanceof Player Tplayer) {
+                        if (targetPlayer.getPlayer() instanceof Player Tplayer) {
                             RPCommandOutput target_message = new RPCommandOutput();
                             target_message.success = COMMANDOUTPUTENUM.TRUE;
                             target_message.message =  "You are now friends with " + player.getName();
                             Tplayer.sendRichMessage(target_message.toString());
                         }
                     } else { // Trust Player
-                        social.setRelationTo(target_playerUUID, SOCIALENUM.TRUSTED);
-                        output.message = "You have now entrusted " + target_player.getName();
+                        social.setRelationTo(targetPlayerUUID, SOCIALENUM.TRUSTED);
+                        output.message = "You have now entrusted " + targetPlayer.getName();
                     }
                     break;
-                /*case TRUSTCMDACTION.FRIENDS:
-                    if (result == SOCIALTYPE.FRIENDS)
-                        output.message = "You're already friends with " + target_player.getName();
-                    else {
-                        social.setRelationTo(target_player.getUniqueId(), SOCIALTYPE.FRIENDS);
-                        output.message = "You're now friends with " + target_player.getName();
-                    }
-                    break;*/
+
                 case TRUSTENUM.INFO:
                     throw new Exception();
             }
@@ -148,7 +141,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
             output.success = COMMANDOUTPUTENUM.RAW;
             output.message = "\n<green>--- Trust List ---</green>\n";
 
-            social.getRelationsToAll((k, v) -> k.equals(target_playerUUID)).forEach((k, v) -> {
+            social.getRelationsToAll((k, v) -> k.equals(targetPlayerUUID)).forEach((k, v) -> {
                 output.message += "- " + RPUtil.getUsernameFromCache(k) + ": " + v + "\n";
                 // TODO: Make them glow locally when this command is ran
             });
