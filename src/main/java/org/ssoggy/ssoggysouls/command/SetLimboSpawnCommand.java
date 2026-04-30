@@ -48,9 +48,9 @@ public class SetLimboSpawnCommand implements CommandExecutor {
         World world = loc.getWorld();
         String worldName = world != null ? world.getName() : "unknown";
 
-        org.bukkit.Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            AdminLogger.log(plugin, player.getName(), "set the limbo spawn to " + String.format("%.1f, %.1f, %.1f", loc.getX(), loc.getY(), loc.getZ()) + " in " + worldName);
-        });
+        org.bukkit.Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
+            AdminLogger.log(plugin, player.getName(), "set the limbo spawn to " + String.format("%.1f, %.1f, %.1f", loc.getX(), loc.getY(), loc.getZ()) + " in " + worldName)
+        );
 
         return true;
     }
