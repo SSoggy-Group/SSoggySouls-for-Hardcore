@@ -98,7 +98,7 @@ public class PlayerStateEvents implements Listener {
 
         Player killer = player.getKiller();
         if (killer != null) {
-            RPStats killerStats = new RPStats(uuid);
+            RPStats killerStats = new RPStats(killer.getUniqueId());
             killerStats.incrementStat(STATSENUM.KILLS, 1);
         }
 
@@ -152,12 +152,17 @@ public class PlayerStateEvents implements Listener {
     @EventHandler
     private void onGameModeChanged(PlayerGameModeChangeEvent event) {
         Player player = event.getPlayer();
-        if (event.getCause() == PlayerGameModeChangeEvent.Cause.HARDCORE_DEATH) {
-            event.setCancelled(true);
-            GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.GHOSTMODE); // Uses the HRPXGAMEMODE class
-        } else if (event.getCause() == PlayerGameModeChangeEvent.Cause.COMMAND) {
-            event.setCancelled(true);
-            GAMEMODESENUM.setPlayerGameMode(player, event.getNewGameMode()); // Uses the GameMode class
+        switch (event.getCause()) {
+            case HARDCORE_DEATH:
+                event.setCancelled(true);
+                GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.GHOSTMODE); // Uses the HRPXGAMEMODE class
+                break;
+            case COMMAND:
+                event.setCancelled(true);
+                GAMEMODESENUM.setPlayerGameMode(player, event.getNewGameMode()); // Uses the GameMode class
+                break;
+            default:
+                break;
         }
     }
 }

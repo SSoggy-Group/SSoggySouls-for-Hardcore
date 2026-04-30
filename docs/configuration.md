@@ -602,6 +602,43 @@ Enable crafting of Revive Skull items. The recipe is:
 
 ______________________________________________________________________
 
+## RevivalPlus DLC Features
+
+Configure the advanced mechanics ported from the RevivalPlus DLC. You can also configure these entirely in-game using the `/revivalconfig` command.
+
+```yaml
+# -- GAMERULES --
+lose-inventory: false                 # Do players drop inventory upon hardcore death?
+restrict-menu-access: true            # Can ghosts open menus?
+creative-players-drop-heads: false    # Do creative players drop heads?
+keep-structure-base: true             # Does structure remain after revival?
+head-effects: true                    # Speed/Night Vision when wearing heads?
+head-burns-in-lava: false             # Do heads burn? (If false, placed as block)
+ritual-lightning-strike: true         # Strike lightning on revival?
+ritual-totem-effect: true             # Show totem animation on revival?
+ghost-mode-particles: false           # Show Dragon Breath particles for ghosts?
+
+# -- TIMERS --
+trusted-obituary-after: 60            # Minutes until death is visible to 'trusted' in /deathlist
+friends-obituary-after: 600           # Minutes until death is visible to 'friends' in /deathlist
+public-obituary-after: 3600           # Minutes until death is visible to everyone in /deathlist
+spectator-headrestrict-radius: 16     # Block radius limit for ghosts
+revive-resistance-ticks: 100          # Ticks of Resistance given after revive (20 = 1 sec)
+revive-glowing-ticks: 100             # Ticks of Glowing given after revive
+
+# -- STRUCTURE BLOCK TAGS --
+# Customize the blocks used for the revival structure
+soul-sand-blocktag:
+  - "CRYING_OBSIDIAN"
+  - "OBSIDIAN"
+flower-blocktag:
+  - "SOUL_TORCH"
+  - "REDSTONE_TORCH"
+# ... (see config.yml for full lists)
+```
+
+______________________________________________________________________
+
 ## Extra Life Item
 
 Configure the craftable item that grants additional lives.

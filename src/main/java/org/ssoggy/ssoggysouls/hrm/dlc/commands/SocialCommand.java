@@ -76,8 +76,8 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         try {
             TRUSTENUM action = TRUSTENUM.valueOf(args[0].toUpperCase(Locale.ROOT).trim());
             RPSocial targetSocial = new RPSocial(targetPlayerUUID);
-            SOCIALENUM result = social.getRelationTo(targetPlayerUUID);
-            SOCIALENUM theMTU = targetSocial.getRelationTo(playerUUID);
+            SOCIALENUM currentRelation = social.getRelationTo(targetPlayerUUID);
+            SOCIALENUM theirRelation = targetSocial.getRelationTo(playerUUID);
 
             switch (action) {
                 case TRUSTENUM.BLOCK:
@@ -85,17 +85,17 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
                         executeFail(cmdSender, output, "Player has you blocked");
                         return true;
                     }
-                    if (result == SOCIALENUM.BLOCKED) {
+                    if (currentRelation == SOCIALENUM.BLOCKED) {
                         output.success = COMMANDOUTPUTENUM.INFO;
                         output.message = "You already blocked " + targetPlayer.getName(); // easter egg: You tryna double-block this dude?
                     } else {
                         social.setRelationTo(targetPlayerUUID, SOCIALENUM.BLOCKED);
-                        if (theMTU.isTrustworthy()) { targetSocial.setRelationTo(playerUUID, SOCIALENUM.UNTRUSTED); } // Unbind both players
+                        if (theirRelation.isTrustworthy()) { targetSocial.setRelationTo(playerUUID, SOCIALENUM.UNTRUSTED); } // Unbind both players
                         output.message = "You have blocked " + targetPlayer.getName();
                     }
                     break;
                 case TRUSTENUM.REVOKE:
-                    if (result == SOCIALENUM.UNTRUSTED) {
+                    if (currentRelation == SOCIALENUM.UNTRUSTED) {
                         output.success = COMMANDOUTPUTENUM.INFO;
                         output.message = "You have no relations with " + targetPlayer.getName();
                     } else {
@@ -109,22 +109,22 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
                         return true;
                     }
 
-                    if (result.isTrustworthy()) { // Already Trusted
+                    if (currentRelation.isTrustworthy()) { // Already Trusted
                         output.success = COMMANDOUTPUTENUM.INFO;
                         output.message = "You have already entrusted " + targetPlayer.getName();
-                    } else if (theMTU == SOCIALENUM.BLOCKED) { // They Blocked you
+                    } else if (theirRelation == SOCIALENUM.BLOCKED) { // They Blocked you
                         executeFail(cmdSender, output, "Player has you blocked.");
                         return true;
-                    } else if (theMTU == SOCIALENUM.TRUSTED) { // Make Players Allies
+                    } else if (theirRelation == SOCIALENUM.TRUSTED) { // Make Players Allies
                         social.setRelationTo(targetPlayerUUID, SOCIALENUM.FRIENDS);
                         targetSocial.setRelationTo(playerUUID, SOCIALENUM.FRIENDS);
                         output.message = "You are now friends with " + targetPlayer.getName();
 
-                        if (targetPlayer.getPlayer() instanceof Player Tplayer) {
-                            RPCommandOutput target_message = new RPCommandOutput();
-                            target_message.success = COMMANDOUTPUTENUM.TRUE;
-                            target_message.message =  "You are now friends with " + player.getName();
-                            Tplayer.sendRichMessage(target_message.toString());
+                        if (targetPlayer.getPlayer() instanceof Player targetOnline) {
+                            RPCommandOutput targetMessage = new RPCommandOutput();
+                            targetMessage.success = COMMANDOUTPUTENUM.TRUE;
+                            targetMessage.message =  "You are now friends with " + player.getName();
+                            targetOnline.sendRichMessage(targetMessage.toString());
                         }
                     } else { // Trust Player
                         social.setRelationTo(targetPlayerUUID, SOCIALENUM.TRUSTED);
@@ -157,7 +157,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
             case 0, 1 ->
                     new ArrayList<>(Arrays.stream(TRUSTENUM.values()).map(x -> x.name().toLowerCase(Locale.ROOT)).toList());
             case 2 ->
-                    Bukkit.getOnlinePlayers().stream().filter(x -> x.getUniqueId() != (sender instanceof Player ? ((Player) sender).getUniqueId() : null)).map(Player::getName).toList();
+                    Bukkit.getOnlinePlayers().stream().filter(x -> !x.getUniqueId().equals(sender instanceof Player p ? p.getUniqueId() : null)).map(Player::getName).toList();
             default -> Collections.emptyList(); // Allowing unnecessary suggestions feels unfinished
         };
     }

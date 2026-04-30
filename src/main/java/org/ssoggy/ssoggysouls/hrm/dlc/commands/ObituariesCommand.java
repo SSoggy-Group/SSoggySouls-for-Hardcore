@@ -22,7 +22,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
 import java.util.List;
-import java.util.ArrayList;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.SOCIALENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.COMMANDOUTPUTENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPCommandOutput;
@@ -41,7 +40,6 @@ import org.jspecify.annotations.Nullable;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
-import java.util.Collection;
 
 public class ObituariesCommand implements CommandExecutor, TabCompleter {
 

@@ -80,7 +80,9 @@ public class ReviveHelper {
         alive_stats.incrementStat(STATSENUM.RITUAL_COMPLETED, 1);
         dead_stats.incrementStat(STATSENUM.REVIVES, 1);
 
-        world.strikeLightning(new Location(world, (float)pos.getBlockX() + 0.5F, pos.getBlockY() - 1, (float)pos.getBlockZ() - 0.5F));
+        if (RPStatic.CONFIG_RULES.getOrDefault("ritual-lightning-strike", true)) {
+            world.strikeLightning(new Location(world, (float)pos.getBlockX() + 0.5F, pos.getBlockY() - 1, (float)pos.getBlockZ() - 0.5F));
+        }
         spawnPlayer(world, pos, result, deadPlayer, alivePlayer);
         return true;
     }
@@ -93,10 +95,20 @@ public class ReviveHelper {
         GAMEMODESENUM.setPlayerGameMode(deadPlayer, GAMEMODESENUM.SURVIVAL);
 
         deadPlayer.clearActivePotionEffects();
-        deadPlayer.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 100, 70, false, false));
-        deadPlayer.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 100, 1));
+        
+        int resistanceTicks = RPStatic.CONFIG_TIMERS.getOrDefault("revive-resistance-ticks", 100);
+        if (resistanceTicks > 0) {
+            deadPlayer.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, resistanceTicks, 70, false, false));
+        }
+        
+        int glowingTicks = RPStatic.CONFIG_TIMERS.getOrDefault("revive-glowing-ticks", 100);
+        if (glowingTicks > 0) {
+            deadPlayer.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, glowingTicks, 1));
+        }
 
-        deadPlayer.sendEntityEffect(EntityEffect.TOTEM_RESURRECT, deadPlayer); // If this is removed in the newer versions then I will cry
+        if (RPStatic.CONFIG_RULES.getOrDefault("ritual-totem-effect", true)) {
+            deadPlayer.sendEntityEffect(EntityEffect.TOTEM_RESURRECT, deadPlayer); // If this is removed in the newer versions then I will cry
+        }
     }
 
     private static void spawnError(String errorMessage, World world, Location pos, Player alivePlayer) {

@@ -74,9 +74,9 @@ All modes work with all revival methods:
 
 ## Built-in HRM (Hardcore Revive Mode)
 
-> **Credit:** The revival mechanics—including player head drops, ritual structures, and the Revive Skull—are adapted from the excellent [Hardcore Revive Mod by JakeCCz](https://modrinth.com/plugin/hardcore-revive-mod).
+> **Credit:** The basic revival mechanics (player head drops, ritual structures, and the Revive Skull) are adapted from the excellent [Hardcore Revive Mod by JakeCCz](https://modrinth.com/plugin/hardcore-revive-mod). The advanced Limbo features, obituary tracking, ghost mode, and highly customizable revival rules were ported from the **RevivalPlus DLC by Cera and Jakeccz**.
 
-Comes with a full revival system:
+Comes with a full revival system and an advanced configuration suite (`/revivalconfig`):
 
 ### Player Head Drops
 
@@ -642,7 +642,7 @@ Variables you can use:
 | `/psadmin info <player>`           | View detailed player data (UUID, lives, death state, timestamps)   | `ssoggysouls.admin` |
 | `/psadmin reload`                  | Reload configuration from disk                                     | `ssoggysouls.admin` |
 | `/psetlives <player> <amount>`     | Legacy command - set player's lives (use `/psadmin lives` instead) | `ssoggysouls.admin` |
-
+| `/revivalconfig`                   | Advanced in-game menu to configure DLC revival mechanics           | `ssoggysouls.admin` |
 | `/setlimbospawn`                   | Set Limbo spawn to your current location                           | `ssoggysouls.admin` |
 
 **Aliases:** `/psadmin` can also be used as `/psa`

@@ -41,13 +41,18 @@ public class RPConfig {
             Map.entry("creative-players-drop-heads", false),
             Map.entry("keep-structure-base", true),
             Map.entry("head-effects", true),
-            Map.entry("head-burns-in-lava", false)) // Places playerhead when false
+            Map.entry("head-burns-in-lava", false), // Places playerhead when false
+            Map.entry("ritual-lightning-strike", true), // Strike lightning on revival
+            Map.entry("ritual-totem-effect", true), // Show totem animation on revival
+            Map.entry("ghost-mode-particles", false)) // Show particles at death location for ghosts
     );
     private static final HashMap<String, Integer> defaultConfigTimers = new HashMap<>(Map.ofEntries(
             Map.entry("trusted-obituary-after", 60), // 1m
             Map.entry("friends-obituary-after", 600), // 10m
             Map.entry("public-obituary-after", 3600), // 60m
-            Map.entry("spectator-headrestrict-radius", 16)) // 16blocks
+            Map.entry("spectator-headrestrict-radius", 16), // 16blocks
+            Map.entry("revive-resistance-ticks", 100), // 5 seconds
+            Map.entry("revive-glowing-ticks", 100)) // 5 seconds
     );
 
     static {
