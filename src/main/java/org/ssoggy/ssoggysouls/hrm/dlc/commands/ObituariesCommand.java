@@ -22,6 +22,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
 import java.util.List;
+import java.util.ArrayList;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.SOCIALENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.COMMANDOUTPUTENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPCommandOutput;
@@ -35,12 +36,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Collection;
 
 public class ObituariesCommand implements CommandExecutor, TabCompleter {
 
@@ -52,12 +53,12 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
         RPCommandOutput result = new RPCommandOutput();
         FileConfiguration config = RPStatic.CLIENT.getConfig();
 
-        long trustedAfter = config.getLong("trusted-obituary-after");
-        long friendsAfter = config.getLong("friends-obituary-after");
-        long publicAfter = config.getLong("public-obituary-after");
+        long trustedAfterMin = config.getLong("trusted-obituary-after");
+        long friendsAfterMin = config.getLong("friends-obituary-after");
+        long publicAfterMin = config.getLong("public-obituary-after");
 
-        String startString = "Here is a list of all the current public deaths";
-        StringBuilder publicDeaths = new StringBuilder(startString);
+        String headerText = "Here is a list of all the current public deaths";
+        StringBuilder deathListBuilder = new StringBuilder(headerText);
         for (Map.Entry<UUID, Pair<Location, Instant>> death : RPStatic.DEAD_LOCATIONS.entrySet()) {
             Pair<Location, Instant> deathDetails = death.getValue();
 
@@ -66,12 +67,12 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
 
             Instant deathTime = deathDetails.getRight();
             Instant now = Instant.now();
-            if (deathTime.isBefore(now.minusSeconds(publicAfter * 60))
-                    || (relationship == SOCIALENUM.FRIENDS && deathTime.isBefore(now.minusSeconds(friendsAfter * 60)))
-                    || (relationship == SOCIALENUM.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfter * 60)))) {
+            if (deathTime.isBefore(now.minusSeconds(publicAfterMin * 60))
+                    || (relationship == SOCIALENUM.FRIENDS && deathTime.isBefore(now.minusSeconds(friendsAfterMin * 60)))
+                    || (relationship == SOCIALENUM.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfterMin * 60)))) {
                 String username = RPUtil.getUsernameFromCache(uuid);
                 Location deathLocation = deathDetails.getLeft();
-                publicDeaths.append("\n<gold><bold>").append(username).append("</bold></gold><gray> has died at</gray><gold><bold>")
+                deathListBuilder.append("\n<gold><bold>").append(username).append("</bold></gold><gray> has died at</gray><gold><bold>")
                         .append(" X").append(deathLocation.getBlockX())
                         .append(" Y").append(deathLocation.getBlockY())
                         .append(" Z").append(deathLocation.getBlockZ())
@@ -80,12 +81,12 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
             }
         }
 
-        if (publicDeaths.length() <= startString.length()) {
+        if (deathListBuilder.length() <= headerText.length()) {
             result.success = COMMANDOUTPUTENUM.FALSE;
             result.message = "There are no public deaths currently.";
         } else {
             result.success = COMMANDOUTPUTENUM.TRUE;
-            result.message = publicDeaths.toString();
+            result.message = deathListBuilder.toString();
         }
 
         cmdSender.sendRichMessage(result.toString());

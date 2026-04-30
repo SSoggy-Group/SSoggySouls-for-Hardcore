@@ -19,7 +19,7 @@ along with RevivePlus.  If not, see <https://www.gnu.org/licenses/>
 package org.ssoggy.ssoggysouls.hrm.dlc.util;
 
 import org.bukkit.plugin.java.JavaPlugin;
-import org.ssoggy.ssoggysouls.hrm.dlc.util.Pair;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 
