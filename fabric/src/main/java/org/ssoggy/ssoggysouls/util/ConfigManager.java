@@ -68,34 +68,80 @@ public class ConfigManager {
 
     public static class ModConfig {
         // --- Core Lives System ---
-        public int defaultLives = 3;
-        public int onReviveLives = 1;
-        public int maxLives = 5;
-        public String gracePeriod = "0"; // e.g., "24h"
-        public int reviveCooldownSeconds = 30;
+        private int defaultLives = 3;
+        private int onReviveLives = 1;
+        private int maxLives = 5;
+        private String gracePeriod = "0"; // e.g., "24h"
+        private int reviveCooldownSeconds = 30;
 
         // --- Database & Proxy (Multiplayer) ---
-        public boolean isLimboServer = false;
-        public String mainServerName = "main";
-        public String limboServerName = "limbo";
-        public boolean sendToLimboOnDeath = false; // Default false for local/singleplayer
+        private boolean isLimboServer = false;
+        private String mainServerName = "main";
+        private String limboServerName = "limbo";
+        private boolean sendToLimboOnDeath = false;
 
         // --- HRM (Revival) Features ---
-        public boolean hrmEnabled = true;
-        public boolean dropHeads = true;
-        public boolean headPlaceAsBlock = true;
-        public boolean headWearingEffects = true;
-        public boolean ritualLightningStrike = true;
-        public boolean ritualTotemEffect = true;
-        public boolean leaveStructureBase = true;
+        private boolean hrmEnabled = true;
+        private boolean dropHeads = true;
+        private boolean headPlaceAsBlock = true;
+        private boolean headWearingEffects = true;
+        private boolean ritualLightningStrike = true;
+        private boolean ritualTotemEffect = true;
+        private boolean leaveStructureBase = true;
 
         // --- DLC / Ghost Mode ---
-        public boolean loseInventory = false;
-        public boolean ghostModeParticles = false;
-        public int spectatorHeadrestrictRadius = 16;
-        public boolean restrictMenuAccess = true;
+        private boolean loseInventory = false;
+        private boolean ghostModeParticles = false;
+        private int spectatorHeadrestrictRadius = 16;
+        private boolean restrictMenuAccess = true;
 
         // --- Debug ---
-        public boolean debug = false;
+        private boolean debug = false;
+
+        // Getters
+        public int getDefaultLives() { return defaultLives; }
+        public int getOnReviveLives() { return onReviveLives; }
+        public int getMaxLives() { return maxLives; }
+        public String getGracePeriod() { return gracePeriod; }
+        public int getReviveCooldownSeconds() { return reviveCooldownSeconds; }
+        public boolean isLimboServer() { return isLimboServer; }
+        public String getMainServerName() { return mainServerName; }
+        public String getLimboServerName() { return limboServerName; }
+        public boolean isSendToLimboOnDeath() { return sendToLimboOnDeath; }
+        public boolean isHrmEnabled() { return hrmEnabled; }
+        public boolean isDropHeads() { return dropHeads; }
+        public boolean isHeadPlaceAsBlock() { return headPlaceAsBlock; }
+        public boolean isHeadWearingEffects() { return headWearingEffects; }
+        public boolean isRitualLightningStrike() { return ritualLightningStrike; }
+        public boolean isRitualTotemEffect() { return ritualTotemEffect; }
+        public boolean isLeaveStructureBase() { return leaveStructureBase; }
+        public boolean isLoseInventory() { return loseInventory; }
+        public boolean isGhostModeParticles() { return ghostModeParticles; }
+        public int getSpectatorHeadrestrictRadius() { return spectatorHeadrestrictRadius; }
+        public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
+        public boolean isDebug() { return debug; }
+
+        // Setters for ModMenu / Initialization
+        public void setLimboServer(boolean limboServer) { isLimboServer = limboServer; }
+        public void setSendToLimboOnDeath(boolean send) { sendToLimboOnDeath = send; }
+        public void setDefaultLives(int lives) { defaultLives = lives; }
+        public void setOnReviveLives(int lives) { onReviveLives = lives; }
+        public void setMaxLives(int max) { maxLives = max; }
+        public void setGracePeriod(String period) { gracePeriod = period; }
+        public void setReviveCooldownSeconds(int seconds) { reviveCooldownSeconds = seconds; }
+        public void setMainServerName(String name) { mainServerName = name; }
+        public void setLimboServerName(String name) { limboServerName = name; }
+        public void setHrmEnabled(boolean enabled) { hrmEnabled = enabled; }
+        public void setDropHeads(boolean drop) { dropHeads = drop; }
+        public void setHeadPlaceAsBlock(boolean place) { headPlaceAsBlock = place; }
+        public void setHeadWearingEffects(boolean effects) { headWearingEffects = effects; }
+        public void setRitualLightningStrike(boolean strike) { ritualLightningStrike = strike; }
+        public void setRitualTotemEffect(boolean effect) { ritualTotemEffect = effect; }
+        public void setLeaveStructureBase(boolean leave) { leaveStructureBase = leave; }
+        public void setLoseInventory(boolean lose) { loseInventory = lose; }
+        public void setGhostModeParticles(boolean particles) { ghostModeParticles = particles; }
+        public void setSpectatorHeadrestrictRadius(int radius) { spectatorHeadrestrictRadius = radius; }
+        public void setRestrictMenuAccess(boolean restrict) { restrictMenuAccess = restrict; }
+        public void setDebug(boolean d) { debug = d; }
     }
 }
