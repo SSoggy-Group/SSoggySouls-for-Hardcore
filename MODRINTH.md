@@ -61,9 +61,9 @@ Wearing a dead player's head grants Speed II and Night Vision to help you delive
 1. **Download** the plugin and place it in your `plugins/` folder.
 2. **Start your server** to generate the `config.yml`.
 3. **Select your database:**
-   - *Single server:* Just leave it as `type: "sqlite"`.
-   - *Two servers:* Set `type: "mysql"` and enter your identical credentials on both servers.
-4. **If using two servers**, configure the main and limbo roles (`is-limbo-server`).
+   - *Single server:* Set `type: "sqlite"`. Done — ignore the MySQL fields.
+   - *Two servers:* Set up one MySQL database, then set `type: "mysql"` and copy the same connection details into both server configs.
+4. **If using two servers**, set `is-limbo-server: false` on Main and `true` on Limbo.
 5. **Restart and test!**
 
 For the full, detailed step-by-step setup (including proxy configuration and Limbo spawn setting), refer to our **[Quick Start Guide on the Wiki!](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/quick-start) This is also where you can find other detailed guides about installing, configurating, troubleshooting, and more.**
