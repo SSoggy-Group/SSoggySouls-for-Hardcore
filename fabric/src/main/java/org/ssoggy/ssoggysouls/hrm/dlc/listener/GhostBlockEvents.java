@@ -87,13 +87,13 @@ public class GhostBlockEvents {
             BlockPos targetPos = hitResult.getBlockPos().offset(hitResult.getSide());
 
             // Schedule a check next tick to see if it was successfully placed
-            world.getServer().execute(() -> handleHeadPlace(world, serverPlayer, ownerUuid, targetPos, db));
+            world.getServer().execute(() -> handleHeadPlace(world, ownerUuid, targetPos, db));
 
             return ActionResult.PASS;
         });
     }
 
-    private static void handleHeadPlace(net.minecraft.world.World world, ServerPlayerEntity serverPlayer, UUID ownerUuid, BlockPos targetPos, DatabaseManager db) {
+    private static void handleHeadPlace(net.minecraft.world.World world, UUID ownerUuid, BlockPos targetPos, DatabaseManager db) {
         BlockState state = world.getBlockState(targetPos);
         if (state.isOf(Blocks.PLAYER_HEAD) || state.isOf(Blocks.PLAYER_WALL_HEAD)) {
             BlockEntity be = world.getBlockEntity(targetPos);
