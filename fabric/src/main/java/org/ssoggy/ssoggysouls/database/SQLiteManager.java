@@ -49,7 +49,7 @@ public class SQLiteManager implements DatabaseManager {
 
     public boolean initialize() {
         try {
-            tableName = plugin.getConfigString("database.table-name", "hardcore_players");
+            tableName = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDatabaseTableName();
 
             java.io.File dataFolder = plugin.getDataFolder().toFile();
             if (!dataFolder.exists()) {
