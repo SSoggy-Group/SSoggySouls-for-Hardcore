@@ -82,6 +82,12 @@ public class GhostModeEvents {
         }
 
         UUID uuid = player.getUuid();
+
+        // If someone is carrying their head, they are spectating them. Do not restrict distance.
+        if (GhostBlockEvents.DEATH_HOLDERS.containsKey(uuid)) {
+            return;
+        }
+
         if (DEATH_LOCATIONS.containsKey(uuid)) {
             BlockPos deathPos = DEATH_LOCATIONS.get(uuid);
             BlockPos currentPos = player.getBlockPos();
