@@ -39,7 +39,8 @@ public class SSoggySoulsMod implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("SSoggySouls Fabric is loading...");
 
-        // Phase 2: Load config (MessageUtil temp)
+        // Phase 2: Load Configs
+        ConfigManager.load();
         MessageUtil.loadMessages();
 
         // Phase 2: Initialize database (SQLite default for now)
