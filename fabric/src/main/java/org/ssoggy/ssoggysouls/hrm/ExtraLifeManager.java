@@ -19,13 +19,18 @@ import net.minecraft.util.TypedActionResult;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 import java.util.concurrent.CompletableFuture;
 
 public class ExtraLifeManager {
 
-    public static void register(SSoggySoulsMod plugin, DatabaseManager db) {
+    private ExtraLifeManager() {
+        // Utility class
+    }
+
+    public static void register(DatabaseManager db) {
         UseItemCallback.EVENT.register((player, world, hand) -> {
             if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) {
                 return TypedActionResult.pass(player.getStackInHand(hand));
@@ -42,7 +47,7 @@ public class ExtraLifeManager {
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(serverPlayer.getUuid());
                 if (data == null) {
-                    data = PlayerData.createNew(serverPlayer.getUuid(), serverPlayer.getName().getString(), plugin.getDefaultLives(), 0);
+                    data = PlayerData.createNew(serverPlayer.getUuid(), serverPlayer.getName().getString(), ConfigManager.getConfig().defaultLives, 0);
                     db.savePlayer(data);
                 }
 
@@ -51,7 +56,7 @@ public class ExtraLifeManager {
                     return;
                 }
 
-                int maxLives = 10; // TODO: get from config
+                int maxLives = ConfigManager.getConfig().maxLives;
                 if (maxLives > 0 && data.getLives() >= maxLives) {
                     serverPlayer.server.execute(() -> serverPlayer.sendMessage(MessageUtil.getNoPrefix("You are at the maximum number of lives!"), false));
                     return;
