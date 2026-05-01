@@ -7,3 +7,11 @@ env/
 __pycache__/
 .DS_Store
 .markdownlint.json
+
+# Fabric & Gradle
+fabric/build/
+fabric/.gradle/
+fabric/run/
+.gradle/
+build/
+bin/
