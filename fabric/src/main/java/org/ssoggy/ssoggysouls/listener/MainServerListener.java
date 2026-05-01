@@ -148,7 +148,7 @@ public class MainServerListener {
     }
 
     private void handleRespawnSync(ServerPlayerEntity player) {
-        if (ConfigManager.getConfig().sendToLimboOnDeath) {
+        if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
             ServerTransferUtil.sendToLimbo(player);
             return;
         }
