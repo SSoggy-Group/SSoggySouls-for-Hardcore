@@ -42,10 +42,34 @@ public class ConfigManager {
     }
 
     public static class ModConfig {
+        // --- Core Lives System ---
+        public int defaultLives = 3;
+        public int onReviveLives = 1;
+        public int maxLives = 5;
+        public String gracePeriod = "0"; // e.g., "24h"
+        public int reviveCooldownSeconds = 30;
+
+        // --- Database & Proxy (Multiplayer) ---
         public boolean isLimboServer = false;
         public String mainServerName = "main";
         public String limboServerName = "limbo";
-        public boolean sendToLimboOnDeath = true;
-        public int defaultLives = 3;
+        public boolean sendToLimboOnDeath = false; // Default false for local/singleplayer
+
+        // --- HRM (Revival) Features ---
+        public boolean hrmEnabled = true;
+        public boolean dropHeads = true;
+        public boolean headPlaceAsBlock = true;
+        public boolean headWearingEffects = true;
+        public boolean ritualLightningStrike = true;
+        public boolean ritualTotemEffect = true;
+
+        // --- DLC / Ghost Mode ---
+        public boolean loseInventory = false;
+        public boolean ghostModeParticles = false;
+        public int spectatorHeadrestrictRadius = 16;
+        public boolean restrictMenuAccess = true;
+
+        // --- Debug ---
+        public boolean debug = false;
     }
 }

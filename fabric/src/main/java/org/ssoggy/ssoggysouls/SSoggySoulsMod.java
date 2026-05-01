@@ -102,11 +102,11 @@ public class SSoggySoulsMod implements ModInitializer {
     }
 
     public int getDefaultLives() {
-        return 3; // TODO: read from config
+        return ConfigManager.getConfig().defaultLives;
     }
 
     public boolean isDebugMode() {
-        return false; // TODO: read from config
+        return ConfigManager.getConfig().debug;
     }
 
     public void debug(String message) {
