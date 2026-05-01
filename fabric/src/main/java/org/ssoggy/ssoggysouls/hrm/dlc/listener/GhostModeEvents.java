@@ -24,10 +24,19 @@ import java.util.concurrent.CompletableFuture;
 
 public class GhostModeEvents {
 
+    private GhostModeEvents() {
+        // Utility class
+    }
+
     private static final Set<UUID> GHOST_CACHE = new HashSet<>();
 
-    public static void register(SSoggySoulsMod plugin, DatabaseManager db) {
-        
+    public static void register(DatabaseManager db) {
+        registerLifecycleEvents(db);
+        registerInteractionEvents();
+        registerTickEvents();
+    }
+
+    private static void registerLifecycleEvents(DatabaseManager db) {
         // Populate cache on join
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             UUID uuid = handler.getPlayer().getUuid();
@@ -45,7 +54,9 @@ public class GhostModeEvents {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             GHOST_CACHE.remove(handler.getPlayer().getUuid());
         });
-        
+    }
+
+    private static void registerInteractionEvents() {
         // Prevent block interaction
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (isGhost(player)) {
@@ -76,13 +87,14 @@ public class GhostModeEvents {
                 // DLC logic: start spectating the entity if right clicked
                 if (player instanceof ServerPlayerEntity serverPlayer) {
                     serverPlayer.setCameraEntity(entity);
-                    // Send message (optional)
                 }
                 return ActionResult.FAIL;
             }
             return ActionResult.PASS;
         });
-        
+    }
+
+    private static void registerTickEvents() {
         // Handle movement restriction via ticking (since Fabric lacks a PlayerMoveEvent)
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
