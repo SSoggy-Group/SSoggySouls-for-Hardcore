@@ -6,8 +6,6 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
