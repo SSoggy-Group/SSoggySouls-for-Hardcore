@@ -73,7 +73,7 @@ public class ExtraLifeManager {
                 });
             });
 
-            return TypedActionResult.pass(stack);
+            return TypedActionResult.consume(stack);
         });
     }
 
