@@ -76,7 +76,7 @@ public class RevivalStructureListener {
                     return;
                 }
 
-                boolean success = db.revivePlayer(ownerUuid, plugin.getDefaultLives());
+                boolean success = db.revivePlayer(ownerUuid, ConfigManager.getConfig().onReviveLives);
                 if (!success) {
                     serverPlayer.server.execute(() -> sendError(serverPlayer, "Failed to revive. Check console."));
                     return;
@@ -98,10 +98,12 @@ public class RevivalStructureListener {
         breakStructure(world, placedPos);
 
         // Strike lightning
-        LightningEntity lightning = EntityType.LIGHTNING_BOLT.create(world);
-        if (lightning != null) {
-            lightning.refreshPositionAfterTeleport(placedPos.toCenterPos());
-            world.spawnEntity(lightning);
+        if (ConfigManager.getConfig().ritualLightningStrike) {
+            LightningEntity lightning = EntityType.LIGHTNING_BOLT.create(world);
+            if (lightning != null) {
+                lightning.refreshPositionAfterTeleport(placedPos.toCenterPos());
+                world.spawnEntity(lightning);
+            }
         }
 
         summoner.sendMessage(MessageUtil.get("admin-revive-success", "player", revivedName), false);
@@ -122,6 +124,11 @@ public class RevivalStructureListener {
         revived.clearStatusEffects();
         revived.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 100, 4, false, true));
         revived.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 100, 0, false, true));
+
+        // Totem effect
+        if (ConfigManager.getConfig().ritualTotemEffect) {
+            world.sendEntityStatus(revived, (byte) 35); // Status 35 is totem effect
+        }
     }
 
     private static boolean isRitualStructure(World world, BlockPos headPos) {
@@ -185,17 +192,19 @@ public class RevivalStructureListener {
         setAir(world, hx - 1, hy - 1, hz + 1);
         setAir(world, hx + 1, hy - 1, hz + 1);
 
-        // base
-        int by = hy - 2;
-        setAir(world, hx, by, hz);
-        setAir(world, hx - 1, by, hz - 1);
-        setAir(world, hx + 1, by, hz - 1);
-        setAir(world, hx - 1, by, hz + 1);
-        setAir(world, hx + 1, by, hz + 1);
-        setAir(world, hx, by, hz - 1);
-        setAir(world, hx - 1, by, hz);
-        setAir(world, hx + 1, by, hz);
-        setAir(world, hx, by, hz + 1);
+        if (!ConfigManager.getConfig().leaveStructureBase) {
+            // base
+            int by = hy - 2;
+            setAir(world, hx, by, hz);
+            setAir(world, hx - 1, by, hz - 1);
+            setAir(world, hx + 1, by, hz - 1);
+            setAir(world, hx - 1, by, hz + 1);
+            setAir(world, hx + 1, by, hz + 1);
+            setAir(world, hx, by, hz - 1);
+            setAir(world, hx - 1, by, hz);
+            setAir(world, hx + 1, by, hz);
+            setAir(world, hx, by, hz + 1);
+        }
     }
 
     private static void setAir(World world, int x, int y, int z) {
