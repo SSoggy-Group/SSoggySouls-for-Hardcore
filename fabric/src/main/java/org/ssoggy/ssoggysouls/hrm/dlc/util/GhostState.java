@@ -22,15 +22,11 @@ public class GhostState extends PersistentState {
     @Override
     public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
         NbtCompound locations = new NbtCompound();
-        deathLocations.forEach((uuid, pos) -> {
-            locations.putLong(uuid.toString(), pos.asLong());
-        });
+        deathLocations.forEach((uuid, pos) -> locations.putLong(uuid.toString(), pos.asLong()));
         nbt.put(DEATH_LOCATIONS, locations);
 
         NbtCompound holders = new NbtCompound();
-        deathHolders.forEach((ghostId, holderId) -> {
-            holders.putUuid(ghostId.toString(), holderId);
-        });
+        deathHolders.forEach((ghostId, holderId) -> holders.putUuid(ghostId.toString(), holderId));
         nbt.put(DEATH_HOLDERS, holders);
 
         return nbt;

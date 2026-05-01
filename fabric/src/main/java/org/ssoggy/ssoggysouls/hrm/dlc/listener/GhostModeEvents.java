@@ -51,9 +51,7 @@ public class GhostModeEvents {
         });
 
         // Clean up cache on disconnect
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            GHOST_CACHE.remove(handler.getPlayer().getUuid());
-        });
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> GHOST_CACHE.remove(handler.getPlayer().getUuid()));
     }
 
     private static void registerInteractionEvents() {
