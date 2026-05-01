@@ -66,16 +66,16 @@ public class CommandRegistration {
                     CompletableFuture.runAsync(() -> {
                         PlayerData data = db.getPlayerByName(targetName);
                         if (data == null) {
-                            source.sendError(MessageUtil.get("status-not-found", "player", targetName));
+                            source.sendError(MessageUtil.get("status-not-found", PLAYER, targetName));
                             return;
                         }
 
                         if (data.isDead()) {
-                            source.sendFeedback(() -> MessageUtil.get("status-other-dead", "player", data.getUsername()), false);
+                            source.sendFeedback(() -> MessageUtil.get("status-other-dead", PLAYER, data.getUsername()), false);
                         } else {
                             source.sendFeedback(() -> MessageUtil.get("status-other-alive", 
-                                    "player", data.getUsername(), 
-                                    "lives", data.getLives()), false);
+                                    PLAYER, data.getUsername(), 
+                                    LIVES, data.getLives()), false);
                         }
                     });
                     return 1;
@@ -98,12 +98,12 @@ public class CommandRegistration {
                     CompletableFuture.runAsync(() -> {
                         PlayerData targetData = db.getPlayerByName(targetName);
                         if (targetData == null) {
-                            source.sendError(MessageUtil.get("revive-not-found", "player", targetName));
+                            source.sendError(MessageUtil.get("revive-not-found", PLAYER, targetName));
                             return;
                         }
 
                         if (!targetData.isDead()) {
-                            source.sendError(MessageUtil.get("revive-already-alive", "player", targetData.getUsername()));
+                            source.sendError(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername()));
                             return;
                         }
 
@@ -143,12 +143,12 @@ public class CommandRegistration {
                         CompletableFuture.runAsync(() -> {
                             PlayerData data = db.getPlayerByName(targetName);
                             if (data == null) {
-                                source.sendError(MessageUtil.get("status-not-found", "player", targetName));
+                                source.sendError(MessageUtil.get("status-not-found", PLAYER, targetName));
                                 return;
                             }
                             db.setLives(data.getUuid(), lives);
                             source.sendFeedback(() -> MessageUtil.getNoPrefix("admin-setlives-success", 
-                                    "player", data.getUsername(), "lives", lives), true);
+                                    PLAYER, data.getUsername(), LIVES, lives), true);
                             AdminLogger.log(source.getName(), "Set lives for " + data.getUsername() + " to " + lives);
                         });
                         return 1;
