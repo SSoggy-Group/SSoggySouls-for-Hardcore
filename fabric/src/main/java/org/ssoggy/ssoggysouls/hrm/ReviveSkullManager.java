@@ -30,7 +30,11 @@ import java.util.concurrent.CompletableFuture;
 
 public class ReviveSkullManager {
 
-    public static void register(SSoggySoulsMod plugin, DatabaseManager db) {
+    private ReviveSkullManager() {
+        // Utility class
+    }
+
+    public static void register(DatabaseManager db) {
         UseItemCallback.EVENT.register((player, world, hand) -> {
             if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) {
                 return TypedActionResult.pass(player.getStackInHand(hand));
