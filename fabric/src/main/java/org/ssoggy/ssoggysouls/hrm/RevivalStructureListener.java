@@ -52,7 +52,7 @@ public class RevivalStructureListener {
         }
 
         ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
-        if (profile == null || profile.id().isEmpty()) {
+        if (profile == null || !profile.id().isPresent()) {
             return ActionResult.PASS;
         }
 
