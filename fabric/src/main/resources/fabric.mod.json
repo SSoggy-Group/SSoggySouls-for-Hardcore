@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "ssoggysouls",
+  "version": "${version}",
+  "name": "SSoggySouls",
+  "description": "A hardcore lives system mod. When you die enough times, you enter spectator mode or get exiled to a Limbo server until your teammates revive you.",
+  "authors": [
+    "SSoggyTacoMan"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/project/Pb03qu6T",
+    "sources": "https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore",
+    "issues": "https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues"
+  },
+  "license": "GPL-3.0",
+  "icon": "assets/ssoggysouls/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.ssoggy.ssoggysouls.SSoggySoulsMod"
+    ]
+  },
+  "mixins": [
+    "ssoggysouls.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "fabric-permissions-api-v0": "*"
+  }
+}
