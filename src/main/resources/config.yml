@@ -9,21 +9,34 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 #  QUICK SETUP GUIDE
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 1: Choose your setup type (database section below):
 #
-#   SINGLE-SERVER (SQLite):
-#     - Set database.type to "sqlite"
-#     - Dead players stay on the same server (spectator mode)
-#     - No Limbo server needed, no MySQL required
-#     - Skip all "Server Role" and "Limbo Security" sections
+#  ┌─ SINGLE-SERVER (SQLite) ─────────────────────────────────────────────────┐
+#  │  1. Set database.type to "sqlite"                                       │
+#  │  2. IGNORE everything else in the Database section (host, port, etc.)   │
+#  │  3. SKIP "Server Role" section     (leave defaults, they are unused)    │
+#  │  4. SKIP "Security Settings" section  (Limbo-only, does nothing here)   │
+#  │  5. Configure: Lives, Main Server Settings, HRM, Messages               │
+#  │                                                                         │
+#  │  Dead players stay on the same server in spectator mode.                │
+#  │  No extra servers or databases needed.                                  │
+#  └─────────────────────────────────────────────────────────────────────────┘
 #
-#   DUAL-SERVER (MySQL - Main + Limbo):
-#     - Set database.type to "mysql" and fill in connection details
-#     - Dead players get transferred to a separate Limbo server
-#     - Configure server roles (is-limbo-server) on each server
-#     - Database details MUST match on both servers
-#
-# STEP 2: Configure lives, death-mode, HRM, and messages below.
+#  ┌─ DUAL-SERVER (MySQL — Main + Limbo) ─────────────────────────────────────┐
+#  │  You need ONE MySQL database that BOTH Minecraft servers connect to.    │
+#  │  The plugin is installed on both servers, pointing to the SAME database.│
+#  │                                                                         │
+#  │  MAIN SERVER config:                                                    │
+#  │    1. Set database.type to "mysql" + fill in connection details          │
+#  │    2. Set is-limbo-server: false                                        │
+#  │    3. Configure: Lives, Main Server Settings, HRM, Messages             │
+#  │                                                                         │
+#  │  LIMBO SERVER config:                                                   │
+#  │    1. Set database.type to "mysql" + SAME connection details as Main     │
+#  │    2. Set is-limbo-server: true                                         │
+#  │    3. Configure: Limbo spawn location, Security Settings                │
+#  │                                                                         │
+#  │  Dead players get transferred to the Limbo server via BungeeCord.       │
+#  └─────────────────────────────────────────────────────────────────────────┘
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -31,7 +44,6 @@
 # Plugin Features & Updates
 # ───────────────────────────────────────────────────────────────────────────────
 # Check for plugin updates on startup (GitHub: SSoggy-Group/SSoggySouls-for-Hardcore)
-# [CONFIG] BOTH SERVERS: Keep the same on both
 check-for-updates: true
 
 # Display hardcore-style hearts on the client (cosmetic only, no gameplay change)
@@ -42,37 +54,33 @@ hardcore-hearts: true
 # ───────────────────────────────────────────────────────────────────────────────
 # This is the FIRST decision you need to make — it determines your entire setup!
 #
-#   1. SQLite (Local)  - Single-server only. No extra setup. Data stored locally.
-#   2. MySQL (Network) - REQUIRED for the 2-server (Main + Limbo) system.
-#                        Also works for single-server if you prefer MySQL.
+#   "sqlite" — Single-server. No extra setup. Data stored in a local file.
+#              IGNORE all the MySQL fields below (host, port, username, etc.)
 #
-# If using MySQL with dual servers:
-#   [CONFIG] BOTH SERVERS: Database details MUST be identical on Main and Limbo!
+#   "mysql"  — Required for 2-server (Main + Limbo) setups.
+#              Also works for single-server if you prefer MySQL for speed.
+#              You need ONE MySQL database. Both servers connect to it.
+#              Fill in ALL the fields below with YOUR database details.
 #
-# You can share the same database with other plugins like CoreProtect,
-# as long as you use a unique table name (configured below).
+# NOTE FOR DUAL-SERVER: Both the Main and Limbo server configs must have
+# IDENTICAL database settings (same host, port, name, user, password).
+# They share ONE database — if the details differ, player data will be split!
 #
 # If you use MySQL with Pterodactyl panel:
-#    - Go to your server settings
-#    - Click "Databases" tab
-#    - Create a new database if you don't have one
-#    - The connection details will be in the Databases section:
-#      Host: localhost (or your DB host)
-#      Port: 3306 (default MySQL port)
-#      Username: your_db_username
-#      Password: your_db_password
-#      Database: your_db_name
+#    - Go to your server settings → "Databases" tab → Create a new database
+#    - Copy the connection details (Host, Port, Username, Password, Database)
 #
 database:
-  # Type of storage to use.
   # Options: "sqlite" or "mysql"
-  # Use "sqlite" for single-server, "mysql" for dual-server (Main + Limbo)
+  # If you pick "sqlite", you can ignore everything below this line in this section.
   type: "mysql"
 
-  # MySQL server address (usually localhost for Pterodactyl)
+  # ── MySQL connection details (ignored when type is "sqlite") ──
+
+  # MySQL server address (usually "localhost" for Pterodactyl)
   host: "localhost"
 
-  # MySQL port (default 3306 - don't change unless you know why)
+  # MySQL port (default 3306 — don't change unless you know why)
   port: 3306
 
   # Database name to use (create this in MySQL first if it doesn't exist)
@@ -81,15 +89,13 @@ database:
   # MySQL username (Pterodactyl: check Databases tab)
   username: "minecraft"
 
-  # MySQL password (Pterodactyl: check Databases tab) - CHANGE THIS!
+  # MySQL password (Pterodactyl: check Databases tab) — CHANGE THIS!
   password: "changeme"
 
-  # Connection pool size (number of simultaneous DB connections)
-  # Default 5 is fine for most servers
-  # Increase if you have 100+ players
+  # Connection pool size (simultaneous DB connections, 5 is fine for most servers)
   pool-size: 5
 
-  # Table name where player data is stored (don't change unless necessary and you know what you're doing)
+  # Table name where player data is stored (don't change unless you know what you're doing)
   table-name: "hardcore_players"
 
 # ───────────────────────────────────────────────────────────────────────────────
@@ -503,7 +509,7 @@ debug: false
 # ───────────────────────────────────────────────────────────────────────────────
 # These settings control the advanced mechanics ported from the RevivalPlus DLC
 # created by Cera and Jakeccz. You can also edit these in-game using /revivalconfig.
-# 
+#
 # -- GAMERULES --
 # Do players drop their entire inventory upon hardcore death?
 lose-inventory: false
