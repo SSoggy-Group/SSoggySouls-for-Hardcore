@@ -99,17 +99,19 @@ public class UpdateChecker {
     }
 
     private void showUpdateNotification(String latestVersion) {
-        SSoggySoulsMod.LOGGER.info("");
-        SSoggySoulsMod.LOGGER.info(BORDER_TOP);
-        SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
-        SSoggySoulsMod.LOGGER.info("║           ⚡ UPDATE AVAILABLE ⚡                          ║");
-        SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
-        SSoggySoulsMod.LOGGER.info("║   Current version: {}║", String.format("%-35s", currentVersion));
-        SSoggySoulsMod.LOGGER.info("║   Latest version:  {}║", String.format("%-35s", latestVersion));
-        SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
-        SSoggySoulsMod.LOGGER.info("║   Download: {}║", String.format("%-43s", DOWNLOAD_PAGE));
-        SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
-        SSoggySoulsMod.LOGGER.info(BORDER_BOTTOM);
-        SSoggySoulsMod.LOGGER.info("");
+        if (SSoggySoulsMod.LOGGER.isInfoEnabled()) {
+            SSoggySoulsMod.LOGGER.info("");
+            SSoggySoulsMod.LOGGER.info(BORDER_TOP);
+            SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
+            SSoggySoulsMod.LOGGER.info("║           ⚡ UPDATE AVAILABLE ⚡                          ║");
+            SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
+            SSoggySoulsMod.LOGGER.info("║   Current version: {}║", String.format("%-35s", currentVersion));
+            SSoggySoulsMod.LOGGER.info("║   Latest version:  {}║", String.format("%-35s", latestVersion));
+            SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
+            SSoggySoulsMod.LOGGER.info("║   Download: {}║", String.format("%-43s", DOWNLOAD_PAGE));
+            SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
+            SSoggySoulsMod.LOGGER.info(BORDER_BOTTOM);
+            SSoggySoulsMod.LOGGER.info("");
+        }
     }
 }
