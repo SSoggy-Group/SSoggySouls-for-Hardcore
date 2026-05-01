@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
@@ -22,13 +21,9 @@ import java.util.concurrent.CompletableFuture;
  */
 public class MainServerListener {
 
-    private final SSoggySoulsMod plugin;
-    // Assume database manager is available from Mod plugin instance.
-    // For now we will pass it or fetch it. We will need a getter in SSoggySoulsMod.
-    private DatabaseManager db;
+    private final DatabaseManager db;
 
-    public MainServerListener(SSoggySoulsMod plugin, DatabaseManager db) {
-        this.plugin = plugin;
+    public MainServerListener(DatabaseManager db) {
         this.db = db;
         registerJoinEvent();
         registerQuitEvent();
@@ -48,7 +43,7 @@ public class MainServerListener {
                 if (data == null) {
                     long graceMs = ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod());
                     data = PlayerData.createNew(uuid, player.getName().getString(), 
-                            plugin.getDefaultLives(), graceMs); 
+                            ConfigManager.getConfig().getDefaultLives(), graceMs); 
                     db.savePlayer(data);
                 } else {
                     data.setUsername(player.getName().getString());

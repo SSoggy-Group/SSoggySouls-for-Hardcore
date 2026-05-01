@@ -79,10 +79,10 @@ public class SSoggySoulsMod implements ModInitializer {
 
         if (ConfigManager.getConfig().isLimboServer()) {
             LOGGER.info("Starting in LIMBO server mode...");
-            new LimboServerListener(this, databaseManager);
+            new LimboServerListener(databaseManager);
         } else {
             LOGGER.info("Starting in MAIN server mode...");
-            new MainServerListener(this, databaseManager);
+            new MainServerListener(databaseManager);
             
             // Phase 4: Init Built-in Hardcore Revive Features
             HeadDropListener.register(databaseManager);

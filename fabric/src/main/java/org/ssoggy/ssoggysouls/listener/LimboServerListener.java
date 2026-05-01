@@ -4,21 +4,23 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.world.ServerWorld;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class LimboServerListener {
 
-    private final SSoggySoulsMod plugin;
     private final DatabaseManager db;
 
-    public LimboServerListener(SSoggySoulsMod plugin, DatabaseManager db) {
-        this.plugin = plugin;
+    public LimboServerListener(DatabaseManager db) {
         this.db = db;
         registerEvents();
     }
@@ -64,7 +66,13 @@ public class LimboServerListener {
         player.getHungerManager().setFoodLevel(20);
         player.getHungerManager().setSaturationLevel(20f);
         
-        // TODO: Teleport to specific limbo spawn location config
+        // Teleport to specific limbo spawn location config
+        ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+        Identifier worldId = Identifier.of(cfg.getLimboSpawnWorld());
+        ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
+        if (world != null) {
+            player.teleport(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+        }
         
         player.sendMessage(MessageUtil.getNoPrefix("Welcome to Limbo. You are dead!"), false);
     }

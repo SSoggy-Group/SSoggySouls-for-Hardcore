@@ -79,6 +79,12 @@ public class ConfigManager {
         private String mainServerName = "main";
         private String limboServerName = "limbo";
         private boolean sendToLimboOnDeath = false;
+        private String limboSpawnWorld = "minecraft:overworld";
+        private double limboSpawnX = 0;
+        private double limboSpawnY = 100;
+        private double limboSpawnZ = 0;
+        private float limboSpawnYaw = 0;
+        private float limboSpawnPitch = 0;
 
         // --- HRM (Revival) Features ---
         private boolean hrmEnabled = true;
@@ -108,6 +114,12 @@ public class ConfigManager {
         public String getMainServerName() { return mainServerName; }
         public String getLimboServerName() { return limboServerName; }
         public boolean isSendToLimboOnDeath() { return sendToLimboOnDeath; }
+        public String getLimboSpawnWorld() { return limboSpawnWorld; }
+        public double getLimboSpawnX() { return limboSpawnX; }
+        public double getLimboSpawnY() { return limboSpawnY; }
+        public double getLimboSpawnZ() { return limboSpawnZ; }
+        public float getLimboSpawnYaw() { return limboSpawnYaw; }
+        public float getLimboSpawnPitch() { return limboSpawnPitch; }
         public boolean isHrmEnabled() { return hrmEnabled; }
         public boolean isDropHeads() { return dropHeads; }
         public boolean isHeadPlaceAsBlock() { return headPlaceAsBlock; }
@@ -131,6 +143,12 @@ public class ConfigManager {
         public void setReviveCooldownSeconds(int seconds) { reviveCooldownSeconds = seconds; }
         public void setMainServerName(String name) { mainServerName = name; }
         public void setLimboServerName(String name) { limboServerName = name; }
+        public void setLimboSpawnWorld(String world) { limboSpawnWorld = world; }
+        public void setLimboSpawnX(double x) { limboSpawnX = x; }
+        public void setLimboSpawnY(double y) { limboSpawnY = y; }
+        public void setLimboSpawnZ(double z) { limboSpawnZ = z; }
+        public void setLimboSpawnYaw(float yaw) { limboSpawnYaw = yaw; }
+        public void setLimboSpawnPitch(float pitch) { limboSpawnPitch = pitch; }
         public void setHrmEnabled(boolean enabled) { hrmEnabled = enabled; }
         public void setDropHeads(boolean drop) { dropHeads = drop; }
         public void setHeadPlaceAsBlock(boolean place) { headPlaceAsBlock = place; }
