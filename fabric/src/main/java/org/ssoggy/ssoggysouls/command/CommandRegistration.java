@@ -22,6 +22,9 @@ public class CommandRegistration {
             registerStatusCommand(dispatcher, db);
             registerReviveCommand(dispatcher, plugin, db);
             registerSetLivesCommand(dispatcher, plugin, db);
+            
+            // Phase 5 DLC Commands
+            registerObituariesCommand(dispatcher, db);
         });
     }
 
