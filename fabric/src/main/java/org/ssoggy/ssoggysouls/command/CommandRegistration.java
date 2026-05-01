@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -17,6 +18,13 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 import java.util.concurrent.CompletableFuture;
 
 public class CommandRegistration {
+
+    private static final String PLAYER = "player";
+    private static final String LIVES = "lives";
+
+    private CommandRegistration() {
+        // Utility class
+    }
 
     public static void register(SSoggySoulsMod plugin, DatabaseManager db) {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -48,9 +56,11 @@ public class CommandRegistration {
                 });
                 return 1;
             })
-            .then(CommandManager.argument("player", StringArgumentType.string())
+            .then(CommandManager.argument(PLAYER, StringArgumentType.word())
+                .suggests((context, builder) -> CommandSource.suggestMatching(
+                        context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString()), builder))
                 .executes(context -> {
-                    String targetName = StringArgumentType.getString(context, "player");
+                    String targetName = StringArgumentType.getString(context, PLAYER);
                     ServerCommandSource source = context.getSource();
 
                     CompletableFuture.runAsync(() -> {
@@ -78,9 +88,11 @@ public class CommandRegistration {
         dispatcher.register(CommandManager.literal("revive")
             // Require op level 2 or higher for now (since no permissions api is installed yet)
             .requires(source -> source.hasPermissionLevel(2))
-            .then(CommandManager.argument("player", StringArgumentType.string())
+            .then(CommandManager.argument(PLAYER, StringArgumentType.word())
+                .suggests((context, builder) -> CommandSource.suggestMatching(
+                        context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString()), builder))
                 .executes(context -> {
-                    String targetName = StringArgumentType.getString(context, "player");
+                    String targetName = StringArgumentType.getString(context, PLAYER);
                     ServerCommandSource source = context.getSource();
 
                     CompletableFuture.runAsync(() -> {
@@ -119,11 +131,13 @@ public class CommandRegistration {
     private static void registerSetLivesCommand(CommandDispatcher<ServerCommandSource> dispatcher, SSoggySoulsMod plugin, DatabaseManager db) {
         dispatcher.register(CommandManager.literal("psetlives")
             .requires(source -> source.hasPermissionLevel(2))
-            .then(CommandManager.argument("player", StringArgumentType.string())
-                .then(CommandManager.argument("lives", IntegerArgumentType.integer(0))
+            .then(CommandManager.argument(PLAYER, StringArgumentType.word())
+                .suggests((context, builder) -> CommandSource.suggestMatching(
+                        context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString()), builder))
+                .then(CommandManager.argument(LIVES, IntegerArgumentType.integer(0))
                     .executes(context -> {
-                        String targetName = StringArgumentType.getString(context, "player");
-                        int lives = IntegerArgumentType.getInteger(context, "lives");
+                        String targetName = StringArgumentType.getString(context, PLAYER);
+                        int lives = IntegerArgumentType.getInteger(context, LIVES);
                         ServerCommandSource source = context.getSource();
 
                         CompletableFuture.runAsync(() -> {
