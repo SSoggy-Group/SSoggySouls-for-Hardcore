@@ -37,6 +37,10 @@ public class HeadDropListener {
                 }
 
                 // Drop head on the main thread
+                player.server.execute(() -> {
+                    World world = player.getServerWorld();
+                    BlockPos pos = player.getBlockPos();
+
                     // Handle placing as block vs dropping as item
                     if (ConfigManager.getConfig().headPlaceAsBlock) {
                         BlockPos headPos = findSafeBlockPos(world, pos);
