@@ -18,9 +18,6 @@
   "entrypoints": {
     "server": [
       "org.ssoggy.ssoggysouls.SSoggySoulsMod"
-    ],
-    "modmenu": [
-      "org.ssoggy.ssoggysouls.client.ModMenuIntegration"
     ]
   },
   "mixins": [

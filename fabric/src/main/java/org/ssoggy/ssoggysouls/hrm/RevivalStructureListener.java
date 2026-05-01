@@ -73,19 +73,29 @@ public class RevivalStructureListener {
             return ActionResult.PASS; // Let them place the head normally if not doing ritual
         }
 
-        // The structure is valid. Prevent block placement, consume head, and trigger async DB check.
-        stack.decrement(1);
-        triggerRevival(serverPlayer, world, placedPos, ownerUuid, db);
+        // Copy the stack, consume it immediately to prevent race conditions.
+        // It will be given back if the revival fails.
+        final ItemStack finalStack = stack.copy();
+        finalStack.setCount(1);
+        if (!serverPlayer.isCreative()) {
+            stack.decrement(1);
+        }
+
+        // Trigger async DB check
+        triggerRevival(serverPlayer, world, placedPos, ownerUuid, db, finalStack);
 
         // Return SUCCESS to indicate we handled the interaction (preventing standard block placement)
         return ActionResult.SUCCESS;
     }
 
-    private static void triggerRevival(ServerPlayerEntity serverPlayer, World world, BlockPos placedPos, UUID ownerUuid, DatabaseManager db) {
+    private static void triggerRevival(ServerPlayerEntity serverPlayer, World world, BlockPos placedPos, UUID ownerUuid, DatabaseManager db, ItemStack refundedItem) {
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(ownerUuid);
             if (data == null) {
-                serverPlayer.server.execute(() -> sendError(serverPlayer, "Unknown player."));
+                serverPlayer.server.execute(() -> {
+                    sendError(serverPlayer, "Unknown player.");
+                    refundHead(serverPlayer, refundedItem);
+                });
                 return;
             }
 
@@ -93,41 +103,63 @@ public class RevivalStructureListener {
                 serverPlayer.server.execute(() -> {
                     sendError(serverPlayer, data.getUsername() + " is not dead!");
                     world.playSound(null, placedPos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.4f, 2f);
+                    refundHead(serverPlayer, refundedItem);
                 });
                 return;
             }
 
             boolean success = db.revivePlayer(ownerUuid, ConfigManager.getConfig().getOnReviveLives());
             if (!success) {
-                serverPlayer.server.execute(() -> sendError(serverPlayer, "Failed to revive. Check console."));
+                serverPlayer.server.execute(() -> {
+                    sendError(serverPlayer, "Failed to revive. Check console.");
+                    refundHead(serverPlayer, refundedItem);
+                });
                 return;
             }
 
             SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getName().getString(), data.getUsername());
 
-            serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, data.getUsername()));
+            serverPlayer.server.execute(() -> {
+                performRevival(world, placedPos, serverPlayer, ownerUuid, data.getUsername());
+            });
         });
+    }
+
+    private static void refundHead(ServerPlayerEntity serverPlayer, ItemStack head) {
+        if (!serverPlayer.isCreative()) {
+            if (!serverPlayer.getInventory().insertStack(head)) {
+                serverPlayer.dropItem(head, false);
+            }
+        }
     }
 
     private static void performRevival(World world, BlockPos placedPos, ServerPlayerEntity summoner, UUID revivedUuid, String revivedName) {
         breakStructure(world, placedPos);
 
-        // Strike lightning
+        // Notify summoner
+        summoner.sendMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()), false);
+        summoner.sendMessage(MessageUtil.get("revive-from-limbo", "player", revivedName), false);
+
+        // Notify server
+        world.getPlayers().forEach(p -> {
+            if (!p.getUuid().equals(summoner.getUuid())) {
+                p.sendMessage(MessageUtil.colorize("§e" + summoner.getName().getString() + " revived " + revivedName + "!"), false);
+            }
+        });
+
         if (ConfigManager.getConfig().isRitualLightningStrike()) {
             LightningEntity lightning = EntityType.LIGHTNING_BOLT.create(world);
             if (lightning != null) {
                 lightning.refreshPositionAfterTeleport(placedPos.toCenterPos());
+                lightning.setCosmetic(true);
                 world.spawnEntity(lightning);
             }
         }
 
-        summoner.sendMessage(MessageUtil.get("admin-revive-success", "player", revivedName), false);
-
-        ServerPlayerEntity revived = summoner.server.getPlayerManager().getPlayer(revivedUuid);
-        if (revived != null) {
-            restoreAtStructure(revived, placedPos);
-        } else {
-            summoner.sendMessage(MessageUtil.get("revive-success", "player", revivedName), false);
+        // Apply effects directly to the revived player if they are online
+        ServerPlayerEntity revivedPlayer = world.getServer().getPlayerManager().getPlayer(revivedUuid);
+        if (revivedPlayer != null) {
+            restoreAtStructure(revivedPlayer, placedPos);
         }
     }
 
@@ -142,8 +174,60 @@ public class RevivalStructureListener {
 
         // Totem effect
         if (ConfigManager.getConfig().isRitualTotemEffect()) {
+            revived.getWorld().playSound(null, revived.getBlockPos(), SoundEvents.ITEM_TOTEM_USE, SoundCategory.PLAYERS, 1.0f, 1.0f);
             revived.getWorld().sendEntityStatus(revived, (byte) 35); // Status 35 is totem effect
         }
+    }
+
+    private static void breakStructure(World world, BlockPos headPos) {
+        // Find corners first so we don't break their supporting ores before checking
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                if (Math.abs(x) == 1 && Math.abs(z) == 1) {
+                    BlockPos soulSandPos = headPos.add(x, -2, z);
+                    BlockPos flowerPos = headPos.add(x, -1, z);
+
+                    if (isFlower(world, flowerPos.getX(), flowerPos.getY(), flowerPos.getZ())) {
+                        world.breakBlock(flowerPos, true);
+                    }
+                    if (isSoulSand(world, soulSandPos.getX(), soulSandPos.getY(), soulSandPos.getZ())) {
+                        world.breakBlock(soulSandPos, true);
+                    }
+                }
+            }
+        }
+
+        // Break center block under head (fence)
+        BlockPos center = headPos.down();
+        if (isFence(world, center.getX(), center.getY(), center.getZ())) {
+            world.breakBlock(center, true);
+        }
+
+        // Middle edges (stairs)
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                if ((Math.abs(x) == 1 && z == 0) || (x == 0 && Math.abs(z) == 1)) {
+                    BlockPos stairPos = headPos.add(x, -2, z);
+                    if (isStair(world, stairPos.getX(), stairPos.getY(), stairPos.getZ())) {
+                        world.breakBlock(stairPos, true);
+                    }
+                }
+            }
+        }
+
+        // Base blocks (ore base)
+        if (!ConfigManager.getConfig().isLeaveStructureBase()) {
+            for (int x = -1; x <= 1; x++) {
+                for (int z = -1; z <= 1; z++) {
+                    BlockPos basePos = headPos.add(x, -2, z);
+                    world.breakBlock(basePos, true);
+                }
+            }
+        }
+    }
+
+    private static void sendError(ServerPlayerEntity player, String msg) {
+        player.sendMessage(MessageUtil.colorize("§c" + msg), false);
     }
 
     private static boolean isRitualStructure(World world, BlockPos headPos) {
@@ -152,10 +236,10 @@ public class RevivalStructureListener {
         int hz = headPos.getZ();
 
         // fence below da head
-        if (!world.getBlockState(new BlockPos(hx, hy - 1, hz)).isIn(BlockTags.FENCES)) return false;
+        if (!isFence(world, hx, hy - 1, hz)) return false;
 
         // ore block below the fence
-        if (!world.getBlockState(new BlockPos(hx, hy - 2, hz)).isIn(BlockTags.BEACON_BASE_BLOCKS)) return false;
+        if (!isOre(world, hx, hy - 2, hz)) return false;
 
         int by = hy - 2;
         // soul sand corners
@@ -172,67 +256,59 @@ public class RevivalStructureListener {
 
         // wither roses on the corners on the soul sand
         int my = hy - 1;
-        if (!isWitherRose(world, hx - 1, my, hz - 1)) return false;
-        if (!isWitherRose(world, hx + 1, my, hz - 1)) return false;
-        if (!isWitherRose(world, hx - 1, my, hz + 1)) return false;
-        return isWitherRose(world, hx + 1, my, hz + 1);
+        if (!isFlower(world, hx - 1, my, hz - 1)) return false;
+        if (!isFlower(world, hx + 1, my, hz - 1)) return false;
+        if (!isFlower(world, hx - 1, my, hz + 1)) return false;
+        return isFlower(world, hx + 1, my, hz + 1);
     }
 
     private static boolean checkIncompleteStructure(World world, BlockPos headPos) {
         int hx = headPos.getX();
         int hy = headPos.getY();
         int hz = headPos.getZ();
-        BlockState fence = world.getBlockState(new BlockPos(hx, hy - 1, hz));
-        BlockState ore = world.getBlockState(new BlockPos(hx, hy - 2, hz));
 
-        return fence.isIn(BlockTags.FENCES) && ore.isIn(BlockTags.BEACON_BASE_BLOCKS);
+        // Just check if the base has at least some matching blocks
+        int score = 0;
+        if (isFence(world, hx, hy - 1, hz)) score += 3;
+        if (isOre(world, hx, hy - 2, hz)) score += 2;
+
+        for (int i = -1; i <= 1; i++) {
+            for (int k = -1; k <= 1; k++) {
+                if (isOre(world, hx + i, hy - 2, hz + k) || isSoulSand(world, hx + i, hy - 2, hz + k) || isStair(world, hx + i, hy - 2, hz + k)) score++;
+            }
+        }
+        return score >= 6; // somewhat arbitrary threshold to decide if they tried to build the ritual
+    }
+
+    private static boolean isBlockInTagList(BlockState state, java.util.List<String> tags) {
+        net.minecraft.util.Identifier id = net.minecraft.registry.Registries.BLOCK.getId(state.getBlock());
+        String name = id.getPath().toUpperCase(java.util.Locale.ROOT);
+        return tags.contains(name);
+    }
+
+    private static boolean isOre(World world, int x, int y, int z) {
+        BlockState state = world.getBlockState(new BlockPos(x, y, z));
+        return isBlockInTagList(state, ConfigManager.getConfig().getOreBlocktag());
+    }
+
+    private static boolean isFlower(World world, int x, int y, int z) {
+        BlockState state = world.getBlockState(new BlockPos(x, y, z));
+        return isBlockInTagList(state, ConfigManager.getConfig().getFlowerBlocktag());
+    }
+
+    private static boolean isFence(World world, int x, int y, int z) {
+        BlockPos pos = new BlockPos(x, y, z);
+        BlockState fence = world.getBlockState(pos);
+        return isBlockInTagList(fence, ConfigManager.getConfig().getFenceBlocktag());
     }
 
     private static boolean isSoulSand(World world, int x, int y, int z) {
         BlockState state = world.getBlockState(new BlockPos(x, y, z));
-        return state.isOf(Blocks.SOUL_SAND) || state.isOf(Blocks.SOUL_SOIL);
+        return isBlockInTagList(state, ConfigManager.getConfig().getSoulSandBlocktag());
     }
 
     private static boolean isStair(World world, int x, int y, int z) {
-        return world.getBlockState(new BlockPos(x, y, z)).isIn(BlockTags.STAIRS);
-    }
-
-    private static boolean isWitherRose(World world, int x, int y, int z) {
-        return world.getBlockState(new BlockPos(x, y, z)).isOf(Blocks.WITHER_ROSE);
-    }
-
-    private static void breakStructure(World world, BlockPos headPos) {
-        int hx = headPos.getX();
-        int hy = headPos.getY();
-        int hz = headPos.getZ();
-
-        // fence + 4 roses
-        setAir(world, hx, hy - 1, hz);
-        setAir(world, hx - 1, hy - 1, hz - 1);
-        setAir(world, hx + 1, hy - 1, hz - 1);
-        setAir(world, hx - 1, hy - 1, hz + 1);
-        setAir(world, hx + 1, hy - 1, hz + 1);
-
-        if (!ConfigManager.getConfig().isLeaveStructureBase()) {
-            // base
-            int by = hy - 2;
-            setAir(world, hx, by, hz);
-            setAir(world, hx - 1, by, hz - 1);
-            setAir(world, hx + 1, by, hz - 1);
-            setAir(world, hx - 1, by, hz + 1);
-            setAir(world, hx + 1, by, hz + 1);
-            setAir(world, hx, by, hz - 1);
-            setAir(world, hx - 1, by, hz);
-            setAir(world, hx + 1, by, hz);
-            setAir(world, hx, by, hz + 1);
-        }
-    }
-
-    private static void setAir(World world, int x, int y, int z) {
-        world.breakBlock(new BlockPos(x, y, z), false);
-    }
-
-    private static void sendError(ServerPlayerEntity player, String message) {
-        player.sendMessage(MessageUtil.getNoPrefix(message), false);
+        BlockState state = world.getBlockState(new BlockPos(x, y, z));
+        return isBlockInTagList(state, ConfigManager.getConfig().getStairBlocktag());
     }
 }
