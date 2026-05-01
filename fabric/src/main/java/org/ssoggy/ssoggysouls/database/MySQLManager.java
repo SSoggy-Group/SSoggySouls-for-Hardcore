@@ -12,8 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
-import org.ssoggy.ssoggysouls.SSoggySouls;
-import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -28,7 +27,7 @@ public class MySQLManager implements DatabaseManager {
     private static final long CACHE_TTL_MS = 2000; // 2 second cache
     private final Map<UUID, CachedDeathStatus> deathStatusCache = new ConcurrentHashMap<>();
 
-    private final SSoggySouls plugin;
+    private final SSoggySoulsMod plugin;
     private HikariDataSource dataSource;
     private String tableName;
 
@@ -46,19 +45,19 @@ public class MySQLManager implements DatabaseManager {
         }
     }
 
-    public MySQLManager(SSoggySouls plugin) {
+    public MySQLManager(SSoggySoulsMod plugin) {
         this.plugin = plugin;
     }
 
     public boolean initialize() {
         try {
-            String host = plugin.getConfig().getString("database.host", "localhost");
-            int port = plugin.getConfig().getInt("database.port", 3306);
-            String dbName = plugin.getConfig().getString("database.name", "minecraft");
-            String user = plugin.getConfig().getString("database.username", "minecraft");
-            String pass = plugin.getConfig().getString("database.password", "changeme");
-            int poolSize = plugin.getConfig().getInt("database.pool-size", 5);
-            tableName = plugin.getConfig().getString("database.table-name", "hardcore_players");
+            String host = plugin.getConfigString("database.host", "localhost");
+            int port = plugin.getConfigInt("database.port", 3306);
+            String dbName = plugin.getConfigString("database.name", "minecraft");
+            String user = plugin.getConfigString("database.username", "minecraft");
+            String pass = plugin.getConfigString("database.password", "changeme");
+            int poolSize = plugin.getConfigInt("database.pool-size", 5);
+            tableName = plugin.getConfigString("database.table-name", "hardcore_players");
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
                     + "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true"
@@ -82,12 +81,11 @@ public class MySQLManager implements DatabaseManager {
             dataSource = new HikariDataSource(config);
             createTable();
 
-            plugin.getLogger().log(Level.INFO, "MySQL connection established ({0}:{1}/{2})",
-                    new Object[] { host, port, dbName });
+            SSoggySoulsMod.LOGGER.info("MySQL connection established ({}:{}/{})", host, port, dbName);
             return true;
 
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed!", e);
+            SSoggySoulsMod.LOGGER.error("MySQL initialization failed!", e);
             return false;
         }
     }
@@ -95,7 +93,7 @@ public class MySQLManager implements DatabaseManager {
     public void shutdown() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
-            plugin.getLogger().info("MySQL connection pool closed.");
+            SSoggySoulsMod.LOGGER.info("MySQL connection pool closed.");
         }
     }
 
@@ -146,7 +144,7 @@ public class MySQLManager implements DatabaseManager {
             boolean duplicateColumn = e.getErrorCode() == MYSQL_DUPLICATE_COLUMN
                     || "42S21".equals(sqlState);
             if (!duplicateColumn) {
-                plugin.getLogger().log(Level.WARNING, e, () -> "Failed to ensure " + columnName + " column");
+                SSoggySoulsMod.LOGGER.warn("Failed to ensure " + columnName + " column", e);
             }
         }
     }
@@ -176,7 +174,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get player " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to get player " + uuid, e);
         }
         return null;
     }
@@ -194,7 +192,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get player by name: " + username);
+            SSoggySoulsMod.LOGGER.warn("Failed to get player by name: " + username, e);
         }
         return null;
     }
@@ -231,7 +229,7 @@ public class MySQLManager implements DatabaseManager {
             }
 
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to save player " + data.getUuid());
+            SSoggySoulsMod.LOGGER.warn("Failed to save player " + data.getUuid(), e);
             deathStatusCache.remove(data.getUuid());
         }
     }
@@ -256,7 +254,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to check death status for " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to check death status for " + uuid, e);
         }
         return true;
     }
@@ -282,7 +280,7 @@ public class MySQLManager implements DatabaseManager {
             return rows > 0;
 
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to revive player " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to revive player " + uuid, e);
             return false;
         }
     }
@@ -302,7 +300,7 @@ public class MySQLManager implements DatabaseManager {
 
             deathStatusCache.remove(uuid);
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set lives for " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to set lives for " + uuid, e);
         }
     }
 
@@ -316,7 +314,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set first_join for " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to set first_join for " + uuid, e);
         }
     }
 
@@ -330,7 +328,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set last_seen for " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to set last_seen for " + uuid, e);
         }
     }
 
@@ -344,7 +342,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set grace_until for " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to set grace_until for " + uuid, e);
         }
     }
 
@@ -368,7 +366,7 @@ public class MySQLManager implements DatabaseManager {
                 result.add(mapResultSet(rs));
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get dead players");
+            SSoggySoulsMod.LOGGER.warn("Failed to get dead players", e);
         }
         return result;
     }
@@ -391,7 +389,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get plugin version from database for key: " + key);
+            SSoggySoulsMod.LOGGER.warn("Failed to get plugin version from database for key: " + key, e);
         }
         return null;
     }
@@ -409,7 +407,7 @@ public class MySQLManager implements DatabaseManager {
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to save plugin version to database for key: " + key);
+            SSoggySoulsMod.LOGGER.warn("Failed to save plugin version to database for key: " + key, e);
         }
     }
 
