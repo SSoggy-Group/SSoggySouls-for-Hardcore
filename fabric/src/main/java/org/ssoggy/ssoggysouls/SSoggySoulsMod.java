@@ -39,11 +39,11 @@ public class SSoggySoulsMod implements ModInitializer {
     private DatabaseManager databaseManager;
 
     public SSoggySoulsMod() {
-        instance = this;
+        // Entrypoint
     }
 
     public static SSoggySoulsMod getInstance() {
-        return instance;
+        return instance == null ? instance = new SSoggySoulsMod() : instance;
     }
 
     @Override
@@ -82,15 +82,15 @@ public class SSoggySoulsMod implements ModInitializer {
             new MainServerListener(this, databaseManager);
             
             // Phase 4: Init Built-in Hardcore Revive Features
-            HeadDropListener.register(this, databaseManager);
-            RevivalStructureListener.register(this, databaseManager);
-            ExtraLifeManager.register(this, databaseManager);
-            ReviveSkullManager.register(this, databaseManager);
-            HeadEffectsTask.register(this);
+            HeadDropListener.register(databaseManager);
+            RevivalStructureListener.register(databaseManager);
+            ExtraLifeManager.register(databaseManager);
+            ReviveSkullManager.register(databaseManager);
+            HeadEffectsTask.register();
             
             // Phase 5: Initialize RevivalPlus DLC core
-            GhostModeEvents.register(this, databaseManager);
-            GhostBlockEvents.register(this, databaseManager);
+            GhostModeEvents.register(databaseManager);
+            GhostBlockEvents.register(databaseManager);
         }
 
         new UpdateChecker().checkForUpdates();
@@ -111,7 +111,7 @@ public class SSoggySoulsMod implements ModInitializer {
 
     public void debug(String message) {
         if (isDebugMode()) {
-            LOGGER.info("[DEBUG] " + message);
+            LOGGER.info("[DEBUG] {}", message);
         }
     }
     
