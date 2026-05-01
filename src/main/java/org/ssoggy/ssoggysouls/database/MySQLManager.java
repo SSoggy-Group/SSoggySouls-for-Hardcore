@@ -146,7 +146,7 @@ public class MySQLManager implements DatabaseManager {
             boolean duplicateColumn = e.getErrorCode() == MYSQL_DUPLICATE_COLUMN
                     || "42S21".equals(sqlState);
             if (!duplicateColumn) {
-                plugin.getLogger().log(Level.WARNING, "Failed to ensure " + columnName + " column", e);
+                plugin.getLogger().log(Level.WARNING, e, () -> "Failed to ensure " + columnName + " column");
             }
         }
     }
