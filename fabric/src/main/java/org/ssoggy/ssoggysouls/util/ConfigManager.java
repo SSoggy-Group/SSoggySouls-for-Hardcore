@@ -41,6 +41,26 @@ public class ConfigManager {
         return config;
     }
 
+    public static long parseGracePeriod(String input) {
+        if (input == null || input.equals("0") || input.isEmpty()) return 0;
+        try {
+            long totalMs = 0;
+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+)([hms])").matcher(input.toLowerCase());
+            while (matcher.find()) {
+                long value = Long.parseLong(matcher.group(1));
+                char unit = matcher.group(2).charAt(0);
+                switch (unit) {
+                    case 'h' -> totalMs += value * 3600000;
+                    case 'm' -> totalMs += value * 60000;
+                    case 's' -> totalMs += value * 1000;
+                }
+            }
+            return totalMs;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     public static class ModConfig {
         // --- Core Lives System ---
         public int defaultLives = 3;
