@@ -1,0 +1,65 @@
+plugins {
+    id 'fabric-loom' version '1.7.4'
+    id 'java'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://maven.terraformersmc.com/releases/" }
+}
+
+loom {
+    // Target Java 21 for Minecraft 1.21.1 compatibility
+}
+
+dependencies {
+    // Minecraft + Fabric
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // Fabric API modules
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // HikariCP for database connection pooling (nested into mod JAR via JiJ)
+    include implementation("com.zaxxer:HikariCP:5.1.0")
+
+    // MySQL Connector (nested into mod JAR via JiJ)
+    include implementation("com.mysql:mysql-connector-j:8.3.0")
+
+    // SQLite JDBC (nested into mod JAR via JiJ)
+    include implementation("org.xerial:sqlite-jdbc:3.45.3.0")
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // Target Java 21 bytecode for MC 1.21.1 runtime compatibility
+    it.options.release = 21
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+
+    withSourcesJar()
+}
+
+jar {
+    from("../LICENSE") {
+        rename { "${it}_${project.base.archivesName.get()}" }
+    }
+}

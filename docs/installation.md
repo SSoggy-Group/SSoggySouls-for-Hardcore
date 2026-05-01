@@ -231,6 +231,29 @@ Limbo Server: /plugins/SSoggySouls-3.2.6.jar
 
 - Do NOT place in Velocity/BungeeCord plugins folder
 
+- Both servers must use the SAME version
+
+______________________________________________________________________
+
+## Fabric Mod Installation
+
+The Fabric version is installed similarly to the Bukkit version, but uses the `mods/` folder.
+
+### Requirements
+
+- **Fabric Loader** installed on your server.
+- **Fabric API** placed in the `mods/` folder.
+
+### Installation Steps
+
+1. Place `SSoggySouls-Fabric-X.X.X.jar` into the `mods/` folder.
+2. Start the server to generate `config/ssoggysouls.json`.
+3. Stop the server and configure as needed.
+
+> **Note:** For singleplayer, simply place the JAR in your client's `mods` folder. Limbo features are disabled in singleplayer automatically.
+
+______________________________________________________________________
+
 **DO install on both backend servers (if using Limbo):**
 
 - Must be installed on Main server
