@@ -9,8 +9,8 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
-import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.util.AdminLogger;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 import java.util.concurrent.CompletableFuture;
@@ -96,6 +96,7 @@ public class CommandRegistration {
                         boolean success = db.revivePlayer(targetData.getUuid(), plugin.getDefaultLives());
                         if (success) {
                             source.sendFeedback(() -> MessageUtil.get("admin-revive-success", "player", targetData.getUsername()), true);
+                            AdminLogger.log(source.getName(), "Revived " + targetData.getUsername());
                             
                             // Restore game mode if player is online
                             ServerPlayerEntity targetPlayer = source.getServer().getPlayerManager().getPlayer(targetData.getUuid());
@@ -129,10 +130,10 @@ public class CommandRegistration {
                                 source.sendError(MessageUtil.get("status-not-found", "player", targetName));
                                 return;
                             }
-                            
                             db.setLives(data.getUuid(), lives);
                             source.sendFeedback(() -> MessageUtil.getNoPrefix("admin-setlives-success", 
                                     "player", data.getUsername(), "lives", lives), true);
+                            AdminLogger.log(source.getName(), "Set lives for " + data.getUsername() + " to " + lives);
                         });
                         return 1;
                     })
