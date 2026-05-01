@@ -47,11 +47,8 @@ public class LimboServerListener {
 
         // Cancel Damage
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
-            if (entity instanceof ServerPlayerEntity player) {
-                // Technically we should check if they are dead in DB, but Limbo players are in Adventure
-                if (player.interactionManager.getGameMode() == GameMode.ADVENTURE) {
-                    return false;
-                }
+            if (entity instanceof ServerPlayerEntity player && player.interactionManager.getGameMode() == GameMode.ADVENTURE) {
+                return false;
             }
             return true;
         });

@@ -35,20 +35,6 @@ public class SSoggySoulsMod implements ModInitializer {
     public static final String MOD_ID = "ssoggysouls";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     
-    private static SSoggySoulsMod instance;
-    private DatabaseManager databaseManager;
-
-    public SSoggySoulsMod() {
-        // Entrypoint
-    }
-
-    public static SSoggySoulsMod getInstance() {
-        if (instance == null) {
-            instance = new SSoggySoulsMod();
-        }
-        return instance;
-    }
-
     @Override
     public void onInitialize() {
         LOGGER.info("SSoggySouls Fabric is loading...");
@@ -57,7 +43,7 @@ public class SSoggySoulsMod implements ModInitializer {
         MessageUtil.loadMessages();
 
         // Phase 2: Initialize database (SQLite default for now)
-        databaseManager = new SQLiteManager(this);
+        DatabaseManager databaseManager = new SQLiteManager(this);
         if (!databaseManager.initialize()) {
             LOGGER.error("Failed to initialize database. Disabling features.");
             return;

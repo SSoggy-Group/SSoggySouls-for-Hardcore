@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier;
 public class ServerTransferUtil {
 
     public static void registerPayloads() {
-        PayloadTypeRegistry.playS2C().register(BungeeConnectPayload.ID, BungeeConnectPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(BungeeConnectPayload.PAYLOAD_ID, BungeeConnectPayload.CODEC);
     }
 
     public static void sendToServer(ServerPlayerEntity player, String serverName) {
@@ -27,7 +27,7 @@ public class ServerTransferUtil {
     }
 
     public record BungeeConnectPayload(String serverName) implements CustomPayload {
-        public static final CustomPayload.Id<BungeeConnectPayload> ID = new CustomPayload.Id<>(Identifier.of("bungeecord", "main"));
+        public static final CustomPayload.Id<BungeeConnectPayload> PAYLOAD_ID = new CustomPayload.Id<>(Identifier.of("bungeecord", "main"));
 
         public static final PacketCodec<PacketByteBuf, BungeeConnectPayload> CODEC = PacketCodec.of(
             (value, buf) -> {
@@ -41,6 +41,6 @@ public class ServerTransferUtil {
         );
 
         @Override
-        public CustomPayload.Id<? extends CustomPayload> getId() { return ID; }
+        public CustomPayload.Id<? extends CustomPayload> getId() { return PAYLOAD_ID; }
     }
 }
