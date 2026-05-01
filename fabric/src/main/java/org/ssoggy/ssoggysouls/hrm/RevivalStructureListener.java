@@ -92,7 +92,7 @@ public class RevivalStructureListener {
                 return;
             }
 
-            boolean success = db.revivePlayer(ownerUuid, ConfigManager.getConfig().onReviveLives);
+            boolean success = db.revivePlayer(ownerUuid, ConfigManager.getConfig().getOnReviveLives());
             if (!success) {
                 serverPlayer.server.execute(() -> sendError(serverPlayer, "Failed to revive. Check console."));
                 return;
@@ -108,7 +108,7 @@ public class RevivalStructureListener {
         breakStructure(world, placedPos);
 
         // Strike lightning
-        if (ConfigManager.getConfig().ritualLightningStrike) {
+        if (ConfigManager.getConfig().isRitualLightningStrike()) {
             LightningEntity lightning = EntityType.LIGHTNING_BOLT.create(world);
             if (lightning != null) {
                 lightning.refreshPositionAfterTeleport(placedPos.toCenterPos());
@@ -136,7 +136,7 @@ public class RevivalStructureListener {
         revived.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 100, 0, false, true));
 
         // Totem effect
-        if (ConfigManager.getConfig().ritualTotemEffect) {
+        if (ConfigManager.getConfig().isRitualTotemEffect()) {
             revived.getWorld().sendEntityStatus(revived, (byte) 35); // Status 35 is totem effect
         }
     }
@@ -208,7 +208,7 @@ public class RevivalStructureListener {
         setAir(world, hx - 1, hy - 1, hz + 1);
         setAir(world, hx + 1, hy - 1, hz + 1);
 
-        if (!ConfigManager.getConfig().leaveStructureBase) {
+        if (!ConfigManager.getConfig().isLeaveStructureBase()) {
             // base
             int by = hy - 2;
             setAir(world, hx, by, hz);

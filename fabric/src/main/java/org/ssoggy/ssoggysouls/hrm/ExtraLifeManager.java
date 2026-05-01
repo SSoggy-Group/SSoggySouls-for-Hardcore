@@ -47,7 +47,7 @@ public class ExtraLifeManager {
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(serverPlayer.getUuid());
                 if (data == null) {
-                    data = PlayerData.createNew(serverPlayer.getUuid(), serverPlayer.getName().getString(), ConfigManager.getConfig().defaultLives, 0);
+                    data = PlayerData.createNew(serverPlayer.getUuid(), serverPlayer.getName().getString(), ConfigManager.getConfig().getDefaultLives(), 0);
                     db.savePlayer(data);
                 }
 
@@ -56,7 +56,7 @@ public class ExtraLifeManager {
                     return;
                 }
 
-                int maxLives = ConfigManager.getConfig().maxLives;
+                int maxLives = ConfigManager.getConfig().getMaxLives();
                 if (maxLives > 0 && data.getLives() >= maxLives) {
                     serverPlayer.server.execute(() -> serverPlayer.sendMessage(MessageUtil.getNoPrefix("You are at the maximum number of lives!"), false));
                     return;
