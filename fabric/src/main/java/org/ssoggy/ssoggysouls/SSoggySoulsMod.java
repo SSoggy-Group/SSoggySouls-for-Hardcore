@@ -61,21 +61,28 @@ public class SSoggySoulsMod implements ModInitializer {
         // Phase 3: Register commands (Brigadier)
         CommandRegistration.register(this, databaseManager);
 
-        // Phase 3: Register event callbacks (deaths, joins, etc.)
-        new MainServerListener(this, databaseManager);
+        // Phase 6: Load Configs & Register Proxy Payloads
+        ConfigManager.load();
+        ServerTransferUtil.registerPayloads();
 
-        // Phase 4: Register HRM features (recipes, head drops, structures)
-        HeadDropListener.register(this, databaseManager);
-        RevivalStructureListener.register(this, databaseManager);
-        ExtraLifeManager.register(this, databaseManager);
-        ReviveSkullManager.register(this, databaseManager);
-        HeadEffectsTask.register(this);
-
-        // Phase 5: Initialize RevivalPlus DLC core
-        GhostModeEvents.register(this, databaseManager);
-        GhostBlockEvents.register(this, databaseManager);
-
-        // TODO Phase 6: Set up cross-server (Velocity) support
+        if (ConfigManager.getConfig().isLimboServer) {
+            LOGGER.info("Starting in LIMBO server mode...");
+            // TODO: Initialize LimboServerListener
+        } else {
+            LOGGER.info("Starting in MAIN server mode...");
+            new MainServerListener(this, databaseManager);
+            
+            // Phase 4: Init Built-in Hardcore Revive Features
+            HeadDropListener.register(this, databaseManager);
+            RevivalStructureListener.register(this, databaseManager);
+            ExtraLifeManager.register(this, databaseManager);
+            ReviveSkullManager.register(this, databaseManager);
+            HeadEffectsTask.register(this);
+            
+            // Phase 5: Initialize RevivalPlus DLC core
+            GhostModeEvents.register(this, databaseManager);
+            GhostBlockEvents.register(this, databaseManager);
+        }
 
         LOGGER.info("SSoggySouls Fabric loaded successfully!");
     }
