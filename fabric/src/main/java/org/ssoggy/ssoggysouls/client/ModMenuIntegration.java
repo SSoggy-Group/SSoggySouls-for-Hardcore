@@ -3,15 +3,13 @@ package org.ssoggy.ssoggysouls.client;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 public class ModMenuIntegration implements ModMenuApi {
-    @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return parent -> new SimpleConfigScreen(parent);
+        return SimpleConfigScreen::new;
     }
 
     public static class SimpleConfigScreen extends Screen {
@@ -48,9 +46,8 @@ public class ModMenuIntegration implements ModMenuApi {
             ).dimensions(this.width / 2 - 100, y + 25, 200, 20).build());
 
             // Back button
-            this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.back"), button -> {
-                this.client.setScreen(this.parent);
-            }).dimensions(this.width / 2 - 100, this.height - 40, 200, 20).build());
+            this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.back"), button -> this.client.setScreen(this.parent))
+                .dimensions(this.width / 2 - 100, this.height - 40, 200, 20).build());
         }
 
         @Override
