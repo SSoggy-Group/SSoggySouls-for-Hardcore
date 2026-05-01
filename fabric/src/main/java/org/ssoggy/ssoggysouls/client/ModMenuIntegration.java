@@ -28,20 +28,21 @@ public class ModMenuIntegration implements ModMenuApi {
             
             // Toggle HRM
             this.addDrawableChild(ButtonWidget.builder(
-                Text.literal("HRM Enabled: " + ConfigManager.getConfig().hrmEnabled),
+                Text.literal("HRM Enabled: " + ConfigManager.getConfig().isHrmEnabled()),
                 button -> {
-                    ConfigManager.getConfig().hrmEnabled = !ConfigManager.getConfig().hrmEnabled;
-                    button.setMessage(Text.literal("HRM Enabled: " + ConfigManager.getConfig().hrmEnabled));
+                    ConfigManager.getConfig().setHrmEnabled(!ConfigManager.getConfig().isHrmEnabled());
+                    button.setMessage(Text.literal("HRM Enabled: " + ConfigManager.getConfig().isHrmEnabled()));
                     ConfigManager.save();
                 }
             ).dimensions(this.width / 2 - 100, y, 200, 20).build());
 
             // Default Lives
             this.addDrawableChild(ButtonWidget.builder(
-                Text.literal("Default Lives: " + ConfigManager.getConfig().defaultLives),
+                Text.literal("Default Lives: " + ConfigManager.getConfig().getDefaultLives()),
                 button -> {
-                    ConfigManager.getConfig().defaultLives = (ConfigManager.getConfig().defaultLives % 10) + 1;
-                    button.setMessage(Text.literal("Default Lives: " + ConfigManager.getConfig().defaultLives));
+                    int nextLives = (ConfigManager.getConfig().getDefaultLives() % 10) + 1;
+                    ConfigManager.getConfig().setDefaultLives(nextLives);
+                    button.setMessage(Text.literal("Default Lives: " + ConfigManager.getConfig().getDefaultLives()));
                     ConfigManager.save();
                 }
             ).dimensions(this.width / 2 - 100, y + 25, 200, 20).build());
