@@ -65,6 +65,13 @@ public class SSoggySoulsMod implements ModInitializer {
 
         // Phase 6: Load Configs & Register Proxy Payloads
         ConfigManager.load();
+
+        if (FabricLoader.getInstance().getEnvironmentType() == net.fabricmc.api.EnvType.CLIENT) {
+            LOGGER.info("Singleplayer environment detected! Disabling multiplayer proxy routing.");
+            ConfigManager.getConfig().isLimboServer = false;
+            ConfigManager.getConfig().sendToLimboOnDeath = false;
+        }
+
         ServerTransferUtil.registerPayloads();
 
         if (ConfigManager.getConfig().isLimboServer) {
