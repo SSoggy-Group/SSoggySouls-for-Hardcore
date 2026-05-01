@@ -7,6 +7,12 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 
+import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.database.SQLiteManager;
+import org.ssoggy.ssoggysouls.listener.MainServerListener;
+import org.ssoggy.ssoggysouls.command.CommandRegistration;
+import org.ssoggy.ssoggysouls.util.MessageUtil;
+
 /**
  * SSoggySouls Fabric Mod — main entrypoint.
  * <p>
@@ -19,6 +25,7 @@ public class SSoggySoulsMod implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     
     private static SSoggySoulsMod instance;
+    private DatabaseManager databaseManager;
 
     public SSoggySoulsMod() {
         instance = this;
@@ -32,10 +39,22 @@ public class SSoggySoulsMod implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("SSoggySouls Fabric is loading...");
 
-        // TODO Phase 2: Load config
-        // TODO Phase 2: Initialize database (SQLite/MySQL)
-        // TODO Phase 3: Register commands (Brigadier)
-        // TODO Phase 3: Register event callbacks (deaths, joins, etc.)
+        // Phase 2: Load config (MessageUtil temp)
+        MessageUtil.loadMessages();
+
+        // Phase 2: Initialize database (SQLite default for now)
+        databaseManager = new SQLiteManager(this);
+        if (!databaseManager.initialize()) {
+            LOGGER.error("Failed to initialize database. Disabling features.");
+            return;
+        }
+
+        // Phase 3: Register commands (Brigadier)
+        CommandRegistration.register(this, databaseManager);
+
+        // Phase 3: Register event callbacks (deaths, joins, etc.)
+        new MainServerListener(this, databaseManager);
+
         // TODO Phase 4: Register HRM features (recipes, head drops, structures)
         // TODO Phase 5: Initialize RevivalPlus DLC
         // TODO Phase 6: Set up cross-server (Velocity) support
