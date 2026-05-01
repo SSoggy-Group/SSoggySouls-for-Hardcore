@@ -66,7 +66,9 @@ public class ExtraLifeManager {
 
                 serverPlayer.server.execute(() -> {
                     // Only consume the item now that we've successfully incremented lives
-                    usedStack.decrement(1);
+                    if (!serverPlayer.isCreative()) {
+                        usedStack.decrement(1);
+                    }
                     serverPlayer.sendMessage(MessageUtil.get("extra-life-gained", "lives", newLives), false);
                     world.playSound(null, serverPlayer.getBlockPos(), SoundEvents.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 1.0f, 1.2f);
                     serverPlayer.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 60, 0, false, true));
