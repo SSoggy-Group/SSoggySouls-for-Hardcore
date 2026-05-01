@@ -9,6 +9,7 @@ import java.nio.file.Path;
 
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.database.SQLiteManager;
+import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 import org.ssoggy.ssoggysouls.listener.MainServerListener;
 import org.ssoggy.ssoggysouls.command.CommandRegistration;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
@@ -67,7 +68,7 @@ public class SSoggySoulsMod implements ModInitializer {
 
         if (ConfigManager.getConfig().isLimboServer) {
             LOGGER.info("Starting in LIMBO server mode...");
-            // TODO: Initialize LimboServerListener
+            new LimboServerListener(this, databaseManager);
         } else {
             LOGGER.info("Starting in MAIN server mode...");
             new MainServerListener(this, databaseManager);
