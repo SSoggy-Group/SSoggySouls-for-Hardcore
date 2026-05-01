@@ -43,7 +43,10 @@ public class SSoggySoulsMod implements ModInitializer {
     }
 
     public static SSoggySoulsMod getInstance() {
-        return instance == null ? instance = new SSoggySoulsMod() : instance;
+        if (instance == null) {
+            instance = new SSoggySoulsMod();
+        }
+        return instance;
     }
 
     @Override
