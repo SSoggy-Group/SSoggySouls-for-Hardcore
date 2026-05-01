@@ -22,6 +22,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
+import org.ssoggy.ssoggysouls.util.UpdateChecker;
 
 /**
  * SSoggySouls Fabric Mod — main entrypoint.
@@ -85,6 +86,7 @@ public class SSoggySoulsMod implements ModInitializer {
             GhostBlockEvents.register(this, databaseManager);
         }
 
+        new UpdateChecker().checkForUpdates();
         LOGGER.info("SSoggySouls Fabric loaded successfully!");
     }
 
