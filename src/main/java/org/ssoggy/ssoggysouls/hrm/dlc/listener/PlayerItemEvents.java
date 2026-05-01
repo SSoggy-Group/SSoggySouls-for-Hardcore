@@ -39,11 +39,11 @@ public class PlayerItemEvents implements Listener {
                 OfflinePlayer skullOwner = skull.getOwningPlayer();
                 if (skullOwner == null) return;
 
-                UUID skulk_uuid = skullOwner.getUniqueId();
-                UUID player_uuid = player.getUniqueId();
+                UUID skullUuid = skullOwner.getUniqueId();
+                UUID playerUuid = player.getUniqueId();
 
-                RPStatic.DEAD_HOLDERS.put(skulk_uuid, player_uuid);
-                RPStatic.DEAD_STORAGE.setValue(skulk_uuid.toString(), "deathholder", player_uuid.toString());
+                RPStatic.DEAD_HOLDERS.put(skullUuid, playerUuid);
+                RPStatic.DEAD_STORAGE.setValue(skullUuid.toString(), "deathholder", playerUuid.toString());
                 RPStatic.DEAD_STORAGE.saveConfig();
             }
         }
