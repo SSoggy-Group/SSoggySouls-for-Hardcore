@@ -99,8 +99,9 @@ public class ReviveSkullManager {
                                 clickingPlayer.getInventory().insertStack(realHead);
                                 clickingPlayer.sendMessage(Text.literal("Received " + name + "'s head.").styled(s -> s.withColor(Formatting.GREEN)), false);
                                 
-                                // Schedule closing so we don't crash
-                                clickingPlayer.getServer().execute(clickingPlayer::closeHandledScreen);
+                                clickingPlayer.getServer().execute(() -> {
+                                    if (clickingPlayer instanceof ServerPlayerEntity spe) spe.closeHandledScreen();
+                                });
                             }
                         }
                     } else if (actionType == SlotActionType.QUICK_MOVE || actionType == SlotActionType.SWAP) {
@@ -134,7 +135,7 @@ public class ReviveSkullManager {
     }
 
     private static boolean isReviveSkull(ItemStack stack) {
-        if (stack.isEmpty() || !stack.has(DataComponentTypes.CUSTOM_DATA)) return false;
+        if (stack.isEmpty() || !stack.contains(DataComponentTypes.CUSTOM_DATA)) return false;
         NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
         return nbtComponent != null && nbtComponent.contains("ReviveSkull");
     }
