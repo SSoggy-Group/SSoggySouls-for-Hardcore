@@ -13,6 +13,10 @@ import org.ssoggy.ssoggysouls.listener.MainServerListener;
 import org.ssoggy.ssoggysouls.command.CommandRegistration;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
+import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
+import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
+import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
+import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
 
 /**
  * SSoggySouls Fabric Mod — main entrypoint.
@@ -58,6 +62,10 @@ public class SSoggySoulsMod implements ModInitializer {
 
         // Phase 4: Register HRM features (recipes, head drops, structures)
         HeadDropListener.register(this, databaseManager);
+        RevivalStructureListener.register(this, databaseManager);
+        ExtraLifeManager.register(this, databaseManager);
+        ReviveSkullManager.register(this, databaseManager);
+        HeadEffectsTask.register(this);
 
         // TODO Phase 5: Initialize RevivalPlus DLC
         // TODO Phase 6: Set up cross-server (Velocity) support
