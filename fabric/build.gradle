@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.7-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom-remap' version '1.15-SNAPSHOT'
     id 'java'
 }
 
@@ -14,6 +14,11 @@ repositories {
     mavenCentral()
 }
 
+loom {
+    // Target Java 21 for Minecraft 1.21.1 compatibility
+    // even though we build with Java 25
+}
+
 dependencies {
     // Minecraft + Fabric
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -23,13 +28,13 @@ dependencies {
     // Fabric API modules
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    // HikariCP for database connection pooling (shaded into mod JAR)
+    // HikariCP for database connection pooling (nested into mod JAR)
     include implementation("com.zaxxer:HikariCP:5.1.0")
 
-    // MySQL Connector (shaded into mod JAR)
+    // MySQL Connector (nested into mod JAR)
     include implementation("com.mysql:mysql-connector-j:8.3.0")
 
-    // SQLite JDBC (shaded into mod JAR)
+    // SQLite JDBC (nested into mod JAR)
     include implementation("org.xerial:sqlite-jdbc:3.45.3.0")
 }
 
@@ -42,7 +47,8 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = Integer.parseInt(project.java_version)
+    // Target Java 21 bytecode for MC 1.21.1 runtime compatibility
+    it.options.release = 21
 }
 
 java {
