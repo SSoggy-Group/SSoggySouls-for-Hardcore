@@ -23,7 +23,6 @@ import org.ssoggy.ssoggysouls.model.PlayerData;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class ReviveSkullManager {

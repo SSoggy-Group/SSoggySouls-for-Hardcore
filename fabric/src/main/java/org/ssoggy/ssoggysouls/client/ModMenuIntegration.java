@@ -8,6 +8,7 @@ import net.minecraft.text.Text;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 public class ModMenuIntegration implements ModMenuApi {
+    @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
         return SimpleConfigScreen::new;
     }

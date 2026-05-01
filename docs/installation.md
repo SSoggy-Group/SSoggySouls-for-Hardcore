@@ -240,10 +240,12 @@ ______________________________________________________________________
 The Fabric version is installed similarly to the Bukkit version, but uses the `mods/` folder.
 
 ### Requirements
+
 - **Fabric Loader** installed on your server.
 - **Fabric API** placed in the `mods/` folder.
 
 ### Installation Steps
+
 1. Place `SSoggySouls-Fabric-X.X.X.jar` into the `mods/` folder.
 2. Start the server to generate `config/ssoggysouls.json`.
 3. Stop the server and configure as needed.

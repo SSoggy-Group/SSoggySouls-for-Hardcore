@@ -46,12 +46,9 @@ public class LimboServerListener {
         });
 
         // Cancel Damage
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
-            if (entity instanceof ServerPlayerEntity player && player.interactionManager.getGameMode() == GameMode.ADVENTURE) {
-                return false;
-            }
-            return true;
-        });
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> 
+            !(entity instanceof ServerPlayerEntity player && player.interactionManager.getGameMode() == GameMode.ADVENTURE)
+        );
     }
 
     private void applyLimboState(ServerPlayerEntity player) {

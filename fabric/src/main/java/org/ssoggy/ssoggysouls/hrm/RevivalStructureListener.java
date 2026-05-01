@@ -52,11 +52,12 @@ public class RevivalStructureListener {
         }
 
         ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
-        if (profile == null || !profile.id().isPresent()) {
+        Optional<UUID> ownerId = profile.id();
+        if (!ownerId.isPresent()) {
             return ActionResult.PASS;
         }
 
-        UUID ownerUuid = profile.id().get();
+        UUID ownerUuid = ownerId.get();
         BlockPos placedPos = hitResult.getBlockPos().offset(hitResult.getSide());
 
         // Check if ritual structure is valid underneath where the head is about to be placed
