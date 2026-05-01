@@ -25,6 +25,8 @@ public class ConfigManager {
                 config = GSON.fromJson(reader, ModConfig.class);
             } catch (IOException e) {
                 e.printStackTrace();
+                config = new ModConfig();
+                save();
             }
         } else {
             config = new ModConfig();
@@ -86,6 +88,16 @@ public class ConfigManager {
         private float limboSpawnYaw = 0;
         private float limboSpawnPitch = 0;
 
+        // --- Database Connection ---
+        private String databaseType = "sqlite"; // "sqlite" or "mysql"
+        private String databaseHost = "localhost";
+        private int databasePort = 3306;
+        private String databaseName = "minecraft";
+        private String databaseUsername = "minecraft";
+        private String databasePassword = "changeme";
+        private String databaseTableName = "hardcore_players";
+        private int databasePoolSize = 5;
+
         // --- HRM (Revival) Features ---
         private boolean hrmEnabled = true;
         private boolean dropHeads = true;
@@ -114,6 +126,24 @@ public class ConfigManager {
             messages.put("death-last-life", "§c§l⚠ FINAL WARNING! §cYou are on your last life. Be careful!");
             messages.put("revive-success", "§a§l✦ REVIVED! §aReturning to the world of the living...");
             messages.put("grace-remaining", "§eYou are protected for §a%time_remaining%");
+            messages.put("admin-players-only", "§cThis command can only be run by a player.");
+            messages.put("status-self", "§7You have §e%lives% §7lives remaining.");
+            messages.put("status-not-found", "§cPlayer §e%player% §cnot found.");
+            messages.put("status-other-dead", "§e%player% §cis dead.");
+            messages.put("status-other-alive", "§e%player% §7has §e%lives% §7lives.");
+            messages.put("revive-not-found", "§cPlayer §e%player% §cnot found.");
+            messages.put("revive-already-alive", "§e%player% §cis already alive.");
+            messages.put("admin-revive-success", "§aSuccessfully revived §e%player%§a.");
+            messages.put("extra-life-dead", "§cYou cannot use an Extra Life while dead!");
+            messages.put("extra-life-at-max", "§cYou are already at the maximum number of lives!");
+            messages.put("extra-life-gained", "§aYou gained an extra life! You now have §e%lives% §alives.");
+            messages.put("ghost-mode-active", "§7You are a ghost!");
+            messages.put("death-sending-to-limbo", "§cYou have died! Sending to Limbo...");
+            messages.put("death-now-ghost", "§cYou have died! You are now a ghost.");
+            messages.put("limbo-welcome-visitor", "§eWelcome to Limbo as a visitor!");
+            messages.put("limbo-welcome-dead", "§cWelcome to Limbo. You are dead!");
+            messages.put("revival-structure-incomplete", "§cThe revival structure is incomplete!");
+            messages.put("admin-setlives-success", "§aSet §e%player%§a's lives to §e%lives%§a.");
         }
 
         // Getters
@@ -132,6 +162,14 @@ public class ConfigManager {
         public double getLimboSpawnZ() { return limboSpawnZ; }
         public float getLimboSpawnYaw() { return limboSpawnYaw; }
         public float getLimboSpawnPitch() { return limboSpawnPitch; }
+        public String getDatabaseType() { return databaseType; }
+        public String getDatabaseHost() { return databaseHost; }
+        public int getDatabasePort() { return databasePort; }
+        public String getDatabaseName() { return databaseName; }
+        public String getDatabaseUsername() { return databaseUsername; }
+        public String getDatabasePassword() { return databasePassword; }
+        public String getDatabaseTableName() { return databaseTableName; }
+        public int getDatabasePoolSize() { return databasePoolSize; }
         public boolean isHrmEnabled() { return hrmEnabled; }
         public boolean isDropHeads() { return dropHeads; }
         public boolean isHeadPlaceAsBlock() { return headPlaceAsBlock; }
@@ -163,6 +201,14 @@ public class ConfigManager {
         public void setLimboSpawnZ(double z) { limboSpawnZ = z; }
         public void setLimboSpawnYaw(float yaw) { limboSpawnYaw = yaw; }
         public void setLimboSpawnPitch(float pitch) { limboSpawnPitch = pitch; }
+        public void setDatabaseType(String type) { databaseType = type; }
+        public void setDatabaseHost(String host) { databaseHost = host; }
+        public void setDatabasePort(int port) { databasePort = port; }
+        public void setDatabaseName(String name) { databaseName = name; }
+        public void setDatabaseUsername(String username) { databaseUsername = username; }
+        public void setDatabasePassword(String password) { databasePassword = password; }
+        public void setDatabaseTableName(String name) { databaseTableName = name; }
+        public void setDatabasePoolSize(int size) { databasePoolSize = size; }
         public void setHrmEnabled(boolean enabled) { hrmEnabled = enabled; }
         public void setDropHeads(boolean drop) { dropHeads = drop; }
         public void setHeadPlaceAsBlock(boolean place) { headPlaceAsBlock = place; }

@@ -39,9 +39,8 @@ public class ExtraLifeManager {
                 return TypedActionResult.pass(stack);
             }
 
-            // Consume one
-            stack.decrement(1);
-
+            // Capture a reference before going async
+            final ItemStack usedStack = stack;
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(serverPlayer.getUuid());
                 if (data == null) {
@@ -56,7 +55,7 @@ public class ExtraLifeManager {
 
                 int maxLives = ConfigManager.getConfig().getMaxLives();
                 if (maxLives > 0 && data.getLives() >= maxLives) {
-                    serverPlayer.server.execute(() -> serverPlayer.sendMessage(MessageUtil.getNoPrefix("You are at the maximum number of lives!"), false));
+                    serverPlayer.server.execute(() -> serverPlayer.sendMessage(MessageUtil.get("extra-life-at-max"), false));
                     return;
                 }
 
@@ -66,13 +65,15 @@ public class ExtraLifeManager {
                 SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getName().getString(), newLives);
 
                 serverPlayer.server.execute(() -> {
-                    serverPlayer.sendMessage(MessageUtil.getNoPrefix("You gained an extra life! You now have " + newLives + " lives."), false);
+                    // Only consume the item now that we've successfully incremented lives
+                    usedStack.decrement(1);
+                    serverPlayer.sendMessage(MessageUtil.get("extra-life-gained", "lives", newLives), false);
                     world.playSound(null, serverPlayer.getBlockPos(), SoundEvents.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 1.0f, 1.2f);
                     serverPlayer.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 60, 0, false, true));
                 });
             });
 
-            return TypedActionResult.consume(stack);
+            return TypedActionResult.pass(stack);
         });
     }
 

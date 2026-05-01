@@ -21,6 +21,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class GhostBlockEvents {
 
@@ -48,24 +49,28 @@ public class GhostBlockEvents {
         ProfileComponent profile = skull.getOwner();
         if (profile != null) {
             profile.id().ifPresent(ownerUuid -> {
-                PlayerData data = db.getPlayer(ownerUuid);
-                if (data != null && data.isDead()) {
-                    GhostState ghostState = GhostState.getServerState(world.getServer());
-                    
-                    // The owner is a ghost! The breaker becomes the "Death Holder"
-                    ghostState.deathLocations.remove(ownerUuid);
-                    ghostState.deathHolders.put(ownerUuid, serverPlayer.getUuid());
-                    ghostState.markDirty();
+                CompletableFuture.runAsync(() -> {
+                    PlayerData data = db.getPlayer(ownerUuid);
+                    if (data != null && data.isDead()) {
+                        world.getServer().execute(() -> {
+                            GhostState ghostState = GhostState.getServerState(world.getServer());
 
-                    ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
-                    if (ghost != null) {
-                        // Put ghost into spectator mode to follow the holder
-                        ghost.changeGameMode(GameMode.SPECTATOR);
-                        ghost.setCameraEntity(serverPlayer);
-                        ghost.sendMessage(Text.literal("Started spectating " + serverPlayer.getName().getString()).styled(s -> s.withColor(Formatting.GRAY)), false);
-                        ghost.sendMessage(Text.literal(serverPlayer.getName().getString() + " is currently carrying your playerhead...").styled(s -> s.withColor(Formatting.YELLOW)), true);
+                            // The owner is a ghost! The breaker becomes the "Death Holder"
+                            ghostState.deathLocations.remove(ownerUuid);
+                            ghostState.deathHolders.put(ownerUuid, serverPlayer.getUuid());
+                            ghostState.markDirty();
+
+                            ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
+                            if (ghost != null) {
+                                // Put ghost into spectator mode to follow the holder
+                                ghost.changeGameMode(GameMode.SPECTATOR);
+                                ghost.setCameraEntity(serverPlayer);
+                                ghost.sendMessage(Text.literal("Started spectating " + serverPlayer.getName().getString()).styled(s -> s.withColor(Formatting.GRAY)), false);
+                                ghost.sendMessage(Text.literal(serverPlayer.getName().getString() + " is currently carrying your playerhead...").styled(s -> s.withColor(Formatting.YELLOW)), true);
+                            }
+                        });
                     }
-                }
+                });
             });
         }
     }
@@ -110,24 +115,28 @@ public class GhostBlockEvents {
 
     private static void updateGhostStateOnPlace(net.minecraft.world.World world, UUID ownerUuid, BlockPos targetPos, DatabaseManager db) {
         GhostState ghostState = GhostState.getServerState(world.getServer());
-        
+
         // Block was placed! Update death location and remove holder
         ghostState.deathHolders.remove(ownerUuid);
         ghostState.deathLocations.put(ownerUuid, targetPos);
         ghostState.markDirty();
 
-        PlayerData data = db.getPlayer(ownerUuid);
-        if (data != null && data.isDead()) {
-            ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
-            if (ghost != null && ghost.interactionManager.getGameMode() == GameMode.SPECTATOR) {
-                // Remove from spectator and put back into Ghost Mode restrictions
-                ghost.changeGameMode(GameMode.ADVENTURE);
-                org.ssoggy.ssoggysouls.listener.MainServerListener.setGhostModeAttributes(ghost, true);
-                
-                // Teleport to the newly placed head
-                ghost.teleport(ghost.getServerWorld(), targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, ghost.getYaw(), ghost.getPitch());
-                ghost.sendMessage(Text.literal("Your head has been placed down.").styled(s -> s.withColor(Formatting.GRAY)), true);
+        CompletableFuture.runAsync(() -> {
+            PlayerData data = db.getPlayer(ownerUuid);
+            if (data != null && data.isDead()) {
+                world.getServer().execute(() -> {
+                    ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
+                    if (ghost != null && ghost.interactionManager.getGameMode() == GameMode.SPECTATOR) {
+                        // Remove from spectator and put back into Ghost Mode restrictions
+                        ghost.changeGameMode(GameMode.ADVENTURE);
+                        org.ssoggy.ssoggysouls.listener.MainServerListener.setGhostModeAttributes(ghost, true);
+
+                        // Teleport to the newly placed head
+                        ghost.teleport(ghost.getServerWorld(), targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, ghost.getYaw(), ghost.getPitch());
+                        ghost.sendMessage(Text.literal("Your head has been placed down.").styled(s -> s.withColor(Formatting.GRAY)), true);
+                    }
+                });
             }
-        }
+        });
     }
 }

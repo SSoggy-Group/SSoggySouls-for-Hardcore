@@ -50,7 +50,8 @@ public class CommandRegistration {
                 CompletableFuture.runAsync(() -> {
                     PlayerData data = db.getPlayer(player.getUuid());
                     if (data != null) {
-                        source.sendFeedback(() -> MessageUtil.get("status-self", LIVES, data.getLives()), false);
+                        source.getServer().execute(() ->
+                            source.sendFeedback(() -> MessageUtil.get("status-self", LIVES, data.getLives()), false));
                     }
                 });
                 return 1;
@@ -65,16 +66,19 @@ public class CommandRegistration {
                     CompletableFuture.runAsync(() -> {
                         PlayerData data = db.getPlayerByName(targetName);
                         if (data == null) {
-                            source.sendError(MessageUtil.get("status-not-found", PLAYER, targetName));
+                            source.getServer().execute(() ->
+                                source.sendError(MessageUtil.get("status-not-found", PLAYER, targetName)));
                             return;
                         }
 
                         if (data.isDead()) {
-                            source.sendFeedback(() -> MessageUtil.get("status-other-dead", PLAYER, data.getUsername()), false);
+                            source.getServer().execute(() ->
+                                source.sendFeedback(() -> MessageUtil.get("status-other-dead", PLAYER, data.getUsername()), false));
                         } else {
-                            source.sendFeedback(() -> MessageUtil.get("status-other-alive", 
-                                    PLAYER, data.getUsername(), 
-                                    LIVES, data.getLives()), false);
+                            source.getServer().execute(() ->
+                                source.sendFeedback(() -> MessageUtil.get("status-other-alive",
+                                        PLAYER, data.getUsername(),
+                                        LIVES, data.getLives()), false));
                         }
                     });
                     return 1;
@@ -97,28 +101,30 @@ public class CommandRegistration {
                     CompletableFuture.runAsync(() -> {
                         PlayerData targetData = db.getPlayerByName(targetName);
                         if (targetData == null) {
-                            source.sendError(MessageUtil.get("revive-not-found", PLAYER, targetName));
+                            source.getServer().execute(() ->
+                                source.sendError(MessageUtil.get("revive-not-found", PLAYER, targetName)));
                             return;
                         }
 
                         if (!targetData.isDead()) {
-                            source.sendError(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername()));
+                            source.getServer().execute(() ->
+                                source.sendError(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
                             return;
                         }
 
                         boolean success = db.revivePlayer(targetData.getUuid(), plugin.getDefaultLives());
                         if (success) {
-                            source.sendFeedback(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
-                            AdminLogger.log(source.getName(), "Revived " + targetData.getUsername());
-                            
-                            // Restore game mode if player is online
-                            ServerPlayerEntity targetPlayer = source.getServer().getPlayerManager().getPlayer(targetData.getUuid());
-                            if (targetPlayer != null) {
-                                source.getServer().execute(() -> {
+                            source.getServer().execute(() -> {
+                                source.sendFeedback(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
+                                AdminLogger.log(source.getName(), "Revived " + targetData.getUsername());
+
+                                // Restore game mode if player is online
+                                ServerPlayerEntity targetPlayer = source.getServer().getPlayerManager().getPlayer(targetData.getUuid());
+                                if (targetPlayer != null) {
                                     targetPlayer.changeGameMode(net.minecraft.world.GameMode.SURVIVAL);
                                     targetPlayer.sendMessage(MessageUtil.get("revive-success"), false);
-                                });
-                            }
+                                }
+                            });
                         }
                     });
                     return 1;
@@ -142,13 +148,16 @@ public class CommandRegistration {
                         CompletableFuture.runAsync(() -> {
                             PlayerData data = db.getPlayerByName(targetName);
                             if (data == null) {
-                                source.sendError(MessageUtil.get("status-not-found", PLAYER, targetName));
+                                source.getServer().execute(() ->
+                                    source.sendError(MessageUtil.get("status-not-found", PLAYER, targetName)));
                                 return;
                             }
                             db.setLives(data.getUuid(), lives);
-                            source.sendFeedback(() -> MessageUtil.getNoPrefix("admin-setlives-success", 
-                                    PLAYER, data.getUsername(), LIVES, lives), true);
-                            AdminLogger.log(source.getName(), "Set lives for " + data.getUsername() + " to " + lives);
+                            source.getServer().execute(() -> {
+                                source.sendFeedback(() -> MessageUtil.get("admin-setlives-success",
+                                        PLAYER, data.getUsername(), LIVES, lives), true);
+                                AdminLogger.log(source.getName(), "Set lives for " + data.getUsername() + " to " + lives);
+                            });
                         });
                         return 1;
                     })

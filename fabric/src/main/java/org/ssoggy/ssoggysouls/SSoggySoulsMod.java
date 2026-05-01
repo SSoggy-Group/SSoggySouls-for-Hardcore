@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.database.MySQLManager;
 import org.ssoggy.ssoggysouls.database.SQLiteManager;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 import org.ssoggy.ssoggysouls.listener.MainServerListener;
@@ -43,8 +44,14 @@ public class SSoggySoulsMod implements ModInitializer {
         ConfigManager.load();
         MessageUtil.loadMessages();
 
-        // Phase 2: Initialize database (SQLite default for now)
-        DatabaseManager databaseManager = new SQLiteManager(this);
+        // Phase 2: Initialize database based on config
+        String dbType = ConfigManager.getConfig().getDatabaseType();
+        DatabaseManager databaseManager;
+        if ("mysql".equalsIgnoreCase(dbType)) {
+            databaseManager = new MySQLManager(this);
+        } else {
+            databaseManager = new SQLiteManager(this);
+        }
         if (!databaseManager.initialize()) {
             LOGGER.error("Failed to initialize database. Disabling features.");
             return;
@@ -101,21 +108,5 @@ public class SSoggySoulsMod implements ModInitializer {
         if (isDebugMode()) {
             LOGGER.info("[DEBUG] {}", message);
         }
-    }
-    
-    // Temporary helper until we implement a real config class
-    public String getConfigString(String path, String def) {
-        if (path.equals("database.table-name")) return "hardcore_players";
-        if (path.equals("database.host")) return "localhost";
-        if (path.equals("database.name")) return "minecraft";
-        if (path.equals("database.username")) return "minecraft";
-        if (path.equals("database.password")) return "changeme";
-        return def;
-    }
-    
-    public int getConfigInt(String path, int def) {
-        if (path.equals("database.port")) return 3306;
-        if (path.equals("database.pool-size")) return 5;
-        return def;
     }
 }
