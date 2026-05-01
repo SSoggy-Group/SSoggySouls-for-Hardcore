@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -30,7 +29,7 @@ public class CommandRegistration {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             registerStatusCommand(dispatcher, db);
             registerReviveCommand(dispatcher, plugin, db);
-            registerSetLivesCommand(dispatcher, plugin, db);
+            registerSetLivesCommand(dispatcher, db);
             registerAdminLogCommand(dispatcher, plugin);
             
             // Phase 5 DLC Commands
@@ -51,7 +50,7 @@ public class CommandRegistration {
                 CompletableFuture.runAsync(() -> {
                     PlayerData data = db.getPlayer(player.getUuid());
                     if (data != null) {
-                        source.sendFeedback(() -> MessageUtil.get("status-self", "lives", data.getLives()), false);
+                        source.sendFeedback(() -> MessageUtil.get("status-self", LIVES, data.getLives()), false);
                     }
                 });
                 return 1;
@@ -109,7 +108,7 @@ public class CommandRegistration {
 
                         boolean success = db.revivePlayer(targetData.getUuid(), plugin.getDefaultLives());
                         if (success) {
-                            source.sendFeedback(() -> MessageUtil.get("admin-revive-success", "player", targetData.getUsername()), true);
+                            source.sendFeedback(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
                             AdminLogger.log(source.getName(), "Revived " + targetData.getUsername());
                             
                             // Restore game mode if player is online
@@ -128,7 +127,7 @@ public class CommandRegistration {
         );
     }
 
-    private static void registerSetLivesCommand(CommandDispatcher<ServerCommandSource> dispatcher, SSoggySoulsMod plugin, DatabaseManager db) {
+    private static void registerSetLivesCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
         dispatcher.register(CommandManager.literal("psetlives")
             .requires(source -> source.hasPermissionLevel(2))
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())

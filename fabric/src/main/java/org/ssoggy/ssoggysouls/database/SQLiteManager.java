@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import com.zaxxer.hikari.HikariConfig;
