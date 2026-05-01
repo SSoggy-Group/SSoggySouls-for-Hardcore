@@ -1,0 +1,71 @@
+package org.ssoggy.ssoggysouls.listener;
+
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.world.GameMode;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
+import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.util.MessageUtil;
+
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+public class LimboServerListener {
+
+    private final SSoggySoulsMod plugin;
+    private final DatabaseManager db;
+
+    public LimboServerListener(SSoggySoulsMod plugin, DatabaseManager db) {
+        this.plugin = plugin;
+        this.db = db;
+        registerEvents();
+    }
+
+    private void registerEvents() {
+        // Player Join
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            ServerPlayerEntity player = handler.getPlayer();
+            UUID uuid = player.getUuid();
+
+            CompletableFuture.runAsync(() -> {
+                PlayerData data = db.getPlayer(uuid);
+                
+                server.execute(() -> {
+                    if (data != null && data.isDead()) {
+                        applyLimboState(player);
+                    } else {
+                        player.changeGameMode(GameMode.SURVIVAL);
+                        player.sendMessage(MessageUtil.getNoPrefix("Welcome to Limbo as a visitor!"), false);
+                    }
+                });
+            });
+        });
+
+        // Cancel Damage
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
+            if (entity instanceof ServerPlayerEntity player) {
+                // Technically we should check if they are dead in DB, but Limbo players are in Adventure
+                if (player.interactionManager.getGameMode() == GameMode.ADVENTURE) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    private void applyLimboState(ServerPlayerEntity player) {
+        player.changeGameMode(GameMode.ADVENTURE);
+        player.getInventory().clear();
+        player.experienceLevel = 0;
+        player.experienceProgress = 0;
+        player.setHealth(player.getMaxHealth());
+        player.getHungerManager().setFoodLevel(20);
+        player.getHungerManager().setSaturationLevel(20f);
+        
+        // TODO: Teleport to specific limbo spawn location config
+        
+        player.sendMessage(MessageUtil.getNoPrefix("Welcome to Limbo. You are dead!"), false);
+    }
+}
