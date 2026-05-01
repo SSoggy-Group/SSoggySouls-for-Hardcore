@@ -32,18 +32,18 @@ public class GhostBlockEvents {
             if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) return;
 
             if ((state.isOf(Blocks.PLAYER_HEAD) || state.isOf(Blocks.PLAYER_WALL_HEAD)) && blockEntity instanceof SkullBlockEntity skull) {
-                ProfileComponent profile = skull.getOwnerProfile();
+                ProfileComponent profile = skull.getOwner();
                 if (profile != null && profile.id().isPresent()) {
                     UUID ownerUuid = profile.id().get();
                     
                     PlayerData data = db.getPlayer(ownerUuid);
                     if (data != null && data.isDead()) {
-                        GhostState state = GhostState.getServerState(world.getServer());
+                        GhostState ghostState = GhostState.getServerState(world.getServer());
                         
                         // The owner is a ghost! The breaker becomes the "Death Holder"
-                        state.deathLocations.remove(ownerUuid);
-                        state.deathHolders.put(ownerUuid, serverPlayer.getUuid());
-                        state.markDirty();
+                        ghostState.deathLocations.remove(ownerUuid);
+                        ghostState.deathHolders.put(ownerUuid, serverPlayer.getUuid());
+                        ghostState.markDirty();
 
                         ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
                         if (ghost != null) {
@@ -76,14 +76,14 @@ public class GhostBlockEvents {
                 BlockState state = world.getBlockState(targetPos);
                 if (state.isOf(Blocks.PLAYER_HEAD) || state.isOf(Blocks.PLAYER_WALL_HEAD)) {
                     BlockEntity be = world.getBlockEntity(targetPos);
-                    if (be instanceof SkullBlockEntity skull && skull.getOwnerProfile() != null && skull.getOwnerProfile().id().isPresent()) {
-                        if (skull.getOwnerProfile().id().get().equals(ownerUuid)) {
-                            GhostState state = GhostState.getServerState(world.getServer());
+                    if (be instanceof SkullBlockEntity skull && skull.getOwner() != null && skull.getOwner().id().isPresent()) {
+                        if (skull.getOwner().id().get().equals(ownerUuid)) {
+                            GhostState ghostState = GhostState.getServerState(world.getServer());
                             
                             // Block was placed! Update death location and remove holder
-                            state.deathHolders.remove(ownerUuid);
-                            state.deathLocations.put(ownerUuid, targetPos);
-                            state.markDirty();
+                            ghostState.deathHolders.remove(ownerUuid);
+                            ghostState.deathLocations.put(ownerUuid, targetPos);
+                            ghostState.markDirty();
 
                             PlayerData data = db.getPlayer(ownerUuid);
                             if (data != null && data.isDead()) {
