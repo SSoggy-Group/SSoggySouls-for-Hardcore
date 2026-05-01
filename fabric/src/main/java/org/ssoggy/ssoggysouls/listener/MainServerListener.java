@@ -9,7 +9,9 @@ import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -51,6 +53,11 @@ public class MainServerListener {
                 final PlayerData finalData = data;
                 server.execute(() -> {
                     if (finalData.isDead()) {
+                        if (ConfigManager.getConfig().sendToLimboOnDeath) {
+                            ServerTransferUtil.sendToLimbo(player);
+                            return;
+                        }
+
                         // Dead player joined -> Ghost mode (Adventure)
                         if (player.interactionManager.getGameMode() != GameMode.ADVENTURE) {
                             player.changeGameMode(GameMode.ADVENTURE);
@@ -92,6 +99,12 @@ public class MainServerListener {
 
                 player.server.execute(() -> {
                     if (data.isDead()) {
+                        if (ConfigManager.getConfig().sendToLimboOnDeath) {
+                            player.sendMessage(MessageUtil.getNoPrefix("You have died! Sending to Limbo..."), false);
+                            ServerTransferUtil.sendToLimbo(player);
+                            return;
+                        }
+
                         GhostState state = GhostState.getServerState(player.getServer());
                         state.deathLocations.put(uuid, player.getBlockPos());
                         state.markDirty();
@@ -113,6 +126,11 @@ public class MainServerListener {
                 PlayerData data = db.getPlayer(uuid);
                 if (data != null && data.isDead()) {
                     newPlayer.server.execute(() -> {
+                        if (ConfigManager.getConfig().sendToLimboOnDeath) {
+                            ServerTransferUtil.sendToLimbo(newPlayer);
+                            return;
+                        }
+
                         newPlayer.changeGameMode(GameMode.ADVENTURE);
                         setGhostModeAttributes(newPlayer, true);
                     });
