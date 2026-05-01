@@ -101,8 +101,20 @@ public class ConfigManager {
         private int spectatorHeadrestrictRadius = 16;
         private boolean restrictMenuAccess = true;
 
+        // --- Messages ---
+        private String messagePrefix = "§8[§4☠§8] §r";
+        private java.util.Map<String, String> messages = new java.util.HashMap<>();
+
         // --- Debug ---
         private boolean debug = false;
+
+        public ModConfig() {
+            // Default messages
+            messages.put("death-life-lost", "§cYou lost a life! §7Remaining: §e%lives%");
+            messages.put("death-last-life", "§c§l⚠ FINAL WARNING! §cYou are on your last life. Be careful!");
+            messages.put("revive-success", "§a§l✦ REVIVED! §aReturning to the world of the living...");
+            messages.put("grace-remaining", "§eYou are protected for §a%time_remaining%");
+        }
 
         // Getters
         public int getDefaultLives() { return defaultLives; }
@@ -131,6 +143,8 @@ public class ConfigManager {
         public boolean isGhostModeParticles() { return ghostModeParticles; }
         public int getSpectatorHeadrestrictRadius() { return spectatorHeadrestrictRadius; }
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
+        public String getMessagePrefix() { return messagePrefix; }
+        public java.util.Map<String, String> getMessages() { return messages; }
         public boolean isDebug() { return debug; }
 
         // Setters for ModMenu / Initialization

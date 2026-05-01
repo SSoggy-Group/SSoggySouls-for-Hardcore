@@ -12,10 +12,12 @@ public final class MessageUtil {
 
     private MessageUtil() {}
 
-    // Temporary config mock
+    // Load from Fabric config
     public static void loadMessages() {
-        prefix = "§8[§4☠§8] §r";
-        // TODO load from Fabric config
+        ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+        prefix = cfg.getMessagePrefix();
+        messages.clear();
+        messages.putAll(cfg.getMessages());
     }
 
     public static String getRawString(String key, Object... replacements) {
