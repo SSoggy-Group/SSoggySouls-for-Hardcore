@@ -140,4 +140,34 @@ public class CommandRegistration {
             )
         );
     }
+
+    private static void registerObituariesCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
+        dispatcher.register(CommandManager.literal("obituaries")
+            .executes(context -> {
+                ServerCommandSource source = context.getSource();
+                
+                CompletableFuture.runAsync(() -> {
+                    java.util.List<PlayerData> deadPlayers = db.getDeadPlayers();
+                    source.getServer().execute(() -> {
+                        if (deadPlayers.isEmpty()) {
+                            source.sendMessage(net.minecraft.text.Text.literal("Nobody has died recently. The server is peaceful.").styled(s -> s.withColor(net.minecraft.util.Formatting.GREEN)));
+                            return;
+                        }
+                        
+                        source.sendMessage(net.minecraft.text.Text.literal("--- Server Obituaries ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
+                        for (PlayerData dead : deadPlayers) {
+                            String time = "Recently";
+                            if (dead.getLastDeath() > 0) {
+                                long days = (System.currentTimeMillis() - dead.getLastDeath()) / (1000 * 60 * 60 * 24);
+                                time = days + " days ago";
+                            }
+                            source.sendMessage(net.minecraft.text.Text.literal("- " + dead.getUsername() + " (" + time + ")").styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
+                        }
+                    });
+                });
+                
+                return 1;
+            })
+        );
+    }
 }

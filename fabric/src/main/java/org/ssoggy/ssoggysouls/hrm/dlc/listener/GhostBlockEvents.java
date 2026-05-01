@@ -106,38 +106,5 @@ public class GhostBlockEvents {
 
             return ActionResult.PASS;
         });
-        
-        // 3. Detect when a player picks up a player head item
-        net.fabricmc.fabric.api.entity.event.v1.EntityPickupItemCallback.EVENT.register((playerEntity, itemEntity) -> {
-            if (playerEntity.getWorld().isClient || !(playerEntity instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS;
-
-            ItemStack stack = itemEntity.getStack();
-            if (!stack.isOf(Items.PLAYER_HEAD)) return ActionResult.PASS;
-
-            ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
-            if (profile == null || profile.id().isEmpty()) return ActionResult.PASS;
-
-            UUID ownerUuid = profile.id().get();
-            PlayerData data = db.getPlayer(ownerUuid);
-            
-            if (data != null && data.isDead()) {
-                GhostState ghostState = GhostState.getServerState(serverPlayer.getServer());
-                
-                // The owner is a ghost! The picker-upper becomes the "Death Holder"
-                ghostState.deathLocations.remove(ownerUuid);
-                ghostState.deathHolders.put(ownerUuid, serverPlayer.getUuid());
-                ghostState.markDirty();
-
-                ServerPlayerEntity ghost = serverPlayer.getServer().getPlayerManager().getPlayer(ownerUuid);
-                if (ghost != null) {
-                    ghost.changeGameMode(GameMode.SPECTATOR);
-                    ghost.setCameraEntity(serverPlayer);
-                    ghost.sendMessage(Text.literal("Started spectating " + serverPlayer.getName().getString()).styled(s -> s.withColor(Formatting.GRAY)), false);
-                    ghost.sendMessage(Text.literal(serverPlayer.getName().getString() + " is currently carrying your playerhead...").styled(s -> s.withColor(Formatting.YELLOW)), true);
-                }
-            }
-
-            return ActionResult.PASS;
-        });
     }
 }
