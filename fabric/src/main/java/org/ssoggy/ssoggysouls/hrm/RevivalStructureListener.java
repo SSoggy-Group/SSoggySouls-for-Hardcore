@@ -227,7 +227,7 @@ public class RevivalStructureListener {
     }
 
     private static void sendError(ServerPlayerEntity player, String msg) {
-        player.sendMessage(MessageUtil.getNoPrefix("§c" + msg), false);
+        player.sendMessage(MessageUtil.colorize("§c" + msg), false);
     }
 
     private static boolean isRitualStructure(World world, BlockPos headPos) {
