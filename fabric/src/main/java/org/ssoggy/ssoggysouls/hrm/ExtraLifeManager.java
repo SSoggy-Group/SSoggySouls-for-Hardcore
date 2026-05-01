@@ -39,8 +39,12 @@ public class ExtraLifeManager {
                 return TypedActionResult.pass(stack);
             }
 
-            // Capture a reference before going async
-            final ItemStack usedStack = stack;
+            // Consume the item immediately to prevent race conditions where
+            // the player drops it or uses it multiple times before the async db call completes.
+            if (!serverPlayer.isCreative()) {
+                stack.decrement(1);
+            }
+
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(serverPlayer.getUuid());
                 if (data == null) {
@@ -49,13 +53,31 @@ public class ExtraLifeManager {
                 }
 
                 if (data.isDead()) {
-                    serverPlayer.server.execute(() -> serverPlayer.sendMessage(MessageUtil.get("extra-life-dead"), false));
+                    serverPlayer.server.execute(() -> {
+                        serverPlayer.sendMessage(MessageUtil.get("extra-life-dead"), false);
+                        // Give the item back if they were dead and couldn't use it
+                        if (!serverPlayer.isCreative()) {
+                            ItemStack refundedItem = createExtraLifeItem();
+                            if (!serverPlayer.getInventory().insertStack(refundedItem)) {
+                                serverPlayer.dropItem(refundedItem, false);
+                            }
+                        }
+                    });
                     return;
                 }
 
                 int maxLives = ConfigManager.getConfig().getMaxLives();
                 if (maxLives > 0 && data.getLives() >= maxLives) {
-                    serverPlayer.server.execute(() -> serverPlayer.sendMessage(MessageUtil.get("extra-life-at-max"), false));
+                    serverPlayer.server.execute(() -> {
+                        serverPlayer.sendMessage(MessageUtil.get("extra-life-at-max"), false);
+                        // Give the item back
+                        if (!serverPlayer.isCreative()) {
+                            ItemStack refundedItem = createExtraLifeItem();
+                            if (!serverPlayer.getInventory().insertStack(refundedItem)) {
+                                serverPlayer.dropItem(refundedItem, false);
+                            }
+                        }
+                    });
                     return;
                 }
 
@@ -65,10 +87,6 @@ public class ExtraLifeManager {
                 SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getName().getString(), newLives);
 
                 serverPlayer.server.execute(() -> {
-                    // Only consume the item now that we've successfully incremented lives
-                    if (!serverPlayer.isCreative()) {
-                        usedStack.decrement(1);
-                    }
                     serverPlayer.sendMessage(MessageUtil.get("extra-life-gained", "lives", newLives), false);
                     world.playSound(null, serverPlayer.getBlockPos(), SoundEvents.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 1.0f, 1.2f);
                     serverPlayer.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 60, 0, false, true));

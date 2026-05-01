@@ -117,6 +117,13 @@ public class ConfigManager {
         private String messagePrefix = "§8[§4☠§8] §r";
         private java.util.Map<String, String> messages = new java.util.HashMap<>();
 
+        // --- Structure Block Tags ---
+        private java.util.List<String> soulSandBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("CRYING_OBSIDIAN", "OBSIDIAN"));
+        private java.util.List<String> flowerBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("SOUL_TORCH", "REDSTONE_TORCH"));
+        private java.util.List<String> oreBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("ENCHANTING_TABLE"));
+        private java.util.List<String> fenceBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE", "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE", "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"));
+        private java.util.List<String> stairBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("MAGMA_BLOCK"));
+
         // --- Debug ---
         private boolean debug = false;
 
@@ -183,6 +190,11 @@ public class ConfigManager {
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
         public String getMessagePrefix() { return messagePrefix; }
         public java.util.Map<String, String> getMessages() { return messages; }
+        public java.util.List<String> getSoulSandBlocktag() { return soulSandBlocktag; }
+        public java.util.List<String> getFlowerBlocktag() { return flowerBlocktag; }
+        public java.util.List<String> getOreBlocktag() { return oreBlocktag; }
+        public java.util.List<String> getFenceBlocktag() { return fenceBlocktag; }
+        public java.util.List<String> getStairBlocktag() { return stairBlocktag; }
         public boolean isDebug() { return debug; }
 
         // Setters for ModMenu / Initialization
