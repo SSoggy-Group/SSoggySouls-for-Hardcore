@@ -137,7 +137,7 @@ public class RevivalStructureListener {
         breakStructure(world, placedPos);
 
         // Notify summoner
-        summoner.sendMessage(MessageUtil.get("revive-admin-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()), false);
+        summoner.sendMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()), false);
         summoner.sendMessage(MessageUtil.get("revive-from-limbo", "player", revivedName), false);
 
         // Notify server
