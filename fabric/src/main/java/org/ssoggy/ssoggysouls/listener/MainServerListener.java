@@ -7,7 +7,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
-import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
@@ -92,7 +92,10 @@ public class MainServerListener {
 
                 player.server.execute(() -> {
                     if (data.isDead()) {
-                        GhostModeEvents.DEATH_LOCATIONS.put(uuid, player.getBlockPos());
+                        GhostState state = GhostState.getServerState(player.getServer());
+                        state.deathLocations.put(uuid, player.getBlockPos());
+                        state.markDirty();
+                        
                         player.changeGameMode(GameMode.ADVENTURE);
                         setGhostModeAttributes(player, true);
                         player.sendMessage(MessageUtil.getNoPrefix("You have died! You are now a ghost."), false);

@@ -18,16 +18,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class GhostBlockEvents {
-
-    // Tracks which alive player is carrying a dead player's head: <DeadUUID, AliveUUID>
-    public static final Map<UUID, UUID> DEATH_HOLDERS = new HashMap<>();
 
     public static void register(SSoggySoulsMod plugin, DatabaseManager db) {
         
@@ -42,9 +38,12 @@ public class GhostBlockEvents {
                     
                     PlayerData data = db.getPlayer(ownerUuid);
                     if (data != null && data.isDead()) {
+                        GhostState state = GhostState.getServerState(world.getServer());
+                        
                         // The owner is a ghost! The breaker becomes the "Death Holder"
-                        GhostModeEvents.DEATH_LOCATIONS.remove(ownerUuid);
-                        DEATH_HOLDERS.put(ownerUuid, serverPlayer.getUuid());
+                        state.deathLocations.remove(ownerUuid);
+                        state.deathHolders.put(ownerUuid, serverPlayer.getUuid());
+                        state.markDirty();
 
                         ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
                         if (ghost != null) {
@@ -79,9 +78,12 @@ public class GhostBlockEvents {
                     BlockEntity be = world.getBlockEntity(targetPos);
                     if (be instanceof SkullBlockEntity skull && skull.getOwnerProfile() != null && skull.getOwnerProfile().id().isPresent()) {
                         if (skull.getOwnerProfile().id().get().equals(ownerUuid)) {
+                            GhostState state = GhostState.getServerState(world.getServer());
+                            
                             // Block was placed! Update death location and remove holder
-                            DEATH_HOLDERS.remove(ownerUuid);
-                            GhostModeEvents.DEATH_LOCATIONS.put(ownerUuid, targetPos);
+                            state.deathHolders.remove(ownerUuid);
+                            state.deathLocations.put(ownerUuid, targetPos);
+                            state.markDirty();
 
                             PlayerData data = db.getPlayer(ownerUuid);
                             if (data != null && data.isDead()) {
