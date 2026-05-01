@@ -15,17 +15,40 @@ import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class GhostModeEvents {
 
+    private static final Set<UUID> GHOST_CACHE = new HashSet<>();
+
     public static void register(SSoggySoulsMod plugin, DatabaseManager db) {
+        
+        // Populate cache on join
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            UUID uuid = handler.getPlayer().getUuid();
+            CompletableFuture.runAsync(() -> {
+                PlayerData data = db.getPlayer(uuid);
+                if (data != null && data.isDead()) {
+                    GHOST_CACHE.add(uuid);
+                } else {
+                    GHOST_CACHE.remove(uuid);
+                }
+            });
+        });
+
+        // Clean up cache on disconnect
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            GHOST_CACHE.remove(handler.getPlayer().getUuid());
+        });
         
         // Prevent block interaction
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (isGhost(player, db)) {
+            if (isGhost(player)) {
                 return ActionResult.FAIL;
             }
             return ActionResult.PASS;
@@ -33,7 +56,7 @@ public class GhostModeEvents {
 
         // Prevent item usage
         UseItemCallback.EVENT.register((player, world, hand) -> {
-            if (isGhost(player, db)) {
+            if (isGhost(player)) {
                 return TypedActionResult.fail(player.getStackInHand(hand));
             }
             return TypedActionResult.pass(player.getStackInHand(hand));
@@ -41,7 +64,7 @@ public class GhostModeEvents {
 
         // Prevent attacking entities
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (isGhost(player, db)) {
+            if (isGhost(player)) {
                 return ActionResult.FAIL;
             }
             return ActionResult.PASS;
@@ -49,7 +72,7 @@ public class GhostModeEvents {
 
         // Prevent interacting with entities
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (isGhost(player, db)) {
+            if (isGhost(player)) {
                 // DLC logic: start spectating the entity if right clicked
                 if (player instanceof ServerPlayerEntity serverPlayer) {
                     serverPlayer.setCameraEntity(entity);
@@ -63,7 +86,7 @@ public class GhostModeEvents {
         // Handle movement restriction via ticking (since Fabric lacks a PlayerMoveEvent)
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                if (isGhost(player, db)) {
+                if (isGhost(player)) {
                     enforceGhostRestrictions(player);
                 }
             }
@@ -90,7 +113,7 @@ public class GhostModeEvents {
             BlockPos currentPos = player.getBlockPos();
             
             double distanceSq = currentPos.getSquaredDistance(deathPos);
-            double maxDistance = 16.0; // 16 block radius
+            double maxDistance = ConfigManager.getConfig().spectatorHeadrestrictRadius;
             
             if (distanceSq > (maxDistance * maxDistance)) {
                 player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());
@@ -99,17 +122,12 @@ public class GhostModeEvents {
         }
     }
 
-    /**
-     * Checks if a player is considered a "Ghost" (dead in hardcore).
-     * Since DB fetches are synchronous here, we should ideally cache the ghost status in the player entity,
-     * but for now we do a quick lookup (SQLite is fast, but cache is better).
-     */
-    private static boolean isGhost(PlayerEntity player, DatabaseManager db) {
-        if (player.getWorld().isClient) return false; // Only check server side
-        
-        // Simple cache or direct DB call.
-        // In a production environment with Velocity, this should be cached locally upon join.
-        PlayerData data = db.getPlayer(player.getUuid());
-        return data != null && data.isDead();
+    public static void updateGhostStatus(UUID uuid, boolean isDead) {
+        if (isDead) GHOST_CACHE.add(uuid);
+        else GHOST_CACHE.remove(uuid);
+    }
+
+    private static boolean isGhost(PlayerEntity player) {
+        return GHOST_CACHE.contains(player.getUuid());
     }
 }

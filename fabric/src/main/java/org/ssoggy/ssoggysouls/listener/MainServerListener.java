@@ -7,6 +7,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
@@ -42,8 +43,9 @@ public class MainServerListener {
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
                 if (data == null) {
+                    long graceMs = ConfigManager.parseGracePeriod(ConfigManager.getConfig().gracePeriod);
                     data = PlayerData.createNew(uuid, player.getName().getString(), 
-                            plugin.getDefaultLives(), 24 * 60 * 60 * 1000L); // 24h grace default
+                            plugin.getDefaultLives(), graceMs); 
                     db.savePlayer(data);
                 } else {
                     data.setUsername(player.getName().getString());
@@ -90,7 +92,7 @@ public class MainServerListener {
                 PlayerData data = db.getPlayer(uuid);
                 if (data == null) return; // Should not happen if they joined
 
-                if (data.isInGracePeriod(24 * 60 * 60 * 1000L)) { // 24h grace
+                if (data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().gracePeriod))) {
                     return; // Grace period protects from life loss
                 }
 
@@ -111,6 +113,7 @@ public class MainServerListener {
                         
                         player.changeGameMode(GameMode.ADVENTURE);
                         setGhostModeAttributes(player, true);
+                        GhostModeEvents.updateGhostStatus(uuid, true);
                         player.sendMessage(MessageUtil.getNoPrefix("You have died! You are now a ghost."), false);
                     } else {
                         player.sendMessage(MessageUtil.get("death-life-lost", "lives", remaining), false);
