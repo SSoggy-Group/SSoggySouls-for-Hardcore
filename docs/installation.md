@@ -5,7 +5,7 @@ title: Installation Guide
 
 # Installation Guide
 
-This comprehensive guide covers everything you need to know to properly install and configure SSoggySouls on your Velocity proxy network.
+This comprehensive guide covers everything you need to know to properly install and configure SSoggySouls. Whether you're running a single server or a full Velocity proxy network with Main + Limbo, this guide has you covered.
 
 ## Table of Contents
 
@@ -26,21 +26,23 @@ This comprehensive guide covers everything you need to know to properly install 
 
 - **Server Software:** Spigot, Paper, or Purpur
 
-- **Proxy Software:** Velocity (BungeeCord/Waterfall untested but may work)
-
 - **Java Version:** 21 or higher
 
-- **Database:** MySQL 5.7+ / MariaDB 10.2+ (for multi-server) OR SQLite (built-in, zero setup for single-server)
+- **Database:** SQLite (built-in, zero setup) for single server OR MySQL 5.7+ / MariaDB 10.2+ for multi-server
+
+- **Proxy Software:** Velocity (only needed for 2-server setup; BungeeCord/Waterfall untested but may work)
 
 ### Server Setup
 
-You need **two backend servers**:
+**Single Server:** Just one Minecraft server. Dead players enter spectator mode. No proxy, no Limbo server, no MySQL needed.
+
+**2-Server Setup:** Two backend servers behind a Velocity proxy:
 
 - **Main Server** - Your primary survival/gameplay server
 
 - **Limbo Server** - Purgatory server for dead players
 
-> **Note:** If using `spectator` death mode, the Limbo server is optional.
+> **Note:** If using `spectator` death mode on a single server, the Limbo server is not needed.
 
 ### Important: Do NOT Use Hardcore Mode
 
@@ -73,7 +75,7 @@ If you already have it enabled:
 
 ```
 
-- Both servers connect to the same MySQL database
+- Both servers connect to the same MySQL database (one database, shared by both)
 
 - Players automatically transfer between servers based on death state
 
@@ -83,7 +85,7 @@ If you already have it enabled:
 
 ## Database Setup
 
-The plugin supports two database types depending on your setup. You must choose one based on your network architecture:
+The plugin supports two database types. Your choice here determines your entire setup:
 
 | Feature                          | `sqlite` (Local)                 | `mysql` (External)                         |
 | -------------------------------- | -------------------------------- | ------------------------------------------ |
@@ -122,7 +124,7 @@ Ideal for a single server setup if you just want lives, HRM features, and extra-
 
 ### Option B: MySQL (Cross-server)
 
-REQUIRED if you are using the true 2-server (Main + Limbo) functionality.
+REQUIRED if you are using the 2-server (Main + Limbo) functionality. You set up **one** MySQL database, then both servers connect to it using the same credentials.
 
 SSoggySouls will automatically create the necessary table, but you need to create the database first.
 
@@ -146,8 +148,9 @@ FLUSH PRIVILEGES;
 
 ### Database Configuration
 
-If using SQLite, simply set `type: "sqlite"`.
-If using MySQL, both servers must use **identical** database credentials:
+If using SQLite, simply set `type: "sqlite"` and ignore the MySQL fields — the plugin handles everything.
+
+If using MySQL, set up one database and then copy the **same** connection details into both server configs:
 
 ```yaml
 database:
@@ -288,7 +291,7 @@ settings:
 
 ## Server Configuration
 
-> **Note for Single Servers (SQLite):** If you are running a single server with SQLite, you can safely ignore `is-limbo-server` and the server names. Just leave them as default and scroll down!
+> **Note for Single Servers (SQLite):** If you are running a single server with SQLite, you can safely skip the "Server Role" sections below. Just leave `is-limbo-server` and the server names at their defaults — the plugin ignores them when using SQLite.
 
 ### Main Server Configuration
 
@@ -306,7 +309,7 @@ main-server-name: "main"         # Name of Main server in proxy config
 
 limbo-server-name: "limbo"       # Name of Limbo server in proxy config
 
-# DATABASE (must be identical on both servers)
+# DATABASE (set up one MySQL database, then use the same details here and on Limbo)
 
 database:
   type: "mysql"
@@ -505,7 +508,7 @@ Check console logs for:
 
 **Wrong:** Using different database credentials on each server
 
-**Right:** Both servers must use identical database settings
+**Right:** Set up one MySQL database and copy the same credentials to both configs
 
 ### Mistake 3: Server Names Don't Match
 

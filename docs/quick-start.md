@@ -60,7 +60,7 @@ database:
 ```
 
 **Option B: 2-Server Setup (MySQL)**
-If you run Main + Limbo, edit `config.yml` on **both servers** with **identical** database credentials:
+If you run Main + Limbo, you need one MySQL database. Set it up once, then put the same connection details in `config.yml` on **both servers**:
 
 ```yaml
 database:
@@ -82,7 +82,7 @@ database:
 
 ### Step 5: Configure Server Roles (2-Server Setup Only)
 
-If you are only running a single server, you can leave these as default and skip to Step 8!
+If you are only running a single server with SQLite, skip this step — leave the defaults.
 
 **On Main server (`config.yml`):**
 
