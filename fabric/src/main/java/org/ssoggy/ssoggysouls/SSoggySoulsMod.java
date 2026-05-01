@@ -105,11 +105,11 @@ public class SSoggySoulsMod implements ModInitializer {
     }
 
     public int getDefaultLives() {
-        return ConfigManager.getConfig().defaultLives;
+        return ConfigManager.getConfig().getDefaultLives();
     }
 
     public boolean isDebugMode() {
-        return ConfigManager.getConfig().debug;
+        return ConfigManager.getConfig().isDebug();
     }
 
     public void debug(String message) {
