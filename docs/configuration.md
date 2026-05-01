@@ -35,6 +35,18 @@ SSoggySouls uses a `config.yml` file that is automatically generated when you fi
 
 ______________________________________________________________________
 
+## Fabric Mod Configuration
+
+The Fabric version of SSoggySouls uses a `ssoggysouls.json` file for configuration.
+
+**Location:** `config/ssoggysouls.json`
+
+> **Note:** Configuration options are mostly identical to the Bukkit version but use JSON format. You can edit this file manually while the server is stopped.
+
+______________________________________________________________________
+
+______________________________________________________________________
+
 ## Server Role
 
 These settings identify what role each server plays in your network.
@@ -442,6 +454,7 @@ Configure the Limbo server (only applies on Limbo server).
 limbo:
   check-interval-seconds: 3       # How often to check for revivals
 
+# --- BUKKIT ONLY ---
   spawn:
     world: "world"
     x: 0.5
@@ -450,6 +463,13 @@ limbo:
     yaw: 0.0
     pitch: 0.0
 
+# --- FABRIC ONLY (ssoggysouls.json) ---
+#  "limboSpawnWorld": "minecraft:overworld",
+#  "limboSpawnX": 0.5,
+#  "limboSpawnY": 65.0,
+#  "limboSpawnZ": 0.5,
+#  "limboSpawnYaw": 0.0,
+#  "limboSpawnPitch": 0.0
 ```
 
 ### Check Interval
