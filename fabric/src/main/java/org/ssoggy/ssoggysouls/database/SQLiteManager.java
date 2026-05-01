@@ -12,8 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
-import org.ssoggy.ssoggysouls.SSoggySouls;
-import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -27,7 +26,7 @@ public class SQLiteManager implements DatabaseManager {
     private static final long CACHE_TTL_MS = 2000; // 2 second cache
     private final Map<UUID, CachedDeathStatus> deathStatusCache = new ConcurrentHashMap<>();
 
-    private final SSoggySouls plugin;
+    private final SSoggySoulsMod plugin;
     private HikariDataSource dataSource;
     private String tableName;
 
@@ -45,15 +44,15 @@ public class SQLiteManager implements DatabaseManager {
         }
     }
 
-    public SQLiteManager(SSoggySouls plugin) {
+    public SQLiteManager(SSoggySoulsMod plugin) {
         this.plugin = plugin;
     }
 
     public boolean initialize() {
         try {
-            tableName = plugin.getConfig().getString("database.table-name", "hardcore_players");
+            tableName = plugin.getConfigString("database.table-name", "hardcore_players");
 
-            java.io.File dataFolder = plugin.getDataFolder();
+            java.io.File dataFolder = plugin.getDataFolder().toFile();
             if (!dataFolder.exists()) {
                 dataFolder.mkdirs();
             }
@@ -70,11 +69,11 @@ public class SQLiteManager implements DatabaseManager {
             dataSource = new HikariDataSource(config);
             createTable();
 
-            plugin.getLogger().log(Level.INFO, "SQLite connection established (database.db)");
+            SSoggySoulsMod.LOGGER.info("SQLite connection established (database.db)");
             return true;
 
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed!", e);
+            SSoggySoulsMod.LOGGER.error("SQLite initialization failed!", e);
             return false;
         }
     }
@@ -82,7 +81,7 @@ public class SQLiteManager implements DatabaseManager {
     public void shutdown() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
-            plugin.getLogger().info("SQLite connection pool closed.");
+            SSoggySoulsMod.LOGGER.info("SQLite connection pool closed.");
         }
     }
 
@@ -132,7 +131,7 @@ public class SQLiteManager implements DatabaseManager {
             boolean duplicateColumn = e.getMessage() != null
                     && e.getMessage().toLowerCase().contains("duplicate column name");
             if (!duplicateColumn) {
-                plugin.getLogger().log(Level.WARNING, e, () -> "Failed to ensure " + columnName + " column");
+                SSoggySoulsMod.LOGGER.warn("Failed to ensure " + columnName + " column", e);
             }
         }
     }
@@ -162,7 +161,7 @@ public class SQLiteManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get player " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to get player " + uuid, e);
         }
         return null;
     }
@@ -180,7 +179,7 @@ public class SQLiteManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get player by name: " + username);
+            SSoggySoulsMod.LOGGER.warn("Failed to get player by name: " + username, e);
         }
         return null;
     }
@@ -217,7 +216,7 @@ public class SQLiteManager implements DatabaseManager {
             }
 
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to save player " + data.getUuid());
+            SSoggySoulsMod.LOGGER.warn("Failed to save player " + data.getUuid(), e);
             deathStatusCache.remove(data.getUuid());
         }
     }
@@ -242,7 +241,7 @@ public class SQLiteManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to check death status for " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to check death status for " + uuid, e);
         }
         return true;
     }
@@ -269,7 +268,7 @@ public class SQLiteManager implements DatabaseManager {
             return rows > 0;
 
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to revive player " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to revive player " + uuid, e);
             return false;
         }
     }
@@ -287,10 +286,9 @@ public class SQLiteManager implements DatabaseManager {
 
             ps.executeUpdate();
 
-            // invalidate cache on death status change again
             deathStatusCache.remove(uuid);
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set lives for " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to set lives for " + uuid, e);
         }
     }
 
@@ -304,7 +302,7 @@ public class SQLiteManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set first_join for " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to set first_join for " + uuid, e);
         }
     }
 
@@ -318,7 +316,7 @@ public class SQLiteManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set last_seen for " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to set last_seen for " + uuid, e);
         }
     }
 
@@ -332,7 +330,7 @@ public class SQLiteManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set grace_until for " + uuid);
+            SSoggySoulsMod.LOGGER.warn("Failed to set grace_until for " + uuid, e);
         }
     }
 
@@ -351,7 +349,7 @@ public class SQLiteManager implements DatabaseManager {
                 result.add(mapResultSet(rs));
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get dead players");
+            SSoggySoulsMod.LOGGER.warn("Failed to get dead players", e);
         }
         return result;
     }
@@ -375,7 +373,7 @@ public class SQLiteManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get plugin version from database for key: " + key);
+            SSoggySoulsMod.LOGGER.warn("Failed to get plugin version from database for key: " + key, e);
         }
         return null;
     }
@@ -393,7 +391,7 @@ public class SQLiteManager implements DatabaseManager {
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to save plugin version to database for key: " + key);
+            SSoggySoulsMod.LOGGER.warn("Failed to save plugin version to database for key: " + key, e);
         }
     }
 
