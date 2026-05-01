@@ -46,7 +46,7 @@ public class MainServerListener {
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
                 if (data == null) {
-                    long graceMs = ConfigManager.parseGracePeriod(ConfigManager.getConfig().gracePeriod);
+                    long graceMs = ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod());
                     data = PlayerData.createNew(uuid, player.getName().getString(), 
                             plugin.getDefaultLives(), graceMs); 
                     db.savePlayer(data);
@@ -63,7 +63,7 @@ public class MainServerListener {
 
     private void handleJoinSync(ServerPlayerEntity player, PlayerData data) {
         if (data.isDead()) {
-            if (ConfigManager.getConfig().sendToLimboOnDeath) {
+            if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
                 ServerTransferUtil.sendToLimbo(player);
                 return;
             }
@@ -101,7 +101,7 @@ public class MainServerListener {
                 PlayerData data = db.getPlayer(uuid);
                 if (data == null) return; // Should not happen if they joined
 
-                if (data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().gracePeriod))) {
+                if (data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod()))) {
                     return; // Grace period protects from life loss
                 }
 
@@ -115,7 +115,7 @@ public class MainServerListener {
 
     private void handleDeathSync(ServerPlayerEntity player, PlayerData data, int remaining) {
         if (data.isDead()) {
-            if (ConfigManager.getConfig().sendToLimboOnDeath) {
+            if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
                 player.sendMessage(MessageUtil.getNoPrefix("You have died! Sending to Limbo..."), false);
                 ServerTransferUtil.sendToLimbo(player);
                 return;

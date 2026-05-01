@@ -19,11 +19,11 @@ public class ServerTransferUtil {
     }
 
     public static void sendToLimbo(ServerPlayerEntity player) {
-        sendToServer(player, ConfigManager.getConfig().limboServerName);
+        sendToServer(player, ConfigManager.getConfig().getLimboServerName());
     }
 
     public static void sendToMain(ServerPlayerEntity player) {
-        sendToServer(player, ConfigManager.getConfig().mainServerName);
+        sendToServer(player, ConfigManager.getConfig().getMainServerName());
     }
 
     public record BungeeConnectPayload(String serverName) implements CustomPayload {
