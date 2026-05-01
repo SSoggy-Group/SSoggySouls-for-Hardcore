@@ -35,7 +35,7 @@
 #  │    2. Set is-limbo-server: true                                         │
 #  │    3. Configure: Limbo spawn location, Security Settings                │
 #  │                                                                         │
-#  │  Dead players get transferred to the Limbo server via BungeeCord.       │
+#  │  Dead players get transferred to the Limbo server via Velocity.       │
 #  └─────────────────────────────────────────────────────────────────────────┘
 #
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -64,7 +64,7 @@ hardcore-hearts: true
 #
 # NOTE FOR DUAL-SERVER: Both the Main and Limbo server configs must have
 # IDENTICAL database settings (same host, port, name, user, password).
-# They share ONE database — if the details differ, player data will be split!
+# They share ONE database, if the details differ, player data will be split!
 #
 # If you use MySQL with Pterodactyl panel:
 #    - Go to your server settings → "Databases" tab → Create a new database
