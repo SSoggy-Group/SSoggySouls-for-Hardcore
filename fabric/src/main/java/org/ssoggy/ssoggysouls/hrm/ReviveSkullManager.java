@@ -117,7 +117,9 @@ public class ReviveSkullManager {
                     realHead.set(DataComponentTypes.PROFILE, profile);
                     realHead.set(DataComponentTypes.CUSTOM_NAME, Text.literal(name + "'s Head").styled(s -> s.withColor(Formatting.YELLOW)));
                     
-                    clickingPlayer.getInventory().insertStack(realHead);
+                    if (!clickingPlayer.getInventory().insertStack(realHead)) {
+                        clickingPlayer.dropItem(realHead, false);
+                    }
                     clickingPlayer.sendMessage(Text.literal("Received " + name + "'s head.").styled(s -> s.withColor(Formatting.GREEN)), false);
                     
                     if (clickingPlayer instanceof ServerPlayerEntity spe) {
