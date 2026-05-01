@@ -31,67 +31,76 @@ import java.util.concurrent.CompletableFuture;
 
 public class RevivalStructureListener {
 
-    public static void register(SSoggySoulsMod plugin, DatabaseManager db) {
+    private RevivalStructureListener() {
+        // Utility class
+    }
+
+    public static void register(DatabaseManager db) {
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) {
                 return ActionResult.PASS;
             }
 
-            ItemStack stack = player.getStackInHand(hand);
-            if (!stack.isOf(Items.PLAYER_HEAD)) {
-                return ActionResult.PASS;
+            return handleStructureInteraction(serverPlayer, world, hand, hitResult, db);
+        });
+    }
+
+    private static ActionResult handleStructureInteraction(ServerPlayerEntity serverPlayer, World world, Hand hand, net.minecraft.util.hit.BlockHitResult hitResult, DatabaseManager db) {
+        ItemStack stack = serverPlayer.getStackInHand(hand);
+        if (!stack.isOf(Items.PLAYER_HEAD)) {
+            return ActionResult.PASS;
+        }
+
+        ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
+        if (profile == null || profile.id().isEmpty()) {
+            return ActionResult.PASS;
+        }
+
+        UUID ownerUuid = profile.id().get();
+        BlockPos placedPos = hitResult.getBlockPos().offset(hitResult.getSide());
+
+        // Check if ritual structure is valid underneath where the head is about to be placed
+        if (!isRitualStructure(world, placedPos)) {
+            if (checkIncompleteStructure(world, placedPos)) {
+                serverPlayer.sendMessage(MessageUtil.getNoPrefix("The revival structure is incomplete!"), false);
+                world.playSound(null, placedPos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.4f, 2f);
+            }
+            return ActionResult.PASS; // Let them place the head normally if not doing ritual
+        }
+
+        // The structure is valid. Prevent block placement, consume head, and trigger async DB check.
+        stack.decrement(1);
+        triggerRevival(serverPlayer, world, placedPos, ownerUuid, db);
+
+        // Return SUCCESS to indicate we handled the interaction (preventing standard block placement)
+        return ActionResult.SUCCESS;
+    }
+
+    private static void triggerRevival(ServerPlayerEntity serverPlayer, World world, BlockPos placedPos, UUID ownerUuid, DatabaseManager db) {
+        CompletableFuture.runAsync(() -> {
+            PlayerData data = db.getPlayer(ownerUuid);
+            if (data == null) {
+                serverPlayer.server.execute(() -> sendError(serverPlayer, "Unknown player."));
+                return;
             }
 
-            ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
-            if (profile == null || profile.id().isEmpty()) {
-                return ActionResult.PASS;
-            }
-
-            UUID ownerUuid = profile.id().get();
-            BlockPos placedPos = hitResult.getBlockPos().offset(hitResult.getSide());
-
-            // Check if ritual structure is valid underneath where the head is about to be placed
-            if (!isRitualStructure(world, placedPos)) {
-                if (checkIncompleteStructure(world, placedPos)) {
-                    serverPlayer.sendMessage(MessageUtil.getNoPrefix("The revival structure is incomplete!"), false);
-                    world.playSound(null, placedPos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.4f, 2f);
-                }
-                return ActionResult.PASS; // Let them place the head normally if not doing ritual
-            }
-
-            // The structure is valid. Prevent block placement, consume head, and trigger async DB check.
-            stack.decrement(1);
-
-            CompletableFuture.runAsync(() -> {
-                PlayerData data = db.getPlayer(ownerUuid);
-                if (data == null) {
-                    serverPlayer.server.execute(() -> sendError(serverPlayer, "Unknown player."));
-                    return;
-                }
-
-                if (!data.isDead()) {
-                    serverPlayer.server.execute(() -> {
-                        sendError(serverPlayer, data.getUsername() + " is not dead!");
-                        world.playSound(null, placedPos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.4f, 2f);
-                    });
-                    return;
-                }
-
-                boolean success = db.revivePlayer(ownerUuid, ConfigManager.getConfig().onReviveLives);
-                if (!success) {
-                    serverPlayer.server.execute(() -> sendError(serverPlayer, "Failed to revive. Check console."));
-                    return;
-                }
-
-                SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getName().getString(), data.getUsername());
-
+            if (!data.isDead()) {
                 serverPlayer.server.execute(() -> {
-                    performRevival(world, placedPos, serverPlayer, ownerUuid, data.getUsername());
+                    sendError(serverPlayer, data.getUsername() + " is not dead!");
+                    world.playSound(null, placedPos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.4f, 2f);
                 });
-            });
+                return;
+            }
 
-            // Return SUCCESS to indicate we handled the interaction (preventing standard block placement)
-            return ActionResult.SUCCESS;
+            boolean success = db.revivePlayer(ownerUuid, ConfigManager.getConfig().onReviveLives);
+            if (!success) {
+                serverPlayer.server.execute(() -> sendError(serverPlayer, "Failed to revive. Check console."));
+                return;
+            }
+
+            SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getName().getString(), data.getUsername());
+
+            serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, data.getUsername()));
         });
     }
 
@@ -133,7 +142,9 @@ public class RevivalStructureListener {
     }
 
     private static boolean isRitualStructure(World world, BlockPos headPos) {
-        int hx = headPos.getX(), hy = headPos.getY(), hz = headPos.getZ();
+        int hx = headPos.getX();
+        int hy = headPos.getY();
+        int hz = headPos.getZ();
 
         // fence below da head
         if (!world.getBlockState(new BlockPos(hx, hy - 1, hz)).isIn(BlockTags.FENCES)) return false;
@@ -163,7 +174,9 @@ public class RevivalStructureListener {
     }
 
     private static boolean checkIncompleteStructure(World world, BlockPos headPos) {
-        int hx = headPos.getX(), hy = headPos.getY(), hz = headPos.getZ();
+        int hx = headPos.getX();
+        int hy = headPos.getY();
+        int hz = headPos.getZ();
         BlockState fence = world.getBlockState(new BlockPos(hx, hy - 1, hz));
         BlockState ore = world.getBlockState(new BlockPos(hx, hy - 2, hz));
 
@@ -184,7 +197,9 @@ public class RevivalStructureListener {
     }
 
     private static void breakStructure(World world, BlockPos headPos) {
-        int hx = headPos.getX(), hy = headPos.getY(), hz = headPos.getZ();
+        int hx = headPos.getX();
+        int hy = headPos.getY();
+        int hz = headPos.getZ();
 
         // fence + 4 roses
         setAir(world, hx, hy - 1, hz);
