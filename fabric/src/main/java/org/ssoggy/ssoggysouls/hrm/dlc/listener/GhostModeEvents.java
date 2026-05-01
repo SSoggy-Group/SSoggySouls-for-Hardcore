@@ -76,7 +76,7 @@ public class GhostModeEvents {
 
     private static void enforceGhostRestrictions(ServerPlayerEntity player) {
         // Prevent dropping items
-        if (!player.getInventory().getCursorStack().isEmpty() && player.currentScreenHandler != null) {
+        if (player.currentScreenHandler != null && !player.currentScreenHandler.getCursorStack().isEmpty()) {
             // Note: Preventing physical drops natively often requires mixins into ServerPlayNetworkHandler.
             // As a quick workaround, we can clear dropped items immediately or clear the ghost's inventory.
         }
