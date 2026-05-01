@@ -36,11 +36,11 @@ public class HeadDropListener {
         // Check db asynchronously to avoid blocking death
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(player.getUuid());
-            if (data == null || !data.isDead() || data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().gracePeriod))) {
+            if (data == null || !data.isDead() || data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod()))) {
                 return; // Don't drop head if not dead or in grace
             }
 
-            if (!ConfigManager.getConfig().dropHeads) {
+            if (!ConfigManager.getConfig().isDropHeads()) {
                 return;
             }
 
@@ -54,7 +54,7 @@ public class HeadDropListener {
         BlockPos pos = player.getBlockPos();
 
         // Handle placing as block vs dropping as item
-        if (ConfigManager.getConfig().headPlaceAsBlock) {
+        if (ConfigManager.getConfig().isHeadPlaceAsBlock()) {
             BlockPos headPos = findSafeBlockPos(world, pos);
             world.setBlockState(headPos, net.minecraft.block.Blocks.PLAYER_HEAD.getDefaultState());
             net.minecraft.block.entity.BlockEntity be = world.getBlockEntity(headPos);
