@@ -4,7 +4,7 @@
 
 **Version 3.2.6** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
 
-A hardcore lives system plugin for Minecraft 1.21.X (Spigot/Paper/Purpur) designed for Velocity proxy networks. When you die enough times, you get sent to a Limbo server until your teammates bring you back.
+A hardcore lives system plugin for Minecraft 1.21.X (Spigot/Paper/Purpur). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
 
 > **[Complete Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Installation guides, configuration reference, commands, troubleshooting, and more!
 
@@ -22,13 +22,19 @@ A hardcore lives system plugin for Minecraft 1.21.X (Spigot/Paper/Purpur) design
 
 **Cross-Server Setup** - MySQL syncs everything between Main and Limbo servers
 
+**Single Server Mode** - works standalone with SQLite, no proxy or Limbo server needed
+
 **Auto Transfer** - dead players go to Limbo, revived players come back to Main
 
 **Limbo Visiting** - living players can visit Limbo to hang with dead teammates
 
 ## How It Works
 
-Runs on two servers behind a Velocity proxy (might work on BungeeCord/Waterfall but not tested - let us know if you try it): **Main** (where you play) and **Limbo** (where you go when dead). Both servers talk to the same MySQL database.
+SSoggySouls supports two setups:
+
+**Single-server (SQLite):** Everything runs on one server. Dead players enter spectator mode. No proxy, no extra servers, no MySQL — just drop the plugin in and go.
+
+**Dual-server (MySQL):** Runs on two servers behind a Velocity proxy: **Main** (where you play) and **Limbo** (where you go when dead). You set up one MySQL database and put the same connection details in both server configs so they share player data.
 
 **Basic flow:**
 
@@ -264,11 +270,11 @@ Living players can check out Limbo using `/limbo`.
 
 - **Proxy:** Velocity (BungeeCord/Waterfall might work but not tested)
 
-- **Database:** SQLite (built-in, for single server) OR MySQL 5.7+ / MariaDB 10.2+ (for 2-server networked setup)
+- **Database:** SQLite (built-in, for single server) OR MySQL 5.7+ / MariaDB 10.2+ (for 2-server setup)
 
 - **Java:** 21+
 
-- **Servers:** Two backend servers (Main + Limbo)
+- **Servers:** One server (single-server mode) OR two backend servers behind a Velocity proxy (Main + Limbo)
 
 > **Important:** Do NOT enable `hardcore=true` in `server.properties` on either server. Keep it `false`. The plugin handles hardcore stuff internally - if you turn on actual hardcore mode it'll break things. If you already did, either delete your world or look up how to edit the game files.
 
@@ -318,8 +324,8 @@ player-info-forwarding-mode = "modern"
 
 ### Network Setup
 
-1. Both servers connect to the same MySQL database
-1. Database credentials must match on both configs
+1. Set up one MySQL database (or use an existing one)
+1. Put the same database credentials in both server configs
 1. Server names in config (`main-server-name` and `limbo-server-name`) must match your proxy config
 1. Make sure firewalls let servers talk to database
 
@@ -363,7 +369,7 @@ database:
 ```
 
 **Option B: 2-Server Setup (MySQL)**
-If you are running the Main + Limbo network setup, edit `config.yml` on **both servers** with **identical** database credentials:
+If you are running the Main + Limbo network setup, you need one MySQL database. Set it up once, then put the same connection details in `config.yml` on **both servers**:
 ```yaml
 database:
   type: "mysql"
@@ -382,7 +388,9 @@ database:
 1. Create a new database
 1. Use the provided host, port, username, and password in config
 
-### Step 5: Configure Server Roles
+### Step 5: Configure Server Roles (2-Server Only)
+
+If you're using a single server with SQLite, skip this step — leave the defaults.
 
 **On Main server (`config.yml`):**
 
@@ -470,8 +478,13 @@ Prevents OP users on the Limbo server from abusing `/revive` and `/psadmin` comm
 
 #### Database
 
+For single server, just set `type: "sqlite"` and ignore the rest.
+
+For 2-server setup, set up one MySQL database and copy the same credentials to both configs:
+
 ```yaml
 database:
+  type: "mysql"             # "sqlite" for single server
   host: "localhost"
   port: 3306
   name: "ssoggysouls"
