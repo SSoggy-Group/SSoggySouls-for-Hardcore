@@ -12,41 +12,44 @@ import java.util.Map;
 import java.util.UUID;
 
 public class GhostState extends PersistentState {
+
+    private static final String DEATH_LOCATIONS = "deathLocations";
+    private static final String DEATH_HOLDERS = "deathHolders";
     
     public final Map<UUID, BlockPos> deathLocations = new HashMap<>();
     public final Map<UUID, UUID> deathHolders = new HashMap<>();
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        NbtCompound locationsNbt = new NbtCompound();
+    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
+        NbtCompound locations = new NbtCompound();
         deathLocations.forEach((uuid, pos) -> {
-            locationsNbt.putLong(uuid.toString(), pos.asLong());
+            locations.putLong(uuid.toString(), pos.asLong());
         });
-        nbt.put("deathLocations", locationsNbt);
+        nbt.put(DEATH_LOCATIONS, locations);
 
-        NbtCompound holdersNbt = new NbtCompound();
+        NbtCompound holders = new NbtCompound();
         deathHolders.forEach((ghostId, holderId) -> {
-            holdersNbt.putString(ghostId.toString(), holderId.toString());
+            holders.putUuid(ghostId.toString(), holderId);
         });
-        nbt.put("deathHolders", holdersNbt);
+        nbt.put(DEATH_HOLDERS, holders);
 
         return nbt;
     }
 
-    public static GhostState fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+    public static GhostState fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
         GhostState state = new GhostState();
 
-        if (nbt.contains("deathLocations")) {
-            NbtCompound locationsNbt = nbt.getCompound("deathLocations");
-            for (String key : locationsNbt.getKeys()) {
-                state.deathLocations.put(UUID.fromString(key), BlockPos.fromLong(locationsNbt.getLong(key)));
+        if (nbt.contains(DEATH_LOCATIONS)) {
+            NbtCompound locations = nbt.getCompound(DEATH_LOCATIONS);
+            for (String key : locations.getKeys()) {
+                state.deathLocations.put(UUID.fromString(key), BlockPos.fromLong(locations.getLong(key)));
             }
         }
 
-        if (nbt.contains("deathHolders")) {
-            NbtCompound holdersNbt = nbt.getCompound("deathHolders");
-            for (String key : holdersNbt.getKeys()) {
-                state.deathHolders.put(UUID.fromString(key), UUID.fromString(holdersNbt.getString(key)));
+        if (nbt.contains(DEATH_HOLDERS)) {
+            NbtCompound holders = nbt.getCompound(DEATH_HOLDERS);
+            for (String key : holders.getKeys()) {
+                state.deathHolders.put(UUID.fromString(key), holders.getUuid(key));
             }
         }
 
