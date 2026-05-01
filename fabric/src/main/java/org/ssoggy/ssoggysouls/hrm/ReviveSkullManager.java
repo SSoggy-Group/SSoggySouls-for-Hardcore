@@ -17,9 +17,6 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
@@ -111,21 +108,22 @@ public class ReviveSkullManager {
     private static void handleMenuClick(ItemStack clicked, PlayerEntity clickingPlayer) {
         if (!clicked.isEmpty() && clicked.isOf(Items.PLAYER_HEAD)) {
             ProfileComponent profile = clicked.get(DataComponentTypes.PROFILE);
-            if (profile != null && profile.id().isPresent()) {
-                UUID ownerId = profile.id().get();
-                String name = profile.name().orElse("Unknown");
+            if (profile != null) {
+                profile.id().ifPresent(id -> {
+                    String name = profile.name().orElse("Unknown");
 
-                // Give the real head
-                ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
-                realHead.set(DataComponentTypes.PROFILE, profile);
-                realHead.set(DataComponentTypes.CUSTOM_NAME, Text.literal(name + "'s Head").styled(s -> s.withColor(Formatting.YELLOW)));
-                
-                clickingPlayer.getInventory().insertStack(realHead);
-                clickingPlayer.sendMessage(Text.literal("Received " + name + "'s head.").styled(s -> s.withColor(Formatting.GREEN)), false);
-                
-                if (clickingPlayer instanceof ServerPlayerEntity spe) {
-                    spe.getServer().execute(spe::closeHandledScreen);
-                }
+                    // Give the real head
+                    ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
+                    realHead.set(DataComponentTypes.PROFILE, profile);
+                    realHead.set(DataComponentTypes.CUSTOM_NAME, Text.literal(name + "'s Head").styled(s -> s.withColor(Formatting.YELLOW)));
+                    
+                    clickingPlayer.getInventory().insertStack(realHead);
+                    clickingPlayer.sendMessage(Text.literal("Received " + name + "'s head.").styled(s -> s.withColor(Formatting.GREEN)), false);
+                    
+                    if (clickingPlayer instanceof ServerPlayerEntity spe) {
+                        spe.getServer().execute(spe::closeHandledScreen);
+                    }
+                });
             }
         }
     }
