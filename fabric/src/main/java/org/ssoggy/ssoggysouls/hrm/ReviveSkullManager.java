@@ -65,59 +65,69 @@ public class ReviveSkullManager {
     private static void openMenu(ServerPlayerEntity player, List<PlayerData> deadPlayers) {
         int rows = Math.min(6, ((deadPlayers.size() - 1) / 9) + 1);
         int slots = rows * 9;
-        
-        SimpleInventory inventory = new SimpleInventory(slots);
-        
-        for (int i = 0; i < Math.min(deadPlayers.size(), slots); i++) {
-            PlayerData data = deadPlayers.get(i);
-            inventory.setStack(i, createMenuHead(data));
-        }
+        SimpleInventory inventory = populateInventory(deadPlayers, slots);
 
-        SimpleNamedScreenHandlerFactory factory = new SimpleNamedScreenHandlerFactory((syncId, playerInventory, p) -> {
-            ScreenHandlerType<GenericContainerScreenHandler> type = switch(rows) {
-                case 1 -> ScreenHandlerType.GENERIC_9X1;
-                case 2 -> ScreenHandlerType.GENERIC_9X2;
-                case 3 -> ScreenHandlerType.GENERIC_9X3;
-                case 4 -> ScreenHandlerType.GENERIC_9X4;
-                case 5 -> ScreenHandlerType.GENERIC_9X5;
-                default -> ScreenHandlerType.GENERIC_9X6;
-            };
-
-            return new GenericContainerScreenHandler(type, syncId, playerInventory, inventory, rows) {
-                @Override
-                public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity clickingPlayer) {
-                    // Cancel all clicks in this inventory to make it read-only
-                    if (slotIndex >= 0 && slotIndex < inventory.size()) {
-                        ItemStack clicked = inventory.getStack(slotIndex);
-                        if (!clicked.isEmpty() && clicked.isOf(Items.PLAYER_HEAD)) {
-                            ProfileComponent profile = clicked.get(DataComponentTypes.PROFILE);
-                            if (profile != null && profile.id().isPresent()) {
-                                UUID ownerId = profile.id().get();
-                                String name = profile.name().orElse("Unknown");
-
-                                // Give the real head
-                                ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
-                                realHead.set(DataComponentTypes.PROFILE, profile);
-                                realHead.set(DataComponentTypes.CUSTOM_NAME, Text.literal(name + "'s Head").styled(s -> s.withColor(Formatting.YELLOW)));
-                                
-                                clickingPlayer.getInventory().insertStack(realHead);
-                                clickingPlayer.sendMessage(Text.literal("Received " + name + "'s head.").styled(s -> s.withColor(Formatting.GREEN)), false);
-                                
-                                clickingPlayer.getServer().execute(() -> {
-                                    if (clickingPlayer instanceof ServerPlayerEntity spe) spe.closeHandledScreen();
-                                });
-                            }
-                        }
-                    } else if (actionType == SlotActionType.QUICK_MOVE || actionType == SlotActionType.SWAP) {
-                        return; // Disallow shift clicking into the menu
-                    } else {
-                        super.onSlotClick(slotIndex, button, actionType, clickingPlayer);
-                    }
-                }
-            };
-        }, Text.literal("Revive - Select Player").styled(s -> s.withColor(Formatting.DARK_PURPLE).withBold(true)));
+        SimpleNamedScreenHandlerFactory factory = new SimpleNamedScreenHandlerFactory(
+            (syncId, playerInventory, p) -> createScreenHandler(syncId, playerInventory, inventory, rows),
+            Text.literal("Revive - Select Player").styled(s -> s.withColor(Formatting.DARK_PURPLE).withBold(true))
+        );
 
         player.openHandledScreen(factory);
+    }
+
+    private static SimpleInventory populateInventory(List<PlayerData> deadPlayers, int slots) {
+        SimpleInventory inventory = new SimpleInventory(slots);
+        for (int i = 0; i < Math.min(deadPlayers.size(), slots); i++) {
+            inventory.setStack(i, createMenuHead(deadPlayers.get(i)));
+        }
+        return inventory;
+    }
+
+    private static GenericContainerScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory, SimpleInventory inventory, int rows) {
+        ScreenHandlerType<GenericContainerScreenHandler> type = getScreenHandlerType(rows);
+        return new GenericContainerScreenHandler(type, syncId, playerInventory, inventory, rows) {
+            @Override
+            public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity clickingPlayer) {
+                if (slotIndex >= 0 && slotIndex < inventory.size()) {
+                    handleMenuClick(inventory.getStack(slotIndex), clickingPlayer);
+                } else if (actionType != SlotActionType.QUICK_MOVE && actionType != SlotActionType.SWAP) {
+                    super.onSlotClick(slotIndex, button, actionType, clickingPlayer);
+                }
+            }
+        };
+    }
+
+    private static ScreenHandlerType<GenericContainerScreenHandler> getScreenHandlerType(int rows) {
+        return switch(rows) {
+            case 1 -> ScreenHandlerType.GENERIC_9X1;
+            case 2 -> ScreenHandlerType.GENERIC_9X2;
+            case 3 -> ScreenHandlerType.GENERIC_9X3;
+            case 4 -> ScreenHandlerType.GENERIC_9X4;
+            case 5 -> ScreenHandlerType.GENERIC_9X5;
+            default -> ScreenHandlerType.GENERIC_9X6;
+        };
+    }
+
+    private static void handleMenuClick(ItemStack clicked, PlayerEntity clickingPlayer) {
+        if (!clicked.isEmpty() && clicked.isOf(Items.PLAYER_HEAD)) {
+            ProfileComponent profile = clicked.get(DataComponentTypes.PROFILE);
+            if (profile != null && profile.id().isPresent()) {
+                UUID ownerId = profile.id().get();
+                String name = profile.name().orElse("Unknown");
+
+                // Give the real head
+                ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
+                realHead.set(DataComponentTypes.PROFILE, profile);
+                realHead.set(DataComponentTypes.CUSTOM_NAME, Text.literal(name + "'s Head").styled(s -> s.withColor(Formatting.YELLOW)));
+                
+                clickingPlayer.getInventory().insertStack(realHead);
+                clickingPlayer.sendMessage(Text.literal("Received " + name + "'s head.").styled(s -> s.withColor(Formatting.GREEN)), false);
+                
+                if (clickingPlayer instanceof ServerPlayerEntity spe) {
+                    spe.getServer().execute(spe::closeHandledScreen);
+                }
+            }
+        }
     }
 
     private static ItemStack createMenuHead(PlayerData data) {
