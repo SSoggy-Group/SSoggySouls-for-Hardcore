@@ -9,27 +9,21 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 #  QUICK SETUP GUIDE
 # ═══════════════════════════════════════════════════════════════════════════════
-# You have TWO servers in your network: Main and Limbo
+# STEP 1: Choose your setup type (database section below):
 #
-# MAIN SERVER (where players respawn):
-#   1. Set is-limbo-server: false
-#   2. Configure database settings (same on both servers)
-#   3. Configure main-server-name and limbo-server-name
-#   4. Adjust "Main Server Settings" below (death-mode, etc)
-#   5. Configure messages and HRM settings
+#   SINGLE-SERVER (SQLite):
+#     - Set database.type to "sqlite"
+#     - Dead players stay on the same server (spectator mode)
+#     - No Limbo server needed, no MySQL required
+#     - Skip all "Server Role" and "Limbo Security" sections
 #
-# LIMBO SERVER (where dead players go):
-#   1. Set is-limbo-server: true
-#   2. Configure THE SAME database settings as Main
-#   3. Configure limbo spawn location (where dead players spawn)
-#   4. Optional: different messages if you want unique limbo greetings
+#   DUAL-SERVER (MySQL - Main + Limbo):
+#     - Set database.type to "mysql" and fill in connection details
+#     - Dead players get transferred to a separate Limbo server
+#     - Configure server roles (is-limbo-server) on each server
+#     - Database details MUST match on both servers
 #
-# SHARED (same on both servers):
-#   - Database connection details (host, user, pass, etc)
-#   - Lives settings (default lives, grace period, etc)
-#   - HRM settings (revive structures, heads, etc)
-#   - Messages (recommended to keep consistent)
-#   - Plugin version MUST match (auto-detected, warns if mismatch)
+# STEP 2: Configure lives, death-mode, HRM, and messages below.
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -44,12 +38,68 @@ check-for-updates: true
 hardcore-hearts: true
 
 # ───────────────────────────────────────────────────────────────────────────────
-# Server Role Configuration
+# Database Configuration
 # ───────────────────────────────────────────────────────────────────────────────
-# IMPORTANT: This is the MOST CRITICAL setting!
+# This is the FIRST decision you need to make — it determines your entire setup!
 #
-# [CONFIG] MAIN SERVER: Set to false
-# [CONFIG] LIMBO SERVER: Set to true
+#   1. SQLite (Local)  - Single-server only. No extra setup. Data stored locally.
+#   2. MySQL (Network) - REQUIRED for the 2-server (Main + Limbo) system.
+#                        Also works for single-server if you prefer MySQL.
+#
+# If using MySQL with dual servers:
+#   [CONFIG] BOTH SERVERS: Database details MUST be identical on Main and Limbo!
+#
+# You can share the same database with other plugins like CoreProtect,
+# as long as you use a unique table name (configured below).
+#
+# If you use MySQL with Pterodactyl panel:
+#    - Go to your server settings
+#    - Click "Databases" tab
+#    - Create a new database if you don't have one
+#    - The connection details will be in the Databases section:
+#      Host: localhost (or your DB host)
+#      Port: 3306 (default MySQL port)
+#      Username: your_db_username
+#      Password: your_db_password
+#      Database: your_db_name
+#
+database:
+  # Type of storage to use.
+  # Options: "sqlite" or "mysql"
+  # Use "sqlite" for single-server, "mysql" for dual-server (Main + Limbo)
+  type: "mysql"
+
+  # MySQL server address (usually localhost for Pterodactyl)
+  host: "localhost"
+
+  # MySQL port (default 3306 - don't change unless you know why)
+  port: 3306
+
+  # Database name to use (create this in MySQL first if it doesn't exist)
+  name: "minecraft"
+
+  # MySQL username (Pterodactyl: check Databases tab)
+  username: "minecraft"
+
+  # MySQL password (Pterodactyl: check Databases tab) - CHANGE THIS!
+  password: "changeme"
+
+  # Connection pool size (number of simultaneous DB connections)
+  # Default 5 is fine for most servers
+  # Increase if you have 100+ players
+  pool-size: 5
+
+  # Table name where player data is stored (don't change unless necessary and you know what you're doing)
+  table-name: "hardcore_players"
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Server Role Configuration (MySQL / Dual-Server Only)
+# ───────────────────────────────────────────────────────────────────────────────
+# SKIP THIS SECTION if you are using SQLite (single-server).
+# These settings are only relevant for the 2-server (Main + Limbo) setup.
+#
+# [CONFIG] MAIN SERVER: Set is-limbo-server to false
+# [CONFIG] LIMBO SERVER: Set is-limbo-server to true
 #
 # The plugin will NOT work correctly if this is set wrong!
 # Both servers must have the SAME VERSION of this plugin
@@ -64,8 +114,10 @@ main-server-name: "main"
 limbo-server-name: "limbo"
 
 # ───────────────────────────────────────────────────────────────────────────────
-# Security Settings
+# Security Settings (Limbo Server Only)
 # ───────────────────────────────────────────────────────────────────────────────
+# SKIP THIS SECTION if you are using SQLite (single-server).
+#
 # Limbo OP Security Check - Prevents abuse of admin commands on Limbo server
 #
 # SECURITY ISSUE: If someone has OP on the Limbo server, they could normally
@@ -105,7 +157,9 @@ limbo-op-security-check: true
 # NOTE: Newly added OPs on Limbo cannot run /psadmin until after the whitelist reloads.
 limbo-trusted-admins: []
 
+# ───────────────────────────────────────────────────────────────────────────────
 # Admin Log Access
+# ───────────────────────────────────────────────────────────────────────────────
 # Configure who can use the /adminlog command to view the abuse log in-game.
 # By default, server Operators (OPs) and users with the 'ssoggysouls.adminlog' permission can use it.
 # [CONFIG] BOTH SERVERS
@@ -127,57 +181,6 @@ admin-log:
   #   - "Moderator123"                        # Player 2 (Username)
   #   - "HelperSteve"                         # Player 3 (Username)
   trusted-viewers: []
-
-# ───────────────────────────────────────────────────────────────────────────────
-# Database Configuration
-# ───────────────────────────────────────────────────────────────────────────────
-# This plugin supports two types of databases:
-#   1. SQLite (Local)  - Ideal for standard, single-server setups. No extra setup required. Data is stored locally.
-#   2. MySQL (Network) - REQUIRED if you are using the 2-server (Main + Limbo) system! Tracks data across servers. Also faster
-#
-# [CONFIG] BOTH SERVERS: If using MySQL, database details MUST be identical
-# on Main and Limbo! If they differ, player data will be split!
-#
-# You can share the same database with other plugins like CoreProtect, as long as you use a unique table name (configured below).
-#
-# If you use MySQL with Pterodactyl panel:
-#    - Go to your server settings
-#    - Click "Databases" tab
-#    - Create a new database if you don't have one
-#    - The connection details will be in the Databases section:
-#      Host: localhost (or your DB host)
-#      Port: 3306 (default MySQL port)
-#      Username: your_db_username
-#      Password: your_db_password
-#      Database: your_db_name
-#
-database:
-  # Type of storage to use.
-  # Options: "sqlite" or "mysql"
-  type: "mysql"
-
-  # MySQL server address (usually localhost for Pterodactyl)
-  host: "localhost"
-
-  # MySQL port (default 3306 - don't change unless you know why)
-  port: 3306
-
-  # Database name to use (create this in MySQL first if it doesn't exist)
-  name: "minecraft"
-
-  # MySQL username (Pterodactyl: check Databases tab)
-  username: "minecraft"
-
-  # MySQL password (Pterodactyl: check Databases tab) - CHANGE THIS!
-  password: "changeme"
-
-  # Connection pool size (number of simultaneous DB connections)
-  # Default 5 is fine for most servers
-  # Increase if you have 100+ players
-  pool-size: 5
-
-  # Table name where player data is stored (don't change unless necessary and you know what you're doing)
-  table-name: "hardcore_players"
 
 # ───────────────────────────────────────────────────────────────────────────────
 # Lives & Grace Period Settings
