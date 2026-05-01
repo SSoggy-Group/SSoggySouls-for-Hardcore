@@ -17,6 +17,8 @@ import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
 import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
 import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
 import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
+import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
+import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
 
 /**
  * SSoggySouls Fabric Mod — main entrypoint.
@@ -67,7 +69,10 @@ public class SSoggySoulsMod implements ModInitializer {
         ReviveSkullManager.register(this, databaseManager);
         HeadEffectsTask.register(this);
 
-        // TODO Phase 5: Initialize RevivalPlus DLC
+        // Phase 5: Initialize RevivalPlus DLC core
+        GhostModeEvents.register(this, databaseManager);
+        GhostBlockEvents.register(this, databaseManager);
+
         // TODO Phase 6: Set up cross-server (Velocity) support
 
         LOGGER.info("SSoggySouls Fabric loaded successfully!");
