@@ -23,6 +23,7 @@ public class CommandRegistration {
             registerStatusCommand(dispatcher, db);
             registerReviveCommand(dispatcher, plugin, db);
             registerSetLivesCommand(dispatcher, plugin, db);
+            registerAdminLogCommand(dispatcher, plugin);
             
             // Phase 5 DLC Commands
             registerObituariesCommand(dispatcher, db);
@@ -166,6 +167,36 @@ public class CommandRegistration {
                             source.sendMessage(net.minecraft.text.Text.literal("- " + dead.getUsername() + " (" + time + ")").styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
                         }
                     });
+                });
+                
+                return 1;
+            })
+        );
+    }
+
+    private static void registerAdminLogCommand(CommandDispatcher<ServerCommandSource> dispatcher, SSoggySoulsMod plugin) {
+        dispatcher.register(CommandManager.literal("adminlog")
+            .requires(source -> source.hasPermissionLevel(3))
+            .executes(context -> {
+                ServerCommandSource source = context.getSource();
+                
+                CompletableFuture.runAsync(() -> {
+                    java.io.File logFile = new java.io.File(plugin.getDataFolder().toFile(), "admin_abuse.log");
+                    if (!logFile.exists()) {
+                        source.sendError(net.minecraft.text.Text.literal("No admin logs found."));
+                        return;
+                    }
+                    
+                    try {
+                        java.util.List<String> lines = java.nio.file.Files.readAllLines(logFile.toPath());
+                        source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
+                        int start = Math.max(0, lines.size() - 15);
+                        for (int i = start; i < lines.size(); i++) {
+                            source.sendMessage(net.minecraft.text.Text.literal(lines.get(i)).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
+                        }
+                    } catch (Exception e) {
+                        source.sendError(net.minecraft.text.Text.literal("Error reading admin log: " + e.getMessage()));
+                    }
                 });
                 
                 return 1;
