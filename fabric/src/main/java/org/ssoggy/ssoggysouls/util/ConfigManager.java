@@ -11,6 +11,10 @@ import java.io.IOException;
 
 public class ConfigManager {
 
+    private ConfigManager() {
+        // Utility class
+    }
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static ModConfig config;
     private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "ssoggysouls.json");
@@ -53,6 +57,7 @@ public class ConfigManager {
                     case 'h' -> totalMs += value * 3600000;
                     case 'm' -> totalMs += value * 60000;
                     case 's' -> totalMs += value * 1000;
+                    default -> { /* ignore */ }
                 }
             }
             return totalMs;
