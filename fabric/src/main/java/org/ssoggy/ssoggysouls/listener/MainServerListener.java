@@ -50,14 +50,16 @@ public class MainServerListener {
                 final PlayerData finalData = data;
                 server.execute(() -> {
                     if (finalData.isDead()) {
-                        // Dead player joined -> Spectator mode
-                        if (player.interactionManager.getGameMode() != GameMode.SPECTATOR) {
-                            player.changeGameMode(GameMode.SPECTATOR);
-                            player.sendMessage(MessageUtil.get("death-now-spectator"), false);
+                        // Dead player joined -> Ghost mode (Adventure)
+                        if (player.interactionManager.getGameMode() != GameMode.ADVENTURE) {
+                            player.changeGameMode(GameMode.ADVENTURE);
+                            setGhostModeAttributes(player, true);
+                            player.sendMessage(MessageUtil.getNoPrefix("You are a ghost!"), false);
                         }
-                    } else if (player.interactionManager.getGameMode() == GameMode.SPECTATOR) {
-                        // Alive player was in spectator -> Restore
+                    } else if (player.interactionManager.getGameMode() == GameMode.ADVENTURE) {
+                        // Alive player was in ghost -> Restore
                         player.changeGameMode(GameMode.SURVIVAL);
+                        setGhostModeAttributes(player, false);
                     }
                 });
             });
@@ -89,8 +91,9 @@ public class MainServerListener {
 
                 player.server.execute(() -> {
                     if (data.isDead()) {
-                        player.sendMessage(MessageUtil.get("death-now-spectator"), false);
-                        // Player game mode change happens on respawn to avoid glitches, or here
+                        player.changeGameMode(GameMode.ADVENTURE);
+                        setGhostModeAttributes(player, true);
+                        player.sendMessage(MessageUtil.getNoPrefix("You have died! You are now a ghost."), false);
                     } else {
                         player.sendMessage(MessageUtil.get("death-life-lost", "lives", remaining), false);
                     }
@@ -105,10 +108,25 @@ public class MainServerListener {
                 PlayerData data = db.getPlayer(uuid);
                 if (data != null && data.isDead()) {
                     newPlayer.server.execute(() -> {
-                        newPlayer.changeGameMode(GameMode.SPECTATOR);
+                        newPlayer.changeGameMode(GameMode.ADVENTURE);
+                        setGhostModeAttributes(newPlayer, true);
                     });
                 }
             });
         });
+    }
+
+    public static void setGhostModeAttributes(ServerPlayerEntity player, boolean isGhost) {
+        player.setInvisible(isGhost);
+        player.setInvulnerable(isGhost);
+        player.getAbilities().allowFlying = false; // Ghosts cannot fly, they walk
+        player.getAbilities().flying = false;
+        player.sendAbilitiesUpdate();
+        
+        // Also add custom ghost effects (darkness, cave sounds) from the DLC
+        if (isGhost) {
+            player.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(
+                    net.minecraft.entity.effect.StatusEffects.DARKNESS, 60, 0, false, false));
+        }
     }
 }
