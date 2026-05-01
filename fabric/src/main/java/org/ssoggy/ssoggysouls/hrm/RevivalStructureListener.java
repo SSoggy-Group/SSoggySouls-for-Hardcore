@@ -143,7 +143,7 @@ public class RevivalStructureListener {
         // Notify server
         world.getPlayers().forEach(p -> {
             if (!p.getUuid().equals(summoner.getUuid())) {
-                p.sendMessage(MessageUtil.getNoPrefix("§e" + summoner.getName().getString() + " revived " + revivedName + "!"), false);
+                p.sendMessage(MessageUtil.colorize("§e" + summoner.getName().getString() + " revived " + revivedName + "!"), false);
             }
         });
 
