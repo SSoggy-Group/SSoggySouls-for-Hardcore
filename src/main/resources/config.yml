@@ -22,7 +22,7 @@
 #  └─────────────────────────────────────────────────────────────────────────┘
 #
 #  ┌─ DUAL-SERVER (MySQL — Main + Limbo) ─────────────────────────────────────┐
-#  │  You need ONE MySQL database that BOTH Minecraft servers connect to.    │
+#  │  Set up ONE MySQL database, then use the same details in both configs.  │
 #  │  The plugin is installed on both servers, pointing to the SAME database.│
 #  │                                                                         │
 #  │  MAIN SERVER config:                                                    │
@@ -59,12 +59,12 @@ hardcore-hearts: true
 #
 #   "mysql"  — Required for 2-server (Main + Limbo) setups.
 #              Also works for single-server if you prefer MySQL for speed.
-#              You need ONE MySQL database. Both servers connect to it.
 #              Fill in ALL the fields below with YOUR database details.
 #
-# NOTE FOR DUAL-SERVER: Both the Main and Limbo server configs must have
-# IDENTICAL database settings (same host, port, name, user, password).
-# They share ONE database, if the details differ, player data will be split!
+# NOTE FOR DUAL-SERVER: You only set up ONE MySQL database (on one host).
+# Then copy-paste the SAME connection details into both server configs.
+# Both servers connect to that single shared database, that's how they
+# sync player data. If the details differ, each server sees different data!
 #
 # If you use MySQL with Pterodactyl panel:
 #    - Go to your server settings → "Databases" tab → Create a new database
