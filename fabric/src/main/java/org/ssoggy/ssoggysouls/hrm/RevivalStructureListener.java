@@ -53,6 +53,9 @@ public class RevivalStructureListener {
         }
 
         ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
+        if (profile == null) {
+            return ActionResult.PASS;
+        }
         Optional<UUID> ownerId = profile.id();
         if (ownerId.isEmpty()) {
             return ActionResult.PASS;
@@ -64,7 +67,7 @@ public class RevivalStructureListener {
         // Check if ritual structure is valid underneath where the head is about to be placed
         if (!isRitualStructure(world, placedPos)) {
             if (checkIncompleteStructure(world, placedPos)) {
-                serverPlayer.sendMessage(MessageUtil.getNoPrefix("The revival structure is incomplete!"), false);
+                serverPlayer.sendMessage(MessageUtil.get("revival-structure-incomplete"), false);
                 world.playSound(null, placedPos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.4f, 2f);
             }
             return ActionResult.PASS; // Let them place the head normally if not doing ritual

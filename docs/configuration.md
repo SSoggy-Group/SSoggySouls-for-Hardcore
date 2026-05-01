@@ -45,8 +45,6 @@ The Fabric version of SSoggySouls uses a `ssoggysouls.json` file for configurati
 
 ______________________________________________________________________
 
-______________________________________________________________________
-
 ## Server Role
 
 These settings identify what role each server plays in your network.

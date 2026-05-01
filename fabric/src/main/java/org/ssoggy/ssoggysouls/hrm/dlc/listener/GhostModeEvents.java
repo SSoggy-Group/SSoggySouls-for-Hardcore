@@ -16,10 +16,10 @@ import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GhostModeEvents {
 
@@ -27,7 +27,7 @@ public class GhostModeEvents {
         // Utility class
     }
 
-    private static final Set<UUID> GHOST_CACHE = new HashSet<>();
+    private static final Set<UUID> GHOST_CACHE = ConcurrentHashMap.newKeySet();
 
     public static void register(DatabaseManager db) {
         registerLifecycleEvents(db);
@@ -41,11 +41,14 @@ public class GhostModeEvents {
             UUID uuid = handler.getPlayer().getUuid();
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
-                if (data != null && data.isDead()) {
-                    GHOST_CACHE.add(uuid);
-                } else {
-                    GHOST_CACHE.remove(uuid);
-                }
+                boolean isDead = data != null && data.isDead();
+                server.execute(() -> {
+                    if (isDead) {
+                        GHOST_CACHE.add(uuid);
+                    } else {
+                        GHOST_CACHE.remove(uuid);
+                    }
+                });
             });
         });
 

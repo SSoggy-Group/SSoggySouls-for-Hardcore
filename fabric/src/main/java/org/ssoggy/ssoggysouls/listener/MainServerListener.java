@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
@@ -67,7 +68,7 @@ public class MainServerListener {
             if (player.interactionManager.getGameMode() != GameMode.ADVENTURE) {
                 player.changeGameMode(GameMode.ADVENTURE);
                 setGhostModeAttributes(player, true);
-                player.sendMessage(MessageUtil.getNoPrefix("You are a ghost!"), false);
+                player.sendMessage(MessageUtil.get("ghost-mode-active"), false);
             }
         } else if (player.interactionManager.getGameMode() == GameMode.ADVENTURE) {
             // Alive player was in ghost -> Restore
@@ -111,7 +112,7 @@ public class MainServerListener {
     private void handleDeathSync(ServerPlayerEntity player, PlayerData data, int remaining) {
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
-                player.sendMessage(MessageUtil.getNoPrefix("You have died! Sending to Limbo..."), false);
+                player.sendMessage(MessageUtil.get("death-sending-to-limbo"), false);
                 ServerTransferUtil.sendToLimbo(player);
                 return;
             }
@@ -123,7 +124,12 @@ public class MainServerListener {
             player.changeGameMode(GameMode.ADVENTURE);
             setGhostModeAttributes(player, true);
             GhostModeEvents.updateGhostStatus(player.getUuid(), true);
-            player.sendMessage(MessageUtil.getNoPrefix("You have died! You are now a ghost."), false);
+            player.sendMessage(MessageUtil.get("death-now-ghost"), false);
+
+            // Trigger head drop now that we know isDead is true (avoids race with DB state)
+            if (ConfigManager.getConfig().isDropHeads()) {
+                HeadDropListener.triggerHeadDrop(player);
+            }
         } else {
             player.sendMessage(MessageUtil.get("death-life-lost", "lives", remaining), false);
         }

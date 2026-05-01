@@ -1,5 +1,5 @@
 plugins {
-    id 'net.fabricmc.fabric-loom-remap' version '1.15-SNAPSHOT'
+    id 'fabric-loom' version '1.7.4'
     id 'java'
 }
 
@@ -17,7 +17,6 @@ repositories {
 
 loom {
     // Target Java 21 for Minecraft 1.21.1 compatibility
-    // even though we build with Java 25
 }
 
 dependencies {
@@ -29,13 +28,13 @@ dependencies {
     // Fabric API modules
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    // HikariCP for database connection pooling (nested into mod JAR)
+    // HikariCP for database connection pooling (nested into mod JAR via JiJ)
     include implementation("com.zaxxer:HikariCP:5.1.0")
 
-    // MySQL Connector (nested into mod JAR)
+    // MySQL Connector (nested into mod JAR via JiJ)
     include implementation("com.mysql:mysql-connector-j:8.3.0")
 
-    // SQLite JDBC (nested into mod JAR)
+    // SQLite JDBC (nested into mod JAR via JiJ)
     include implementation("org.xerial:sqlite-jdbc:3.45.3.0")
 
     // Mod Menu API (compile only, provided by Mod Menu mod at runtime)

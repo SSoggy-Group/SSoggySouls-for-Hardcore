@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -50,13 +51,14 @@ public class MySQLManager implements DatabaseManager {
 
     public boolean initialize() {
         try {
-            String host = plugin.getConfigString("database.host", "localhost");
-            int port = plugin.getConfigInt("database.port", 3306);
-            String dbName = plugin.getConfigString("database.name", "minecraft");
-            String user = plugin.getConfigString("database.username", "minecraft");
-            String pass = plugin.getConfigString("database.password", "changeme");
-            int poolSize = plugin.getConfigInt("database.pool-size", 5);
-            tableName = plugin.getConfigString("database.table-name", "hardcore_players");
+            ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+            String host = cfg.getDatabaseHost();
+            int port = cfg.getDatabasePort();
+            String dbName = cfg.getDatabaseName();
+            String user = cfg.getDatabaseUsername();
+            String pass = cfg.getDatabasePassword();
+            int poolSize = cfg.getDatabasePoolSize();
+            tableName = cfg.getDatabaseTableName();
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
                     + "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true"

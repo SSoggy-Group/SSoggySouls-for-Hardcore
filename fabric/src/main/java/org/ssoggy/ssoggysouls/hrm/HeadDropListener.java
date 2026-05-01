@@ -1,6 +1,5 @@
 package org.ssoggy.ssoggysouls.hrm;
 
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.ItemEntity;
@@ -13,11 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
-import org.ssoggy.ssoggysouls.model.PlayerData;
-
 import org.ssoggy.ssoggysouls.util.ConfigManager;
-
-import java.util.concurrent.CompletableFuture;
 
 public class HeadDropListener {
 
@@ -26,27 +21,16 @@ public class HeadDropListener {
     }
 
     public static void register(DatabaseManager db) {
-        ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
-            if (!(entity instanceof ServerPlayerEntity player)) return;
-            handlePlayerDeath(player, db);
-        });
+        // Head drop is now triggered from MainServerListener.handleDeathSync
+        // when isDead becomes true, avoiding the race condition with async DB state.
     }
 
-    private static void handlePlayerDeath(ServerPlayerEntity player, DatabaseManager db) {
-        // Check db asynchronously to avoid blocking death
-        CompletableFuture.runAsync(() -> {
-            PlayerData data = db.getPlayer(player.getUuid());
-            if (data == null || !data.isDead() || data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod()))) {
-                return; // Don't drop head if not dead or in grace
-            }
-
-            if (!ConfigManager.getConfig().isDropHeads()) {
-                return;
-            }
-
-            // Drop head on the main thread
-            player.server.execute(() -> dropHead(player));
-        });
+    /**
+     * Triggers a head drop for the given player.
+     * Must be called from the server thread.
+     */
+    public static void triggerHeadDrop(ServerPlayerEntity player) {
+        dropHead(player);
     }
 
     private static void dropHead(ServerPlayerEntity player) {

@@ -39,7 +39,7 @@ public class LimboServerListener {
                         applyLimboState(player);
                     } else {
                         player.changeGameMode(GameMode.SURVIVAL);
-                        player.sendMessage(MessageUtil.getNoPrefix("Welcome to Limbo as a visitor!"), false);
+                        player.sendMessage(MessageUtil.get("limbo-welcome-visitor"), false);
                     }
                 });
             });
@@ -68,6 +68,6 @@ public class LimboServerListener {
             player.teleport(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
         }
         
-        player.sendMessage(MessageUtil.getNoPrefix("Welcome to Limbo. You are dead!"), false);
+        player.sendMessage(MessageUtil.get("limbo-welcome-dead"), false);
     }
 }

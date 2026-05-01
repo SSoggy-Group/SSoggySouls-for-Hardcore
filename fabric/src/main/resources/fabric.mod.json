@@ -16,7 +16,7 @@
   "icon": "assets/ssoggysouls/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
+    "server": [
       "org.ssoggy.ssoggysouls.SSoggySoulsMod"
     ],
     "modmenu": [
@@ -30,7 +30,7 @@
     "fabricloader": ">=0.16.0",
     "minecraft": "~1.21.1",
     "java": ">=21",
-    "fabric-api": "*"
+    "fabric-api": ">=0.116.1"
   },
   "suggests": {
     "fabric-permissions-api-v0": "*"
