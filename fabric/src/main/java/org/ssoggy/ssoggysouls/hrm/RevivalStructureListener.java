@@ -54,7 +54,7 @@ public class RevivalStructureListener {
 
         ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
         Optional<UUID> ownerId = profile.id();
-        if (!ownerId.isPresent()) {
+        if (ownerId.isEmpty()) {
             return ActionResult.PASS;
         }
 
