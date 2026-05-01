@@ -13,17 +13,13 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class GhostModeEvents {
-
-    // In-memory death tracker. In production, this should be serialized to a JSON file.
-    public static final Map<UUID, BlockPos> DEATH_LOCATIONS = new HashMap<>();
 
     public static void register(SSoggySoulsMod plugin, DatabaseManager db) {
         
@@ -82,14 +78,15 @@ public class GhostModeEvents {
         }
 
         UUID uuid = player.getUuid();
+        GhostState state = GhostState.getServerState(player.getServer());
 
         // If someone is carrying their head, they are spectating them. Do not restrict distance.
-        if (GhostBlockEvents.DEATH_HOLDERS.containsKey(uuid)) {
+        if (state.deathHolders.containsKey(uuid)) {
             return;
         }
 
-        if (DEATH_LOCATIONS.containsKey(uuid)) {
-            BlockPos deathPos = DEATH_LOCATIONS.get(uuid);
+        if (state.deathLocations.containsKey(uuid)) {
+            BlockPos deathPos = state.deathLocations.get(uuid);
             BlockPos currentPos = player.getBlockPos();
             
             double distanceSq = currentPos.getSquaredDistance(deathPos);
