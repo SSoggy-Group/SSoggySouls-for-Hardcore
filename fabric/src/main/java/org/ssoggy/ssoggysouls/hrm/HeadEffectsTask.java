@@ -17,7 +17,11 @@ public class HeadEffectsTask {
     private static final int INFINITE_DURATION = -1; // -1 is infinite in 1.20.5+
     private static final Set<UUID> wearingHead = new HashSet<>();
 
-    public static void register(SSoggySoulsMod plugin) {
+    private HeadEffectsTask() {
+        // Utility class
+    }
+
+    public static void register() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (server.getTicks() % 20 != 0) return; // Run once per second
 
