@@ -553,7 +553,7 @@ Check console logs for:
 
 ### Mistake 6: Different Plugin Versions
 
-**Wrong:** Main server has v4.0.1, Limbo has v4.0.2
+**Wrong:** Main server has v3.2.6, Limbo has v4.0.2
 
 **Right:** Both servers must use the exact same version
 
