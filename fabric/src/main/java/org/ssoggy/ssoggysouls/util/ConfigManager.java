@@ -82,6 +82,7 @@ public class ConfigManager {
         public boolean headWearingEffects = true;
         public boolean ritualLightningStrike = true;
         public boolean ritualTotemEffect = true;
+        public boolean leaveStructureBase = true;
 
         // --- DLC / Ghost Mode ---
         public boolean loseInventory = false;

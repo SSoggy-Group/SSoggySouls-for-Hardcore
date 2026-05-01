@@ -23,6 +23,7 @@ import net.minecraft.world.World;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 import java.util.UUID;
@@ -127,7 +128,7 @@ public class RevivalStructureListener {
 
         // Totem effect
         if (ConfigManager.getConfig().ritualTotemEffect) {
-            world.sendEntityStatus(revived, (byte) 35); // Status 35 is totem effect
+            revived.getWorld().sendEntityStatus(revived, (byte) 35); // Status 35 is totem effect
         }
     }
 
