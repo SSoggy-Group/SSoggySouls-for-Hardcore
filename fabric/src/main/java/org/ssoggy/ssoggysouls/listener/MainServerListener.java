@@ -30,10 +30,13 @@ public class MainServerListener {
     public MainServerListener(SSoggySoulsMod plugin, DatabaseManager db) {
         this.plugin = plugin;
         this.db = db;
-        registerEvents();
+        registerJoinEvent();
+        registerQuitEvent();
+        registerDeathEvent();
+        registerRespawnEvent();
     }
 
-    private void registerEvents() {
+    private void registerJoinEvent() {
         // Player Join
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.getPlayer();
@@ -53,28 +56,32 @@ public class MainServerListener {
                 }
 
                 final PlayerData finalData = data;
-                server.execute(() -> {
-                    if (finalData.isDead()) {
-                        if (ConfigManager.getConfig().sendToLimboOnDeath) {
-                            ServerTransferUtil.sendToLimbo(player);
-                            return;
-                        }
-
-                        // Dead player joined -> Ghost mode (Adventure)
-                        if (player.interactionManager.getGameMode() != GameMode.ADVENTURE) {
-                            player.changeGameMode(GameMode.ADVENTURE);
-                            setGhostModeAttributes(player, true);
-                            player.sendMessage(MessageUtil.getNoPrefix("You are a ghost!"), false);
-                        }
-                    } else if (player.interactionManager.getGameMode() == GameMode.ADVENTURE) {
-                        // Alive player was in ghost -> Restore
-                        player.changeGameMode(GameMode.SURVIVAL);
-                        setGhostModeAttributes(player, false);
-                    }
-                });
+                server.execute(() -> handleJoinSync(player, finalData));
             });
         });
+    }
 
+    private void handleJoinSync(ServerPlayerEntity player, PlayerData data) {
+        if (data.isDead()) {
+            if (ConfigManager.getConfig().sendToLimboOnDeath) {
+                ServerTransferUtil.sendToLimbo(player);
+                return;
+            }
+
+            // Dead player joined -> Ghost mode (Adventure)
+            if (player.interactionManager.getGameMode() != GameMode.ADVENTURE) {
+                player.changeGameMode(GameMode.ADVENTURE);
+                setGhostModeAttributes(player, true);
+                player.sendMessage(MessageUtil.getNoPrefix("You are a ghost!"), false);
+            }
+        } else if (player.interactionManager.getGameMode() == GameMode.ADVENTURE) {
+            // Alive player was in ghost -> Restore
+            player.changeGameMode(GameMode.SURVIVAL);
+            setGhostModeAttributes(player, false);
+        }
+    }
+
+    private void registerQuitEvent() {
         // Player Quit
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             ServerPlayerEntity player = handler.getPlayer();
@@ -82,7 +89,9 @@ public class MainServerListener {
             long now = System.currentTimeMillis();
             CompletableFuture.runAsync(() -> db.setLastSeen(uuid, now));
         });
+    }
 
+    private void registerDeathEvent() {
         // Player Death
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
             if (!(entity instanceof ServerPlayerEntity player)) return;
@@ -99,47 +108,53 @@ public class MainServerListener {
                 int remaining = data.decrementLife();
                 db.savePlayer(data);
 
-                player.server.execute(() -> {
-                    if (data.isDead()) {
-                        if (ConfigManager.getConfig().sendToLimboOnDeath) {
-                            player.sendMessage(MessageUtil.getNoPrefix("You have died! Sending to Limbo..."), false);
-                            ServerTransferUtil.sendToLimbo(player);
-                            return;
-                        }
-
-                        GhostState state = GhostState.getServerState(player.getServer());
-                        state.deathLocations.put(uuid, player.getBlockPos());
-                        state.markDirty();
-                        
-                        player.changeGameMode(GameMode.ADVENTURE);
-                        setGhostModeAttributes(player, true);
-                        GhostModeEvents.updateGhostStatus(uuid, true);
-                        player.sendMessage(MessageUtil.getNoPrefix("You have died! You are now a ghost."), false);
-                    } else {
-                        player.sendMessage(MessageUtil.get("death-life-lost", "lives", remaining), false);
-                    }
-                });
+                player.server.execute(() -> handleDeathSync(player, data, remaining));
             });
         });
+    }
 
+    private void handleDeathSync(ServerPlayerEntity player, PlayerData data, int remaining) {
+        if (data.isDead()) {
+            if (ConfigManager.getConfig().sendToLimboOnDeath) {
+                player.sendMessage(MessageUtil.getNoPrefix("You have died! Sending to Limbo..."), false);
+                ServerTransferUtil.sendToLimbo(player);
+                return;
+            }
+
+            GhostState state = GhostState.getServerState(player.getServer());
+            state.deathLocations.put(player.getUuid(), player.getBlockPos());
+            state.markDirty();
+            
+            player.changeGameMode(GameMode.ADVENTURE);
+            setGhostModeAttributes(player, true);
+            GhostModeEvents.updateGhostStatus(player.getUuid(), true);
+            player.sendMessage(MessageUtil.getNoPrefix("You have died! You are now a ghost."), false);
+        } else {
+            player.sendMessage(MessageUtil.get("death-life-lost", "lives", remaining), false);
+        }
+    }
+
+    private void registerRespawnEvent() {
         // Player Respawn
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
             UUID uuid = newPlayer.getUuid();
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
                 if (data != null && data.isDead()) {
-                    newPlayer.server.execute(() -> {
-                        if (ConfigManager.getConfig().sendToLimboOnDeath) {
-                            ServerTransferUtil.sendToLimbo(newPlayer);
-                            return;
-                        }
-
-                        newPlayer.changeGameMode(GameMode.ADVENTURE);
-                        setGhostModeAttributes(newPlayer, true);
-                    });
+                    newPlayer.server.execute(() -> handleRespawnSync(newPlayer));
                 }
             });
         });
+    }
+
+    private void handleRespawnSync(ServerPlayerEntity player) {
+        if (ConfigManager.getConfig().sendToLimboOnDeath) {
+            ServerTransferUtil.sendToLimbo(player);
+            return;
+        }
+
+        player.changeGameMode(GameMode.ADVENTURE);
+        setGhostModeAttributes(player, true);
     }
 
     public static void setGhostModeAttributes(ServerPlayerEntity player, boolean isGhost) {
