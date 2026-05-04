@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RevivalStructureListener {
 
-    private static final Map<UUID, BlockPos> PENDING_REVIVALS = new ConcurrentHashMap<>();
+    private static final Map<UUID, net.minecraft.util.math.GlobalPos> PENDING_REVIVALS = new ConcurrentHashMap<>();
 
     private RevivalStructureListener() {
         // Utility class
