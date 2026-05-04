@@ -1,17 +1,52 @@
-target/
-.idea/
-*.iml
+# Java & Build Tools
+*.class
+*.log
+*.jar
+*.war
+*.nar
+*.ear
 *.zip
-.vscode/
-env/
-__pycache__/
-.DS_Store
+*.tar.gz
+*.rar
 
-# Fabric & Gradle
+# Build artifacts
+target/
+build/
+bin/
+out/
+.gradle/
 fabric/build/
 fabric/.gradle/
 fabric/run/
-.gradle/
-build/
-bin/
+fabric/out/
+
+# IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+.nbworkspace
+.nbrescan
+.nbcache
+.netbeans
+nbproject/
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python (env/ and __pycache__)
+env/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Configuration & Others
 .markdownlint.json
+hs_err_pid*
