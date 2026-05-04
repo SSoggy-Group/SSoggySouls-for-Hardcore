@@ -2,7 +2,6 @@ package org.ssoggy.ssoggysouls.hrm;
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.EntityType;
@@ -11,7 +10,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -46,7 +44,8 @@ public class RevivalStructureListener {
         });
     }
 
-    private static ActionResult handleStructureInteraction(ServerPlayerEntity serverPlayer, World world, Hand hand, net.minecraft.util.hit.BlockHitResult hitResult, DatabaseManager db) {
+    private static ActionResult handleStructureInteraction(ServerPlayerEntity serverPlayer, World world, Hand hand,
+            net.minecraft.util.hit.BlockHitResult hitResult, DatabaseManager db) {
         ItemStack stack = serverPlayer.getStackInHand(hand);
         if (!stack.isOf(Items.PLAYER_HEAD)) {
             return ActionResult.PASS;
@@ -64,7 +63,8 @@ public class RevivalStructureListener {
         UUID ownerUuid = ownerId.get();
         BlockPos placedPos = hitResult.getBlockPos().offset(hitResult.getSide());
 
-        // Check if ritual structure is valid underneath where the head is about to be placed
+        // Check if ritual structure is valid underneath where the head is about to be
+        // placed
         if (!isRitualStructure(world, placedPos)) {
             if (checkIncompleteStructure(world, placedPos)) {
                 serverPlayer.sendMessage(MessageUtil.get("revival-structure-incomplete"), false);
@@ -84,11 +84,13 @@ public class RevivalStructureListener {
         // Trigger async DB check
         triggerRevival(serverPlayer, world, placedPos, ownerUuid, db, finalStack);
 
-        // Return SUCCESS to indicate we handled the interaction (preventing standard block placement)
+        // Return SUCCESS to indicate we handled the interaction (preventing standard
+        // block placement)
         return ActionResult.SUCCESS;
     }
 
-    private static void triggerRevival(ServerPlayerEntity serverPlayer, World world, BlockPos placedPos, UUID ownerUuid, DatabaseManager db, ItemStack refundedItem) {
+    private static void triggerRevival(ServerPlayerEntity serverPlayer, World world, BlockPos placedPos, UUID ownerUuid,
+            DatabaseManager db, ItemStack refundedItem) {
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(ownerUuid);
             if (data == null) {
@@ -117,33 +119,34 @@ public class RevivalStructureListener {
                 return;
             }
 
-            SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getName().getString(), data.getUsername());
+            SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getName().getString(),
+                    data.getUsername());
 
-            serverPlayer.server.execute(() -> {
-                performRevival(world, placedPos, serverPlayer, ownerUuid, data.getUsername());
-            });
+            serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, data.getUsername()));
         });
     }
 
     private static void refundHead(ServerPlayerEntity serverPlayer, ItemStack head) {
-        if (!serverPlayer.isCreative()) {
-            if (!serverPlayer.getInventory().insertStack(head)) {
-                serverPlayer.dropItem(head, false);
-            }
+        if (!serverPlayer.isCreative() && !serverPlayer.getInventory().insertStack(head)) {
+            serverPlayer.dropItem(head, false);
         }
     }
 
-    private static void performRevival(World world, BlockPos placedPos, ServerPlayerEntity summoner, UUID revivedUuid, String revivedName) {
+    private static void performRevival(World world, BlockPos placedPos, ServerPlayerEntity summoner, UUID revivedUuid,
+            String revivedName) {
         breakStructure(world, placedPos);
 
         // Notify summoner
-        summoner.sendMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()), false);
+        summoner.sendMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives",
+                ConfigManager.getConfig().getOnReviveLives()), false);
         summoner.sendMessage(MessageUtil.get("revive-from-limbo", "player", revivedName), false);
 
         // Notify server
         world.getPlayers().forEach(p -> {
             if (!p.getUuid().equals(summoner.getUuid())) {
-                p.sendMessage(MessageUtil.colorize("§e" + summoner.getName().getString() + " revived " + revivedName + "!"), false);
+                p.sendMessage(
+                        MessageUtil.colorize("§e" + summoner.getName().getString() + " revived " + revivedName + "!"),
+                        false);
             }
         });
 
@@ -174,13 +177,20 @@ public class RevivalStructureListener {
 
         // Totem effect
         if (ConfigManager.getConfig().isRitualTotemEffect()) {
-            revived.getWorld().playSound(null, revived.getBlockPos(), SoundEvents.ITEM_TOTEM_USE, SoundCategory.PLAYERS, 1.0f, 1.0f);
+            revived.getWorld().playSound(null, revived.getBlockPos(), SoundEvents.ITEM_TOTEM_USE, SoundCategory.PLAYERS,
+                    1.0f, 1.0f);
             revived.getWorld().sendEntityStatus(revived, (byte) 35); // Status 35 is totem effect
         }
     }
 
     private static void breakStructure(World world, BlockPos headPos) {
-        // Find corners first so we don't break their supporting ores before checking
+        breakCorners(world, headPos);
+        breakCenter(world, headPos);
+        breakEdges(world, headPos);
+        breakBase(world, headPos);
+    }
+
+    private static void breakCorners(World world, BlockPos headPos) {
         for (int x = -1; x <= 1; x++) {
             for (int z = -1; z <= 1; z++) {
                 if (Math.abs(x) == 1 && Math.abs(z) == 1) {
@@ -196,14 +206,16 @@ public class RevivalStructureListener {
                 }
             }
         }
+    }
 
-        // Break center block under head (fence)
+    private static void breakCenter(World world, BlockPos headPos) {
         BlockPos center = headPos.down();
         if (isFence(world, center.getX(), center.getY(), center.getZ())) {
             world.breakBlock(center, true);
         }
+    }
 
-        // Middle edges (stairs)
+    private static void breakEdges(World world, BlockPos headPos) {
         for (int x = -1; x <= 1; x++) {
             for (int z = -1; z <= 1; z++) {
                 if ((Math.abs(x) == 1 && z == 0) || (x == 0 && Math.abs(z) == 1)) {
@@ -214,8 +226,9 @@ public class RevivalStructureListener {
                 }
             }
         }
+    }
 
-        // Base blocks (ore base)
+    private static void breakBase(World world, BlockPos headPos) {
         if (!ConfigManager.getConfig().isLeaveStructureBase()) {
             for (int x = -1; x <= 1; x++) {
                 for (int z = -1; z <= 1; z++) {
@@ -236,29 +249,42 @@ public class RevivalStructureListener {
         int hz = headPos.getZ();
 
         // fence below da head
-        if (!isFence(world, hx, hy - 1, hz)) return false;
+        if (!isFence(world, hx, hy - 1, hz))
+            return false;
 
         // ore block below the fence
-        if (!isOre(world, hx, hy - 2, hz)) return false;
+        if (!isOre(world, hx, hy - 2, hz))
+            return false;
 
         int by = hy - 2;
         // soul sand corners
-        if (!isSoulSand(world, hx - 1, by, hz - 1)) return false;
-        if (!isSoulSand(world, hx + 1, by, hz - 1)) return false;
-        if (!isSoulSand(world, hx - 1, by, hz + 1)) return false;
-        if (!isSoulSand(world, hx + 1, by, hz + 1)) return false;
+        if (!isSoulSand(world, hx - 1, by, hz - 1))
+            return false;
+        if (!isSoulSand(world, hx + 1, by, hz - 1))
+            return false;
+        if (!isSoulSand(world, hx - 1, by, hz + 1))
+            return false;
+        if (!isSoulSand(world, hx + 1, by, hz + 1))
+            return false;
 
         // stair edges
-        if (!isStair(world, hx, by, hz - 1)) return false;
-        if (!isStair(world, hx - 1, by, hz)) return false;
-        if (!isStair(world, hx + 1, by, hz)) return false;
-        if (!isStair(world, hx, by, hz + 1)) return false;
+        if (!isStair(world, hx, by, hz - 1))
+            return false;
+        if (!isStair(world, hx - 1, by, hz))
+            return false;
+        if (!isStair(world, hx + 1, by, hz))
+            return false;
+        if (!isStair(world, hx, by, hz + 1))
+            return false;
 
         // wither roses on the corners on the soul sand
         int my = hy - 1;
-        if (!isFlower(world, hx - 1, my, hz - 1)) return false;
-        if (!isFlower(world, hx + 1, my, hz - 1)) return false;
-        if (!isFlower(world, hx - 1, my, hz + 1)) return false;
+        if (!isFlower(world, hx - 1, my, hz - 1))
+            return false;
+        if (!isFlower(world, hx + 1, my, hz - 1))
+            return false;
+        if (!isFlower(world, hx - 1, my, hz + 1))
+            return false;
         return isFlower(world, hx + 1, my, hz + 1);
     }
 
@@ -269,12 +295,16 @@ public class RevivalStructureListener {
 
         // Just check if the base has at least some matching blocks
         int score = 0;
-        if (isFence(world, hx, hy - 1, hz)) score += 3;
-        if (isOre(world, hx, hy - 2, hz)) score += 2;
+        if (isFence(world, hx, hy - 1, hz))
+            score += 3;
+        if (isOre(world, hx, hy - 2, hz))
+            score += 2;
 
         for (int i = -1; i <= 1; i++) {
             for (int k = -1; k <= 1; k++) {
-                if (isOre(world, hx + i, hy - 2, hz + k) || isSoulSand(world, hx + i, hy - 2, hz + k) || isStair(world, hx + i, hy - 2, hz + k)) score++;
+                if (isOre(world, hx + i, hy - 2, hz + k) || isSoulSand(world, hx + i, hy - 2, hz + k)
+                        || isStair(world, hx + i, hy - 2, hz + k))
+                    score++;
             }
         }
         return score >= 6; // somewhat arbitrary threshold to decide if they tried to build the ritual

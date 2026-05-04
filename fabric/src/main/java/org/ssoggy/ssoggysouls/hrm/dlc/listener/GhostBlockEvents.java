@@ -37,54 +37,64 @@ public class GhostBlockEvents {
     private static void registerHeadBreak(DatabaseManager db) {
         // Detect when a player breaks a player's head block
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
-            if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) return;
+            if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer))
+                return;
 
-            if ((state.isOf(Blocks.PLAYER_HEAD) || state.isOf(Blocks.PLAYER_WALL_HEAD)) && blockEntity instanceof SkullBlockEntity skull) {
+            if ((state.isOf(Blocks.PLAYER_HEAD) || state.isOf(Blocks.PLAYER_WALL_HEAD))
+                    && blockEntity instanceof SkullBlockEntity skull) {
                 handleHeadBreak(world, serverPlayer, skull, db);
             }
         });
     }
 
-    private static void handleHeadBreak(net.minecraft.world.World world, ServerPlayerEntity serverPlayer, SkullBlockEntity skull, DatabaseManager db) {
+    private static void handleHeadBreak(net.minecraft.world.World world, ServerPlayerEntity serverPlayer,
+            SkullBlockEntity skull, DatabaseManager db) {
         ProfileComponent profile = skull.getOwner();
         if (profile != null) {
-            profile.id().ifPresent(ownerUuid -> {
-                CompletableFuture.runAsync(() -> {
-                    PlayerData data = db.getPlayer(ownerUuid);
-                    if (data != null && data.isDead()) {
-                        world.getServer().execute(() -> {
-                            GhostState ghostState = GhostState.getServerState(world.getServer());
+            profile.id().ifPresent(ownerUuid -> CompletableFuture.runAsync(() -> {
+                PlayerData data = db.getPlayer(ownerUuid);
+                if (data != null && data.isDead()) {
+                    world.getServer().execute(() -> {
+                        GhostState ghostState = GhostState.getServerState(world.getServer());
 
-                            // The owner is a ghost! The breaker becomes the "Death Holder"
-                            ghostState.deathLocations.remove(ownerUuid);
-                            ghostState.deathHolders.put(ownerUuid, serverPlayer.getUuid());
-                            ghostState.markDirty();
+                        // The owner is a ghost! The breaker becomes the "Death Holder"
+                        ghostState.deathLocations.remove(ownerUuid);
+                        ghostState.deathHolders.put(ownerUuid, serverPlayer.getUuid());
+                        ghostState.markDirty();
 
-                            ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
-                            if (ghost != null) {
-                                // Put ghost into spectator mode to follow the holder
-                                ghost.changeGameMode(GameMode.SPECTATOR);
-                                ghost.setCameraEntity(serverPlayer);
-                                ghost.sendMessage(Text.literal("Started spectating " + serverPlayer.getName().getString()).styled(s -> s.withColor(Formatting.GRAY)), false);
-                                ghost.sendMessage(Text.literal(serverPlayer.getName().getString() + " is currently carrying your playerhead...").styled(s -> s.withColor(Formatting.YELLOW)), true);
-                            }
-                        });
-                    }
-                });
-            });
+                        ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
+                        if (ghost != null) {
+                            // Put ghost into spectator mode to follow the holder
+                            ghost.changeGameMode(GameMode.SPECTATOR);
+                            ghost.setCameraEntity(serverPlayer);
+                            ghost.sendMessage(
+                                    Text.literal("Started spectating " + serverPlayer.getName().getString())
+                                            .styled(s -> s.withColor(Formatting.GRAY)),
+                                    false);
+                            ghost.sendMessage(Text
+                                    .literal(serverPlayer.getName().getString()
+                                            + " is currently carrying your playerhead...")
+                                    .styled(s -> s.withColor(Formatting.YELLOW)), true);
+                        }
+                    });
+                }
+            }));
         }
     }
 
     private static void registerHeadPlace(DatabaseManager db) {
         // Detect when a player places a player's head block
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (world.isClient || !(player instanceof ServerPlayerEntity)) return ActionResult.PASS;
+            if (world.isClient || !(player instanceof ServerPlayerEntity))
+                return ActionResult.PASS;
 
             ItemStack stack = player.getStackInHand(hand);
-            if (!stack.isOf(Items.PLAYER_HEAD)) return ActionResult.PASS;
+            if (!stack.isOf(Items.PLAYER_HEAD))
+                return ActionResult.PASS;
 
             ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
-            if (profile == null || profile.id().isEmpty()) return ActionResult.PASS;
+            if (profile == null || profile.id().isEmpty())
+                return ActionResult.PASS;
 
             UUID ownerUuid = profile.id().get();
             BlockPos targetPos = hitResult.getBlockPos().offset(hitResult.getSide());
@@ -96,7 +106,8 @@ public class GhostBlockEvents {
         });
     }
 
-    private static void handleHeadPlace(net.minecraft.world.World world, UUID ownerUuid, BlockPos targetPos, DatabaseManager db) {
+    private static void handleHeadPlace(net.minecraft.world.World world, UUID ownerUuid, BlockPos targetPos,
+            DatabaseManager db) {
         BlockState state = world.getBlockState(targetPos);
         if (state.isOf(Blocks.PLAYER_HEAD) || state.isOf(Blocks.PLAYER_WALL_HEAD)) {
             BlockEntity be = world.getBlockEntity(targetPos);
@@ -113,7 +124,8 @@ public class GhostBlockEvents {
         }
     }
 
-    private static void updateGhostStateOnPlace(net.minecraft.world.World world, UUID ownerUuid, BlockPos targetPos, DatabaseManager db) {
+    private static void updateGhostStateOnPlace(net.minecraft.world.World world, UUID ownerUuid, BlockPos targetPos,
+            DatabaseManager db) {
         GhostState ghostState = GhostState.getServerState(world.getServer());
 
         // Block was placed! Update death location and remove holder
@@ -132,8 +144,10 @@ public class GhostBlockEvents {
                         org.ssoggy.ssoggysouls.listener.MainServerListener.setGhostModeAttributes(ghost, true);
 
                         // Teleport to the newly placed head
-                        ghost.teleport(ghost.getServerWorld(), targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, ghost.getYaw(), ghost.getPitch());
-                        ghost.sendMessage(Text.literal("Your head has been placed down.").styled(s -> s.withColor(Formatting.GRAY)), true);
+                        ghost.teleport(ghost.getServerWorld(), targetPos.getX() + 0.5, targetPos.getY(),
+                                targetPos.getZ() + 0.5, ghost.getYaw(), ghost.getPitch());
+                        ghost.sendMessage(Text.literal("Your head has been placed down.")
+                                .styled(s -> s.withColor(Formatting.GRAY)), true);
                     }
                 });
             }
