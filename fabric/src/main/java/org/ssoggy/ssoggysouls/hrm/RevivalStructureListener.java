@@ -177,7 +177,7 @@ public class RevivalStructureListener {
         if (revivedPlayer != null) {
             restoreAtStructure(revivedPlayer, placedPos);
         } else {
-            PENDING_REVIVALS.put(revivedUuid, placedPos);
+            PENDING_REVIVALS.put(revivedUuid, net.minecraft.util.math.GlobalPos.create(world.getRegistryKey(), placedPos));
             SSoggySoulsMod.LOGGER.info("{} is offline; revival effects will be applied on next login.", revivedName);
         }
     }
