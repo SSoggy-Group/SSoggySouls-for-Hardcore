@@ -24,14 +24,26 @@ import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RevivalStructureListener {
 
+    private static final Map<UUID, BlockPos> PENDING_REVIVALS = new ConcurrentHashMap<>();
+
     private RevivalStructureListener() {
         // Utility class
+    }
+
+    /**
+     * Removes and returns the pending revival spawn position for the given player,
+     * or {@code null} if no pending revival exists. Called on player join.
+     */
+    public static BlockPos consumePendingRevival(UUID uuid) {
+        return PENDING_REVIVALS.remove(uuid);
     }
 
     public static void register(DatabaseManager db) {
@@ -159,14 +171,18 @@ public class RevivalStructureListener {
             }
         }
 
-        // Apply effects directly to the revived player if they are online
+        // Apply effects directly to the revived player if they are online,
+        // otherwise queue the revival for when they next log in
         ServerPlayerEntity revivedPlayer = world.getServer().getPlayerManager().getPlayer(revivedUuid);
         if (revivedPlayer != null) {
             restoreAtStructure(revivedPlayer, placedPos);
+        } else {
+            PENDING_REVIVALS.put(revivedUuid, placedPos);
+            SSoggySoulsMod.LOGGER.info("{} is offline; revival effects will be applied on next login.", revivedName);
         }
     }
 
-    private static void restoreAtStructure(ServerPlayerEntity revived, BlockPos spawnPos) {
+    public static void restoreAtStructure(ServerPlayerEntity revived, BlockPos spawnPos) {
         revived.teleport(revived.getServerWorld(), spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 0, 0);
         revived.changeGameMode(GameMode.SURVIVAL);
         revived.sendMessage(MessageUtil.get("revive-success"), false);

@@ -6,7 +6,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import net.minecraft.util.math.BlockPos;
 import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
+import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
@@ -58,6 +60,13 @@ public class MainServerListener {
     }
 
     private void handleJoinSync(ServerPlayerEntity player, PlayerData data) {
+        // Apply a pending offline revival (teleport + restore gamemode + effects)
+        BlockPos pendingRevivalPos = RevivalStructureListener.consumePendingRevival(player.getUuid());
+        if (pendingRevivalPos != null) {
+            RevivalStructureListener.restoreAtStructure(player, pendingRevivalPos);
+            return;
+        }
+
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
                 ServerTransferUtil.sendToLimbo(player);
