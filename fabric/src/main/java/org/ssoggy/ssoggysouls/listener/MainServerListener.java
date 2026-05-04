@@ -61,12 +61,13 @@ public class MainServerListener {
 
     private void handleJoinSync(ServerPlayerEntity player, PlayerData data) {
         // Apply a pending offline revival (teleport + restore gamemode + effects)
-        BlockPos pendingRevivalPos = RevivalStructureListener.consumePendingRevival(player.getUuid());
-        if (pendingRevivalPos != null) {
-            // Clear any ghost-mode attributes the player may have had before they went offline
+        net.minecraft.util.math.GlobalPos pending = RevivalStructureListener.consumePendingRevival(player.getUuid());
+        if (pending != null) {
             setGhostModeAttributes(player, false);
-            RevivalStructureListener.restoreAtStructure(player, pendingRevivalPos);
+            net.minecraft.server.world.ServerWorld targetWorld = player.getServer().getWorld(pending.dimension());
+            RevivalStructureListener.restoreAtStructure(player, targetWorld != null ? targetWorld : player.getServerWorld(), pending.pos());
             return;
+        }
         }
 
         if (data.isDead()) {
