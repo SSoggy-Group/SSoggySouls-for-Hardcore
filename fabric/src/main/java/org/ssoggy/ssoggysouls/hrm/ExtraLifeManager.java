@@ -11,9 +11,12 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.world.World;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
@@ -32,7 +35,7 @@ public class ExtraLifeManager {
         UseItemCallback.EVENT.register((player, world, hand) -> handleExtraLifeUse(player, world, hand, db));
     }
 
-    private static TypedActionResult<ItemStack> handleExtraLifeUse(net.minecraft.entity.player.PlayerEntity player, net.minecraft.world.World world, net.minecraft.util.Hand hand, DatabaseManager db) {
+    private static TypedActionResult<ItemStack> handleExtraLifeUse(PlayerEntity player, World world, Hand hand, DatabaseManager db) {
         if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) {
             return TypedActionResult.pass(player.getStackInHand(hand));
         }

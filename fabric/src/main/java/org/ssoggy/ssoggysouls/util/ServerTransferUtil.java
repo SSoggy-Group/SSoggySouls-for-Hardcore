@@ -30,7 +30,7 @@ public class ServerTransferUtil {
         public static final CustomPayload.Id<BungeeConnectPayload> PAYLOAD_ID = new CustomPayload.Id<>(
                 Identifier.of("bungeecord", "main"));
 
-            public static final PacketCodec<PacketByteBuf, BungeeConnectPayload> CODEC = PacketCodec.of(
+        public static final PacketCodec<PacketByteBuf, BungeeConnectPayload> CODEC = PacketCodec.of(
                 (value, buf) -> {
                     try {
                         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();

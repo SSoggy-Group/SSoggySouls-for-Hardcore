@@ -94,7 +94,7 @@ public class ConfigManager {
         private int databasePort = 3306;
         private String databaseName = "minecraft";
         private String databaseUsername = "minecraft";
-        @SuppressWarnings("squid:S2068")
+        @SuppressWarnings("java:S2068")
         private String databasePassword = "changeme";
         private String databaseTableName = "hardcore_players";
         private int databasePoolSize = 5;
