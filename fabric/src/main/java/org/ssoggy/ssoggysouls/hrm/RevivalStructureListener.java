@@ -11,11 +11,13 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
@@ -32,17 +34,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RevivalStructureListener {
 
-    private static final Map<UUID, net.minecraft.util.math.GlobalPos> PENDING_REVIVALS = new ConcurrentHashMap<>();
+    private static final Map<UUID, GlobalPos> PENDING_REVIVALS = new ConcurrentHashMap<>();
 
     private RevivalStructureListener() {
         // Utility class
     }
 
     /**
-     * Removes and returns the pending revival spawn position for the given player,
-     * or {@code null} if no pending revival exists. Called on player join.
+     * Removes and returns the pending revival location (dimension + position) for
+     * the given player, or {@code null} if no pending revival exists. Called on player join.
      */
-    public static BlockPos consumePendingRevival(UUID uuid) {
+    public static GlobalPos consumePendingRevival(UUID uuid) {
         return PENDING_REVIVALS.remove(uuid);
     }
 
@@ -175,14 +177,14 @@ public class RevivalStructureListener {
         // otherwise queue the revival for when they next log in
         ServerPlayerEntity revivedPlayer = world.getServer().getPlayerManager().getPlayer(revivedUuid);
         if (revivedPlayer != null) {
-            restoreAtStructure(revivedPlayer, placedPos);
+            restoreAtStructure(revivedPlayer, (ServerWorld) world, placedPos);
         } else {
-            PENDING_REVIVALS.put(revivedUuid, net.minecraft.util.math.GlobalPos.create(world.getRegistryKey(), placedPos));
+            PENDING_REVIVALS.put(revivedUuid, GlobalPos.create(world.getRegistryKey(), placedPos));
             SSoggySoulsMod.LOGGER.info("{} is offline; revival effects will be applied on next login.", revivedName);
         }
     }
 
-    public static void restoreAtStructure(ServerPlayerEntity revived, net.minecraft.server.world.ServerWorld world, BlockPos spawnPos) {
+    public static void restoreAtStructure(ServerPlayerEntity revived, ServerWorld world, BlockPos spawnPos) {
         revived.teleport(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 0, 0);
         revived.changeGameMode(GameMode.SURVIVAL);
         revived.sendMessage(MessageUtil.get("revive-success"), false);
