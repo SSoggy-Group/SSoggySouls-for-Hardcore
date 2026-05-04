@@ -55,44 +55,47 @@ public class ExtraLifeManager {
     }
 
     private static void processExtraLife(ServerPlayerEntity serverPlayer, DatabaseManager db) {
+        PlayerData data = getOrCreatePlayerData(serverPlayer, db);
+
+        if (data.isDead()) {
+            handleFailedUse(serverPlayer, "extra-life-dead");
+            return;
+        }
+
+        int maxLives = ConfigManager.getConfig().getMaxLives();
+        if (maxLives > 0 && data.getLives() >= maxLives) {
+            handleFailedUse(serverPlayer, "extra-life-at-max");
+            return;
+        }
+
+        grantExtraLife(serverPlayer, db, data.getUuid(), data.getLives());
+    }
+
+    private static PlayerData getOrCreatePlayerData(ServerPlayerEntity serverPlayer, DatabaseManager db) {
         PlayerData data = db.getPlayer(serverPlayer.getUuid());
         if (data == null) {
             data = PlayerData.createNew(serverPlayer.getUuid(), serverPlayer.getName().getString(),
                     ConfigManager.getConfig().getDefaultLives(), 0);
             db.savePlayer(data);
         }
+        return data;
+    }
 
-        if (data.isDead()) {
-            serverPlayer.server.execute(() -> {
-                serverPlayer.sendMessage(MessageUtil.get("extra-life-dead"), false);
-                // Give the item back if they were dead and couldn't use it
-                if (!serverPlayer.isCreative()) {
-                    ItemStack refundedItem = createExtraLifeItem();
-                    if (!serverPlayer.getInventory().insertStack(refundedItem)) {
-                        serverPlayer.dropItem(refundedItem, false);
-                    }
+    private static void handleFailedUse(ServerPlayerEntity serverPlayer, String messageKey) {
+        serverPlayer.server.execute(() -> {
+            serverPlayer.sendMessage(MessageUtil.get(messageKey), false);
+            if (!serverPlayer.isCreative()) {
+                ItemStack refundedItem = createExtraLifeItem();
+                if (!serverPlayer.getInventory().insertStack(refundedItem)) {
+                    serverPlayer.dropItem(refundedItem, false);
                 }
-            });
-            return;
-        }
+            }
+        });
+    }
 
-        int maxLives = ConfigManager.getConfig().getMaxLives();
-        if (maxLives > 0 && data.getLives() >= maxLives) {
-            serverPlayer.server.execute(() -> {
-                serverPlayer.sendMessage(MessageUtil.get("extra-life-at-max"), false);
-                // Give the item back
-                if (!serverPlayer.isCreative()) {
-                    ItemStack refundedItem = createExtraLifeItem();
-                    if (!serverPlayer.getInventory().insertStack(refundedItem)) {
-                        serverPlayer.dropItem(refundedItem, false);
-                    }
-                }
-            });
-            return;
-        }
-
-        int newLives = data.getLives() + 1;
-        db.setLives(data.getUuid(), newLives);
+    private static void grantExtraLife(ServerPlayerEntity serverPlayer, DatabaseManager db, java.util.UUID uuid, int currentLives) {
+        int newLives = currentLives + 1;
+        db.setLives(uuid, newLives);
 
         SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getName().getString(),
                 newLives);
