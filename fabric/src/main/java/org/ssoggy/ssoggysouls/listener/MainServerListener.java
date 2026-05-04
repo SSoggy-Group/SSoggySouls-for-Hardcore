@@ -63,6 +63,8 @@ public class MainServerListener {
         // Apply a pending offline revival (teleport + restore gamemode + effects)
         BlockPos pendingRevivalPos = RevivalStructureListener.consumePendingRevival(player.getUuid());
         if (pendingRevivalPos != null) {
+            // Clear any ghost-mode attributes the player may have had before they went offline
+            setGhostModeAttributes(player, false);
             RevivalStructureListener.restoreAtStructure(player, pendingRevivalPos);
             return;
         }
