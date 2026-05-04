@@ -4,9 +4,12 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.GameMode;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
+import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
@@ -58,6 +61,15 @@ public class MainServerListener {
     }
 
     private void handleJoinSync(ServerPlayerEntity player, PlayerData data) {
+        // Apply a pending offline revival (teleport + restore gamemode + effects)
+        GlobalPos pending = RevivalStructureListener.consumePendingRevival(player.getUuid());
+        if (pending != null) {
+            setGhostModeAttributes(player, false);
+            ServerWorld targetWorld = player.getServer().getWorld(pending.dimension());
+            RevivalStructureListener.restoreAtStructure(player, targetWorld != null ? targetWorld : player.getServerWorld(), pending.pos());
+            return;
+        }
+
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
                 ServerTransferUtil.sendToLimbo(player);
