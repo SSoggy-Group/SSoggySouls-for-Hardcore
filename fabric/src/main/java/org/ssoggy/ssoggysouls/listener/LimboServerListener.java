@@ -33,7 +33,7 @@ public class LimboServerListener {
 
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
-                
+
                 server.execute(() -> {
                     if (data != null && data.isDead()) {
                         applyLimboState(player);
@@ -46,7 +46,7 @@ public class LimboServerListener {
         });
 
         // Cancel Damage
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> 
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) ->
             !(entity instanceof ServerPlayerEntity player && player.interactionManager.getGameMode() == GameMode.ADVENTURE)
         );
     }
@@ -59,7 +59,7 @@ public class LimboServerListener {
         player.setHealth(player.getMaxHealth());
         player.getHungerManager().setFoodLevel(20);
         player.getHungerManager().setSaturationLevel(20f);
-        
+
         // Teleport to specific limbo spawn location config
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         Identifier worldId = Identifier.of(cfg.getLimboSpawnWorld());
@@ -67,7 +67,7 @@ public class LimboServerListener {
         if (world != null) {
             player.teleport(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
         }
-        
+
         player.sendMessage(MessageUtil.get("limbo-welcome-dead"), false);
     }
 }

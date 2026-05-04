@@ -123,10 +123,10 @@ public class GhostModeEvents {
         if (state.deathLocations.containsKey(uuid)) {
             BlockPos deathPos = state.deathLocations.get(uuid);
             BlockPos currentPos = player.getBlockPos();
-            
+
             double distanceSq = currentPos.getSquaredDistance(deathPos);
             double maxDistance = ConfigManager.getConfig().getSpectatorHeadrestrictRadius();
-            
+
             if (distanceSq > (maxDistance * maxDistance)) {
                 player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());
                 player.sendMessage(net.minecraft.text.Text.literal("You may not travel that far away from your death location").styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)), true);

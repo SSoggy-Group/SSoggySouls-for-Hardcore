@@ -35,7 +35,7 @@ public class SSoggySoulsMod implements ModInitializer {
 
     public static final String MOD_ID = "ssoggysouls";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    
+
     @Override
     public void onInitialize() {
         LOGGER.info("SSoggySouls Fabric is loading...");
@@ -75,14 +75,14 @@ public class SSoggySoulsMod implements ModInitializer {
         } else {
             LOGGER.info("Starting in MAIN server mode...");
             new MainServerListener(databaseManager);
-            
+
             // Phase 4: Init Built-in Hardcore Revive Features
             HeadDropListener.register(databaseManager);
             RevivalStructureListener.register(databaseManager);
             ExtraLifeManager.register(databaseManager);
             ReviveSkullManager.register(databaseManager);
             HeadEffectsTask.register();
-            
+
             // Phase 5: Initialize RevivalPlus DLC core
             GhostModeEvents.register(databaseManager);
             GhostBlockEvents.register(databaseManager);

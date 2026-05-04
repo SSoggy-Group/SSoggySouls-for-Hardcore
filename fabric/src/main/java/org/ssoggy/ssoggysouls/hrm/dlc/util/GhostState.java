@@ -15,7 +15,7 @@ public class GhostState extends PersistentState {
 
     private static final String DEATH_LOCATIONS = "deathLocations";
     private static final String DEATH_HOLDERS = "deathHolders";
-    
+
     public final Map<UUID, BlockPos> deathLocations = new HashMap<>();
     public final Map<UUID, UUID> deathHolders = new HashMap<>();
 
@@ -54,7 +54,7 @@ public class GhostState extends PersistentState {
 
     public static GhostState getServerState(MinecraftServer server) {
         PersistentStateManager persistentStateManager = server.getOverworld().getPersistentStateManager();
-        
+
         Type<GhostState> type = new Type<>(
                 GhostState::new,
                 GhostState::fromNbt,

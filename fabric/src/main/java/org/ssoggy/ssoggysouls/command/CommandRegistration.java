@@ -31,7 +31,7 @@ public class CommandRegistration {
             registerReviveCommand(dispatcher, plugin, db);
             registerSetLivesCommand(dispatcher, db);
             registerAdminLogCommand(dispatcher, plugin);
-            
+
             // Phase 5 DLC Commands
             registerObituariesCommand(dispatcher, db);
         });
@@ -46,7 +46,7 @@ public class CommandRegistration {
                     return 0;
                 }
                 ServerPlayerEntity player = source.getPlayer();
-                
+
                 CompletableFuture.runAsync(() -> {
                     PlayerData data = db.getPlayer(player.getUuid());
                     if (data != null) {
@@ -170,7 +170,7 @@ public class CommandRegistration {
         dispatcher.register(CommandManager.literal("obituaries")
             .executes(context -> {
                 ServerCommandSource source = context.getSource();
-                
+
                 CompletableFuture.runAsync(() -> {
                     java.util.List<PlayerData> deadPlayers = db.getDeadPlayers();
                     source.getServer().execute(() -> {
@@ -178,7 +178,7 @@ public class CommandRegistration {
                             source.sendMessage(net.minecraft.text.Text.literal("Nobody has died recently. The server is peaceful.").styled(s -> s.withColor(net.minecraft.util.Formatting.GREEN)));
                             return;
                         }
-                        
+
                         source.sendMessage(net.minecraft.text.Text.literal("--- Server Obituaries ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
                         for (PlayerData dead : deadPlayers) {
                             String time = "Recently";
@@ -190,7 +190,7 @@ public class CommandRegistration {
                         }
                     });
                 });
-                
+
                 return 1;
             })
         );
@@ -201,14 +201,14 @@ public class CommandRegistration {
             .requires(source -> source.hasPermissionLevel(3))
             .executes(context -> {
                 ServerCommandSource source = context.getSource();
-                
+
                 CompletableFuture.runAsync(() -> {
                     java.io.File logFile = new java.io.File(plugin.getDataFolder().toFile(), "admin_abuse.log");
                     if (!logFile.exists()) {
                         source.sendError(net.minecraft.text.Text.literal("No admin logs found."));
                         return;
                     }
-                    
+
                     try {
                         java.util.List<String> lines = java.nio.file.Files.readAllLines(logFile.toPath());
                         source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
@@ -220,7 +220,7 @@ public class CommandRegistration {
                         source.sendError(net.minecraft.text.Text.literal("Error reading admin log: " + e.getMessage()));
                     }
                 });
-                
+
                 return 1;
             })
         );

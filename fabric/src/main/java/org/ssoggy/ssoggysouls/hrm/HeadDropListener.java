@@ -51,13 +51,13 @@ public class HeadDropListener {
             // Create player head item
             ItemStack head = new ItemStack(Items.PLAYER_HEAD);
             head.set(DataComponentTypes.PROFILE, new ProfileComponent(player.getGameProfile()));
-            head.set(DataComponentTypes.CUSTOM_NAME, 
+            head.set(DataComponentTypes.CUSTOM_NAME,
                     Text.literal(player.getName().getString() + "'s Head")
                     .styled(style -> style.withColor(Formatting.YELLOW)));
 
             // Spawn item entity
             ItemEntity itemEntity = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, head);
-            itemEntity.setInvulnerable(true); 
+            itemEntity.setInvulnerable(true);
             world.spawnEntity(itemEntity);
             SSoggySoulsMod.LOGGER.info("Dropped {}'s head at {} {} {}", player.getName().getString(), pos.getX(), pos.getY(), pos.getZ());
         }

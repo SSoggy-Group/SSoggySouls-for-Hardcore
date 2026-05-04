@@ -116,12 +116,12 @@ public class ReviveSkullManager {
                     ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
                     realHead.set(DataComponentTypes.PROFILE, profile);
                     realHead.set(DataComponentTypes.CUSTOM_NAME, Text.literal(name + "'s Head").styled(s -> s.withColor(Formatting.YELLOW)));
-                    
+
                     if (!clickingPlayer.getInventory().insertStack(realHead)) {
                         clickingPlayer.dropItem(realHead, false);
                     }
                     clickingPlayer.sendMessage(Text.literal("Received " + name + "'s head.").styled(s -> s.withColor(Formatting.GREEN)), false);
-                    
+
                     if (clickingPlayer instanceof ServerPlayerEntity spe) {
                         spe.getServer().execute(spe::closeHandledScreen);
                     }
@@ -140,11 +140,11 @@ public class ReviveSkullManager {
     public static ItemStack createReviveSkullItem() {
         ItemStack item = new ItemStack(Items.PLAYER_HEAD);
         item.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Revive Skull").styled(s -> s.withColor(Formatting.LIGHT_PURPLE).withBold(true)));
-        
+
         NbtCompound customData = new NbtCompound();
         customData.putBoolean("ReviveSkull", true);
         item.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(customData));
-        
+
         return item;
     }
 

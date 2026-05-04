@@ -43,8 +43,8 @@ public class MainServerListener {
                 PlayerData data = db.getPlayer(uuid);
                 if (data == null) {
                     long graceMs = ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod());
-                    data = PlayerData.createNew(uuid, player.getName().getString(), 
-                            ConfigManager.getConfig().getDefaultLives(), graceMs); 
+                    data = PlayerData.createNew(uuid, player.getName().getString(),
+                            ConfigManager.getConfig().getDefaultLives(), graceMs);
                     db.savePlayer(data);
                 } else {
                     data.setUsername(player.getName().getString());
@@ -120,7 +120,7 @@ public class MainServerListener {
             GhostState state = GhostState.getServerState(player.getServer());
             state.deathLocations.put(player.getUuid(), player.getBlockPos());
             state.markDirty();
-            
+
             player.changeGameMode(GameMode.ADVENTURE);
             setGhostModeAttributes(player, true);
             GhostModeEvents.updateGhostStatus(player.getUuid(), true);
@@ -164,7 +164,7 @@ public class MainServerListener {
         player.getAbilities().allowFlying = false; // Ghosts cannot fly, they walk
         player.getAbilities().flying = false;
         player.sendAbilitiesUpdate();
-        
+
         // Also add custom ghost effects (darkness, cave sounds) from the DLC
         if (isGhost) {
             player.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(
