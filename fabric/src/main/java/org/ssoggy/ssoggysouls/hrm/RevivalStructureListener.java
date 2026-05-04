@@ -182,8 +182,8 @@ public class RevivalStructureListener {
         }
     }
 
-    public static void restoreAtStructure(ServerPlayerEntity revived, BlockPos spawnPos) {
-        revived.teleport(revived.getServerWorld(), spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 0, 0);
+    public static void restoreAtStructure(ServerPlayerEntity revived, net.minecraft.server.world.ServerWorld world, BlockPos spawnPos) {
+        revived.teleport(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 0, 0);
         revived.changeGameMode(GameMode.SURVIVAL);
         revived.sendMessage(MessageUtil.get("revive-success"), false);
 
