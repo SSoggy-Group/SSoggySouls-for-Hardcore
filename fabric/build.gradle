@@ -36,6 +36,9 @@ dependencies {
 
     // SQLite JDBC (nested into mod JAR via JiJ)
     include implementation("org.xerial:sqlite-jdbc:3.45.3.0")
+
+    // Mod Menu API (compile only, provided by Mod Menu mod at runtime)
+    modCompileOnlyApi "com.terraformersmc:modmenu:11.0.1"
 }
 
 processResources {
