@@ -4,7 +4,7 @@
 
 **Version 4.0.2** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
 
-A hardcore lives system plugin for Minecraft 1.21.X (Spigot/Paper/Purpur). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
+A hardcore lives system plugin for Minecraft 1.21.X for Spigot/Paper/Purpur (Fabric & Froge in Alpha fase). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
 
 > **[Complete Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Installation guides, configuration reference, commands, troubleshooting, and more!
 
