@@ -1,9 +1,11 @@
 package org.ssoggy.ssoggysouls.util;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TimeUtilTest {
+class TimeUtilTest {
 
     @Test
     public void testParseTimeToMillis_ValidComponents() {
@@ -46,15 +48,21 @@ public class TimeUtilTest {
         assertEquals(3600_000L + 1800_000L, TimeUtil.parseTimeToMillis("1h 30m"));
     }
 
-    @Test
-    public void testFormatTime() {
-        assertEquals("0s", TimeUtil.formatTime(-1000L));
-        assertEquals("0s", TimeUtil.formatTime(0L));
-        assertEquals("45s", TimeUtil.formatTime(45_000L));
-        assertEquals("1m", TimeUtil.formatTime(60_000L));
-        assertEquals("1m 30s", TimeUtil.formatTime(90_000L));
-        assertEquals("1h", TimeUtil.formatTime(3600_000L));
-        assertEquals("1h 30m", TimeUtil.formatTime(3600_000L + 1800_000L));
-        assertEquals("1h 30m 45s", TimeUtil.formatTime(3600_000L + 1800_000L + 45_000L));
+    @ParameterizedTest(name = "formatTime({0}ms) -> {1}")
+    @CsvSource({
+        "-1000,   0s",
+        "0,       0s",
+        "500,     0s",
+        "45000,   45s",
+        "120000,  2m",
+        "150000,  2m 30s",
+        "3600000, 1h",
+        "5400000, 1h 30m",
+        "5430000, 1h 30m 30s",
+        "3630000, 1h 30s"
+    })
+    void testFormatTime(long millis, String expected) {
+        assertEquals(expected, TimeUtil.formatTime(millis));
     }
 }
+
