@@ -307,7 +307,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to perform bulk death status check");
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to perform bulk death status check");
         }
 
         // If any UUIDs were not found in the DB, default to true
