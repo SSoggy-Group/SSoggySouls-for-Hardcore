@@ -20,8 +20,10 @@ package org.ssoggy.ssoggysouls.hrm.dlc.action;
 
 import io.papermc.paper.entity.LookAnchor;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.STATSENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic;
@@ -45,98 +47,16 @@ public class ReviveHelper {
     private static final String TAG_STAIR = "stair-blocktag";
     private static final String TAG_SOUL_SAND = "soul-sand-blocktag";
 
-    private record RitualPatternEntry(int dx, int dy, int dz, String tag, Set<Material> fixedMaterials) {
-        public Set<Material> getMaterials() {
-            if (fixedMaterials != null) return fixedMaterials;
-            return RPStatic.BLOCK_TAGS.getOrDefault(tag, Collections.emptySet());
-        }
-    }
-
-    private static final List<RitualPatternEntry> FULL_RITUAL_PATTERN = List.of(
-            new RitualPatternEntry(0, 0, 0, null, Set.of(Material.PLAYER_HEAD)),
-            new RitualPatternEntry(0, -1, 0, "fence-blocktag", null),
-            new RitualPatternEntry(0, -1, -1, TAG_FLOWER, null),
-            new RitualPatternEntry(0, -1, 1, TAG_FLOWER, null),
-            new RitualPatternEntry(-1, -1, 0, TAG_FLOWER, null),
-            new RitualPatternEntry(1, -1, 0, TAG_FLOWER, null),
-            new RitualPatternEntry(0, -2, 0, "ore-blocktag", null),
-            new RitualPatternEntry(0, -2, 2, TAG_STAIR, null),
-            new RitualPatternEntry(0, -2, -2, TAG_STAIR, null),
-            new RitualPatternEntry(2, -2, 0, TAG_STAIR, null),
-            new RitualPatternEntry(-2, -2, 0, TAG_STAIR, null),
-            new RitualPatternEntry(0, -2, 1, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(0, -2, -1, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(1, -2, 0, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(-1, -2, 0, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(-1, -2, -1, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(-1, -2, 1, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(1, -2, -1, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(1, -2, 1, TAG_SOUL_SAND, null)
-    );
-
-    private static final List<RitualPatternEntry> FAILED_RITUAL_PATTERN = List.of(
-            new RitualPatternEntry(0, 0, 0, null, Set.of(Material.PLAYER_HEAD)),
-            new RitualPatternEntry(0, -1, 0, "fence-blocktag", null),
-            new RitualPatternEntry(0, -2, 0, "ore-blocktag", null),
-            new RitualPatternEntry(0, -2, 2, TAG_STAIR, null),
-            new RitualPatternEntry(0, -2, -2, TAG_STAIR, null),
-            new RitualPatternEntry(2, -2, 0, TAG_STAIR, null),
-            new RitualPatternEntry(-2, -2, 0, TAG_STAIR, null),
-            new RitualPatternEntry(0, -2, 1, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(0, -2, -1, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(1, -2, 0, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(-1, -2, 0, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(-1, -2, -1, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(-1, -2, 1, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(1, -2, -1, TAG_SOUL_SAND, null),
-            new RitualPatternEntry(1, -2, 1, TAG_SOUL_SAND, null)
-    );
-
     private ReviveHelper() {}
-
-    private static boolean matchesRitualPattern(World world, Location pos, List<RitualPatternEntry> pattern) {
-        for (RitualPatternEntry entry : pattern) {
-            int targetX = pos.getBlockX() + entry.dx();
-            int targetY = pos.getBlockY() + entry.dy();
-            int targetZ = pos.getBlockZ() + entry.dz();
-
-            if (targetY <= world.getMinHeight()) {
-                return false;
-            }
-
-            Material blockType = world.getBlockAt(targetX, targetY, targetZ).getType();
-            if (!entry.getMaterials().contains(blockType)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static void removeRitualPattern(World world, Location pos, List<RitualPatternEntry> pattern) {
-        boolean keepBase = Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("keep-structure-base", false));
-
-        for (RitualPatternEntry entry : pattern) {
-            // Skip the base layer (dy = -2) if keep-structure-base is enabled
-            if (keepBase && entry.dy() == -2) continue;
-
-            int targetX = pos.getBlockX() + entry.dx();
-            int targetY = pos.getBlockY() + entry.dy();
-            int targetZ = pos.getBlockZ() + entry.dz();
-
-            if (targetY > world.getMinHeight() && targetY <= pos.getBlockY()) {
-                world.getBlockAt(targetX, targetY, targetZ).setType(Material.AIR);
-            }
-        }
-
-        world.playSound(pos, Sound.BLOCK_STONE_BREAK, 0.4F, 1.0F);
-    }
 
     public static boolean tryRevivePlayer(World world, Location pos, Player deadPlayer, Player alivePlayer) {
         RPStats aliveStats = new RPStats(alivePlayer.getUniqueId());
         aliveStats.incrementStat(STATSENUM.RITUAL_STARTED, 1);
 
-        if (!matchesRitualPattern(world, pos, FULL_RITUAL_PATTERN)) {
-            if (matchesRitualPattern(world, pos, FAILED_RITUAL_PATTERN)) {
+        Map<Location, Set<Material>> result = searchAround(world, pos, getRitualPattern(world));
+        if (result.isEmpty()) {
+            Map<Location, Set<Material>> incompleteResult = searchAround(world, pos, getFailedRitualPattern(world));
+            if (!incompleteResult.isEmpty()) {
                 spawnError("Something is missing...", world, pos, alivePlayer);
             }
             return false;
@@ -170,12 +90,12 @@ public class ReviveHelper {
         if (Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("ritual-lightning-strike", true))) {
             world.strikeLightning(new Location(world, pos.getBlockX() + 0.5, (double) pos.getBlockY() - 1, pos.getBlockZ() - 0.5));
         }
-        spawnPlayer(world, pos, deadPlayer, alivePlayer);
+        spawnPlayer(world, pos, result, deadPlayer, alivePlayer);
         return true;
     }
 
-    private static void spawnPlayer(World world, Location pos, Player deadPlayer, Player alivePlayer) {
-        removeRitualPattern(world, pos, FULL_RITUAL_PATTERN);
+    private static void spawnPlayer(World world, Location pos, Map<Location, Set<Material>> patternResult, Player deadPlayer, Player alivePlayer) {
+        breakRitualPatternBlocks(world, pos, patternResult);
 
         deadPlayer.teleport(new Location(world, pos.getBlockX() + 0.5, pos.getBlockY() - 0.95, pos.getBlockZ() + 0.5));
         deadPlayer.lookAt(alivePlayer, LookAnchor.FEET, LookAnchor.FEET);
@@ -202,5 +122,82 @@ public class ReviveHelper {
         alivePlayer.sendActionBar(Component.text(errorMessage));
         world.playSound(pos, Sound.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.4F, 20.0F);
         world.spawnParticle(Particle.SMOKE, new Location(world, pos.getBlockX() + 0.5, pos.getBlockY() + 0.5, pos.getBlockZ() + 0.5), 1);
+    }
+
+    private static Map<Location, Set<Material>> searchAround(World world, Location pos, Map<Location, Set<Material>> blockOffsetMap) {
+        for(Map.Entry<Location, Set<Material>> offset : blockOffsetMap.entrySet()) {
+            Location offsetKey = offset.getKey();
+            Location offsetPos = new Location(world, (double) pos.getBlockX() + offsetKey.getBlockX(), (double) pos.getBlockY() + offsetKey.getBlockY(), (double) pos.getBlockZ() + offsetKey.getBlockZ());
+            Stream<Material> blockTag = offset.getValue().stream();
+            if (offsetPos.getY() <= world.getMinHeight()) {
+                return Collections.emptyMap();
+            }
+
+            Block block = world.getBlockAt(offsetPos.toBlockLocation());
+            if (blockTag.noneMatch(blockType -> blockType == block.getType())) {
+                return Collections.emptyMap();
+            }
+        }
+
+        return blockOffsetMap;
+    }
+
+    private static void breakRitualPatternBlocks(World world, Location pos, Map<Location, Set<Material>> patternResult) {
+        int deadzoneY = Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("keep-structure-base", false)) ? 1 : 0;
+
+        for(Map.Entry<Location, Set<Material>> offset : patternResult.entrySet()) {
+            Location offsetKey = offset.getKey();
+            Location offsetPos = new Location(world, (double) pos.getBlockX() + offsetKey.getBlockX(), (double) pos.getBlockY() + offsetKey.getBlockY() + deadzoneY, (double) pos.getBlockZ() + offsetKey.getBlockZ());
+            if (offsetPos.getY() > world.getMinHeight() && offsetPos.getBlockY() <= pos.getBlockY()) {
+                Block block = world.getBlockAt(offsetPos);
+                block.setType(Material.AIR);
+            }
+        }
+
+        world.playSound(pos, Sound.BLOCK_STONE_BREAK, 0.4F, 1.0F);
+    }
+
+    private static Map<Location, Set<Material>> getRitualPattern(World world) {
+        Map<Location, Set<Material>> patternMap = new HashMap<>();
+        patternMap.put(new Location(world, 0.0F, 0.0F, 0.0F), Set.of(Material.PLAYER_HEAD));
+        patternMap.put(new Location(world, 0.0F, -1.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("fence-blocktag", Set.of()));
+        patternMap.put(new Location(world, 0.0F, -1.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_FLOWER, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -1.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_FLOWER, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -1.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_FLOWER, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -1.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_FLOWER, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("ore-blocktag", Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, 2.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, -2.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, -2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        return patternMap;
+    }
+
+    private static Map<Location, Set<Material>> getFailedRitualPattern(World world) {
+        Map<Location, Set<Material>> patternMap = new HashMap<>();
+        patternMap.put(new Location(world, 0.0F, 0.0F, 0.0F), Set.of(Material.PLAYER_HEAD));
+        patternMap.put(new Location(world, 0.0F, -1.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("fence-blocktag", Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault("ore-blocktag", Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, 2.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, -2.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, -2.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_STAIR, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 0.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, 0.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, -1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, -1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        patternMap.put(new Location(world, 1.0F, -2.0F, 1.0F), RPStatic.BLOCK_TAGS.getOrDefault(TAG_SOUL_SAND, Set.of()));
+        return patternMap;
     }
 }

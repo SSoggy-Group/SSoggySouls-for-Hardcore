@@ -1,10 +1,10 @@
 package org.ssoggy.ssoggysouls.util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.logging.Level;
 
 import org.bukkit.plugin.Plugin;
@@ -20,11 +20,6 @@ public class UpdateChecker {
     private static final String BORDER_TOP = "╔═══════════════════════════════════════════════════════════╗";
     private static final String BORDER_BOTTOM = "╚═══════════════════════════════════════════════════════════╝";
 
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .connectTimeout(Duration.ofSeconds(5))
-            .build();
-
     private final Plugin plugin;
     private final String currentVersion;
 
@@ -34,44 +29,46 @@ public class UpdateChecker {
     }
 
     public void checkForUpdates() {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(GITHUB_API))
-                .timeout(Duration.ofSeconds(5))
-                .header("User-Agent", "SSoggySouls-UpdateChecker")
-                .GET()
-                .build();
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                HttpURLConnection connection = (HttpURLConnection) URI.create(GITHUB_API).toURL().openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
+                connection.setRequestProperty("User-Agent", "SSoggySouls-UpdateChecker");
 
-        HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .whenComplete((response, throwable) -> {
-                    if (throwable != null) {
-                        plugin.getLogger().log(Level.WARNING, "Failed to check for updates: {0}", throwable.getMessage());
-                        return;
+                int responseCode = connection.getResponseCode();
+                if (responseCode != 200) {
+                    plugin.getLogger().log(Level.WARNING, "Failed to check for updates. HTTP response code: {0}",
+                            responseCode);
+                    return;
+                }
+
+                StringBuilder response = new StringBuilder();
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
                     }
+                }
 
-                    int responseCode = response.statusCode();
-                    if (responseCode != 200) {
-                        plugin.getLogger().log(Level.WARNING, "Failed to check for updates. HTTP response code: {0}",
-                                responseCode);
-                        return;
-                    }
+                JsonObject json = JsonParser.parseString(response.toString()).getAsJsonObject();
+                String latestVersion = json.get("tag_name").getAsString();
 
-                    try {
-                        JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-                        String latestVersion = json.get("tag_name").getAsString();
+                if (latestVersion.startsWith("v")) {
+                    latestVersion = latestVersion.substring(1);
+                }
 
-                        if (latestVersion.startsWith("v")) {
-                            latestVersion = latestVersion.substring(1);
-                        }
+                if (isNewerVersion(latestVersion, currentVersion)) {
+                    showUpdateNotification(latestVersion);
+                } else {
+                    plugin.getLogger().info("You are running the latest version!");
+                }
 
-                        if (isNewerVersion(latestVersion, currentVersion)) {
-                            showUpdateNotification(latestVersion);
-                        } else {
-                            plugin.getLogger().info("You are running the latest version!");
-                        }
-                    } catch (Exception e) {
-                        plugin.getLogger().log(Level.WARNING, "Failed to parse update response: {0}", e.getMessage());
-                    }
-                });
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to check for updates: {0}", e.getMessage());
+            }
+        });
     }
 
     private boolean isNewerVersion(String latest, String current) {

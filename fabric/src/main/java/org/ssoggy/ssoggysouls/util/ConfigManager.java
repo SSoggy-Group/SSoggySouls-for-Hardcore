@@ -24,7 +24,7 @@ public class ConfigManager {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 config = GSON.fromJson(reader, ModConfig.class);
             } catch (IOException e) {
-                org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.error("Failed to load config file", e);
+                e.printStackTrace();
                 config = new ModConfig();
                 save();
             }
@@ -38,7 +38,7 @@ public class ConfigManager {
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(config, writer);
         } catch (IOException e) {
-            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.error("Failed to save config file", e);
+            e.printStackTrace();
         }
     }
 
