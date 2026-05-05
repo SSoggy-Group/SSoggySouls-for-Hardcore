@@ -39,6 +39,13 @@ dependencies {
 
     // Mod Menu API (compile only, provided by Mod Menu mod at runtime)
     modCompileOnlyApi "com.terraformersmc:modmenu:11.0.1"
+
+    // JUnit 5 for testing
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
+}
+
+test {
+    useJUnitPlatform()
 }
 
 processResources {
