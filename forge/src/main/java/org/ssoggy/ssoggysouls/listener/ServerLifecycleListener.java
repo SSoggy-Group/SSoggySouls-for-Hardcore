@@ -16,8 +16,6 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
-@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class ServerLifecycleListener {
 
     private static DatabaseManager db;
