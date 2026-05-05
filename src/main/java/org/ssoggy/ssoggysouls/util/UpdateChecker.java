@@ -20,6 +20,11 @@ public class UpdateChecker {
     private static final String BORDER_TOP = "╔═══════════════════════════════════════════════════════════╗";
     private static final String BORDER_BOTTOM = "╚═══════════════════════════════════════════════════════════╝";
 
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
+
     private final Plugin plugin;
     private final String currentVersion;
 
@@ -29,18 +34,14 @@ public class UpdateChecker {
     }
 
     public void checkForUpdates() {
-        HttpClient client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofMillis(5000))
-                .build();
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(GITHUB_API))
-                .timeout(Duration.ofMillis(5000))
+                .timeout(Duration.ofSeconds(5))
                 .header("User-Agent", "SSoggySouls-UpdateChecker")
                 .GET()
                 .build();
 
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .whenComplete((response, throwable) -> {
                     if (throwable != null) {
                         plugin.getLogger().log(Level.WARNING, "Failed to check for updates: {0}", throwable.getMessage());
