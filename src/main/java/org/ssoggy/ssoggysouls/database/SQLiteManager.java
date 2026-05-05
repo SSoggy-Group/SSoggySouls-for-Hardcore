@@ -135,8 +135,11 @@ public class SQLiteManager implements DatabaseManager {
         if (!isValidIdentifier(columnName)) {
             throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
         }
-        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'.\\-]+$") || definition.contains("--")) {
-            throw new IllegalArgumentException("Invalid column definition: " + definition);
+        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'.\\-]+$")) {
+            throw new IllegalArgumentException("Invalid column definition characters: " + definition);
+        }
+        if (definition.contains("--")) {
+            throw new IllegalArgumentException("SQL comments are not allowed in column definition: " + definition);
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
