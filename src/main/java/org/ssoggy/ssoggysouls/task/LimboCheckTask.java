@@ -26,7 +26,7 @@ public class LimboCheckTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        List<UUID> onlinePlayers = collectOnlinePlayers();
+        Set<UUID> onlinePlayers = collectOnlinePlayers();
         if (onlinePlayers.isEmpty()) return;
 
         // Avoid string concatenation overhead unless debug is enabled
@@ -41,8 +41,8 @@ public class LimboCheckTask extends BukkitRunnable {
         }
     }
 
-    private List<UUID> collectOnlinePlayers() {
-        List<UUID> players = new ArrayList<>();
+    private Set<UUID> collectOnlinePlayers() {
+        Set<UUID> players = new java.util.HashSet<>();
         Set<UUID> deadPlayers = plugin.getLimboDeadPlayers();
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID uuid = player.getUniqueId();
@@ -53,10 +53,11 @@ public class LimboCheckTask extends BukkitRunnable {
         return players;
     }
 
-    private List<UUID> findRevivedPlayers(List<UUID> onlinePlayers) {
+    private List<UUID> findRevivedPlayers(Set<UUID> onlinePlayers) {
         List<UUID> toRelease = new ArrayList<>();
+        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(onlinePlayers);
         for (UUID uuid : onlinePlayers) {
-            if (!plugin.getDatabaseManager().isPlayerDead(uuid)) {
+            if (!deathStatuses.getOrDefault(uuid, true)) {
                 toRelease.add(uuid);
                 // Avoid string concatenation overhead unless debug is enabled
                 if (plugin.isDebugMode()) {

@@ -315,6 +315,8 @@ public class MySQLManager implements DatabaseManager {
         return true;
     }
 
+
+
     public boolean revivePlayer(UUID uuid, int livesToRestore) {
         String sql = UPDATE + tableName
                 + " SET is_dead = FALSE, lives = ? WHERE uuid = ? AND is_dead = TRUE";
