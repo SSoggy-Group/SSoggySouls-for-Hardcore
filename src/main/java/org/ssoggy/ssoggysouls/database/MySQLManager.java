@@ -66,7 +66,6 @@ public class MySQLManager implements DatabaseManager {
             String pass = plugin.getConfig().getString("database.password", "changeme");
             int poolSize = plugin.getConfig().getInt("database.pool-size", 5);
             tableName = plugin.getConfig().getString("database.table-name", "hardcore_players");
-
             if (!isValidIdentifier(tableName)) {
                 plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed: Invalid database.table-name '" + tableName + "'. Table name must consist only of alphanumeric characters and underscores.");
                 return false;
@@ -155,6 +154,12 @@ public class MySQLManager implements DatabaseManager {
     private void ensureColumn(Connection conn, String columnName, String definition) {
         if (!isValidIdentifier(columnName)) {
             throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
+        }
+        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'.\\-]+$")) {
+            throw new IllegalArgumentException("Invalid column definition characters: " + definition);
+        }
+        if (definition.contains("--")) {
+            throw new IllegalArgumentException("SQL comments are not allowed in column definition: " + definition);
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
