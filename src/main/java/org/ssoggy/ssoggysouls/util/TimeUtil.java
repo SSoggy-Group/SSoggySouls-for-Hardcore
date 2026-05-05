@@ -18,7 +18,7 @@ public final class TimeUtil {
 
         timeStr = timeStr.trim().toLowerCase();
 
-        if (timeStr.startsWith("-")) return -1;
+        if (timeStr.startsWith("-")) return -1; // reject negative inputs before regex can strip the sign
 
         try {
             long hours = Long.parseLong(timeStr);
