@@ -42,7 +42,25 @@ public class TimeUtilTest {
         assertEquals(-1, TimeUtil.parseTimeToMillis("invalid"));
         assertEquals(-1, TimeUtil.parseTimeToMillis("abc"));
         // if parts are valid it might parse them, let's see: TimeUtil doesn't strictly reject 'invalid1h' because matcher.find() looks for anywhere in string.
-        assertEquals(-1L, TimeUtil.parseTimeToMillis("invalid1h"));
+        assertEquals(-1, TimeUtil.parseTimeToMillis("invalid1h"));
+    }
+
+    @Test
+    public void testParseTimeToMillis_Overflow() {
+        assertEquals(-1, TimeUtil.parseTimeToMillis("100000000000000h"));
+        assertEquals(-1, TimeUtil.parseTimeToMillis("9223372036854775807h"));
+    }
+
+    @Test
+    public void testParseTimeToMillis_Negative() {
+        assertEquals(-1, TimeUtil.parseTimeToMillis("-1h"));
+        assertEquals(-1, TimeUtil.parseTimeToMillis("-1"));
+    }
+
+    @Test
+    public void testFormatTime_IncludesSecondsWithHours() {
+        assertEquals("1h 1s", TimeUtil.formatTime(3601_000L));
+        assertEquals("1h 1m 1s", TimeUtil.formatTime(3661_000L));
     }
 
 }
