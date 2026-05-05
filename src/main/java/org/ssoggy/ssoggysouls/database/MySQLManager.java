@@ -176,7 +176,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get player " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player " + uuid);
         }
         return null;
     }
