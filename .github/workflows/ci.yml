@@ -2,12 +2,9 @@ name: CI Tests
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
+    branches: ["main"]
 
 jobs:
   test:
@@ -21,7 +18,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
 
       - name: Setup Gradle
@@ -30,7 +27,12 @@ jobs:
       - name: Run Maven Tests
         run: mvn -B test
 
+      - name: Make Gradle Wrapper Executable
+        if: always()
+        run: chmod +x ./fabric/gradlew
+
       - name: Run Fabric Tests
+        if: always()
         run: |
           cd fabric
           ./gradlew test
