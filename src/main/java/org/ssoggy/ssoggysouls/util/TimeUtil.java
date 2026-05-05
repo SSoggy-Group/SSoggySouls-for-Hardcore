@@ -18,8 +18,11 @@ public final class TimeUtil {
 
         timeStr = timeStr.trim().toLowerCase();
 
+        if (timeStr.startsWith("-")) return -1; // reject negative inputs before regex can strip the sign
+
         try {
-            int hours = Integer.parseInt(timeStr);
+            long hours = Long.parseLong(timeStr);
+            if (hours < 0) return -1;
             return hours * 3600_000L;
         } catch (NumberFormatException e) {
             // not a plain integer
@@ -32,7 +35,12 @@ public final class TimeUtil {
 
         while (matcher.find()) {
             foundAny = true;
-            int value = Integer.parseInt(matcher.group(1));
+            long value;
+            try {
+                value = Long.parseLong(matcher.group(1));
+            } catch (NumberFormatException e) {
+                continue;
+            }
             String unit = matcher.group(2);
 
             totalMillis += switch (unit) {
@@ -63,7 +71,7 @@ public final class TimeUtil {
             if (!sb.isEmpty()) sb.append(" ");
             sb.append(minutes).append("m");
         }
-        if (seconds > 0 && hours == 0) {  
+        if (seconds > 0) {
             if (!sb.isEmpty()) sb.append(" ");
             sb.append(seconds).append("s");
         }

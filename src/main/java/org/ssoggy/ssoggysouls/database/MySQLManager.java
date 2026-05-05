@@ -50,6 +50,13 @@ public class MySQLManager implements DatabaseManager {
         this.plugin = plugin;
     }
 
+    // Package-private constructor for testing / dependency injection
+    MySQLManager(SSoggySouls plugin, HikariDataSource dataSource, String tableName) {
+        this.plugin = plugin;
+        this.dataSource = dataSource;
+        this.tableName = tableName;
+    }
+
     public boolean initialize() {
         try {
             String host = plugin.getConfig().getString("database.host", "localhost");
@@ -59,6 +66,11 @@ public class MySQLManager implements DatabaseManager {
             String pass = plugin.getConfig().getString("database.password", "changeme");
             int poolSize = plugin.getConfig().getInt("database.pool-size", 5);
             tableName = plugin.getConfig().getString("database.table-name", "hardcore_players");
+
+            if (!isValidIdentifier(tableName)) {
+                plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed: Invalid database.table-name '" + tableName + "'. Table name must consist only of alphanumeric characters and underscores.");
+                return false;
+            }
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
                     + "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true"
@@ -128,6 +140,10 @@ public class MySQLManager implements DatabaseManager {
         ensureColumn(conn, "grace_until", "BIGINT NOT NULL DEFAULT 0");
     }
 
+    private boolean isValidIdentifier(String identifier) {
+        return identifier != null && identifier.matches("^[a-zA-Z0-9_]+$");
+    }
+
     /**
      * ensures a column exists in the table, ignoring duplicate-column errors.
      *
@@ -137,6 +153,10 @@ public class MySQLManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
+        if (!isValidIdentifier(columnName)) {
+            throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
+        }
+
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sql);
@@ -236,6 +256,61 @@ public class MySQLManager implements DatabaseManager {
         }
     }
 
+
+    public java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids) {
+        java.util.Map<UUID, Boolean> result = new java.util.HashMap<>();
+        if (uuids == null || uuids.isEmpty()) return result;
+
+        java.util.Set<UUID> toFetch = new java.util.HashSet<>();
+        for (UUID uuid : uuids) {
+            CachedDeathStatus cached = deathStatusCache.get(uuid);
+            if (cached != null && !cached.isExpired()) {
+                result.put(uuid, cached.isDead);
+            } else {
+                toFetch.add(uuid);
+            }
+        }
+
+        if (toFetch.isEmpty()) {
+            return result;
+        }
+
+        // Default missing to true
+        for (UUID uuid : toFetch) {
+            result.put(uuid, true);
+        }
+
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < toFetch.size(); i++) {
+            placeholders.append("?");
+            if (i < toFetch.size() - 1) placeholders.append(",");
+        }
+
+        String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int i = 1;
+            for (UUID uuid : toFetch) {
+                ps.setString(i++, uuid.toString());
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UUID uuid = UUID.fromString(rs.getString("uuid"));
+                    boolean isDead = rs.getBoolean("is_dead");
+                    result.put(uuid, isDead);
+                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to bulk check death status");
+        }
+
+        return result;
+    }
+
     public boolean isPlayerDead(UUID uuid) {
         CachedDeathStatus cached = deathStatusCache.get(uuid);
         if (cached != null && !cached.isExpired()) {
@@ -261,64 +336,7 @@ public class MySQLManager implements DatabaseManager {
         return true;
     }
 
-    public java.util.Map<UUID, Boolean> arePlayersDead(List<UUID> uuids) {
-        java.util.Map<UUID, Boolean> results = new java.util.HashMap<>();
-        if (uuids == null || uuids.isEmpty()) {
-            return results;
-        }
 
-        List<UUID> toFetch = new java.util.ArrayList<>();
-        for (UUID uuid : uuids) {
-            CachedDeathStatus cached = deathStatusCache.get(uuid);
-            if (cached != null && !cached.isExpired()) {
-                results.put(uuid, cached.isDead);
-            } else {
-                toFetch.add(uuid);
-            }
-        }
-
-        if (toFetch.isEmpty()) {
-            return results;
-        }
-
-        StringBuilder placeholders = new StringBuilder();
-        for (int i = 0; i < toFetch.size(); i++) {
-            placeholders.append("?");
-            if (i < toFetch.size() - 1) {
-                placeholders.append(",");
-            }
-        }
-
-        String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            for (int i = 0; i < toFetch.size(); i++) {
-                ps.setString(i + 1, toFetch.get(i).toString());
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
-                    results.put(uuid, isDead);
-                }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to perform bulk death status check");
-        }
-
-        // If any UUIDs were not found in the DB, default to true
-        for (UUID uuid : toFetch) {
-            if (!results.containsKey(uuid)) {
-                results.put(uuid, true);
-            }
-        }
-
-        return results;
-    }
 
     public boolean revivePlayer(UUID uuid, int livesToRestore) {
         String sql = UPDATE + tableName
