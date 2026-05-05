@@ -50,7 +50,7 @@ public class RPStorage {
                     logger.log(Level.WARNING, "Storage file already exists: {0}", fileName);
                 }
             } catch (IOException e) {
-                logger.log(Level.SEVERE, "Could not create storage file: " + fileName, e);
+                logger.log(Level.SEVERE, "Could not create storage file: " + file.getPath(), e);
             }
         }
 
