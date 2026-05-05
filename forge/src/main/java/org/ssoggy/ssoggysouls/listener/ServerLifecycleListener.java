@@ -50,7 +50,14 @@ public class ServerLifecycleListener {
     }
 
     private static void handleJoinSync(ServerPlayer player, PlayerData data) {
-        // Pending revival logic is handled here, omitted complex pending for Phase 3
+        GlobalPos pending = org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.consumePendingRevival(player.getUUID());
+        if (pending != null) {
+            setGhostModeAttributes(player, false);
+            ServerLevel targetWorld = player.server.getLevel(pending.dimension());
+            org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.restoreAtStructure(player, targetWorld != null ? targetWorld : player.serverLevel(), pending.pos());
+            return;
+        }
+
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
                 // ServerTransferUtil.sendToLimbo(player); // Ported in Phase 6
