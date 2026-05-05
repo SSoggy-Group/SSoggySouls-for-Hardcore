@@ -284,7 +284,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.debug("Failed to bulk check death status");
+            SSoggySoulsMod.LOGGER.warn("Failed to bulk check death status", e);
         }
 
         return result;
