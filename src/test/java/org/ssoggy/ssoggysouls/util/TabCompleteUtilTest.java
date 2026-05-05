@@ -12,12 +12,10 @@ class TabCompleteUtilTest {
 
     @Test
     void testFilterStartsWith_NormalMatch() {
-        List<String> options = Arrays.asList("apple", "banana", "apricot", "cherry");
+        List<String> options = List.of("apple", "banana", "apricot", "cherry");
         List<String> result = TabCompleteUtil.filterStartsWith(options, "ap");
 
-        assertEquals(2, result.size());
-        assertTrue(result.contains("apple"));
-        assertTrue(result.contains("apricot"));
+        assertEquals(List.of("apple", "apricot"), result);
     }
 
     @Test
