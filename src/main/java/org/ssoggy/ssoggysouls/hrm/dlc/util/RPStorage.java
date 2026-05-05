@@ -65,7 +65,7 @@ public class RPStorage {
         try {
             config.save(file);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save configuration to " + file.getName(), e);
+            logger.log(Level.SEVERE, "Could not save configuration to " + file.getPath(), e);
         }
     }
 
