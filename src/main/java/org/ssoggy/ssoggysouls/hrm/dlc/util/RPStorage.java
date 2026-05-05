@@ -26,16 +26,19 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RPStorage {
 
-    private final JavaPlugin plugin;
     private final File file;
+    private final Logger logger;
     private FileConfiguration config;
 
 
     public RPStorage(JavaPlugin plugin, String fileName) {
-        this.plugin = plugin;
+        this.logger = plugin.getLogger();
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdirs();
         }
@@ -45,10 +48,10 @@ public class RPStorage {
         if (!file.exists()) {
             try {
                 if (!file.createNewFile()) {
-                    plugin.getLogger().log(java.util.logging.Level.WARNING, "Storage file already exists or could not be created: {0}", fileName);
+                    logger.log(Level.WARNING, "Storage file already exists: {0}", fileName);
                 }
             } catch (IOException e) {
-                plugin.getLogger().log(java.util.logging.Level.SEVERE, "Could not create storage file: " + fileName, e);
+                logger.log(Level.SEVERE, "Could not create storage file: " + file.getPath(), e);
             }
         }
 
@@ -63,7 +66,7 @@ public class RPStorage {
         try {
             config.save(file);
         } catch (IOException e) {
-            plugin.getLogger().log(java.util.logging.Level.SEVERE, "Could not save storage file: " + file.getName(), e);
+            logger.log(Level.SEVERE, "Could not save configuration to " + file.getPath(), e);
         }
     }
 
@@ -84,7 +87,7 @@ public class RPStorage {
 
     public boolean hasValue(String table, String key, Object value) {
         String path = table + "." + key;
-        return config.getString(path, null) == value;
+        return Objects.equals(config.getString(path, null), value);
     }
 
     public boolean hasValue(String table, String key) {
