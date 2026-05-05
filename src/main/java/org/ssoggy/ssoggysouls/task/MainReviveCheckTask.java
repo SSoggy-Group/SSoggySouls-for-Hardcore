@@ -27,49 +27,36 @@ public class MainReviveCheckTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        List<UUID> spectators = collectDeadSpectators();
+        java.util.Set<UUID> spectators = new java.util.HashSet<>();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getGameMode() == GameMode.SPECTATOR
+                    && !player.hasPermission(PERM_BYPASS)) {
+                spectators.add(player.getUniqueId());
+            }
+        }
+
         if (spectators.isEmpty()) return;
 
-        // Avoid string concatenation overhead unless debug is enabled
         if (plugin.isDebugMode()) {
             plugin.debug("Main revive check: scanning " + spectators.size() + " spectator(s)...");
         }
 
-        List<UUID> revived = findRevivedPlayers(spectators);
-
-        if (!revived.isEmpty()) {
-            Bukkit.getScheduler().runTask(plugin, () -> restoreAll(revived));
-        }
-    }
-
-    private List<UUID> collectDeadSpectators() {
-        List<UUID> deadSpectatorUuids = new ArrayList<>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getGameMode() == GameMode.SPECTATOR
-                    && !player.hasPermission(PERM_BYPASS)) {
-                UUID uuid = player.getUniqueId();
-                // Check the database (with its internal cache) to determine if the player is dead
-                if (plugin.getDatabaseManager().isPlayerDead(uuid)) {
-                    deadSpectatorUuids.add(uuid);
-                }
-            }
-        }
-        return deadSpectatorUuids;
-    }
-
-    private List<UUID> findRevivedPlayers(List<UUID> spectators) {
+        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(spectators);
         List<UUID> revived = new ArrayList<>();
+
         for (UUID uuid : spectators) {
-            // Check if dead spectator is no longer dead (i.e., revived)
-            if (!plugin.getDatabaseManager().isPlayerDead(uuid)) {
+            Boolean isDead = deathStatuses.get(uuid);
+            if (isDead != null && !isDead) {
                 revived.add(uuid);
-                // Avoid string concatenation overhead unless debug is enabled
                 if (plugin.isDebugMode()) {
                     plugin.debug("Spectator " + uuid + " is no longer dead in DB, restoring...");
                 }
             }
         }
-        return revived;
+
+        if (!revived.isEmpty()) {
+            Bukkit.getScheduler().runTask(plugin, () -> restoreAll(revived));
+        }
     }
 
     private void restoreAll(List<UUID> uuids) {
