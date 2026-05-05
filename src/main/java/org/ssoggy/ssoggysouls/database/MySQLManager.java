@@ -285,7 +285,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to bulk check death status");
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to bulk check death status");
         }
 
         return result;
