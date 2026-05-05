@@ -70,11 +70,25 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- JUnit 5 -->
+        <!-- JUnit Jupiter (JUnit 5) for testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.10.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Mockito for mocking dependencies -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.5.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.5.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -96,7 +110,6 @@
                     <release>21</release>
                 </configuration>
             </plugin>
-
             <!-- Shade dependencies into the final JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
