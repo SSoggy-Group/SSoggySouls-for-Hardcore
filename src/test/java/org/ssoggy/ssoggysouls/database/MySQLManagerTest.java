@@ -331,7 +331,7 @@ public class MySQLManagerTest {
         PlayerData data = mySQLManager.getPlayer(testUuid);
 
         assertNull(data);
-        verify(logger).log(eq(java.util.logging.Level.WARNING), any(java.util.function.Supplier.class));
+        verify(logger).log(eq(java.util.logging.Level.WARNING), any(Throwable.class), any(java.util.function.Supplier.class));
     }
 
     @Test
@@ -341,7 +341,7 @@ public class MySQLManagerTest {
 
         mySQLManager.savePlayer(data);
 
-        verify(logger).log(eq(java.util.logging.Level.WARNING), any(java.util.function.Supplier.class));
+        verify(logger).log(eq(java.util.logging.Level.WARNING), any(Throwable.class), any(java.util.function.Supplier.class));
     }
 
     @Test
@@ -351,7 +351,7 @@ public class MySQLManagerTest {
         boolean isDead = mySQLManager.isPlayerDead(testUuid);
 
         assertTrue(isDead); // Should default to true on error
-        verify(logger).log(eq(java.util.logging.Level.WARNING), any(java.util.function.Supplier.class));
+        verify(logger).log(eq(java.util.logging.Level.WARNING), any(Throwable.class), any(java.util.function.Supplier.class));
     }
 
     @Test
@@ -361,6 +361,6 @@ public class MySQLManagerTest {
         String version = mySQLManager.getPluginVersion("main");
 
         assertNull(version);
-        verify(logger).log(eq(java.util.logging.Level.WARNING), any(java.util.function.Supplier.class));
+        verify(logger).log(eq(java.util.logging.Level.WARNING), any(Throwable.class), any(java.util.function.Supplier.class));
     }
 }

@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -58,7 +57,7 @@ class TabCompleteUtilTest {
     @Test
     void testGetOnlinePlayerNames_WithPrefix() {
         // Setup
-        Collection<? extends Player> players = Arrays.asList(
+        Collection<? extends Player> players = List.of(
                 createMockPlayer("Alice"),
                 createMockPlayer("Alex"),
                 createMockPlayer("Bob")
@@ -69,15 +68,13 @@ class TabCompleteUtilTest {
         List<String> result = TabCompleteUtil.getOnlinePlayerNames("al");
 
         // Verify
-        assertEquals(2, result.size());
-        assertTrue(result.contains("Alice"));
-        assertTrue(result.contains("Alex"));
+        assertEquals(List.of("Alice", "Alex"), result);
     }
 
     @Test
     void testGetOnlinePlayerNames_CaseInsensitive() {
         // Setup
-        Collection<? extends Player> players = Arrays.asList(
+        Collection<? extends Player> players = List.of(
                 createMockPlayer("Charlie"),
                 createMockPlayer("david")
         );
@@ -88,17 +85,14 @@ class TabCompleteUtilTest {
         List<String> result2 = TabCompleteUtil.getOnlinePlayerNames("Da");
 
         // Verify
-        assertEquals(1, result1.size());
-        assertEquals("Charlie", result1.get(0));
-
-        assertEquals(1, result2.size());
-        assertEquals("david", result2.get(0));
+        assertEquals(List.of("Charlie"), result1);
+        assertEquals(List.of("david"), result2);
     }
 
     @Test
     void testGetOnlinePlayerNames_NoMatches() {
         // Setup
-        Collection<? extends Player> players = Arrays.asList(
+        Collection<? extends Player> players = List.of(
                 createMockPlayer("Eve"),
                 createMockPlayer("Frank")
         );
@@ -132,38 +126,42 @@ class TabCompleteUtilTest {
 
     @Test
     void testFilterStartsWith_WithPrefix() {
-        List<String> options = Arrays.asList("apple", "apricot", "banana");
+        List<String> options = List.of("apple", "apricot", "banana");
         List<String> result = TabCompleteUtil.filterStartsWith(options, "ap");
-        assertEquals(2, result.size());
-        assertTrue(result.contains("apple"));
-        assertTrue(result.contains("apricot"));
+        assertEquals(List.of("apple", "apricot"), result);
     }
 
     @Test
     void testFilterStartsWith_CaseInsensitive() {
-        List<String> options = Arrays.asList("Apple", "apricot", "BANANA");
+        List<String> options = List.of("Apple", "apricot", "BANANA");
         List<String> result1 = TabCompleteUtil.filterStartsWith(options, "AP");
         List<String> result2 = TabCompleteUtil.filterStartsWith(options, "ba");
 
-        assertEquals(2, result1.size());
-        assertTrue(result1.contains("Apple"));
-        assertTrue(result1.contains("apricot"));
-
-        assertEquals(1, result2.size());
-        assertTrue(result2.contains("BANANA"));
+        assertEquals(List.of("Apple", "apricot"), result1);
+        assertEquals(List.of("BANANA"), result2);
     }
 
     @Test
     void testFilterStartsWith_NoMatches() {
-        List<String> options = Arrays.asList("apple", "banana");
+        List<String> options = List.of("apple", "banana");
         List<String> result = TabCompleteUtil.filterStartsWith(options, "z");
         assertTrue(result.isEmpty());
     }
 
     @Test
     void testFilterStartsWith_EmptyOptions() {
-        List<String> options = Arrays.asList();
+        List<String> options = List.of();
         List<String> result = TabCompleteUtil.filterStartsWith(options, "a");
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testFilterStartsWith_SpecialCharacters() {
+        List<String> options = List.of("apple pie", "banana-split", "cherry, sour", "apple-cider");
+        List<String> result1 = TabCompleteUtil.filterStartsWith(options, "apple ");
+        List<String> result2 = TabCompleteUtil.filterStartsWith(options, "banana-");
+
+        assertEquals(List.of("apple pie"), result1);
+        assertEquals(List.of("banana-split"), result2);
     }
 }
