@@ -5,6 +5,7 @@
 
 
 A hardcore lives system plugin. When you die enough times, you get exiled to a Limbo server (multi-server) or enter spectator mode (single-server) until your teammates revive you.
+> **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
 > **[Read the Full Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Complete installation guides, configuration reference, troubleshooting, and more!
 
