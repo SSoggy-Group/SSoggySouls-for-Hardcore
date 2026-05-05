@@ -2,9 +2,9 @@
 
 ![SSoggySouls Banner](https://cdn.modrinth.com/data/Pb03qu6T/images/48a03bf24103dde408dbbcad653a3936b5f5255a.png)
 
-**Version 3.2.6** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
+**Version 4.0.2** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
 
-A hardcore lives system plugin for Minecraft 1.21.X (Spigot/Paper/Purpur). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
+A hardcore lives system plugin for Minecraft 1.21.X for Spigot/Paper/Purpur (Fabric & Froge in Alpha fase). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
 
 > **[Complete Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Installation guides, configuration reference, commands, troubleshooting, and more!
 
@@ -345,15 +345,15 @@ After setup, test everything:
 
 ### Step 1: Download
 
-Download the latest release (`SSoggySouls-3.2.6.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
+Download the latest release (`SSoggySouls-4.0.2.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
 
 ### Step 2: Install Plugin
 
-Place `SSoggySouls-3.2.6.jar` in the `plugins/` folder of **both** servers:
+Place `SSoggySouls-4.0.2.jar` in the `plugins/` folder of **both** servers:
 
-- Main server: `/plugins/SSoggySouls-3.2.6.jar`
+- Main server: `/plugins/SSoggySouls-4.0.2.jar`
 
-- Limbo server: `/plugins/SSoggySouls-3.2.6.jar`
+- Limbo server: `/plugins/SSoggySouls-4.0.2.jar`
 
 ### Step 3: Generate Config
 
@@ -890,7 +890,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 
 ## Changelog
 
-### v3.2.6
+### v4.0.2
 
 **What's Changed:**
 
@@ -904,7 +904,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 
 - **Rename: PolarSouls to SSoggySouls** - Finished renaming everything internally. No config changes needed.
 
-**Full Changelog:** [v1...v3.2.6](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v3.2.6)
+**Full Changelog:** [v1...v4.0.2](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v4.0.2)
 
 ## Credits
 

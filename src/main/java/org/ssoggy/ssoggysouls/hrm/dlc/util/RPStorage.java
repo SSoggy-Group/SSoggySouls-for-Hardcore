@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,7 +87,7 @@ public class RPStorage {
 
     public boolean hasValue(String table, String key, Object value) {
         String path = table + "." + key;
-        return config.getString(path, null) == value;
+        return Objects.equals(config.getString(path, null), value);
     }
 
     public boolean hasValue(String table, String key) {

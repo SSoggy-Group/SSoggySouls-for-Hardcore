@@ -1,4 +1,4 @@
-name: Build Plugin Jar And Tag Release
+name: Build Plugin/Mod Jars And Tag Release
 
 'on':
   push:
@@ -29,8 +29,16 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Build with Maven
         run: mvn -B clean package
+
+      - name: Build with Gradle
+        run: |
+          cd fabric
+          ./gradlew build
 
       - name: Select plugin jar
         id: package
@@ -64,16 +72,30 @@ jobs:
 
           JAR_NAME="$(basename "${JAR_PATH}")"
 
+          # Find fabric jar
+          FABRIC_JAR_PATH="$(ls fabric/build/libs/*.jar 2>/dev/null | grep -v sources | head -n 1 || true)"
+          if [[ -z "${FABRIC_JAR_PATH}" ]]; then
+            echo "No fabric jar found in fabric/build/libs/."
+            exit 1
+          fi
+
           echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
           echo "tag=${TAG_NAME}" >> "${GITHUB_OUTPUT}"
           echo "jar=${JAR_PATH}" >> "${GITHUB_OUTPUT}"
           echo "jar_name=${JAR_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "fabric_jar=${FABRIC_JAR_PATH}" >> "${GITHUB_OUTPUT}"
 
-      - name: Upload build artifact
+      - name: Upload plugin build artifact
         uses: actions/upload-artifact@v4
         with:
           name: plugin-jar
           path: ${{ steps.package.outputs.jar }}
+
+      - name: Upload fabric build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fabric-jar
+          path: ${{ steps.package.outputs.fabric_jar }}
 
       - name: Create tag release with jar
         uses: softprops/action-gh-release@v2
@@ -83,4 +105,6 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
-          files: ${{ steps.package.outputs.jar }}
+          files: |
+            ${{ steps.package.outputs.jar }}
+            ${{ steps.package.outputs.fabric_jar }}
