@@ -24,6 +24,7 @@ import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
 import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
+import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 
 @Mod(SSoggySoulsMod.MODID)
 public class SSoggySoulsMod {
@@ -62,14 +63,21 @@ public class SSoggySoulsMod {
 
         // Set Database instances
         CommandRegistration.setDatabase(databaseManager);
-        ServerLifecycleListener.setDatabase(databaseManager);
+        
+        if (ConfigManager.getConfig().isLimboServer()) {
+            MinecraftForge.EVENT_BUS.register(LimboServerListener.class);
+            LimboServerListener.setDatabase(databaseManager);
+        } else {
+            MinecraftForge.EVENT_BUS.register(ServerLifecycleListener.class);
+            ServerLifecycleListener.setDatabase(databaseManager);
 
-        ExtraLifeManager.register(databaseManager);
-        ReviveSkullManager.register(databaseManager);
-        HeadEffectsTask.register();
+            ExtraLifeManager.register(databaseManager);
+            ReviveSkullManager.register(databaseManager);
+            HeadEffectsTask.register();
 
-        GhostModeEvents.register(databaseManager);
-        GhostBlockEvents.register(databaseManager);
+            GhostModeEvents.register(databaseManager);
+            GhostBlockEvents.register(databaseManager);
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
