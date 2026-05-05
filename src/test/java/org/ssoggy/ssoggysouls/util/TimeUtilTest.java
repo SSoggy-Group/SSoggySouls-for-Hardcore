@@ -31,6 +31,22 @@ public class TimeUtilTest {
     }
 
     @Test
+    public void testParseTimeToMillis_EdgeCases() {
+        // overflow: values exceeding Integer.MAX_VALUE are handled via Long.parseLong
+        assertEquals(3000000000L * 3600_000L, TimeUtil.parseTimeToMillis("3000000000h"));
+        // negative plain integer is invalid
+        assertEquals(-1L, TimeUtil.parseTimeToMillis("-5"));
+        // negative component: regex won't match '-', so no components found
+        assertEquals(-1L, TimeUtil.parseTimeToMillis("-1h"));
+        // zero hours is a valid zero-length duration
+        assertEquals(0L, TimeUtil.parseTimeToMillis("0"));
+        // partial match: valid components are summed, unrecognised tokens are skipped
+        assertEquals(3600_000L + 180_000L, TimeUtil.parseTimeToMillis("1h2x3m"));
+        // spaces between components are allowed
+        assertEquals(3600_000L + 1800_000L, TimeUtil.parseTimeToMillis("1h 30m"));
+    }
+
+    @Test
     public void testFormatTime() {
         assertEquals("0s", TimeUtil.formatTime(-1000L));
         assertEquals("0s", TimeUtil.formatTime(0L));
@@ -39,6 +55,6 @@ public class TimeUtilTest {
         assertEquals("1m 30s", TimeUtil.formatTime(90_000L));
         assertEquals("1h", TimeUtil.formatTime(3600_000L));
         assertEquals("1h 30m", TimeUtil.formatTime(3600_000L + 1800_000L));
-        assertEquals("1h 30m", TimeUtil.formatTime(3600_000L + 1800_000L + 45_000L)); // seconds are omitted if hours > 0
+        assertEquals("1h 30m 45s", TimeUtil.formatTime(3600_000L + 1800_000L + 45_000L));
     }
 }
