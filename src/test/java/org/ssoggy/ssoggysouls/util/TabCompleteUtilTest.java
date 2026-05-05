@@ -20,12 +20,10 @@ class TabCompleteUtilTest {
 
     @Test
     void testFilterStartsWith_CaseInsensitiveMatch() {
-        List<String> options = Arrays.asList("Apple", "banana", "APRICOT", "cherry");
+        List<String> options = List.of("Apple", "banana", "APRICOT", "cherry");
         List<String> result = TabCompleteUtil.filterStartsWith(options, "aP");
 
-        assertEquals(2, result.size());
-        assertTrue(result.contains("Apple"));
-        assertTrue(result.contains("APRICOT"));
+        assertEquals(List.of("Apple", "APRICOT"), result);
     }
 
     @Test
