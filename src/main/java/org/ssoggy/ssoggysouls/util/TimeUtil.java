@@ -19,14 +19,16 @@ public final class TimeUtil {
 
         timeStr = timeStr.trim().toLowerCase();
 
+        if (timeStr.startsWith("-")) return -1; // reject negative inputs before regex can strip the sign
+
         try {
             long hours = Long.parseLong(timeStr);
-            if (hours < 0) {
-                return -1;
-            }
+            if (hours < 0) return -1;
             return Math.multiplyExact(hours, 3600_000L);
-        } catch (NumberFormatException | ArithmeticException e) {
-            // not a plain integer or overflow
+        } catch (NumberFormatException e) {
+            // not a plain integer
+        } catch (ArithmeticException e) {
+            return -1; // overflow
         }
 
         if (!TIME_PATTERN.matcher(timeStr).matches()) {
@@ -38,13 +40,11 @@ public final class TimeUtil {
         long totalMillis = 0;
         boolean foundAny = false;
 
-        try {
-            while (matcher.find()) {
-                foundAny = true;
+        while (matcher.find()) {
+            foundAny = true;
+            try {
                 long value = Long.parseLong(matcher.group(1));
-                if (value < 0) {
-                    return -1;
-                }
+                if (value < 0) return -1;
                 String unit = matcher.group(2);
 
                 long addedMillis = switch (unit) {
@@ -54,9 +54,11 @@ public final class TimeUtil {
                     default -> 0L;
                 };
                 totalMillis = Math.addExact(totalMillis, addedMillis);
+            } catch (NumberFormatException e) {
+                continue;
+            } catch (ArithmeticException e) {
+                return -1; // overflow
             }
-        } catch (NumberFormatException | ArithmeticException e) {
-            return -1; // overflow
         }
 
         return foundAny ? totalMillis : -1;
