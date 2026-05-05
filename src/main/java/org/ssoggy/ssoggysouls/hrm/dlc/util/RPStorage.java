@@ -26,14 +26,18 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RPStorage {
 
     private final File file;
+    private final Logger logger;
     private FileConfiguration config;
 
 
     public RPStorage(JavaPlugin plugin, String fileName) {
+        this.logger = plugin.getLogger();
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdirs();
         }
@@ -43,10 +47,10 @@ public class RPStorage {
         if (!file.exists()) {
             try {
                 if (!file.createNewFile()) {
-                    plugin.getLogger().log(java.util.logging.Level.WARNING, "Storage file already exists or could not be created: {0}", fileName);
+                    logger.log(Level.WARNING, "Storage file already exists or could not be created: {0}", fileName);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, "Could not create storage file: " + fileName, e);
             }
         }
 
@@ -61,7 +65,7 @@ public class RPStorage {
         try {
             config.save(file);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Could not save configuration to " + file.getName(), e);
         }
     }
 
