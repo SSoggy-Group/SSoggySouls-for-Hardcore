@@ -3,7 +3,6 @@ package org.ssoggy.ssoggysouls.database;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -15,7 +14,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 import java.util.logging.Logger;
-import java.lang.reflect.Field;
 import com.zaxxer.hikari.HikariDataSource;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,8 +52,6 @@ public class MySQLManagerTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        MockitoAnnotations.openMocks(this);
-
         when(plugin.getConfig()).thenReturn(config);
         when(plugin.getLogger()).thenReturn(logger);
 
@@ -64,16 +60,7 @@ public class MySQLManagerTest {
         when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(connection.createStatement()).thenReturn(statement);
 
-        mySQLManager = new MySQLManager(plugin);
-
-        // Inject mock datasource and table name via reflection to bypass initialization
-        Field dataSourceField = MySQLManager.class.getDeclaredField("dataSource");
-        dataSourceField.setAccessible(true);
-        dataSourceField.set(mySQLManager, dataSource);
-
-        Field tableNameField = MySQLManager.class.getDeclaredField("tableName");
-        tableNameField.setAccessible(true);
-        tableNameField.set(mySQLManager, "hardcore_players");
+        mySQLManager = new MySQLManager(plugin, dataSource, "hardcore_players");
     }
 
     @Test
@@ -335,6 +322,7 @@ public class MySQLManagerTest {
         // Verify metadata table was created
         verify(statement).execute(anyString());
     }
+
     @Test
     public void testGetPlayer_SQLException() throws SQLException {
         when(preparedStatement.executeQuery()).thenThrow(new SQLException("Mock DB Error"));

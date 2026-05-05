@@ -50,6 +50,13 @@ public class MySQLManager implements DatabaseManager {
         this.plugin = plugin;
     }
 
+    // Package-private constructor for testing / dependency injection
+    MySQLManager(SSoggySouls plugin, HikariDataSource dataSource, String tableName) {
+        this.plugin = plugin;
+        this.dataSource = dataSource;
+        this.tableName = tableName;
+    }
+
     public boolean initialize() {
         try {
             String host = plugin.getConfig().getString("database.host", "localhost");
