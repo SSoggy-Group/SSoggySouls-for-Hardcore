@@ -1,22 +1,19 @@
 package org.ssoggy.ssoggysouls.hrm;
 
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.world.World;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
@@ -24,41 +21,38 @@ import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 import java.util.concurrent.CompletableFuture;
-
 public class ExtraLifeManager {
 
-    private ExtraLifeManager() {
-        // Utility class
+    private static DatabaseManager db;
+
+    private ExtraLifeManager() {}
+
+    public static void register(DatabaseManager database) {
+        db = database;
     }
 
-    public static void register(DatabaseManager db) {
-        UseItemCallback.EVENT.register((player, world, hand) -> handleExtraLifeUse(player, world, hand, db));
-    }
-
-    private static TypedActionResult<ItemStack> handleExtraLifeUse(PlayerEntity player, World world, Hand hand, DatabaseManager db) {
-        if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) {
-            return TypedActionResult.pass(player.getStackInHand(hand));
+    @SubscribeEvent
+    public static void onItemRightClick(PlayerInteractEvent.RightClickItem event) {
+        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer serverPlayer)) {
+            return;
         }
 
-        ItemStack stack = player.getStackInHand(hand);
+        ItemStack stack = event.getItemStack();
         if (!isExtraLifeItem(stack)) {
-            return TypedActionResult.pass(stack);
+            return;
         }
 
-        // Consume the item immediately to prevent race conditions where
-        // the player drops it or uses it multiple times before the async db call
-        // completes.
+        event.setCanceled(true);
+
         if (!serverPlayer.isCreative()) {
-            stack.decrement(1);
+            stack.shrink(1);
         }
 
-        CompletableFuture.runAsync(() -> processExtraLife(serverPlayer, db));
-
-        return TypedActionResult.consume(stack);
+        CompletableFuture.runAsync(() -> processExtraLife(serverPlayer));
     }
 
-    private static void processExtraLife(ServerPlayerEntity serverPlayer, DatabaseManager db) {
-        PlayerData data = getOrCreatePlayerData(serverPlayer, db);
+    private static void processExtraLife(ServerPlayer serverPlayer) {
+        PlayerData data = getOrCreatePlayerData(serverPlayer);
 
         if (data.isDead()) {
             handleFailedUse(serverPlayer, "extra-life-dead");
@@ -71,63 +65,60 @@ public class ExtraLifeManager {
             return;
         }
 
-        grantExtraLife(serverPlayer, db, data.getUuid(), data.getLives());
+        grantExtraLife(serverPlayer, data.getUuid(), data.getLives());
     }
 
-    private static PlayerData getOrCreatePlayerData(ServerPlayerEntity serverPlayer, DatabaseManager db) {
-        PlayerData data = db.getPlayer(serverPlayer.getUuid());
+    private static PlayerData getOrCreatePlayerData(ServerPlayer serverPlayer) {
+        PlayerData data = db.getPlayer(serverPlayer.getUUID());
         if (data == null) {
-            data = PlayerData.createNew(serverPlayer.getUuid(), serverPlayer.getName().getString(),
+            data = PlayerData.createNew(serverPlayer.getUUID(), serverPlayer.getScoreboardName(),
                     ConfigManager.getConfig().getDefaultLives(), 0);
             db.savePlayer(data);
         }
         return data;
     }
 
-    private static void handleFailedUse(ServerPlayerEntity serverPlayer, String messageKey) {
+    private static void handleFailedUse(ServerPlayer serverPlayer, String messageKey) {
         serverPlayer.server.execute(() -> {
-            serverPlayer.sendMessage(MessageUtil.get(messageKey), false);
+            serverPlayer.sendSystemMessage(MessageUtil.get(messageKey));
             if (!serverPlayer.isCreative()) {
                 ItemStack refundedItem = createExtraLifeItem();
-                if (!serverPlayer.getInventory().insertStack(refundedItem)) {
-                    serverPlayer.dropItem(refundedItem, false);
+                if (!serverPlayer.getInventory().add(refundedItem)) {
+                    serverPlayer.drop(refundedItem, false);
                 }
             }
         });
     }
 
-    private static void grantExtraLife(ServerPlayerEntity serverPlayer, DatabaseManager db, java.util.UUID uuid, int currentLives) {
+    private static void grantExtraLife(ServerPlayer serverPlayer, java.util.UUID uuid, int currentLives) {
         int newLives = currentLives + 1;
         db.setLives(uuid, newLives);
 
-        SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getName().getString(),
-                newLives);
+        SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getScoreboardName(), newLives);
 
         serverPlayer.server.execute(() -> {
-            serverPlayer.sendMessage(MessageUtil.get("extra-life-gained", "lives", newLives), false);
-            serverPlayer.getServerWorld().playSound(null, serverPlayer.getBlockPos(), SoundEvents.ENTITY_PLAYER_LEVELUP,
-                    SoundCategory.PLAYERS, 1.0f, 1.2f);
-            serverPlayer.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 60, 0, false, true));
+            serverPlayer.sendSystemMessage(MessageUtil.get("extra-life-gained", "lives", newLives));
+            serverPlayer.level().playSound(null, serverPlayer.blockPosition(), SoundEvents.PLAYER_LEVELUP,
+                    SoundSource.PLAYERS, 1.0f, 1.2f);
+            serverPlayer.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60, 0, false, true));
         });
     }
 
     public static ItemStack createExtraLifeItem() {
         ItemStack item = new ItemStack(Items.NETHER_STAR);
+        item.set(DataComponents.CUSTOM_NAME,
+                Component.literal("Extra Life").withStyle(net.minecraft.ChatFormatting.GREEN, net.minecraft.ChatFormatting.BOLD));
 
-        item.set(DataComponentTypes.CUSTOM_NAME,
-                Text.literal("Extra Life").styled(s -> s.withColor(Formatting.GREEN).withBold(true)));
-
-        NbtCompound customData = new NbtCompound();
-        customData.putBoolean("ExtraLife", true);
-        item.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(customData));
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean("ExtraLife", true);
+        item.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
 
         return item;
     }
 
-    private static boolean isExtraLifeItem(ItemStack stack) {
-        if (stack.isEmpty() || !stack.contains(DataComponentTypes.CUSTOM_DATA))
-            return false;
-        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
-        return nbtComponent != null && nbtComponent.contains("ExtraLife");
+    public static boolean isExtraLifeItem(ItemStack stack) {
+        if (stack.isEmpty() || !stack.has(DataComponents.CUSTOM_DATA)) return false;
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data != null && data.contains("ExtraLife");
     }
 }

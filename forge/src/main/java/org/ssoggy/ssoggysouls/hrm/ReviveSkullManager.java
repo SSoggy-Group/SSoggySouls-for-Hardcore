@@ -1,23 +1,23 @@
 package org.ssoggy.ssoggysouls.hrm;
 
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.TypedActionResult;
+import com.mojang.authlib.properties.PropertyMap;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
@@ -25,132 +25,140 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class ReviveSkullManager {
 
-    private ReviveSkullManager() {
-        // Utility class
+    private static DatabaseManager db;
+
+    private ReviveSkullManager() {}
+
+    public static void register(DatabaseManager database) {
+        db = database;
     }
 
-    public static void register(DatabaseManager db) {
-        UseItemCallback.EVENT.register((player, world, hand) -> {
-            if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) {
-                return TypedActionResult.pass(player.getStackInHand(hand));
-            }
+    @SubscribeEvent
+    public static void onItemRightClick(PlayerInteractEvent.RightClickItem event) {
+        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer serverPlayer)) {
+            return;
+        }
 
-            ItemStack stack = player.getStackInHand(hand);
-            if (!isReviveSkull(stack)) {
-                return TypedActionResult.pass(stack);
-            }
+        ItemStack stack = event.getItemStack();
+        if (!isReviveSkull(stack)) {
+            return;
+        }
 
-            // Async DB fetch
-            CompletableFuture.runAsync(() -> {
-                List<PlayerData> deadPlayers = db.getDeadPlayers();
+        event.setCanceled(true);
 
-                serverPlayer.server.execute(() -> {
-                    if (deadPlayers.isEmpty()) {
-                        serverPlayer.sendMessage(Text.literal("No dead players found.").styled(s -> s.withColor(Formatting.GRAY)), false);
-                        return;
-                    }
-                    openMenu(serverPlayer, deadPlayers);
-                });
+        CompletableFuture.runAsync(() -> {
+            List<PlayerData> deadPlayers = db.getDeadPlayers();
+
+            serverPlayer.server.execute(() -> {
+                if (deadPlayers.isEmpty()) {
+                    serverPlayer.sendSystemMessage(Component.literal("No dead players found.").withStyle(net.minecraft.ChatFormatting.GRAY));
+                    return;
+                }
+                openMenu(serverPlayer, deadPlayers);
             });
-
-            return TypedActionResult.consume(stack); // Prevent placing
         });
     }
 
-    private static void openMenu(ServerPlayerEntity player, List<PlayerData> deadPlayers) {
+    private static void openMenu(ServerPlayer player, List<PlayerData> deadPlayers) {
         int rows = Math.min(6, ((deadPlayers.size() - 1) / 9) + 1);
         int slots = rows * 9;
-        SimpleInventory inventory = populateInventory(deadPlayers, slots);
 
-        SimpleNamedScreenHandlerFactory factory = new SimpleNamedScreenHandlerFactory(
-            (syncId, playerInventory, p) -> createScreenHandler(syncId, playerInventory, inventory, rows),
-            Text.literal("Revive - Select Player").styled(s -> s.withColor(Formatting.DARK_PURPLE).withBold(true))
-        );
-
-        player.openHandledScreen(factory);
-    }
-
-    private static SimpleInventory populateInventory(List<PlayerData> deadPlayers, int slots) {
-        SimpleInventory inventory = new SimpleInventory(slots);
-        for (int i = 0; i < Math.min(deadPlayers.size(), slots); i++) {
-            inventory.setStack(i, createMenuHead(deadPlayers.get(i)));
+        // Build a simple array inventory of player heads
+        ItemStack[] items = new ItemStack[slots];
+        for (int i = 0; i < slots; i++) {
+            items[i] = i < deadPlayers.size() ? createMenuHead(deadPlayers.get(i)) : ItemStack.EMPTY;
         }
-        return inventory;
+
+        MenuType<ChestMenu> menuType = getMenuType(rows);
+
+        player.openMenu(new SimpleMenuProvider((syncId, playerInv, p) ->
+                new ChestMenu(menuType, syncId, playerInv, rows) {
+                    {
+                        // Fill the container slots with our head items
+                        for (int i = 0; i < slots; i++) {
+                            this.slots.get(i).set(items[i]);
+                        }
+                    }
+
+                    @Override
+                    public boolean stillValid(Player pl) { return true; }
+
+                    @Override
+                    public void clicked(int slotIndex, int button, ClickType clickType, Player clickingPlayer) {
+                        if (slotIndex >= 0 && slotIndex < slots) {
+                            ItemStack clicked = this.slots.get(slotIndex).getItem();
+                            handleMenuClick(clicked, clickingPlayer);
+                        }
+                        // Block all regular inventory interaction to prevent item theft
+                    }
+                },
+                Component.literal("Revive - Select Player").withStyle(net.minecraft.ChatFormatting.DARK_PURPLE, net.minecraft.ChatFormatting.BOLD)
+        ));
     }
 
-    private static GenericContainerScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory, SimpleInventory inventory, int rows) {
-        ScreenHandlerType<GenericContainerScreenHandler> type = getScreenHandlerType(rows);
-        return new GenericContainerScreenHandler(type, syncId, playerInventory, inventory, rows) {
-            @Override
-            public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity clickingPlayer) {
-                if (slotIndex >= 0 && slotIndex < inventory.size()) {
-                    handleMenuClick(inventory.getStack(slotIndex), clickingPlayer);
-                } else if (actionType != SlotActionType.QUICK_MOVE && actionType != SlotActionType.SWAP) {
-                    super.onSlotClick(slotIndex, button, actionType, clickingPlayer);
+    @SuppressWarnings("unchecked")
+    private static MenuType<ChestMenu> getMenuType(int rows) {
+        return switch (rows) {
+            case 1 -> (MenuType<ChestMenu>) (MenuType<?>) MenuType.GENERIC_9x1;
+            case 2 -> (MenuType<ChestMenu>) (MenuType<?>) MenuType.GENERIC_9x2;
+            case 3 -> (MenuType<ChestMenu>) (MenuType<?>) MenuType.GENERIC_9x3;
+            case 4 -> (MenuType<ChestMenu>) (MenuType<?>) MenuType.GENERIC_9x4;
+            case 5 -> (MenuType<ChestMenu>) (MenuType<?>) MenuType.GENERIC_9x5;
+            default -> (MenuType<ChestMenu>) (MenuType<?>) MenuType.GENERIC_9x6;
+        };
+    }
+
+    private static void handleMenuClick(ItemStack clicked, Player clickingPlayer) {
+        if (!clicked.isEmpty() && clicked.is(Items.PLAYER_HEAD)) {
+            ResolvableProfile profile = clicked.get(DataComponents.PROFILE);
+            if (profile != null && profile.id().isPresent()) {
+                String name = profile.name().orElse("Unknown");
+
+                ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
+                realHead.set(DataComponents.PROFILE, profile);
+                realHead.set(DataComponents.CUSTOM_NAME, Component.literal(name + "'s Head").withStyle(net.minecraft.ChatFormatting.YELLOW));
+
+                if (!clickingPlayer.getInventory().add(realHead)) {
+                    clickingPlayer.drop(realHead, false);
                 }
-            }
-        };
-    }
+                clickingPlayer.sendSystemMessage(Component.literal("Received " + name + "'s head.").withStyle(net.minecraft.ChatFormatting.GREEN));
 
-    private static ScreenHandlerType<GenericContainerScreenHandler> getScreenHandlerType(int rows) {
-        return switch(rows) {
-            case 1 -> ScreenHandlerType.GENERIC_9X1;
-            case 2 -> ScreenHandlerType.GENERIC_9X2;
-            case 3 -> ScreenHandlerType.GENERIC_9X3;
-            case 4 -> ScreenHandlerType.GENERIC_9X4;
-            case 5 -> ScreenHandlerType.GENERIC_9X5;
-            default -> ScreenHandlerType.GENERIC_9X6;
-        };
-    }
-
-    private static void handleMenuClick(ItemStack clicked, PlayerEntity clickingPlayer) {
-        if (!clicked.isEmpty() && clicked.isOf(Items.PLAYER_HEAD)) {
-            ProfileComponent profile = clicked.get(DataComponentTypes.PROFILE);
-            if (profile != null) {
-                profile.id().ifPresent(id -> {
-                    String name = profile.name().orElse("Unknown");
-
-                    // Give the real head
-                    ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
-                    realHead.set(DataComponentTypes.PROFILE, profile);
-                    realHead.set(DataComponentTypes.CUSTOM_NAME, Text.literal(name + "'s Head").styled(s -> s.withColor(Formatting.YELLOW)));
-
-                    if (!clickingPlayer.getInventory().insertStack(realHead)) {
-                        clickingPlayer.dropItem(realHead, false);
-                    }
-                    clickingPlayer.sendMessage(Text.literal("Received " + name + "'s head.").styled(s -> s.withColor(Formatting.GREEN)), false);
-
-                    if (clickingPlayer instanceof ServerPlayerEntity spe) {
-                        spe.getServer().execute(spe::closeHandledScreen);
-                    }
-                });
+                if (clickingPlayer instanceof ServerPlayer spe) {
+                    spe.getServer().execute(spe::closeContainer);
+                }
             }
         }
     }
 
     private static ItemStack createMenuHead(PlayerData data) {
         ItemStack head = new ItemStack(Items.PLAYER_HEAD);
-        head.set(DataComponentTypes.PROFILE, new ProfileComponent(Optional.of(data.getUsername()), Optional.of(data.getUuid()), new com.mojang.authlib.properties.PropertyMap()));
-        head.set(DataComponentTypes.CUSTOM_NAME, Text.literal(data.getUsername()).styled(s -> s.withColor(Formatting.RED)));
+        head.set(DataComponents.PROFILE, new ResolvableProfile(
+                Optional.of(data.getUsername()),
+                Optional.of(data.getUuid()),
+                new PropertyMap()
+        ));
+        head.set(DataComponents.CUSTOM_NAME, Component.literal(data.getUsername()).withStyle(net.minecraft.ChatFormatting.RED));
         return head;
     }
 
     public static ItemStack createReviveSkullItem() {
         ItemStack item = new ItemStack(Items.PLAYER_HEAD);
-        item.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Revive Skull").styled(s -> s.withColor(Formatting.LIGHT_PURPLE).withBold(true)));
+        item.set(DataComponents.CUSTOM_NAME, Component.literal("Revive Skull")
+                .withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE, net.minecraft.ChatFormatting.BOLD));
 
-        NbtCompound customData = new NbtCompound();
-        customData.putBoolean("ReviveSkull", true);
-        item.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(customData));
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean("ReviveSkull", true);
+        item.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
 
         return item;
     }
 
-    private static boolean isReviveSkull(ItemStack stack) {
-        if (stack.isEmpty() || !stack.contains(DataComponentTypes.CUSTOM_DATA)) return false;
-        NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
-        return nbtComponent != null && nbtComponent.contains("ReviveSkull");
+    public static boolean isReviveSkull(ItemStack stack) {
+        if (stack.isEmpty() || !stack.has(DataComponents.CUSTOM_DATA)) return false;
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data != null && data.contains("ReviveSkull");
     }
 }
