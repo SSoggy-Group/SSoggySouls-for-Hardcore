@@ -39,6 +39,9 @@ dependencies {
 
     // Mod Menu API (compile only, provided by Mod Menu mod at runtime)
     modCompileOnlyApi "com.terraformersmc:modmenu:11.0.1"
+
+    // JUnit Jupiter for tests
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
 }
 
 processResources {
@@ -65,4 +68,8 @@ jar {
     from("../LICENSE") {
         rename { "${it}_${project.base.archivesName.get()}" }
     }
+}
+
+test {
+    useJUnitPlatform()
 }
