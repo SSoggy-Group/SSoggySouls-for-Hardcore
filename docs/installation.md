@@ -24,7 +24,7 @@ This comprehensive guide covers everything you need to know to properly install 
 
 - **Minecraft Version:** 1.21.X
 
-- **Server Software:** Spigot, Paper, or Purpur
+- **Server Software:** Spigot, Paper, Purpur, Fabric, or Forge
 
 - **Java Version:** 21 or higher
 
@@ -235,22 +235,25 @@ Limbo Server: /plugins/SSoggySouls-4.0.2.jar
 
 ______________________________________________________________________
 
-## Fabric Mod Installation
+> **Note:** For singleplayer, simply place the JAR in your client's `mods` folder. Limbo features are disabled in singleplayer automatically.
 
-The Fabric version is installed similarly to the Bukkit version, but uses the `mods/` folder.
+______________________________________________________________________
+
+## Forge Mod Installation
+
+The Forge version is installed similarly to the Bukkit version, but uses the `mods/` folder.
 
 ### Requirements
 
-- **Fabric Loader** installed on your server.
-- **Fabric API** placed in the `mods/` folder.
+- **Forge Loader** installed on your server (1.21.1).
 
 ### Installation Steps
 
-1. Place `SSoggySouls-Fabric-X.X.X.jar` into the `mods/` folder.
-2. Start the server to generate `config/ssoggysouls.json`.
+1. Place `SSoggySouls-Forge-X.X.X.jar` into the `mods/` folder.
+2. Start the server to generate `config/ssoggysouls.toml` (or `ssoggysouls.json` depending on build).
 3. Stop the server and configure as needed.
 
-> **Note:** For singleplayer, simply place the JAR in your client's `mods` folder. Limbo features are disabled in singleplayer automatically.
+> **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
 ______________________________________________________________________
 
