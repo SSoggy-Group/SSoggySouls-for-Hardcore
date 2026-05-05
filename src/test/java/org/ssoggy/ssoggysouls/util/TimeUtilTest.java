@@ -65,4 +65,3 @@ class TimeUtilTest {
         assertEquals(expected, TimeUtil.formatTime(millis));
     }
 }
-
