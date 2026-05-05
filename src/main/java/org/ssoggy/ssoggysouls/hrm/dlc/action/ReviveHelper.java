@@ -113,11 +113,14 @@ public class ReviveHelper {
     }
 
     private static void removeRitualPattern(World world, Location pos, List<RitualPatternEntry> pattern) {
-        int deadzoneY = Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("keep-structure-base", false)) ? 1 : 0;
+        boolean keepBase = Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("keep-structure-base", false));
 
         for (RitualPatternEntry entry : pattern) {
+            // Skip the base layer (dy = -2) if keep-structure-base is enabled
+            if (keepBase && entry.dy() == -2) continue;
+
             int targetX = pos.getBlockX() + entry.dx();
-            int targetY = pos.getBlockY() + entry.dy() + deadzoneY;
+            int targetY = pos.getBlockY() + entry.dy();
             int targetZ = pos.getBlockZ() + entry.dz();
 
             if (targetY > world.getMinHeight() && targetY <= pos.getBlockY()) {
