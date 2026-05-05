@@ -5,7 +5,8 @@ import java.util.regex.Pattern;
 
 public final class TimeUtil {
 
-    private static final Pattern TIME_PATTERN = Pattern.compile("(\\d+)([hms])");
+    private static final Pattern TIME_PATTERN = Pattern.compile("^(\\d+[hms])+$");
+    private static final Pattern COMPONENT_PATTERN = Pattern.compile("(\\d+)([hms])");
 
     private TimeUtil() {
         throw new UnsupportedOperationException("Utility class");
@@ -23,32 +24,41 @@ public final class TimeUtil {
         try {
             long hours = Long.parseLong(timeStr);
             if (hours < 0) return -1;
-            return hours * 3600_000L;
+            return Math.multiplyExact(hours, 3600_000L);
         } catch (NumberFormatException e) {
             // not a plain integer
+        } catch (ArithmeticException e) {
+            return -1; // overflow
+        }
+
+        if (!TIME_PATTERN.matcher(timeStr).matches()) {
+            return -1;
         }
 
         // parse time components
-        Matcher matcher = TIME_PATTERN.matcher(timeStr);
+        Matcher matcher = COMPONENT_PATTERN.matcher(timeStr);
         long totalMillis = 0;
         boolean foundAny = false;
 
         while (matcher.find()) {
             foundAny = true;
-            long value;
             try {
-                value = Long.parseLong(matcher.group(1));
+                long value = Long.parseLong(matcher.group(1));
+                if (value < 0) return -1;
+                String unit = matcher.group(2);
+
+                long addedMillis = switch (unit) {
+                    case "h" -> Math.multiplyExact(value, 3600_000L);
+                    case "m" -> Math.multiplyExact(value, 60_000L);
+                    case "s" -> Math.multiplyExact(value, 1000L);
+                    default -> 0L;
+                };
+                totalMillis = Math.addExact(totalMillis, addedMillis);
             } catch (NumberFormatException e) {
                 continue;
+            } catch (ArithmeticException e) {
+                return -1; // overflow
             }
-            String unit = matcher.group(2);
-
-            totalMillis += switch (unit) {
-                case "h" -> value * 3600_000L;
-                case "m" -> value * 60_000L;
-                case "s" -> value * 1000L;
-                default -> 0L;
-            };
         }
 
         return foundAny ? totalMillis : -1;

@@ -42,10 +42,10 @@ class TimeUtilTest {
         assertEquals(-1L, TimeUtil.parseTimeToMillis("-1h"));
         // zero hours is a valid zero-length duration
         assertEquals(0L, TimeUtil.parseTimeToMillis("0"));
-        // partial match: valid components are summed, unrecognised tokens are skipped
-        assertEquals(3600_000L + 180_000L, TimeUtil.parseTimeToMillis("1h2x3m"));
-        // spaces between components are allowed
-        assertEquals(3600_000L + 1800_000L, TimeUtil.parseTimeToMillis("1h 30m"));
+        // partial match: valid components are summed, unrecognised tokens are rejected
+        assertEquals(-1L, TimeUtil.parseTimeToMillis("1h2x3m"));
+        // spaces between components are rejected by strict regex "^(\\d+[hms])+$"
+        assertEquals(-1L, TimeUtil.parseTimeToMillis("1h 30m"));
     }
 
     @ParameterizedTest(name = "formatTime({0}ms) -> {1}")
