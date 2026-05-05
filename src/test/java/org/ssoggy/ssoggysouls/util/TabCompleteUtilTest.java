@@ -11,9 +11,9 @@ class TabCompleteUtilTest {
 
     @Test
     void testFilterStartsWith_StandardMatch() {
-        List<String> options = Arrays.asList("Apple", "Banana", "Apricot", "Cherry");
+        List<String> options = List.of("Apple", "Banana", "Apricot", "Cherry");
         List<String> result = TabCompleteUtil.filterStartsWith(options, "Ap");
-        assertEquals(Arrays.asList("Apple", "Apricot"), result);
+        assertEquals(List.of("Apple", "Apricot"), result);
     }
 
     @Test
