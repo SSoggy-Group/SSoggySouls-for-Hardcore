@@ -24,8 +24,6 @@ import org.ssoggy.ssoggysouls.model.PlayerData;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-
-@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class ReviveSkullManager {
 
     private static DatabaseManager db;

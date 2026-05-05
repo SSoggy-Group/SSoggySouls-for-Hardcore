@@ -35,8 +35,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-
-@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class RevivalStructureListener {
 
     private static final Map<UUID, GlobalPos> PENDING_REVIVALS = new ConcurrentHashMap<>();

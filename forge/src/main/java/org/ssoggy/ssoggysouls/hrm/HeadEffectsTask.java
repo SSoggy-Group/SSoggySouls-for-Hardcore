@@ -14,8 +14,6 @@ import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
-@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class HeadEffectsTask {
 
     private static final int INFINITE_DURATION = -1;

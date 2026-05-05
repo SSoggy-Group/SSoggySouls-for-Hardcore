@@ -20,8 +20,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-
-@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class GhostModeEvents {
 
     private static final Set<UUID> GHOST_CACHE = ConcurrentHashMap.newKeySet();
