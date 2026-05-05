@@ -53,6 +53,11 @@ public class SQLiteManager implements DatabaseManager {
         try {
             tableName = plugin.getConfig().getString("database.table-name", "hardcore_players");
 
+            if (!isValidIdentifier(tableName)) {
+                plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed: Invalid database.table-name '" + tableName + "'. Table name must consist only of alphanumeric characters and underscores.");
+                return false;
+            }
+
             java.io.File dataFolder = plugin.getDataFolder();
             if (!dataFolder.exists()) {
                 dataFolder.mkdirs();
@@ -115,6 +120,10 @@ public class SQLiteManager implements DatabaseManager {
         ensureColumn(conn, "grace_until", "BIGINT NOT NULL DEFAULT 0");
     }
 
+    private boolean isValidIdentifier(String identifier) {
+        return identifier != null && identifier.matches("^[a-zA-Z0-9_]+$");
+    }
+
     /**
      * ensures a column exists in the table, ignoring duplicate-column errors.
      *
@@ -124,6 +133,10 @@ public class SQLiteManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
+        if (!isValidIdentifier(columnName)) {
+            throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
+        }
+
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sql);
