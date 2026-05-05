@@ -1,153 +1,136 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.SkullBlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameMode;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SkullBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
+import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class GhostBlockEvents {
 
-    private GhostBlockEvents() {
-        // Utility class
+    private static DatabaseManager db;
+
+    private GhostBlockEvents() {}
+
+    public static void register(DatabaseManager database) {
+        db = database;
     }
 
-    public static void register(DatabaseManager db) {
-        registerHeadBreak(db);
-        registerHeadPlace(db);
-    }
+    @SubscribeEvent
+    public static void onBlockBreak(BlockEvent.BreakEvent event) {
+        if (db == null || event.getLevel().isClientSide() || !(event.getPlayer() instanceof ServerPlayer player)) {
+            return;
+        }
 
-    private static void registerHeadBreak(DatabaseManager db) {
-        // Detect when a player breaks a player's head block
-        PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
-            if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer))
-                return;
-
-            if ((state.isOf(Blocks.PLAYER_HEAD) || state.isOf(Blocks.PLAYER_WALL_HEAD))
-                    && blockEntity instanceof SkullBlockEntity skull) {
-                handleHeadBreak(world, serverPlayer, skull, db);
+        Level world = (Level) event.getLevel();
+        BlockState state = event.getState();
+        
+        if ((state.is(Blocks.PLAYER_HEAD) || state.is(Blocks.PLAYER_WALL_HEAD))) {
+            BlockEntity be = world.getBlockEntity(event.getPos());
+            if (be instanceof SkullBlockEntity skull) {
+                handleHeadBreak(world, player, skull);
             }
-        });
+        }
     }
 
-    private static void handleHeadBreak(net.minecraft.world.World world, ServerPlayerEntity serverPlayer,
-            SkullBlockEntity skull, DatabaseManager db) {
-        ProfileComponent profile = skull.getOwner();
-        if (profile != null) {
-            profile.id().ifPresent(ownerUuid -> CompletableFuture.runAsync(() -> {
+    private static void handleHeadBreak(Level world, ServerPlayer player, SkullBlockEntity skull) {
+        ResolvableProfile profile = skull.getOwnerProfile();
+        if (profile != null && profile.id().isPresent()) {
+            UUID ownerUuid = profile.id().get();
+            
+            CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(ownerUuid);
                 if (data != null && data.isDead()) {
                     world.getServer().execute(() -> {
                         GhostState ghostState = GhostState.getServerState(world.getServer());
 
-                        // The owner is a ghost! The breaker becomes the "Death Holder"
                         ghostState.deathLocations.remove(ownerUuid);
-                        ghostState.deathHolders.put(ownerUuid, serverPlayer.getUuid());
-                        ghostState.markDirty();
+                        ghostState.deathHolders.put(ownerUuid, player.getUUID());
+                        ghostState.setDirty();
 
-                        ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
+                        ServerPlayer ghost = world.getServer().getPlayerList().getPlayer(ownerUuid);
                         if (ghost != null) {
-                            // Put ghost into spectator mode to follow the holder
-                            ghost.changeGameMode(GameMode.SPECTATOR);
-                            ghost.setCameraEntity(serverPlayer);
-                            ghost.sendMessage(
-                                    Text.literal("Started spectating " + serverPlayer.getName().getString())
-                                            .styled(s -> s.withColor(Formatting.GRAY)),
-                                    false);
-                            ghost.sendMessage(Text
-                                    .literal(serverPlayer.getName().getString()
-                                            + " is currently carrying your playerhead...")
-                                    .styled(s -> s.withColor(Formatting.YELLOW)), true);
+                            ghost.setGameMode(GameType.SPECTATOR);
+                            ghost.setCamera(player);
+                            ghost.sendSystemMessage(Component.literal("Started spectating " + player.getScoreboardName()).withStyle(net.minecraft.ChatFormatting.GRAY));
+                            ghost.sendSystemMessage(Component.literal(player.getScoreboardName() + " is currently carrying your playerhead...").withStyle(net.minecraft.ChatFormatting.YELLOW));
                         }
                     });
                 }
-            }));
+            });
         }
     }
 
-    private static void registerHeadPlace(DatabaseManager db) {
-        // Detect when a player places a player's head block
-        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (world.isClient || !(player instanceof ServerPlayerEntity))
-                return ActionResult.PASS;
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
 
-            ItemStack stack = player.getStackInHand(hand);
-            if (!stack.isOf(Items.PLAYER_HEAD))
-                return ActionResult.PASS;
+        ItemStack stack = event.getItemStack();
+        if (!stack.is(Items.PLAYER_HEAD)) return;
 
-            ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
-            if (profile == null || profile.id().isEmpty())
-                return ActionResult.PASS;
+        ResolvableProfile profile = stack.get(DataComponents.PROFILE);
+        if (profile == null || profile.id().isEmpty()) return;
 
-            UUID ownerUuid = profile.id().get();
-            BlockPos targetPos = hitResult.getBlockPos().offset(hitResult.getSide());
+        UUID ownerUuid = profile.id().get();
+        BlockPos targetPos = event.getPos().relative(event.getFace());
 
-            // Schedule a check next tick to see if it was successfully placed
-            world.getServer().execute(() -> handleHeadPlace(world, ownerUuid, targetPos, db));
-
-            return ActionResult.PASS;
-        });
+        event.getLevel().getServer().execute(() -> handleHeadPlace(event.getLevel(), ownerUuid, targetPos));
     }
 
-    private static void handleHeadPlace(net.minecraft.world.World world, UUID ownerUuid, BlockPos targetPos,
-            DatabaseManager db) {
+    private static void handleHeadPlace(Level world, UUID ownerUuid, BlockPos targetPos) {
         BlockState state = world.getBlockState(targetPos);
-        if (state.isOf(Blocks.PLAYER_HEAD) || state.isOf(Blocks.PLAYER_WALL_HEAD)) {
+        if (state.is(Blocks.PLAYER_HEAD) || state.is(Blocks.PLAYER_WALL_HEAD)) {
             BlockEntity be = world.getBlockEntity(targetPos);
             if (be instanceof SkullBlockEntity skull) {
-                ProfileComponent profile = skull.getOwner();
-                if (profile != null) {
-                    profile.id().ifPresent(id -> {
-                        if (id.equals(ownerUuid)) {
-                            updateGhostStateOnPlace(world, ownerUuid, targetPos, db);
-                        }
-                    });
+                ResolvableProfile profile = skull.getOwnerProfile();
+                if (profile != null && profile.id().isPresent() && profile.id().get().equals(ownerUuid)) {
+                    updateGhostStateOnPlace(world, ownerUuid, targetPos);
                 }
             }
         }
     }
 
-    private static void updateGhostStateOnPlace(net.minecraft.world.World world, UUID ownerUuid, BlockPos targetPos,
-            DatabaseManager db) {
+    private static void updateGhostStateOnPlace(Level world, UUID ownerUuid, BlockPos targetPos) {
         GhostState ghostState = GhostState.getServerState(world.getServer());
 
-        // Block was placed! Update death location and remove holder
         ghostState.deathHolders.remove(ownerUuid);
         ghostState.deathLocations.put(ownerUuid, targetPos);
-        ghostState.markDirty();
+        ghostState.setDirty();
 
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(ownerUuid);
             if (data != null && data.isDead()) {
                 world.getServer().execute(() -> {
-                    ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
-                    if (ghost != null && ghost.interactionManager.getGameMode() == GameMode.SPECTATOR) {
-                        // Remove from spectator and put back into Ghost Mode restrictions
-                        ghost.changeGameMode(GameMode.ADVENTURE);
-                        org.ssoggy.ssoggysouls.listener.MainServerListener.setGhostModeAttributes(ghost, true);
+                    ServerPlayer ghost = world.getServer().getPlayerList().getPlayer(ownerUuid);
+                    if (ghost != null && ghost.gameMode.getGameModeForPlayer() == GameType.SPECTATOR) {
+                        ghost.setGameMode(GameType.ADVENTURE);
+                        ServerLifecycleListener.setGhostModeAttributes(ghost, true);
 
-                        // Teleport to the newly placed head
-                        ghost.teleport(ghost.getServerWorld(), targetPos.getX() + 0.5, targetPos.getY(),
-                                targetPos.getZ() + 0.5, ghost.getYaw(), ghost.getPitch());
-                        ghost.sendMessage(Text.literal("Your head has been placed down.")
-                                .styled(s -> s.withColor(Formatting.GRAY)), true);
+                        ghost.teleportTo(ghost.serverLevel(), targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, ghost.getYRot(), ghost.getXRot());
+                        ghost.sendSystemMessage(Component.literal("Your head has been placed down.").withStyle(net.minecraft.ChatFormatting.GRAY));
                     }
                 });
             }

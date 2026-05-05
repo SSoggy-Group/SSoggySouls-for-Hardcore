@@ -19,6 +19,11 @@ import org.ssoggy.ssoggysouls.database.SQLiteManager;
 import org.ssoggy.ssoggysouls.command.CommandRegistration;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
+import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
+import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
+import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
+import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
 
 @Mod(SSoggySoulsMod.MODID)
 public class SSoggySoulsMod {
@@ -58,6 +63,13 @@ public class SSoggySoulsMod {
         // Set Database instances
         CommandRegistration.setDatabase(databaseManager);
         ServerLifecycleListener.setDatabase(databaseManager);
+
+        ExtraLifeManager.register(databaseManager);
+        ReviveSkullManager.register(databaseManager);
+        HeadEffectsTask.register();
+
+        GhostModeEvents.register(databaseManager);
+        GhostBlockEvents.register(databaseManager);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

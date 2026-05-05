@@ -1,16 +1,16 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
@@ -21,115 +21,100 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class GhostModeEvents {
 
-    private GhostModeEvents() {
-        // Utility class
-    }
-
     private static final Set<UUID> GHOST_CACHE = ConcurrentHashMap.newKeySet();
+    private static DatabaseManager db;
 
-    public static void register(DatabaseManager db) {
-        registerLifecycleEvents(db);
-        registerInteractionEvents();
-        registerTickEvents();
+    private GhostModeEvents() {}
+
+    public static void register(DatabaseManager database) {
+        db = database;
     }
 
-    private static void registerLifecycleEvents(DatabaseManager db) {
-        // Populate cache on join
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            UUID uuid = handler.getPlayer().getUuid();
-            CompletableFuture.runAsync(() -> {
-                PlayerData data = db.getPlayer(uuid);
-                boolean isDead = data != null && data.isDead();
-                server.execute(() -> {
-                    if (isDead) {
-                        GHOST_CACHE.add(uuid);
-                    } else {
-                        GHOST_CACHE.remove(uuid);
-                    }
-                });
+    @SubscribeEvent
+    public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (db == null || !(event.getEntity() instanceof ServerPlayer player)) return;
+        UUID uuid = player.getUUID();
+        
+        CompletableFuture.runAsync(() -> {
+            PlayerData data = db.getPlayer(uuid);
+            boolean isDead = data != null && data.isDead();
+            player.server.execute(() -> {
+                if (isDead) GHOST_CACHE.add(uuid);
+                else GHOST_CACHE.remove(uuid);
             });
         });
-
-        // Clean up cache on disconnect
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> GHOST_CACHE.remove(handler.getPlayer().getUuid()));
     }
 
-    private static void registerInteractionEvents() {
-        // Prevent block interaction
-        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (isGhost(player)) {
-                return ActionResult.FAIL;
-            }
-            return ActionResult.PASS;
-        });
-
-        // Prevent item usage
-        UseItemCallback.EVENT.register((player, world, hand) -> {
-            if (isGhost(player)) {
-                return TypedActionResult.fail(player.getStackInHand(hand));
-            }
-            return TypedActionResult.pass(player.getStackInHand(hand));
-        });
-
-        // Prevent attacking entities
-        AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (isGhost(player)) {
-                return ActionResult.FAIL;
-            }
-            return ActionResult.PASS;
-        });
-
-        // Prevent interacting with entities
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (isGhost(player)) {
-                // DLC logic: start spectating the entity if right clicked
-                if (player instanceof ServerPlayerEntity serverPlayer) {
-                    serverPlayer.setCameraEntity(entity);
-                }
-                return ActionResult.FAIL;
-            }
-            return ActionResult.PASS;
-        });
-    }
-
-    private static void registerTickEvents() {
-        // Handle movement restriction via ticking (since Fabric lacks a PlayerMoveEvent)
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                if (isGhost(player)) {
-                    enforceGhostRestrictions(player);
-                }
-            }
-        });
-    }
-
-    private static void enforceGhostRestrictions(ServerPlayerEntity player) {
-        // Prevent dropping items
-        if (player.currentScreenHandler != null && !player.currentScreenHandler.getCursorStack().isEmpty()) {
-            // Note: Preventing physical drops natively often requires mixins into ServerPlayNetworkHandler.
-            // As a quick workaround, we can clear dropped items immediately or clear the ghost's inventory.
+    @SubscribeEvent
+    public static void onPlayerQuit(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            GHOST_CACHE.remove(player.getUUID());
         }
+    }
 
-        UUID uuid = player.getUuid();
-        GhostState state = GhostState.getServerState(player.getServer());
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (isGhost(event.getEntity())) {
+            event.setCanceled(true);
+        }
+    }
 
-        // If someone is carrying their head, they are spectating them. Do not restrict distance.
+    @SubscribeEvent
+    public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        if (isGhost(event.getEntity())) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onAttackEntity(AttackEntityEvent event) {
+        if (isGhost(event.getEntity())) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onInteractEntity(PlayerInteractEvent.EntityInteract event) {
+        if (isGhost(event.getEntity())) {
+            if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+                serverPlayer.setCamera(event.getTarget());
+            }
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+
+        for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
+            if (isGhost(player)) {
+                enforceGhostRestrictions(player);
+            }
+        }
+    }
+
+    private static void enforceGhostRestrictions(ServerPlayer player) {
+        UUID uuid = player.getUUID();
+        GhostState state = GhostState.getServerState(player.server);
+
         if (state.deathHolders.containsKey(uuid)) {
             return;
         }
 
         if (state.deathLocations.containsKey(uuid)) {
             BlockPos deathPos = state.deathLocations.get(uuid);
-            BlockPos currentPos = player.getBlockPos();
+            BlockPos currentPos = player.blockPosition();
 
-            double distanceSq = currentPos.getSquaredDistance(deathPos);
+            double distanceSq = currentPos.distSqr(deathPos);
             double maxDistance = ConfigManager.getConfig().getSpectatorHeadrestrictRadius();
 
             if (distanceSq > (maxDistance * maxDistance)) {
-                player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());
-                player.sendMessage(net.minecraft.text.Text.literal("You may not travel that far away from your death location").styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)), true);
+                player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
+                player.sendSystemMessage(Component.literal("You may not travel that far away from your death location").withStyle(net.minecraft.ChatFormatting.GRAY));
             }
         }
     }
@@ -139,7 +124,7 @@ public class GhostModeEvents {
         else GHOST_CACHE.remove(uuid);
     }
 
-    private static boolean isGhost(PlayerEntity player) {
-        return GHOST_CACHE.contains(player.getUuid());
+    private static boolean isGhost(Player player) {
+        return GHOST_CACHE.contains(player.getUUID());
     }
 }
