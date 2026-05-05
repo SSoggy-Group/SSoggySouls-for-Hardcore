@@ -13,6 +13,7 @@ import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -51,7 +52,7 @@ public class ServerLifecycleListener {
         // Pending revival logic is handled here, omitted complex pending for Phase 3
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
-                // ServerTransferUtil.sendToLimbo(player); // Ported in Phase 6
+                ServerTransferUtil.sendToLimbo(player);
                 return;
             }
 
@@ -100,7 +101,7 @@ public class ServerLifecycleListener {
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
                 player.sendSystemMessage(net.minecraft.network.chat.Component.literal(MessageUtil.get("death-sending-to-limbo")));
-                // ServerTransferUtil.sendToLimbo(player); // Ported in Phase 6
+                ServerTransferUtil.sendToLimbo(player);
                 return;
             }
 
@@ -130,7 +131,7 @@ public class ServerLifecycleListener {
 
     private static void handleRespawnSync(ServerPlayer player) {
         if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
-            // ServerTransferUtil.sendToLimbo(player); // Ported in Phase 6
+            ServerTransferUtil.sendToLimbo(player);
             return;
         }
 
