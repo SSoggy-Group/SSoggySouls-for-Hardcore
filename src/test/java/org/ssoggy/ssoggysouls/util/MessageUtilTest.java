@@ -12,7 +12,6 @@ class MessageUtilTest {
     @BeforeEach
     void setUp() {
         FileConfiguration config = new YamlConfiguration();
-        config.set("messages.prefix", "&8[&4☠&8] &r");
         config.set("messages.test_msg", "Hello %player%!");
         config.set("messages.multi_replace", "%prefix% You have %amount% %item%.");
         MessageUtil.loadMessages(config);
