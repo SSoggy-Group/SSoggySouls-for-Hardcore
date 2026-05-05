@@ -11,6 +11,7 @@ public interface DatabaseManager {
     PlayerData getPlayerByName(String username);
     void savePlayer(PlayerData data);
     boolean isPlayerDead(UUID uuid);
+    java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids);
     boolean revivePlayer(UUID uuid, int livesToRestore);
     void setLives(UUID uuid, int lives);
     void setFirstJoin(UUID uuid, long firstJoin);

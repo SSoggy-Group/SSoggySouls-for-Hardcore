@@ -50,6 +50,13 @@ public class MySQLManager implements DatabaseManager {
         this.plugin = plugin;
     }
 
+    // Package-private constructor for testing / dependency injection
+    MySQLManager(SSoggySouls plugin, HikariDataSource dataSource, String tableName) {
+        this.plugin = plugin;
+        this.dataSource = dataSource;
+        this.tableName = tableName;
+    }
+
     public boolean initialize() {
         try {
             String host = plugin.getConfig().getString("database.host", "localhost");
@@ -59,6 +66,11 @@ public class MySQLManager implements DatabaseManager {
             String pass = plugin.getConfig().getString("database.password", "changeme");
             int poolSize = plugin.getConfig().getInt("database.pool-size", 5);
             tableName = plugin.getConfig().getString("database.table-name", "hardcore_players");
+
+            if (!isValidIdentifier(tableName)) {
+                plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed: Invalid database.table-name '" + tableName + "'. Table name must consist only of alphanumeric characters and underscores.");
+                return false;
+            }
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
                     + "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true"
@@ -128,6 +140,10 @@ public class MySQLManager implements DatabaseManager {
         ensureColumn(conn, "grace_until", "BIGINT NOT NULL DEFAULT 0");
     }
 
+    private boolean isValidIdentifier(String identifier) {
+        return identifier != null && identifier.matches("^[a-zA-Z0-9_]+$");
+    }
+
     /**
      * ensures a column exists in the table, ignoring duplicate-column errors.
      *
@@ -137,6 +153,10 @@ public class MySQLManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
+        if (!isValidIdentifier(columnName)) {
+            throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
+        }
+
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sql);
@@ -176,7 +196,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get player " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player " + uuid);
         }
         return null;
     }
@@ -194,7 +214,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get player by name: " + username);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player by name: " + username);
         }
         return null;
     }
@@ -231,9 +251,64 @@ public class MySQLManager implements DatabaseManager {
             }
 
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to save player " + data.getUuid());
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to save player " + data.getUuid());
             deathStatusCache.remove(data.getUuid());
         }
+    }
+
+
+    public java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids) {
+        java.util.Map<UUID, Boolean> result = new java.util.HashMap<>();
+        if (uuids == null || uuids.isEmpty()) return result;
+
+        java.util.Set<UUID> toFetch = new java.util.HashSet<>();
+        for (UUID uuid : uuids) {
+            CachedDeathStatus cached = deathStatusCache.get(uuid);
+            if (cached != null && !cached.isExpired()) {
+                result.put(uuid, cached.isDead);
+            } else {
+                toFetch.add(uuid);
+            }
+        }
+
+        if (toFetch.isEmpty()) {
+            return result;
+        }
+
+        // Default missing to true
+        for (UUID uuid : toFetch) {
+            result.put(uuid, true);
+        }
+
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < toFetch.size(); i++) {
+            placeholders.append("?");
+            if (i < toFetch.size() - 1) placeholders.append(",");
+        }
+
+        String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int i = 1;
+            for (UUID uuid : toFetch) {
+                ps.setString(i++, uuid.toString());
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UUID uuid = UUID.fromString(rs.getString("uuid"));
+                    boolean isDead = rs.getBoolean("is_dead");
+                    result.put(uuid, isDead);
+                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to bulk check death status");
+        }
+
+        return result;
     }
 
     public boolean isPlayerDead(UUID uuid) {
@@ -256,10 +331,12 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to check death status for " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to check death status for " + uuid);
         }
         return true;
     }
+
+
 
     public boolean revivePlayer(UUID uuid, int livesToRestore) {
         String sql = UPDATE + tableName
@@ -282,7 +359,7 @@ public class MySQLManager implements DatabaseManager {
             return rows > 0;
 
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to revive player " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to revive player " + uuid);
             return false;
         }
     }
@@ -302,7 +379,7 @@ public class MySQLManager implements DatabaseManager {
 
             deathStatusCache.remove(uuid);
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set lives for " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set lives for " + uuid);
         }
     }
 
@@ -316,7 +393,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set first_join for " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set first_join for " + uuid);
         }
     }
 
@@ -330,7 +407,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set last_seen for " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set last_seen for " + uuid);
         }
     }
 
@@ -344,7 +421,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set grace_until for " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set grace_until for " + uuid);
         }
     }
 
@@ -368,7 +445,7 @@ public class MySQLManager implements DatabaseManager {
                 result.add(mapResultSet(rs));
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get dead players");
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get dead players");
         }
         return result;
     }
@@ -391,7 +468,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get plugin version from database for key: " + key);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get plugin version from database for key: " + key);
         }
         return null;
     }
@@ -409,7 +486,7 @@ public class MySQLManager implements DatabaseManager {
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to save plugin version to database for key: " + key);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to save plugin version to database for key: " + key);
         }
     }
 
