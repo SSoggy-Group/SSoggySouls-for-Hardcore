@@ -28,11 +28,10 @@ class TabCompleteUtilTest {
 
     @Test
     void testFilterStartsWith_EmptyPrefix() {
-        List<String> options = Arrays.asList("apple", "banana", "apricot");
+        List<String> options = List.of("apple", "banana", "apricot");
         List<String> result = TabCompleteUtil.filterStartsWith(options, "");
 
-        assertEquals(3, result.size());
-        assertTrue(result.containsAll(options));
+        assertEquals(options, result);
     }
 
     @Test
