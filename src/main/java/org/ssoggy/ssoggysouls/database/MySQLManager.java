@@ -140,8 +140,14 @@ public class MySQLManager implements DatabaseManager {
         if (columnName == null || !columnName.matches("^[a-zA-Z0-9_]+$")) {
             throw new IllegalArgumentException("Invalid column name: " + columnName);
         }
-        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),']+$")) {
+        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'. -]+$")) {
             throw new IllegalArgumentException("Invalid column definition: " + definition);
+        }
+        if (definition.contains("--") || definition.contains("/*") || definition.contains("*/")) {
+            throw new IllegalArgumentException("Invalid column definition: " + definition);
+        }
+        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+            throw new IllegalArgumentException("Invalid table name: " + tableName);
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
