@@ -42,19 +42,17 @@ class TabCompleteUtilTest {
     @Test
     void testGetOnlinePlayerNames_EmptyPrefix() {
         // Setup
-        Collection<? extends Player> players = Arrays.asList(
+        List<Player> players = List.of(
                 createMockPlayer("Alice"),
                 createMockPlayer("Bob")
         );
-        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn((Collection) players);
+        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn(players);
 
         // Execute
         List<String> result = TabCompleteUtil.getOnlinePlayerNames("");
 
         // Verify
-        assertEquals(2, result.size());
-        assertTrue(result.contains("Alice"));
-        assertTrue(result.contains("Bob"));
+        assertEquals(List.of("Alice", "Bob"), result);
     }
 
     @Test
