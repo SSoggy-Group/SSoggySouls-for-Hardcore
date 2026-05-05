@@ -176,7 +176,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get player " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player " + uuid);
         }
         return null;
     }
@@ -194,7 +194,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get player by name: " + username);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player by name: " + username);
         }
         return null;
     }
@@ -231,7 +231,7 @@ public class MySQLManager implements DatabaseManager {
             }
 
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to save player " + data.getUuid());
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to save player " + data.getUuid());
             deathStatusCache.remove(data.getUuid());
         }
     }
@@ -256,7 +256,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to check death status for " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to check death status for " + uuid);
         }
         return true;
     }
@@ -341,7 +341,7 @@ public class MySQLManager implements DatabaseManager {
             return rows > 0;
 
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to revive player " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to revive player " + uuid);
             return false;
         }
     }
@@ -361,7 +361,7 @@ public class MySQLManager implements DatabaseManager {
 
             deathStatusCache.remove(uuid);
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set lives for " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set lives for " + uuid);
         }
     }
 
@@ -375,7 +375,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set first_join for " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set first_join for " + uuid);
         }
     }
 
@@ -389,7 +389,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set last_seen for " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set last_seen for " + uuid);
         }
     }
 
@@ -403,7 +403,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to set grace_until for " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set grace_until for " + uuid);
         }
     }
 
@@ -427,7 +427,7 @@ public class MySQLManager implements DatabaseManager {
                 result.add(mapResultSet(rs));
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get dead players");
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get dead players");
         }
         return result;
     }
@@ -450,7 +450,7 @@ public class MySQLManager implements DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to get plugin version from database for key: " + key);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get plugin version from database for key: " + key);
         }
         return null;
     }
@@ -468,7 +468,7 @@ public class MySQLManager implements DatabaseManager {
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, () -> "Failed to save plugin version to database for key: " + key);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to save plugin version to database for key: " + key);
         }
     }
 
