@@ -124,17 +124,17 @@ public class SQLiteManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
+        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+            throw new IllegalArgumentException("Invalid table name: " + tableName);
+        }
         if (columnName == null || !columnName.matches("^[a-zA-Z0-9_]+$")) {
             throw new IllegalArgumentException("Invalid column name: " + columnName);
         }
-        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'. -]+$")) {
+        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'.\\-]+$")) {
             throw new IllegalArgumentException("Invalid column definition: " + definition);
         }
         if (definition.contains("--") || definition.contains("/*") || definition.contains("*/")) {
-            throw new IllegalArgumentException("Invalid column definition: " + definition);
-        }
-        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
-            throw new IllegalArgumentException("Invalid table name: " + tableName);
+            throw new IllegalArgumentException("SQL comments are not allowed in column definition.");
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
