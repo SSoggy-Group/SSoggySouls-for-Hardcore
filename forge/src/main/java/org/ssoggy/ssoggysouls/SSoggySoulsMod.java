@@ -22,6 +22,7 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
 import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
 import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
+import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
@@ -71,11 +72,22 @@ public class SSoggySoulsMod {
             MinecraftForge.EVENT_BUS.register(ServerLifecycleListener.class);
             ServerLifecycleListener.setDatabase(databaseManager);
 
+            MinecraftForge.EVENT_BUS.register(ExtraLifeManager.class);
             ExtraLifeManager.register(databaseManager);
+
+            MinecraftForge.EVENT_BUS.register(ReviveSkullManager.class);
             ReviveSkullManager.register(databaseManager);
+
+            MinecraftForge.EVENT_BUS.register(HeadEffectsTask.class);
             HeadEffectsTask.register();
 
+            MinecraftForge.EVENT_BUS.register(RevivalStructureListener.class);
+            RevivalStructureListener.register(databaseManager);
+
+            MinecraftForge.EVENT_BUS.register(GhostModeEvents.class);
             GhostModeEvents.register(databaseManager);
+
+            MinecraftForge.EVENT_BUS.register(GhostBlockEvents.class);
             GhostBlockEvents.register(databaseManager);
         }
     }

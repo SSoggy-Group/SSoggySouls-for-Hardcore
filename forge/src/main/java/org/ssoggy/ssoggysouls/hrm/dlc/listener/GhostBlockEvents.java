@@ -25,8 +25,6 @@ import org.ssoggy.ssoggysouls.model.PlayerData;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
-@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class GhostBlockEvents {
 
     private static DatabaseManager db;
