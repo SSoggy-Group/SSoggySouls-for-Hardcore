@@ -124,6 +124,13 @@ public class SQLiteManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
+        if (columnName == null || !columnName.matches("^[a-zA-Z0-9_]+$")) {
+            throw new IllegalArgumentException("Invalid column name: " + columnName);
+        }
+        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),']+$")) {
+            throw new IllegalArgumentException("Invalid column definition: " + definition);
+        }
+
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sql);
