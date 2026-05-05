@@ -114,7 +114,7 @@ class TabCompleteUtilTest {
     @Test
     void testGetOnlinePlayerNames_NoPlayersOnline() {
         // Setup
-        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn((Collection) Arrays.asList());
+        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn(List.of());
 
         // Execute
         List<String> result = TabCompleteUtil.getOnlinePlayerNames("a");
