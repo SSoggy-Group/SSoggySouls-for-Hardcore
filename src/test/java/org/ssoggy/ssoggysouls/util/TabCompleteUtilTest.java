@@ -52,10 +52,9 @@ class TabCompleteUtilTest {
 
     @Test
     void testFilterStartsWith_ExactMatch() {
-        List<String> options = Arrays.asList("apple", "banana");
+        List<String> options = List.of("apple", "banana");
         List<String> result = TabCompleteUtil.filterStartsWith(options, "apple");
 
-        assertEquals(1, result.size());
-        assertEquals("apple", result.get(0));
+        assertEquals(List.of("apple"), result);
     }
 }
