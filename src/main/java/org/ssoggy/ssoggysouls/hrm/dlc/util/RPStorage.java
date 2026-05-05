@@ -29,11 +29,13 @@ import java.util.Map;
 
 public class RPStorage {
 
+    private final JavaPlugin plugin;
     private final File file;
     private FileConfiguration config;
 
 
     public RPStorage(JavaPlugin plugin, String fileName) {
+        this.plugin = plugin;
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdirs();
         }
@@ -46,7 +48,7 @@ public class RPStorage {
                     plugin.getLogger().log(java.util.logging.Level.WARNING, "Storage file already exists or could not be created: {0}", fileName);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(java.util.logging.Level.SEVERE, "Could not create storage file: " + fileName, e);
             }
         }
 
@@ -61,7 +63,7 @@ public class RPStorage {
         try {
             config.save(file);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(java.util.logging.Level.SEVERE, "Could not save storage file: " + file.getName(), e);
         }
     }
 

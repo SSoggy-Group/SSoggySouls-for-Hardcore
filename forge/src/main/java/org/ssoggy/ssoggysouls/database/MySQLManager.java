@@ -235,6 +235,61 @@ public class MySQLManager implements DatabaseManager {
         }
     }
 
+
+    public java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids) {
+        java.util.Map<UUID, Boolean> result = new java.util.HashMap<>();
+        if (uuids == null || uuids.isEmpty()) return result;
+
+        java.util.Set<UUID> toFetch = new java.util.HashSet<>();
+        for (UUID uuid : uuids) {
+            CachedDeathStatus cached = deathStatusCache.get(uuid);
+            if (cached != null && !cached.isExpired()) {
+                result.put(uuid, cached.isDead);
+            } else {
+                toFetch.add(uuid);
+            }
+        }
+
+        if (toFetch.isEmpty()) {
+            return result;
+        }
+
+        // Default missing to true
+        for (UUID uuid : toFetch) {
+            result.put(uuid, true);
+        }
+
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < toFetch.size(); i++) {
+            placeholders.append("?");
+            if (i < toFetch.size() - 1) placeholders.append(",");
+        }
+
+        String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int i = 1;
+            for (UUID uuid : toFetch) {
+                ps.setString(i++, uuid.toString());
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UUID uuid = UUID.fromString(rs.getString("uuid"));
+                    boolean isDead = rs.getBoolean("is_dead");
+                    result.put(uuid, isDead);
+                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                }
+            }
+        } catch (SQLException e) {
+            SSoggySoulsMod.LOGGER.warn("Failed to bulk check death status", e);
+        }
+
+        return result;
+    }
+
     public boolean isPlayerDead(UUID uuid) {
         CachedDeathStatus cached = deathStatusCache.get(uuid);
         if (cached != null && !cached.isExpired()) {
