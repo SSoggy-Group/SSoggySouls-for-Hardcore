@@ -43,13 +43,20 @@ public class MainReviveCheckTask extends BukkitRunnable {
     }
 
     private List<UUID> collectDeadSpectators() {
-        List<UUID> deadSpectatorUuids = new ArrayList<>();
+        List<UUID> spectatorUuids = new ArrayList<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.getGameMode() == GameMode.SPECTATOR
                     && !player.hasPermission(PERM_BYPASS)) {
-                UUID uuid = player.getUniqueId();
+                spectatorUuids.add(player.getUniqueId());
+            }
+        }
+
+        List<UUID> deadSpectatorUuids = new ArrayList<>();
+        if (!spectatorUuids.isEmpty()) {
+            java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(spectatorUuids);
+            for (UUID uuid : spectatorUuids) {
                 // Check the database (with its internal cache) to determine if the player is dead
-                if (plugin.getDatabaseManager().isPlayerDead(uuid)) {
+                if (deathStatuses.getOrDefault(uuid, true)) {
                     deadSpectatorUuids.add(uuid);
                 }
             }
@@ -59,9 +66,10 @@ public class MainReviveCheckTask extends BukkitRunnable {
 
     private List<UUID> findRevivedPlayers(List<UUID> spectators) {
         List<UUID> revived = new ArrayList<>();
+        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(spectators);
         for (UUID uuid : spectators) {
             // Check if dead spectator is no longer dead (i.e., revived)
-            if (!plugin.getDatabaseManager().isPlayerDead(uuid)) {
+            if (!deathStatuses.getOrDefault(uuid, true)) {
                 revived.add(uuid);
                 // Avoid string concatenation overhead unless debug is enabled
                 if (plugin.isDebugMode()) {

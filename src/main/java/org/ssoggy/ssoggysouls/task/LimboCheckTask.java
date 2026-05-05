@@ -55,8 +55,9 @@ public class LimboCheckTask extends BukkitRunnable {
 
     private List<UUID> findRevivedPlayers(List<UUID> onlinePlayers) {
         List<UUID> toRelease = new ArrayList<>();
+        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(onlinePlayers);
         for (UUID uuid : onlinePlayers) {
-            if (!plugin.getDatabaseManager().isPlayerDead(uuid)) {
+            if (!deathStatuses.getOrDefault(uuid, true)) {
                 toRelease.add(uuid);
                 // Avoid string concatenation overhead unless debug is enabled
                 if (plugin.isDebugMode()) {
