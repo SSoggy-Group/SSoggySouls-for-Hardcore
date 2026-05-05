@@ -134,7 +134,7 @@ public class ReviveHelper {
             }
 
             Block block = world.getBlockAt(offsetPos.toBlockLocation());
-            if (blockTag.noneMatch(blockType -> blockType == block.getType())) {
+            if (!offset.getValue().contains(block.getType())) {
                 return Collections.emptyMap();
             }
         }
