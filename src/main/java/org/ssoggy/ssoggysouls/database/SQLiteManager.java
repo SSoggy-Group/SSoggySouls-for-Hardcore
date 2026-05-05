@@ -52,6 +52,9 @@ public class SQLiteManager implements DatabaseManager {
     public boolean initialize() {
         try {
             tableName = plugin.getConfig().getString("database.table-name", "hardcore_players");
+            if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+                throw new IllegalArgumentException("Invalid table name configuration: " + tableName);
+            }
 
             java.io.File dataFolder = plugin.getDataFolder();
             if (!dataFolder.exists()) {
@@ -124,9 +127,6 @@ public class SQLiteManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
-        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
-            throw new IllegalArgumentException("Invalid table name: " + tableName);
-        }
         if (columnName == null || !columnName.matches("^[a-zA-Z0-9_]+$")) {
             throw new IllegalArgumentException("Invalid column name: " + columnName);
         }

@@ -59,6 +59,9 @@ public class MySQLManager implements DatabaseManager {
             String pass = plugin.getConfig().getString("database.password", "changeme");
             int poolSize = plugin.getConfig().getInt("database.pool-size", 5);
             tableName = plugin.getConfig().getString("database.table-name", "hardcore_players");
+            if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
+                throw new IllegalArgumentException("Invalid table name configuration: " + tableName);
+            }
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
                     + "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true"
@@ -137,9 +140,6 @@ public class MySQLManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
-        if (tableName == null || !tableName.matches("^[a-zA-Z0-9_]+$")) {
-            throw new IllegalArgumentException("Invalid table name: " + tableName);
-        }
         if (columnName == null || !columnName.matches("^[a-zA-Z0-9_]+$")) {
             throw new IllegalArgumentException("Invalid column name: " + columnName);
         }
