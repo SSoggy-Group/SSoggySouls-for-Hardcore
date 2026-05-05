@@ -63,7 +63,7 @@ public final class TimeUtil {
             if (!sb.isEmpty()) sb.append(" ");
             sb.append(minutes).append("m");
         }
-        if (seconds > 0 && hours == 0) {
+        if (seconds > 0) {
             if (!sb.isEmpty()) sb.append(" ");
             sb.append(seconds).append("s");
         }
