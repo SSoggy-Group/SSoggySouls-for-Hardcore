@@ -1,63 +1,83 @@
 package org.ssoggy.ssoggysouls.util;
 
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.event.network.RegisterPayloadHandlersEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
+@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ServerTransferUtil {
 
-    public static void registerPayloads() {
-        PayloadTypeRegistry.playS2C().register(BungeeConnectPayload.PAYLOAD_ID, BungeeConnectPayload.CODEC);
+    @SubscribeEvent
+    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        event.registrar("ssoggysouls").playToClient(
+                BungeeConnectPayload.PAYLOAD_TYPE,
+                BungeeConnectPayload.CODEC,
+                (payload, context) -> {
+                    // Client-side handler, empty since we only send to client
+                }
+        );
     }
 
-    public static void sendToServer(ServerPlayerEntity player, String serverName) {
-        ServerPlayNetworking.send(player, new BungeeConnectPayload(serverName));
+    public static void sendToServer(ServerPlayer player, String serverName) {
+        player.connection.send(new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(
+                new BungeeConnectPayload(serverName)
+        ));
     }
 
-    public static void sendToLimbo(ServerPlayerEntity player) {
+    public static void sendToLimbo(ServerPlayer player) {
         sendToServer(player, ConfigManager.getConfig().getLimboServerName());
     }
 
-    public static void sendToMain(ServerPlayerEntity player) {
+    public static void sendToMain(ServerPlayer player) {
         sendToServer(player, ConfigManager.getConfig().getMainServerName());
     }
 
-    public record BungeeConnectPayload(String serverName) implements CustomPayload {
-        public static final CustomPayload.Id<BungeeConnectPayload> PAYLOAD_ID = new CustomPayload.Id<>(
-                Identifier.of("bungeecord", "main"));
+    public record BungeeConnectPayload(String serverName) implements CustomPacketPayload {
+        public static final CustomPacketPayload.Type<BungeeConnectPayload> PAYLOAD_TYPE = new CustomPacketPayload.Type<>(
+                ResourceLocation.fromNamespaceAndPath("bungeecord", "main")
+        );
 
-        public static final PacketCodec<PacketByteBuf, BungeeConnectPayload> CODEC = PacketCodec.of(
-                (value, buf) -> {
+        public static final StreamCodec<FriendlyByteBuf, BungeeConnectPayload> CODEC = StreamCodec.of(
+                (buf, value) -> {
                     try {
-                        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-                        java.io.DataOutputStream dos = new java.io.DataOutputStream(baos);
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        DataOutputStream dos = new DataOutputStream(baos);
                         dos.writeUTF("Connect");
                         dos.writeUTF(value.serverName());
                         buf.writeBytes(baos.toByteArray());
-                    } catch (java.io.IOException e) {
-                        throw new java.io.UncheckedIOException("Failed to encode BungeeCord Connect payload", e);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException("Failed to encode BungeeCord Connect payload", e);
                     }
                 },
                 buf -> {
                     try {
                         byte[] bytes = new byte[buf.readableBytes()];
                         buf.readBytes(bytes);
-                        java.io.DataInputStream dis = new java.io.DataInputStream(
-                                new java.io.ByteArrayInputStream(bytes));
+                        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
                         dis.readUTF(); // Skip sub-channel name ("Connect")
                         return new BungeeConnectPayload(dis.readUTF());
-                    } catch (java.io.IOException e) {
-                        throw new java.io.UncheckedIOException("Failed to decode BungeeCord Connect payload", e);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException("Failed to decode BungeeCord Connect payload", e);
                     }
-                });
+                }
+        );
 
         @Override
-        public CustomPayload.Id<? extends CustomPayload> getId() {
-            return PAYLOAD_ID;
+        public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+            return PAYLOAD_TYPE;
         }
     }
 }
