@@ -47,7 +47,7 @@ public class RPStorage {
         if (!file.exists()) {
             try {
                 if (!file.createNewFile()) {
-                    logger.log(Level.WARNING, "Storage file already exists or could not be created: {0}", fileName);
+                    logger.log(Level.WARNING, "Storage file already exists: {0}", fileName);
                 }
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Could not create storage file: " + fileName, e);
