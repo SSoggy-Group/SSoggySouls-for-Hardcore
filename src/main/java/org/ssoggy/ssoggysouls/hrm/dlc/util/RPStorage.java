@@ -25,8 +25,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +38,7 @@ public class RPStorage {
     private final File file;
     private final Logger logger;
     private FileConfiguration config;
+    private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
 
 
     public RPStorage(JavaPlugin plugin, String fileName) {
@@ -58,43 +62,49 @@ public class RPStorage {
         loadConfig();
     }
 
-    public void loadConfig() {
+    public synchronized void loadConfig() {
         config = YamlConfiguration.loadConfiguration(file);
     }
 
     public void saveConfig() {
-        try {
-            config.save(file);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save configuration to " + file.getPath(), e);
+        String data;
+        synchronized (this) {
+            data = config.saveToString();
         }
+        ioExecutor.execute(() -> {
+            try {
+                Files.writeString(file.toPath(), data);
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Could not save configuration to " + file.getPath(), e);
+            }
+        });
     }
 
-    public void setValue(String table, String key, Object value) {
+    public synchronized void setValue(String table, String key, Object value) {
         String path = table + "." + key;
         config.set(path, value);
     }
 
-    public void removeValue(String table, String key) {
+    public synchronized void removeValue(String table, String key) {
         String path = table + "." + key;
         config.set(path, null);
     }
 
     @Nullable
-    public String getValue(String table, String key) {
+    public synchronized String getValue(String table, String key) {
         return config.getString(table + "." + key, null);
     }
 
-    public boolean hasValue(String table, String key, Object value) {
+    public synchronized boolean hasValue(String table, String key, Object value) {
         String path = table + "." + key;
         return Objects.equals(config.getString(path, null), value);
     }
 
-    public boolean hasValue(String table, String key) {
+    public synchronized boolean hasValue(String table, String key) {
         return !hasValue(table, key, null);
     }
 
-    public Map<String, Object> getTable(String table) throws NullPointerException {
+    public synchronized Map<String, Object> getTable(String table) throws NullPointerException {
         return config.getConfigurationSection(table).getValues(false);
     }
 }

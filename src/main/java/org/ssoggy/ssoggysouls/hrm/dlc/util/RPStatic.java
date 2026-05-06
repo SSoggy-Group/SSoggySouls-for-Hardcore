@@ -47,6 +47,7 @@ public class RPStatic {
     public static Map<String, Boolean> CONFIG_RULES;
     public static Map<String, Integer> CONFIG_TIMERS;
 
+    public static RPStorage STATS_STORAGE;
     public static RPStorage SOCIAL_STORAGE;
     public static RPStorage USERNAME_CACHE;
 
@@ -64,6 +65,7 @@ public class RPStatic {
         RPStatic.CONFIG_RULES = new HashMap<>();
         RPStatic.CONFIG_TIMERS = new HashMap<>();
 
+        RPStatic.STATS_STORAGE = new RPStorage(plugin, "stats.yml");
         RPStatic.SOCIAL_STORAGE = new RPStorage(plugin, "social.yml");
 
         RPStatic.USERNAME_CACHE = new RPStorage(plugin, "usernamecache.yml");

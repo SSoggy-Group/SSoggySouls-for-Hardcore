@@ -30,7 +30,6 @@ public class RPSocial {
     private final UUID storedUuid;
     public RPSocial(UUID uuid) {
         this.storedUuid = uuid;
-        RPStatic.SOCIAL_STORAGE.loadConfig();
     }
 
     public void setRelationTo(UUID uuid, @Nullable SOCIALENUM relationship) {
