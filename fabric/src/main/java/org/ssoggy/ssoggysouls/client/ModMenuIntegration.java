@@ -4,6 +4,7 @@ import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.text.Text;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
@@ -33,7 +34,9 @@ public class ModMenuIntegration implements ModMenuApi {
                     button.setMessage(Text.literal("HRM Enabled: " + ConfigManager.getConfig().isHrmEnabled()));
                     ConfigManager.save();
                 }
-            ).dimensions(this.width / 2 - 100, y, 200, 20).build());
+            ).dimensions(this.width / 2 - 100, y, 200, 20)
+            .tooltip(Tooltip.of(Text.literal("Toggles Hardcore Revive Mode. When enabled, players drop heads and can be revived via rituals.")))
+            .build());
 
             // Default Lives
             this.addDrawableChild(ButtonWidget.builder(
@@ -44,7 +47,9 @@ public class ModMenuIntegration implements ModMenuApi {
                     button.setMessage(Text.literal("Default Lives: " + ConfigManager.getConfig().getDefaultLives()));
                     ConfigManager.save();
                 }
-            ).dimensions(this.width / 2 - 100, y + 25, 200, 20).build());
+            ).dimensions(this.width / 2 - 100, y + 25, 200, 20)
+            .tooltip(Tooltip.of(Text.literal("Sets the default number of lives a new player starts with (1-10).")))
+            .build());
 
             // Back button
             this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.back"), button -> this.client.setScreen(this.parent))
