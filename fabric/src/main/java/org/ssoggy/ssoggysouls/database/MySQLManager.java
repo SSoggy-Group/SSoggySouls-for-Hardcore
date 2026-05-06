@@ -59,6 +59,10 @@ public class MySQLManager implements DatabaseManager {
             String pass = cfg.getDatabasePassword();
             int poolSize = cfg.getDatabasePoolSize();
             tableName = cfg.getDatabaseTableName();
+            if (!isValidIdentifier(tableName)) {
+                SSoggySoulsMod.LOGGER.error("MySQL initialization failed: Invalid database.table-name '{}'. Table name must consist only of alphanumeric characters and underscores.", tableName);
+                return false;
+            }
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
                     + "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true"
@@ -127,6 +131,10 @@ public class MySQLManager implements DatabaseManager {
         ensureColumn(conn, "grace_until", "BIGINT NOT NULL DEFAULT 0");
     }
 
+    private boolean isValidIdentifier(String identifier) {
+        return identifier != null && identifier.matches("^[a-zA-Z0-9_]+$");
+    }
+
     /**
      * ensures a column exists in the table, ignoring duplicate-column errors.
      *
@@ -136,6 +144,16 @@ public class MySQLManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
+        if (!isValidIdentifier(columnName)) {
+            throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
+        }
+        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'.\\-]+$")) {
+            throw new IllegalArgumentException("Invalid column definition characters: " + definition);
+        }
+        if (definition.contains("--")) {
+            throw new IllegalArgumentException("SQL comments are not allowed in column definition: " + definition);
+        }
+
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sql);
