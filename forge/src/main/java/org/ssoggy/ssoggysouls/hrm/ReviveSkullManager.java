@@ -62,31 +62,24 @@ public class ReviveSkullManager {
 
     private static void openMenu(ServerPlayer player, List<PlayerData> deadPlayers) {
         int rows = Math.min(6, ((deadPlayers.size() - 1) / 9) + 1);
-        int slots = rows * 9;
+        int numSlots = rows * 9;
 
-        // Build a simple array inventory of player heads
-        ItemStack[] items = new ItemStack[slots];
-        for (int i = 0; i < slots; i++) {
-            items[i] = i < deadPlayers.size() ? createMenuHead(deadPlayers.get(i)) : ItemStack.EMPTY;
+        // Build a SimpleContainer populated with player heads
+        net.minecraft.world.SimpleContainer container = new net.minecraft.world.SimpleContainer(numSlots);
+        for (int i = 0; i < numSlots; i++) {
+            container.setItem(i, i < deadPlayers.size() ? createMenuHead(deadPlayers.get(i)) : ItemStack.EMPTY);
         }
 
         MenuType<ChestMenu> menuType = getMenuType(rows);
 
         player.openMenu(new SimpleMenuProvider((syncId, playerInv, p) ->
-                new ChestMenu(menuType, syncId, playerInv, rows) {
-                    {
-                        // Fill the container slots with our head items
-                        for (int i = 0; i < slots; i++) {
-                            this.slots.get(i).set(items[i]);
-                        }
-                    }
-
+                new ChestMenu(menuType, syncId, playerInv, container, rows) {
                     @Override
                     public boolean stillValid(Player pl) { return true; }
 
                     @Override
                     public void clicked(int slotIndex, int button, ClickType clickType, Player clickingPlayer) {
-                        if (slotIndex >= 0 && slotIndex < slots) {
+                        if (slotIndex >= 0 && slotIndex < numSlots) {
                             ItemStack clicked = this.slots.get(slotIndex).getItem();
                             handleMenuClick(clicked, clickingPlayer);
                         }
