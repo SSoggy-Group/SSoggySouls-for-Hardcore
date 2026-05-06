@@ -1,9 +1,6 @@
 name: Build Plugin/Mod Jars And Tag Release
 
 'on':
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
     inputs:
       release_tag:
