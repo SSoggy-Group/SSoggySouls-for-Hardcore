@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.ssoggy.ssoggysouls.PluginContext;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,7 +26,7 @@ import static org.mockito.Mockito.*;
  * module on Java 21+ without explicit --add-opens / javaagent configuration.
  * Only the PluginContext interface (our own code) is mocked via Mockito.
  */
-public class MySQLManagerTest {
+class MySQLManagerTest {
 
     private PluginContext plugin;
     private Connection connection;
@@ -39,7 +38,7 @@ public class MySQLManagerTest {
     private final UUID testUuid = UUID.randomUUID();
 
     @BeforeEach
-    public void setup() throws Exception {
+    void setup() throws Exception {
         // Use Mockito only for our own interfaces (PluginContext)
         plugin = mock(PluginContext.class);
 
@@ -78,8 +77,8 @@ public class MySQLManagerTest {
         @Override public Connection getConnection() { return connection; }
         @Override public Connection getConnection(String username, String password) { return connection; }
         @Override public PrintWriter getLogWriter() { return null; }
-        @Override public void setLogWriter(PrintWriter out) {}
-        @Override public void setLoginTimeout(int seconds) {}
+        @Override public void setLogWriter(PrintWriter out) { throw new UnsupportedOperationException("Not implemented"); }
+        @Override public void setLoginTimeout(int seconds) { throw new UnsupportedOperationException("Not implemented"); }
         @Override public int getLoginTimeout() { return 0; }
         @Override public Logger getParentLogger() { return Logger.getAnonymousLogger(); }
         @Override public <T> T unwrap(Class<T> iface) { return null; }
@@ -87,7 +86,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testGetPlayer_Found() throws SQLException {
+    void testGetPlayer_Found() throws SQLException {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
 
@@ -116,7 +115,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testGetPlayer_NotFound() throws SQLException {
+    void testGetPlayer_NotFound() throws SQLException {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(false);
 
@@ -127,7 +126,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testSavePlayer() throws SQLException {
+    void testSavePlayer() throws SQLException {
         PlayerData data = new PlayerData(testUuid, "TestUser", 3, false, 1000L, 2000L, 3000L, 4000L);
 
         mySQLManager.savePlayer(data);
@@ -144,7 +143,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testIsPlayerDead_CacheMiss() throws SQLException {
+    void testIsPlayerDead_CacheMiss() throws SQLException {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
         when(resultSet.getBoolean("is_dead")).thenReturn(true);
@@ -157,7 +156,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testIsPlayerDead_CacheHit() throws SQLException {
+    void testIsPlayerDead_CacheHit() throws SQLException {
         // First call to populate cache
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
@@ -174,7 +173,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testRevivePlayer_Success() throws SQLException {
+    void testRevivePlayer_Success() throws SQLException {
         when(preparedStatement.executeUpdate()).thenReturn(1);
 
         boolean result = mySQLManager.revivePlayer(testUuid, 3);
@@ -185,7 +184,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testRevivePlayer_Failure() throws SQLException {
+    void testRevivePlayer_Failure() throws SQLException {
         when(preparedStatement.executeUpdate()).thenReturn(0);
 
         boolean result = mySQLManager.revivePlayer(testUuid, 3);
@@ -196,7 +195,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testGetPlayerByName_Found() throws SQLException {
+    void testGetPlayerByName_Found() throws SQLException {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
 
@@ -217,7 +216,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testGetPlayerByName_NotFound() throws SQLException {
+    void testGetPlayerByName_NotFound() throws SQLException {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(false);
 
@@ -228,7 +227,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testSetLives() throws SQLException {
+    void testSetLives() throws SQLException {
         mySQLManager.setLives(testUuid, 5);
 
         verify(preparedStatement).setInt(1, 5);
@@ -238,7 +237,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testSetLives_Dead() throws SQLException {
+    void testSetLives_Dead() throws SQLException {
         mySQLManager.setLives(testUuid, 0);
 
         verify(preparedStatement).setInt(1, 0);
@@ -248,7 +247,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testSetFirstJoin() throws SQLException {
+    void testSetFirstJoin() throws SQLException {
         mySQLManager.setFirstJoin(testUuid, 12345L);
 
         verify(preparedStatement).setLong(1, 12345L);
@@ -257,7 +256,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testSetLastSeen() throws SQLException {
+    void testSetLastSeen() throws SQLException {
         mySQLManager.setLastSeen(testUuid, 54321L);
 
         verify(preparedStatement).setLong(1, 54321L);
@@ -266,7 +265,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testSetGraceUntil() throws SQLException {
+    void testSetGraceUntil() throws SQLException {
         mySQLManager.setGraceUntil(testUuid, 99999L);
 
         verify(preparedStatement).setLong(1, 99999L);
@@ -275,7 +274,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testInvalidateDeathStatusCache() throws SQLException {
+    void testInvalidateDeathStatusCache() throws SQLException {
         // First make them dead to put them in cache
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
@@ -293,7 +292,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testGetDeadPlayers() throws SQLException {
+    void testGetDeadPlayers() throws SQLException {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         // Two rows
         when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
@@ -311,7 +310,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testGetPluginVersion_Found() throws SQLException {
+    void testGetPluginVersion_Found() throws SQLException {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
         when(resultSet.getString("version")).thenReturn("1.0.0");
@@ -325,7 +324,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testGetPluginVersion_NotFound() throws SQLException {
+    void testGetPluginVersion_NotFound() throws SQLException {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(false);
 
@@ -336,7 +335,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testSavePluginVersion() throws SQLException {
+    void testSavePluginVersion() throws SQLException {
         mySQLManager.savePluginVersion("main", "2.0.0");
 
         verify(preparedStatement).setString(1, "main");
@@ -347,7 +346,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testGetPlayer_SQLException() throws SQLException {
+    void testGetPlayer_SQLException() throws SQLException {
         when(preparedStatement.executeQuery()).thenThrow(new SQLException("Mock DB Error"));
 
         PlayerData data = mySQLManager.getPlayer(testUuid);
@@ -356,7 +355,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testSavePlayer_SQLException() throws SQLException {
+    void testSavePlayer_SQLException() throws SQLException {
         PlayerData data = new PlayerData(testUuid, "TestUser", 3, false, 1000L, 2000L, 3000L, 4000L);
         when(preparedStatement.executeUpdate()).thenThrow(new SQLException("Mock DB Error"));
 
@@ -365,7 +364,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testIsPlayerDead_SQLException() throws SQLException {
+    void testIsPlayerDead_SQLException() throws SQLException {
         when(preparedStatement.executeQuery()).thenThrow(new SQLException("Mock DB Error"));
 
         boolean isDead = mySQLManager.isPlayerDead(testUuid);
@@ -374,7 +373,7 @@ public class MySQLManagerTest {
     }
 
     @Test
-    public void testGetPluginVersion_SQLException() throws SQLException {
+    void testGetPluginVersion_SQLException() throws SQLException {
         when(preparedStatement.executeQuery()).thenThrow(new SQLException("Mock DB Error"));
 
         String version = mySQLManager.getPluginVersion("main");
