@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public final class TimeUtil {
 
-    private static final Pattern TIME_PATTERN = Pattern.compile("^(\\d+[hms])+$");
+    private static final Pattern TIME_PATTERN = Pattern.compile("^(?:\\d+[hms])++$");
     private static final Pattern COMPONENT_PATTERN = Pattern.compile("(\\d+)([hms])");
 
     private TimeUtil() {
@@ -55,7 +55,7 @@ public final class TimeUtil {
                 };
                 totalMillis = Math.addExact(totalMillis, addedMillis);
             } catch (NumberFormatException e) {
-                continue;
+                // ignore
             } catch (ArithmeticException e) {
                 return -1; // overflow
             }
