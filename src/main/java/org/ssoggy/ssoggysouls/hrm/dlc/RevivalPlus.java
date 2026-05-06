@@ -51,4 +51,20 @@ public final class RevivalPlus {
         java.util.Objects.requireNonNull(plugin.getCommand("ghostmode")).setExecutor(new GhostModeCommand());
         java.util.Objects.requireNonNull(plugin.getCommand("trust")).setExecutor(new SocialCommand());
     }
+
+    public static void disable() {
+        shutdownStorage(RPStatic.DEAD_STORAGE);
+        shutdownStorage(RPStatic.STATS_STORAGE);
+        shutdownStorage(RPStatic.SOCIAL_STORAGE);
+        shutdownStorage(RPStatic.USERNAME_CACHE);
+    }
+
+    private static void shutdownStorage(RPStorage storage) {
+        if (storage == null) return;
+        try {
+            storage.shutdown();
+        } catch (Exception e) {
+            RPStatic.LOGGER.log(java.util.logging.Level.SEVERE, "Error shutting down RPStorage", e);
+        }
+    }
 }

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -106,5 +107,19 @@ public class RPStorage {
 
     public synchronized Map<String, Object> getTable(String table) throws NullPointerException {
         return config.getConfigurationSection(table).getValues(false);
+    }
+
+    public synchronized void shutdown() {
+        ioExecutor.shutdown();
+        try {
+            if (!ioExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
+                logger.log(Level.WARNING, "RPStorage executor did not terminate in time for {0}; forcing shutdown", file.getName());
+                ioExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            logger.log(Level.WARNING, "RPStorage shutdown interrupted for {0}; forcing shutdown", file.getName());
+            ioExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }
