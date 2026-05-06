@@ -53,7 +53,7 @@ public class SQLiteManager implements DatabaseManager {
         try {
             tableName = plugin.getConfig().getString("database.table-name", "hardcore_players");
             if (!isValidIdentifier(tableName)) {
-                plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed: Invalid database.table-name '" + tableName + "'. Table name must consist only of alphanumeric characters and underscores.");
+                plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", tableName);
                 return false;
             }
 
@@ -120,7 +120,7 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     private boolean isValidIdentifier(String identifier) {
-        return identifier != null && identifier.matches("^[a-zA-Z0-9_]+$");
+        return identifier != null && identifier.matches("^\\w+$");
     }
 
     /**
@@ -283,7 +283,7 @@ public class SQLiteManager implements DatabaseManager {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    boolean isDead = rs.getBoolean("is_dead");
+                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
                     result.put(uuid, isDead);
                     deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
                 }

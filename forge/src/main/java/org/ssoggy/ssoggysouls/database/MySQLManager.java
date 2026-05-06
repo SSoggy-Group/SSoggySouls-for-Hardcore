@@ -132,7 +132,7 @@ public class MySQLManager implements DatabaseManager {
     }
 
     private boolean isValidIdentifier(String identifier) {
-        return identifier != null && identifier.matches("^[a-zA-Z0-9_]+$");
+        return identifier != null && identifier.matches("^\\w+$");
     }
 
     /**
@@ -296,7 +296,7 @@ public class MySQLManager implements DatabaseManager {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    boolean isDead = rs.getBoolean("is_dead");
+                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
                     result.put(uuid, isDead);
                     deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
                 }
@@ -334,62 +334,8 @@ public class MySQLManager implements DatabaseManager {
     }
 
     public java.util.Map<UUID, Boolean> arePlayersDead(List<UUID> uuids) {
-        java.util.Map<UUID, Boolean> results = new java.util.HashMap<>();
-        if (uuids == null || uuids.isEmpty()) {
-            return results;
-        }
-
-        List<UUID> toFetch = new java.util.ArrayList<>();
-        for (UUID uuid : uuids) {
-            CachedDeathStatus cached = deathStatusCache.get(uuid);
-            if (cached != null && !cached.isExpired()) {
-                results.put(uuid, cached.isDead);
-            } else {
-                toFetch.add(uuid);
-            }
-        }
-
-        if (toFetch.isEmpty()) {
-            return results;
-        }
-
-        StringBuilder placeholders = new StringBuilder();
-        for (int i = 0; i < toFetch.size(); i++) {
-            placeholders.append("?");
-            if (i < toFetch.size() - 1) {
-                placeholders.append(",");
-            }
-        }
-
-        String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            for (int i = 0; i < toFetch.size(); i++) {
-                ps.setString(i + 1, toFetch.get(i).toString());
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
-                    results.put(uuid, isDead);
-                }
-            }
-        } catch (SQLException e) {
-            SSoggySoulsMod.LOGGER.warn("Failed to perform bulk death status check", e);
-        }
-
-        // If any UUIDs were not found in the DB, default to true
-        for (UUID uuid : toFetch) {
-            if (!results.containsKey(uuid)) {
-                results.put(uuid, true);
-            }
-        }
-
-        return results;
+        if (uuids == null) return new java.util.HashMap<>();
+        return arePlayersDead(new java.util.HashSet<>(uuids));
     }
 
     public boolean revivePlayer(UUID uuid, int livesToRestore) {

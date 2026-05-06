@@ -118,7 +118,7 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     private boolean isValidIdentifier(String identifier) {
-        return identifier != null && identifier.matches("^[a-zA-Z0-9_]+$");
+        return identifier != null && identifier.matches("^\\w+$");
     }
 
     /**
@@ -281,7 +281,7 @@ public class SQLiteManager implements DatabaseManager {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    boolean isDead = rs.getBoolean("is_dead");
+                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
                     result.put(uuid, isDead);
                     deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
                 }
