@@ -7,7 +7,7 @@
 
     <groupId>org.ssoggy</groupId>
     <artifactId>SSoggySouls</artifactId>
-    <version>4.0.8</version>
+    <version>4.0.9</version>
     <packaging>jar</packaging>
 
     <name>SSoggySouls</name>
