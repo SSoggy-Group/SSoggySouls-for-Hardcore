@@ -1,0 +1,166 @@
+name: Auto Bump, Build, and Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      # Ignore docs and configs so the bot's own commits don't trigger an infinite loop
+      - 'pom.xml'
+      - '**/gradle.properties'
+      - '**/*.md'
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Force Bump Type (Automated via commit messages if left blank)"
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write # Needed to push commits, tags, and releases
+
+jobs:
+  bump-and-release:
+    runs-on: ubuntu-latest
+    # Prevents the bot from triggering itself in an infinite loop
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed to push tags and commits back to the repo
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # --- VERSION BUMPING LOGIC ---
+      - name: Calculate Next Version
+        id: version_math
+        run: |
+          OLD_VERSION="$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$OLD_VERSION"
+          
+          BUMP_TYPE="${{ inputs.bump_type }}"
+          SKIP_RELEASE="false"
+          
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            COMMIT_MSG=$(git log -1 --pretty=%B)
+            
+            # 1. Check for skips first (docs, github actions, tests)
+            if [[ "$COMMIT_MSG" == *"docs:"* ]] || [[ "$COMMIT_MSG" == *"ci:"* ]] || [[ "$COMMIT_MSG" == *"test:"* ]]; then
+              echo "Housekeeping commit detected. Skipping release."
+              SKIP_RELEASE="true"
+            # 2. Check for Major
+            elif [[ "$COMMIT_MSG" == *"BREAKING"* ]] || [[ "$COMMIT_MSG" == *"[major]"* ]]; then
+              BUMP_TYPE="major"
+            # 3. Check for Minor
+            elif [[ "$COMMIT_MSG" == *"feat:"* ]] || [[ "$COMMIT_MSG" == *"[minor]"* ]]; then
+              BUMP_TYPE="minor"
+            # 4. Default to Patch (Catches chore:, refactor:, fix:, port:, etc.)
+            else
+              BUMP_TYPE="patch"
+            fi
+          fi
+          
+          echo "skip=$SKIP_RELEASE" >> $GITHUB_OUTPUT
+          
+          if [ "$SKIP_RELEASE" == "false" ]; then
+            if [ "$BUMP_TYPE" == "major" ]; then
+              NEW_VERSION="$((MAJOR + 1)).0.0"
+            elif [ "$BUMP_TYPE" == "minor" ]; then
+              NEW_VERSION="${MAJOR}.$((MINOR + 1)).0"
+            else
+              NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
+            fi
+            
+            echo "OLD_VERSION=$OLD_VERSION" >> $GITHUB_ENV
+            echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          fi
+
+      # --- APPLY AND COMMIT (Only runs if not skipped) ---
+      - name: Apply Version to POM and Gradle files
+        if: steps.version_math.outputs.skip != 'true'
+        run: |
+          # Safely update the maven pom.xml
+          mvn versions:set -DnewVersion=${NEW_VERSION} -DgenerateBackupPoms=false
+          
+          # Safely update the gradle properties
+          sed -i "s/$OLD_VERSION/$NEW_VERSION/g" fabric/gradle.properties || true
+          sed -i "s/$OLD_VERSION/$NEW_VERSION/g" forge/gradle.properties || true
+
+      - name: Auto-Update Docs References
+        if: steps.version_math.outputs.skip != 'true'
+        run: |
+          # Safely scans ALL .md files anywhere in the repo and swaps the version text
+          find . -type f -name "*.md" -print0 | xargs -0 sed -i "s/$OLD_VERSION/$NEW_VERSION/g"
+
+      - name: Commit version bump to Repository
+        if: steps.version_math.outputs.skip != 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Add ALL files modified by the bot (POM, Gradle, and all .md files)
+          git add -A || true
+          
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "chore(release): bump version to v${NEW_VERSION} [skip ci]"
+            git tag "v${NEW_VERSION}"
+            git push origin main
+            git push origin "v${NEW_VERSION}"
+          fi
+
+      # --- BUILDING JARS (Only runs if not skipped) ---
+      - name: Build Root Plugin (Maven)
+        if: steps.version_math.outputs.skip != 'true'
+        run: mvn -B clean package
+
+      - name: Build Fabric Mod
+        if: steps.version_math.outputs.skip != 'true'
+        run: |
+          chmod +x ./fabric/gradlew
+          ./fabric/gradlew -p fabric build
+
+      - name: Build Forge Mod
+        if: steps.version_math.outputs.skip != 'true'
+        run: |
+          chmod +x ./forge/gradlew
+          ./forge/gradlew -p forge build
+
+      # --- PACKAGING AND RELEASING (Only runs if not skipped) ---
+      - name: Locate Jars
+        if: steps.version_math.outputs.skip != 'true'
+        id: package
+        run: |
+          JAR_PATH="$(ls target/*-shaded.jar 2>/dev/null | head -n 1 || true)"
+          FABRIC_JAR_PATH="$(ls fabric/build/libs/*.jar 2>/dev/null | grep -v sources | head -n 1 || true)"
+          FORGE_JAR_PATH="$(ls forge/build/libs/*.jar 2>/dev/null | grep -v sources | head -n 1 || true)"
+          
+          echo "jar=${JAR_PATH}" >> "${GITHUB_OUTPUT}"
+          echo "fabric_jar=${FABRIC_JAR_PATH}" >> "${GITHUB_OUTPUT}"
+          echo "forge_jar=${FORGE_JAR_PATH}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create GitHub Release
+        if: steps.version_math.outputs.skip != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ env.NEW_VERSION }}"
+          name: "Build ${{ env.NEW_VERSION }}"
+          generate_release_notes: true
+          files: |
+            ${{ steps.package.outputs.jar }}
+            ${{ steps.package.outputs.fabric_jar }}
+            ${{ steps.package.outputs.forge_jar }}
