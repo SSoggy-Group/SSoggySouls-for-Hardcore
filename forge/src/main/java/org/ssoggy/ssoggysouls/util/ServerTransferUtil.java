@@ -5,10 +5,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.event.network.RegisterPayloadHandlersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,19 +13,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ServerTransferUtil {
-
-    @SubscribeEvent
-    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("ssoggysouls").playToClient(
-                BungeeConnectPayload.PAYLOAD_TYPE,
-                BungeeConnectPayload.CODEC,
-                (payload, context) -> {
-                    // Client-side handler, empty since we only send to client
-                }
-        );
-    }
 
     public static void sendToServer(ServerPlayer player, String serverName) {
         player.connection.send(new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(
