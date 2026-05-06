@@ -1,9 +1,10 @@
 # SSoggySouls
 
 ![SSoggySouls Banner](https://cdn.modrinth.com/data/Pb03qu6T/images/48a03bf24103dde408dbbcad653a3936b5f5255a.png)
+      [![CI Tests](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml) [![Build Plugin/Mod Jars And Tag Release](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/build-plugin-release.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/build-plugin-release.yml) [![Deploy Documentation to GitHub Pages](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/deploy-docs.yml)
 
-**Version 4.0.2** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)       [![CI Tests](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml) [![Build Plugin/Mod Jars And Tag Release](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/build-plugin-release.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/build-plugin-release.yml) [![Deploy Documentation to GitHub Pages](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/deploy-docs.yml)
 
+**Version 4.0.2** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore) 
 A hardcore lives system mod/plugin for Minecraft 1.21.X (Supports Spigot, Paper, Purpur, Fabric, and Forge). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
 > **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
