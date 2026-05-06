@@ -42,7 +42,7 @@ import org.ssoggy.ssoggysouls.util.TimeUtil;
 import org.ssoggy.ssoggysouls.util.UpdateChecker;
 
 @SuppressWarnings("java:S6548")
-public final class SSoggySouls extends JavaPlugin implements Listener {
+public final class SSoggySouls extends JavaPlugin implements Listener, PluginContext {
 
     private static SSoggySouls instance;
 
@@ -462,6 +462,16 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
 
     public boolean isDebugMode() {
         return debugMode;
+    }
+
+    @Override
+    public String getConfigString(String path, String defaultValue) {
+        return getConfig().getString(path, defaultValue);
+    }
+
+    @Override
+    public int getConfigInt(String path, int defaultValue) {
+        return getConfig().getInt(path, defaultValue);
     }
 
     public static SSoggySouls getInstance() {

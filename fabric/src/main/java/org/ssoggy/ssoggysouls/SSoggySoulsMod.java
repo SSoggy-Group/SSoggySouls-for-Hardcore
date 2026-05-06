@@ -31,10 +31,11 @@ import org.ssoggy.ssoggysouls.util.UpdateChecker;
  * This is the Fabric equivalent of the Bukkit {@code SSoggySouls extends JavaPlugin}.
  * It initializes on both dedicated servers and singleplayer (integrated server).
  */
-public class SSoggySoulsMod implements ModInitializer {
+public class SSoggySoulsMod implements ModInitializer, PluginContext {
 
     public static final String MOD_ID = "ssoggysouls";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MOD_ID);
 
     @Override
     public void onInitialize() {
@@ -92,8 +93,17 @@ public class SSoggySoulsMod implements ModInitializer {
         LOGGER.info("SSoggySouls Fabric loaded successfully!");
     }
 
-    public Path getDataFolder() {
-        return FabricLoader.getInstance().getConfigDir().resolve(MOD_ID);
+    public File getDataFolder() {
+        File dir = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID).toFile();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir;
+    }
+
+    @Override
+    public java.util.logging.Logger getLogger() {
+        return JUL_LOGGER;
     }
 
     public int getDefaultLives() {
@@ -108,5 +118,16 @@ public class SSoggySoulsMod implements ModInitializer {
         if (isDebugMode()) {
             LOGGER.info("[DEBUG] {}", message);
         }
+    }
+
+    @Override
+    public String getConfigString(String path, String defaultValue) {
+        // Delegate to ConfigManager for Fabric config values
+        return ConfigManager.getConfig().getConfigString(path, defaultValue);
+    }
+
+    @Override
+    public int getConfigInt(String path, int defaultValue) {
+        return ConfigManager.getConfig().getConfigInt(path, defaultValue);
     }
 }

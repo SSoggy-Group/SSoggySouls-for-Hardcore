@@ -1,21 +1,21 @@
 package org.ssoggy.ssoggysouls.util;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
-public final class MessageUtil {
-
-    private static String prefix = "&8[&4☠&8] &r";
-    private static final Map<String, String> messages = new HashMap<>();
+/**
+ * Paper/Bukkit-specific MessageUtil.
+ * <p>
+ * Delegates raw substitution to the common {@link MessageHelper} and provides
+ * Bukkit-specific config loading and Kyori Adventure color serialization.
+ */
+public final class MessageUtil extends MessageHelper {
 
     private MessageUtil() {}
 
     public static void loadMessages(FileConfiguration config) {
-        prefix = config.getString("messages.prefix", "&8[&4☠&8] &r");
+        prefix = config.getString("messages.prefix", "&8[&4\u2620&8] &r");
 
         ConfigurationSection section = config.getConfigurationSection("messages");
         if (section != null) {
@@ -26,17 +26,6 @@ public final class MessageUtil {
         }
     }
 
-    public static String getRaw(String key, Object... replacements) {
-        String messageContent = messages.getOrDefault(key, "&cMissing message: " + key);
-
-        for (int i = 0; i < replacements.length - 1; i += 2) {
-            String placeholder = "%" + replacements[i] + "%";
-            String value = String.valueOf(replacements[i + 1]);
-            messageContent = messageContent.replace(placeholder, value);
-        }
-        return messageContent;
-    }
-
     public static String get(String key, Object... replacements) {
         return colorize(prefix + getRaw(key, replacements));
     }
@@ -45,6 +34,10 @@ public final class MessageUtil {
         return colorize(getRaw(key, replacements));
     }
 
+    /**
+     * Translates ampersand color codes via Kyori Adventure's legacy serializer.
+     * This produces proper section-sign color codes for Paper/Bukkit.
+     */
     public static String colorize(String text) {
         if (text == null) return "";
         return LegacyComponentSerializer.legacySection().serialize(
