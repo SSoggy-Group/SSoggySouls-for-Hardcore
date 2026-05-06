@@ -30,10 +30,18 @@ import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 // detects when player head is placed for HRM strcuture (so cool to short it to HRM i know)
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class RevivalStructureListener implements Listener {
 
     private final SSoggySouls plugin;
     private final DatabaseManager db;
+    private static final Map<UUID, Location> PENDING_REVIVALS = new ConcurrentHashMap<>();
+
+    public static Location consumePendingRevival(UUID uuid) {
+        return PENDING_REVIVALS.remove(uuid);
+    }
 
     public RevivalStructureListener(SSoggySouls plugin) {
         this.plugin = plugin;
@@ -110,12 +118,13 @@ public class RevivalStructureListener implements Listener {
         if (revived != null && revived.isOnline()) {
             restoreAtStructure(revived, spawnLoc);
         } else {
+            PENDING_REVIVALS.put(revivedUuid, spawnLoc);
             summoner.sendMessage(MessageUtil.get("revive-from-limbo",
                     "player", revivedName));
         }
     }
 
-    private static void restoreAtStructure(Player revived, Location spawnLoc) {
+    public static void restoreAtStructure(Player revived, Location spawnLoc) {
         revived.teleport(spawnLoc);
         revived.setGameMode(GameMode.SURVIVAL);
         revived.sendMessage(MessageUtil.get("revive-success"));
