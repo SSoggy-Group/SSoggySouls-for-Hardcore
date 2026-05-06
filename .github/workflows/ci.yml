@@ -5,34 +5,49 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      # 1. Root Bukkit/Spigot/Paper Plugin (Maven)
+      - name: Set up Java (Maven Cache)
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "21"
-          cache: maven
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Run Maven Tests
+      - name: Run Root Plugin Tests
         run: mvn -B test
 
-      - name: Make Gradle Wrapper Executable
+      # 2. Fabric Mod (Gradle)
+      - name: Setup Gradle (Fabric)
         if: always()
-        run: chmod +x ./fabric/gradlew
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: fabric
 
       - name: Run Fabric Tests
         if: always()
         run: |
-          cd fabric
-          ./gradlew test
+          chmod +x ./fabric/gradlew
+          ./fabric/gradlew -p fabric test
+
+      # 3. Forge Mod (Gradle)
+      - name: Setup Gradle (Forge)
+        if: always()
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: forge
+
+      - name: Run Forge Tests
+        if: always()
+        run: |
+          chmod +x ./forge/gradlew
+          ./forge/gradlew -p forge test
