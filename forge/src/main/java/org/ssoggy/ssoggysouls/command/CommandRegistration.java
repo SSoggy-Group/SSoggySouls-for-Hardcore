@@ -225,12 +225,11 @@ public class CommandRegistration {
                     }
 
                     try {
-                        List<String> lines = Files.readAllLines(logFile.toPath());
+                        java.util.Deque<String> lines = readLastLines(logFile, 15);
                         source.getServer().execute(() -> {
                             source.sendSystemMessage(Component.literal("--- Recent Admin Logs ---").withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD));
-                            int start = Math.max(0, lines.size() - 15);
-                            for (int i = start; i < lines.size(); i++) {
-                                source.sendSystemMessage(Component.literal(lines.get(i)).withStyle(net.minecraft.ChatFormatting.GRAY));
+                            for (String line : lines) {
+                                source.sendSystemMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY));
                             }
                         });
                     } catch (Exception e) {
@@ -241,5 +240,18 @@ public class CommandRegistration {
                 return 1;
             })
         );
+    }
+
+    private static java.util.Deque<String> readLastLines(File file, int maxLines) throws Exception {
+        java.util.Deque<String> lastLines = new java.util.ArrayDeque<>(maxLines);
+        try (java.util.stream.Stream<String> lines = Files.lines(file.toPath())) {
+            lines.forEach(line -> {
+                if (lastLines.size() >= maxLines) {
+                    lastLines.pollFirst();
+                }
+                lastLines.addLast(line);
+            });
+        }
+        return lastLines;
     }
 }
