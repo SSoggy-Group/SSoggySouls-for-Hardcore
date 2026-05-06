@@ -11,7 +11,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
-import java.nio.file.Path;
 
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.database.MySQLManager;
@@ -28,10 +27,11 @@ import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 
 @Mod(SSoggySoulsMod.MODID)
-public class SSoggySoulsMod {
+public class SSoggySoulsMod implements PluginContext {
 
     public static final String MODID = "ssoggysouls";
     public static final Logger LOGGER = LogUtils.getLogger();
+    private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MODID);
 
     public SSoggySoulsMod(FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
@@ -101,21 +101,44 @@ public class SSoggySoulsMod {
         // Do something when the server starts
     }
 
-    public Path getDataFolder() {
-        return FMLPaths.CONFIGDIR.get().resolve(MODID);
+    @Override
+    public java.io.File getDataFolder() {
+        java.io.File dir = FMLPaths.CONFIGDIR.get().resolve(MODID).toFile();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir;
     }
 
+    @Override
+    public java.util.logging.Logger getLogger() {
+        return JUL_LOGGER;
+    }
+
+    @Override
     public int getDefaultLives() {
         return ConfigManager.getConfig().getDefaultLives();
     }
 
+    @Override
     public boolean isDebugMode() {
         return ConfigManager.getConfig().isDebug();
     }
 
+    @Override
     public void debug(String message) {
         if (isDebugMode()) {
             LOGGER.info("[DEBUG] {}", message);
         }
+    }
+
+    @Override
+    public String getConfigString(String path, String defaultValue) {
+        return ConfigManager.getConfig().getConfigString(path, defaultValue);
+    }
+
+    @Override
+    public int getConfigInt(String path, int defaultValue) {
+        return ConfigManager.getConfig().getConfigInt(path, defaultValue);
     }
 }

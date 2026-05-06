@@ -198,6 +198,26 @@ public class ConfigManager {
         public java.util.List<String> getStairBlocktag() { return stairBlocktag; }
         public boolean isDebug() { return debug; }
 
+        public String getConfigString(String path, String defaultValue) {
+            return switch (path) {
+                case "database.host" -> databaseHost;
+                case "database.name" -> databaseName;
+                case "database.username" -> databaseUsername;
+                case "database.password" -> databasePassword;
+                case "database.table-name" -> databaseTableName;
+                case "database.type" -> databaseType;
+                default -> defaultValue;
+            };
+        }
+
+        public int getConfigInt(String path, int defaultValue) {
+            return switch (path) {
+                case "database.port" -> databasePort;
+                case "database.pool-size" -> databasePoolSize;
+                default -> defaultValue;
+            };
+        }
+
         // Setters for ModMenu / Initialization
         public void setLimboServer(boolean limboServer) { isLimboServer = limboServer; }
         public void setSendToLimboOnDeath(boolean send) { sendToLimboOnDeath = send; }

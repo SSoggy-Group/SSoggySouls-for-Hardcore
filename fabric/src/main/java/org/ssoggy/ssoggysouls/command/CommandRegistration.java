@@ -203,7 +203,7 @@ public class CommandRegistration {
                 ServerCommandSource source = context.getSource();
 
                 CompletableFuture.runAsync(() -> {
-                    java.io.File logFile = new java.io.File(plugin.getDataFolder().toFile(), "admin_abuse.log");
+                    java.io.File logFile = new java.io.File(plugin.getDataFolder(), "admin_abuse.log");
                     if (!logFile.exists()) {
                         source.sendError(net.minecraft.text.Text.literal("No admin logs found."));
                         return;
