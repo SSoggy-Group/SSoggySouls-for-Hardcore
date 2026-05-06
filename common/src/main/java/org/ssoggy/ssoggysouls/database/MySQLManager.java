@@ -29,7 +29,8 @@ public class MySQLManager implements DatabaseManager {
     private final Map<UUID, CachedDeathStatus> deathStatusCache = new ConcurrentHashMap<>();
 
     private final PluginContext plugin;
-    private HikariDataSource dataSource;
+    private javax.sql.DataSource dataSource;
+    private HikariDataSource hikariDataSource; // kept for shutdown()
     private String tableName;
 
     private static class CachedDeathStatus {
@@ -51,7 +52,7 @@ public class MySQLManager implements DatabaseManager {
     }
 
     // Package-private constructor for testing / dependency injection
-    MySQLManager(PluginContext plugin, HikariDataSource dataSource, String tableName) {
+    MySQLManager(PluginContext plugin, javax.sql.DataSource dataSource, String tableName) {
         this.plugin = plugin;
         this.dataSource = dataSource;
         this.tableName = tableName;
@@ -90,7 +91,8 @@ public class MySQLManager implements DatabaseManager {
             config.addDataSourceProperty("prepStmtCacheSize", "64");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-            dataSource = new HikariDataSource(config);
+            hikariDataSource = new HikariDataSource(config);
+            dataSource = hikariDataSource;
             createTable();
 
             plugin.getLogger().log(Level.INFO, "MySQL connection established ({0}:{1}/{2})",
@@ -104,8 +106,8 @@ public class MySQLManager implements DatabaseManager {
     }
 
     public void shutdown() {
-        if (dataSource != null && !dataSource.isClosed()) {
-            dataSource.close();
+        if (hikariDataSource != null && !hikariDataSource.isClosed()) {
+            hikariDataSource.close();
             plugin.getLogger().info("MySQL connection pool closed.");
         }
     }
