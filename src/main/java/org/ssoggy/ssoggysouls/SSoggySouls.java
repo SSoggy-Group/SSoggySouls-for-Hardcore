@@ -206,6 +206,8 @@ public final class SSoggySouls extends JavaPlugin implements Listener {
             databaseManager.shutdown();
         }
 
+        org.ssoggy.ssoggysouls.hrm.dlc.RevivalPlus.disable();
+
         getLogger().info("SSoggySouls disabled.");
         setInstance(null);
     }
