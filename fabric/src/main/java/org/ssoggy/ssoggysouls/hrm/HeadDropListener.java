@@ -57,7 +57,14 @@ public class HeadDropListener {
 
             // Spawn item entity
             ItemEntity itemEntity = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, head);
-            itemEntity.setInvulnerable(true);
+
+            if (ConfigManager.getConfig().isHeadFireproof()) {
+                itemEntity.setInvulnerable(true);
+            }
+            if (ConfigManager.getConfig().isHeadNoDespawn()) {
+                itemEntity.setNeverDespawn();
+            }
+
             world.spawnEntity(itemEntity);
             SSoggySoulsMod.LOGGER.info("Dropped {}'s head at {} {} {}", player.getName().getString(), pos.getX(), pos.getY(), pos.getZ());
         }

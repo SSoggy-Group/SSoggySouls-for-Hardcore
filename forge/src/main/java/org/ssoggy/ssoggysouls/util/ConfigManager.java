@@ -103,6 +103,8 @@ public class ConfigManager {
         private boolean hrmEnabled = true;
         private boolean dropHeads = true;
         private boolean headPlaceAsBlock = true;
+        private boolean headNoDespawn = true;
+        private boolean headFireproof = true;
         private boolean headWearingEffects = true;
         private boolean ritualLightningStrike = true;
         private boolean ritualTotemEffect = true;
@@ -181,6 +183,8 @@ public class ConfigManager {
         public boolean isHrmEnabled() { return hrmEnabled; }
         public boolean isDropHeads() { return dropHeads; }
         public boolean isHeadPlaceAsBlock() { return headPlaceAsBlock; }
+        public boolean isHeadNoDespawn() { return headNoDespawn; }
+        public boolean isHeadFireproof() { return headFireproof; }
         public boolean isHeadWearingEffects() { return headWearingEffects; }
         public boolean isRitualLightningStrike() { return ritualLightningStrike; }
         public boolean isRitualTotemEffect() { return ritualTotemEffect; }
@@ -225,6 +229,8 @@ public class ConfigManager {
         public void setHrmEnabled(boolean enabled) { hrmEnabled = enabled; }
         public void setDropHeads(boolean drop) { dropHeads = drop; }
         public void setHeadPlaceAsBlock(boolean place) { headPlaceAsBlock = place; }
+        public void setHeadNoDespawn(boolean noDespawn) { headNoDespawn = noDespawn; }
+        public void setHeadFireproof(boolean fireproof) { headFireproof = fireproof; }
         public void setHeadWearingEffects(boolean effects) { headWearingEffects = effects; }
         public void setRitualLightningStrike(boolean strike) { ritualLightningStrike = strike; }
         public void setRitualTotemEffect(boolean effect) { ritualTotemEffect = effect; }
