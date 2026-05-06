@@ -25,6 +25,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.commands.SocialCommand;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.*;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPConfig;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStorage;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
