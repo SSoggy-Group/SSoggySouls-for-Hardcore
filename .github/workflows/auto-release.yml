@@ -140,18 +140,30 @@ jobs:
           chmod +x ./forge/gradlew
           ./forge/gradlew -p forge build
 
-      # --- PACKAGING AND RELEASING (Only runs if not skipped) ---
-      - name: Locate Jars
+# --- PACKAGING AND RELEASING ---
+      - name: Locate and Rename Jars
         if: steps.version_math.outputs.skip != 'true'
         id: package
         run: |
-          JAR_PATH="$(ls target/*-shaded.jar 2>/dev/null | head -n 1 || true)"
-          FABRIC_JAR_PATH="$(ls fabric/build/libs/*.jar 2>/dev/null | grep -v sources | head -n 1 || true)"
-          FORGE_JAR_PATH="$(ls forge/build/libs/*.jar 2>/dev/null | grep -v sources | head -n 1 || true)"
+          # 1. Find the raw files
+          RAW_PAPER="$(ls target/*-shaded.jar | head -n 1)"
+          RAW_FABRIC="$(ls fabric/build/libs/*.jar | grep -v sources | head -n 1)"
+          RAW_FORGE="$(ls forge/build/libs/*.jar | grep -v sources | head -n 1)"
           
-          echo "jar=${JAR_PATH}" >> "${GITHUB_OUTPUT}"
-          echo "fabric_jar=${FABRIC_JAR_PATH}" >> "${GITHUB_OUTPUT}"
-          echo "forge_jar=${FORGE_JAR_PATH}" >> "${GITHUB_OUTPUT}"
+          # 2. Define the clean names
+          FINAL_PAPER="SSoggySouls-Paper-${NEW_VERSION}.jar"
+          FINAL_FABRIC="SSoggySouls-Fabric-${NEW_VERSION}.jar"
+          FINAL_FORGE="SSoggySouls-Forge-${NEW_VERSION}.jar"
+          
+          # 3. Rename them on the runner
+          mv "$RAW_PAPER" "$FINAL_PAPER"
+          mv "$RAW_FABRIC" "$FINAL_FABRIC"
+          mv "$RAW_FORGE" "$FINAL_FORGE"
+          
+          # 4. Output the new paths for the Release step
+          echo "jar=$FINAL_PAPER" >> "${GITHUB_OUTPUT}"
+          echo "fabric_jar=$FINAL_FABRIC" >> "${GITHUB_OUTPUT}"
+          echo "forge_jar=$FINAL_FORGE" >> "${GITHUB_OUTPUT}"
 
       - name: Create GitHub Release
         if: steps.version_math.outputs.skip != 'true'
