@@ -77,9 +77,8 @@ public class MainServerListener implements Listener {
         org.bukkit.Location pendingRevival = org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.consumePendingRevival(player.getUniqueId());
         if (pendingRevival != null) {
             // Must run synchronous Bukkit API calls on main thread
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.restoreAtStructure(player, pendingRevival);
-            });
+            Bukkit.getScheduler().runTask(plugin, () ->
+                org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.restoreAtStructure(player, pendingRevival));
             // Update database data to reflect revival if necessary, though it is usually saved prior by RevivalStructureListener
             PlayerData data = db.getPlayer(player.getUniqueId());
             if (data != null && data.isDead()) {

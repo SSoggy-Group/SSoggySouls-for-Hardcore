@@ -50,10 +50,8 @@ public class LimboServerListener {
 
     @SubscribeEvent
     public static void onLivingDamage(LivingDamageEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
-                event.setCanceled(true); // Cancel damage for ghosts/dead players
-            }
+        if (event.getEntity() instanceof ServerPlayer player && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
+            event.setCanceled(true); // Cancel damage for ghosts/dead players
         }
     }
 

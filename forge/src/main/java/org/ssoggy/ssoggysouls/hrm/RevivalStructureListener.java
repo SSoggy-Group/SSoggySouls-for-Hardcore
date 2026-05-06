@@ -60,7 +60,6 @@ public class RevivalStructureListener {
 
         ServerPlayer serverPlayer = (ServerPlayer) event.getEntity();
         Level world = event.getLevel();
-        InteractionHand hand = event.getHand();
         ItemStack stack = event.getItemStack();
 
         if (!stack.is(Items.PLAYER_HEAD)) {
