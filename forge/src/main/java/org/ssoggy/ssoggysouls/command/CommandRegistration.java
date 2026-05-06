@@ -54,7 +54,7 @@ public class CommandRegistration {
             .executes(context -> {
                 CommandSourceStack source = context.getSource();
                 if (!source.isPlayer()) {
-                    source.sendFailure(Component.literal(MessageUtil.get("admin-players-only")));
+                    source.sendFailure(MessageUtil.get("admin-players-only"));
                     return 0;
                 }
                 ServerPlayer player = source.getPlayer();
@@ -63,7 +63,7 @@ public class CommandRegistration {
                     PlayerData data = db.getPlayer(player.getUUID());
                     if (data != null) {
                         source.getServer().execute(() ->
-                            source.sendSuccess(() -> Component.literal(MessageUtil.get("status-self", LIVES, data.getLives())), false));
+                            source.sendSuccess(() -> MessageUtil.get("status-self", LIVES, data.getLives()), false));
                     }
                 });
                 return 1;
@@ -79,18 +79,18 @@ public class CommandRegistration {
                         PlayerData data = db.getPlayerByName(targetName);
                         if (data == null) {
                             source.getServer().execute(() ->
-                                source.sendFailure(Component.literal(MessageUtil.get("status-not-found", PLAYER, targetName))));
+                                source.sendFailure(MessageUtil.get("status-not-found", PLAYER, targetName)));
                             return;
                         }
 
                         if (data.isDead()) {
                             source.getServer().execute(() ->
-                                source.sendSuccess(() -> Component.literal(MessageUtil.get("status-other-dead", PLAYER, data.getUsername())), false));
+                                source.sendSuccess(() -> MessageUtil.get("status-other-dead", PLAYER, data.getUsername()), false));
                         } else {
                             source.getServer().execute(() ->
-                                source.sendSuccess(() -> Component.literal(MessageUtil.get("status-other-alive",
+                                source.sendSuccess(() -> MessageUtil.get("status-other-alive",
                                         PLAYER, data.getUsername(),
-                                        LIVES, data.getLives())), false));
+                                        LIVES, data.getLives()), false));
                         }
                     });
                     return 1;
@@ -113,13 +113,13 @@ public class CommandRegistration {
                         PlayerData targetData = db.getPlayerByName(targetName);
                         if (targetData == null) {
                             source.getServer().execute(() ->
-                                source.sendFailure(Component.literal(MessageUtil.get("revive-not-found", PLAYER, targetName))));
+                                source.sendFailure(MessageUtil.get("revive-not-found", PLAYER, targetName)));
                             return;
                         }
 
                         if (!targetData.isDead()) {
                             source.getServer().execute(() ->
-                                source.sendFailure(Component.literal(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername()))));
+                                source.sendFailure(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
                             return;
                         }
 
@@ -127,13 +127,13 @@ public class CommandRegistration {
                         boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
                         if (success) {
                             source.getServer().execute(() -> {
-                                source.sendSuccess(() -> Component.literal(MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername())), true);
+                                source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
                                 AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
 
                                 ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetData.getUuid());
                                 if (targetPlayer != null) {
                                     targetPlayer.setGameMode(GameType.SURVIVAL);
-                                    targetPlayer.sendSystemMessage(Component.literal(MessageUtil.get("revive-success")));
+                                    targetPlayer.sendSystemMessage(MessageUtil.get("revive-success"));
                                 }
                             });
                         }
@@ -160,13 +160,13 @@ public class CommandRegistration {
                             PlayerData data = db.getPlayerByName(targetName);
                             if (data == null) {
                                 source.getServer().execute(() ->
-                                    source.sendFailure(Component.literal(MessageUtil.get("status-not-found", PLAYER, targetName))));
+                                    source.sendFailure(MessageUtil.get("status-not-found", PLAYER, targetName)));
                                 return;
                             }
                             db.setLives(data.getUuid(), lives);
                             source.getServer().execute(() -> {
-                                source.sendSuccess(() -> Component.literal(MessageUtil.get("admin-setlives-success",
-                                        PLAYER, data.getUsername(), LIVES, lives)), true);
+                                source.sendSuccess(() -> MessageUtil.get("admin-setlives-success",
+                                        PLAYER, data.getUsername(), LIVES, lives), true);
                                 AdminLogger.log(source.getTextName(), "Set lives for " + data.getUsername() + " to " + lives);
                             });
                         });

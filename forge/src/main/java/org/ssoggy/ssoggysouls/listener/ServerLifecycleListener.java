@@ -66,7 +66,7 @@ public class ServerLifecycleListener {
             if (player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE) {
                 player.setGameMode(GameType.ADVENTURE);
                 setGhostModeAttributes(player, true);
-                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(MessageUtil.get("ghost-mode-active")));
+                player.sendSystemMessage(MessageUtil.get("ghost-mode-active"));
             }
         } else if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
             player.setGameMode(GameType.SURVIVAL);
@@ -107,18 +107,18 @@ public class ServerLifecycleListener {
     private static void handleDeathSync(ServerPlayer player, PlayerData data, int remaining) {
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
-                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(MessageUtil.get("death-sending-to-limbo")));
+                player.sendSystemMessage(MessageUtil.get("death-sending-to-limbo"));
                 ServerTransferUtil.sendToLimbo(player);
                 return;
             }
 
             player.setGameMode(GameType.ADVENTURE);
             setGhostModeAttributes(player, true);
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal(MessageUtil.get("death-now-ghost")));
+            player.sendSystemMessage(MessageUtil.get("death-now-ghost"));
 
             // Head drops triggered here (Ported in Phase 4)
         } else {
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal(MessageUtil.get("death-life-lost", "lives", remaining)));
+            player.sendSystemMessage(MessageUtil.get("death-life-lost", "lives", remaining));
         }
     }
 
