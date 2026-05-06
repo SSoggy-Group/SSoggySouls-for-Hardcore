@@ -12,6 +12,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class SchedulerManager {
     
+    private SchedulerManager() {
+        // Utility class
+    }
+    
     private static final Queue<ScheduledTask> tasks = new ConcurrentLinkedQueue<>();
     private static int taskIdCounter = 0;
 

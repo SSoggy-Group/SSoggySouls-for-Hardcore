@@ -18,6 +18,10 @@ import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 public class ServerLifecycleListener {
+    
+    private ServerLifecycleListener() {
+        // Utility class
+    }
 
     private static DatabaseManager db;
 
