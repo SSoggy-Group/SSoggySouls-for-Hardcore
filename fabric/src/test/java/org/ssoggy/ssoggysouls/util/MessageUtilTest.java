@@ -3,56 +3,55 @@ package org.ssoggy.ssoggysouls.util;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MessageUtilTest {
+    private static final String TEST_MSG_KEY = "test_msg";
+    private static final String TEST_MSG_CONTENT = "Hello %player%!";
+    private static final String PLAYER_PLACEHOLDER = "player";
+    private static final String PLAYER_NAME = "SSoggy";
 
     @BeforeEach
-    void setUp() throws Exception {
-        // Use reflection to bypass config loading since we only want to test substitution logic
-        Field messagesField = MessageUtil.class.getDeclaredField("messages");
-        messagesField.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        Map<String, String> messages = (Map<String, String>) messagesField.get(null);
-        messages.clear();
-        messages.put("test_msg", "Hello %player%!");
+    void setUp() {
+        // Use direct methods to inject test data instead of reflection
+        Map<String, String> messages = new HashMap<>();
+        messages.put(TEST_MSG_KEY, TEST_MSG_CONTENT);
         messages.put("multi_replace", "%prefix% You have %amount% %item%.");
+        MessageUtil.setMessages(messages);
 
-        Field prefixField = MessageUtil.class.getDeclaredField("prefix");
-        prefixField.setAccessible(true);
-        prefixField.set(null, "§8[§4☠§8] §r");
+        MessageUtil.setPrefix("§8[§4☠§8] §r");
     }
 
     @Test
-    void testGetRawString_ExistingKey() {
-        String result = MessageUtil.getRawString("test_msg", "player", "SSoggy");
+    void testGetRawStringExistingKey() {
+        String result = MessageUtil.getRawString(TEST_MSG_KEY, PLAYER_PLACEHOLDER, PLAYER_NAME);
         assertEquals("Hello SSoggy!", result);
     }
 
     @Test
-    void testGetRawString_MissingKey() {
-        String result = MessageUtil.getRawString("missing_key", "player", "SSoggy");
+    void testGetRawStringMissingKey() {
+        String result = MessageUtil.getRawString("missing_key", PLAYER_PLACEHOLDER, PLAYER_NAME);
         assertEquals("§cMissing message: missing_key", result);
     }
 
     @Test
-    void testGetRawString_MultipleReplacements() {
+    void testGetRawStringMultipleReplacements() {
         String result = MessageUtil.getRawString("multi_replace", "prefix", "§a[Info]", "amount", 5, "item", "apples");
         assertEquals("§a[Info] You have 5 apples.", result);
     }
 
     @Test
-    void testGetRawString_NoReplacements() {
-        String result = MessageUtil.getRawString("test_msg");
-        assertEquals("Hello %player%!", result);
+    void testGetRawStringNoReplacements() {
+        String result = MessageUtil.getRawString(TEST_MSG_KEY);
+        assertEquals(TEST_MSG_CONTENT, result);
     }
 
     @Test
-    void testGetRawString_MissingReplacementValue() {
-        String result = MessageUtil.getRawString("test_msg", "player");
-        assertEquals("Hello %player%!", result);
+    void testGetRawStringMissingReplacementValue() {
+        String result = MessageUtil.getRawString(TEST_MSG_KEY, PLAYER_PLACEHOLDER);
+        assertEquals(TEST_MSG_CONTENT, result);
     }
 }

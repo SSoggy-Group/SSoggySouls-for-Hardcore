@@ -62,7 +62,7 @@ class TabCompleteUtilTest {
                 createMockPlayer("Alex"),
                 createMockPlayer("Bob")
         );
-        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn((Collection) players);
+        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn((Collection<? extends Player>) players);
 
         // Execute
         List<String> result = TabCompleteUtil.getOnlinePlayerNames("al");
@@ -78,7 +78,7 @@ class TabCompleteUtilTest {
                 createMockPlayer("Charlie"),
                 createMockPlayer("david")
         );
-        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn((Collection) players);
+        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn((Collection<? extends Player>) players);
 
         // Execute
         List<String> result1 = TabCompleteUtil.getOnlinePlayerNames("CH");
@@ -96,7 +96,7 @@ class TabCompleteUtilTest {
                 createMockPlayer("Eve"),
                 createMockPlayer("Frank")
         );
-        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn((Collection) players);
+        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn((Collection<? extends Player>) players);
 
         // Execute
         List<String> result = TabCompleteUtil.getOnlinePlayerNames("z");
