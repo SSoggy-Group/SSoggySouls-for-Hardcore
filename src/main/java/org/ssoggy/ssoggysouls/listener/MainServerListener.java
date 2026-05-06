@@ -78,6 +78,9 @@ public class MainServerListener implements Listener {
         if (pendingRevival != null) {
             // Must run synchronous Bukkit API calls on main thread
             Bukkit.getScheduler().runTask(plugin, () -> {
+                if (player == null || !player.isOnline()) {
+                    return;
+                }
                 org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.restoreAtStructure(player, pendingRevival);
             });
         }
