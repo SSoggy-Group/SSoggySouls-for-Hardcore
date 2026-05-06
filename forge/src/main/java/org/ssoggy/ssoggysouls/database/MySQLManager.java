@@ -60,7 +60,7 @@ public class MySQLManager implements DatabaseManager {
             int poolSize = cfg.getDatabasePoolSize();
             tableName = cfg.getDatabaseTableName();
             if (!isValidIdentifier(tableName)) {
-                SSoggySoulsMod.LOGGER.error("MySQL initialization failed: Invalid database.table-name '{}'. Table name must consist only of alphanumeric characters and underscores.", tableName);
+                SSoggySoulsMod.LOGGER.error("MySQL initialization failed: Invalid 'databaseTableName' value '{}' in ssoggysouls.json. Table name must consist only of alphanumeric characters and underscores.", tableName);
                 return false;
             }
 
