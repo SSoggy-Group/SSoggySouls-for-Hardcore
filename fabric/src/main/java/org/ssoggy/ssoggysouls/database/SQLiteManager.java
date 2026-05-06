@@ -133,7 +133,7 @@ public class SQLiteManager implements DatabaseManager {
         if (!isValidIdentifier(columnName)) {
             throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
         }
-        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'.\\-]+$")) {
+        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\)'.\\-]+$")) {
             throw new IllegalArgumentException("Invalid column definition characters: " + definition);
         }
         if (definition.contains("--")) {
