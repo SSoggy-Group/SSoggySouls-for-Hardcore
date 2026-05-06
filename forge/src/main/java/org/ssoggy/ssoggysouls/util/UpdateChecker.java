@@ -45,7 +45,7 @@ public class UpdateChecker {
         HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .whenComplete((response, throwable) -> {
                     if (throwable != null) {
-                        SSoggySoulsMod.LOGGER.warn("Failed to check for updates: {}", throwable.getMessage());
+                        SSoggySoulsMod.LOGGER.warn("Failed to check for updates", throwable);
                         return;
                     }
 
@@ -57,6 +57,10 @@ public class UpdateChecker {
 
                     try {
                         JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+                        if (!json.has("tag_name")) {
+                            SSoggySoulsMod.LOGGER.warn("Update response missing 'tag_name'");
+                            return;
+                        }
                         String latestVersion = json.get("tag_name").getAsString();
 
                         if (latestVersion.startsWith("v")) {
@@ -69,7 +73,7 @@ public class UpdateChecker {
                             SSoggySoulsMod.LOGGER.info("You are running the latest version!");
                         }
                     } catch (Exception e) {
-                        SSoggySoulsMod.LOGGER.warn("Failed to parse update response: {}", e.getMessage());
+                        SSoggySoulsMod.LOGGER.warn("Failed to parse update response", e);
                     }
                 });
     }
