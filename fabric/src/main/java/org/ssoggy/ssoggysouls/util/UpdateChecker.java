@@ -5,12 +5,11 @@ import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URI;
-import java.util.concurrent.CompletableFuture;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
 public class UpdateChecker {
     private static final String GITHUB_API = "https://api.github.com/repos/SSoggy-Group/SSoggySouls-for-Hardcore/releases/latest";
@@ -18,6 +17,11 @@ public class UpdateChecker {
     private static final String BORDER_EMPTY = "║                                                           ║";
     private static final String BORDER_TOP = "╔═══════════════════════════════════════════════════════════╗";
     private static final String BORDER_BOTTOM = "╚═══════════════════════════════════════════════════════════╝";
+
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
 
     private final String currentVersion;
 
@@ -29,45 +33,46 @@ public class UpdateChecker {
     }
 
     public void checkForUpdates() {
-        CompletableFuture.runAsync(() -> {
-            try {
-                HttpURLConnection connection = (HttpURLConnection) URI.create(GITHUB_API).toURL().openConnection();
-                connection.setRequestMethod("GET");
-                connection.setConnectTimeout(5000);
-                connection.setReadTimeout(5000);
-                connection.setRequestProperty("User-Agent", "SSoggySouls-UpdateChecker");
+        // Bolt Optimization: Replace synchronous HttpURLConnection within CompletableFuture.runAsync()
+        // with the non-blocking java.net.http.HttpClient.sendAsync() to prevent thread starvation
+        // in the ForkJoinPool.commonPool().
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(GITHUB_API))
+                .timeout(Duration.ofSeconds(5))
+                .header("User-Agent", "SSoggySouls-UpdateChecker")
+                .GET()
+                .build();
 
-                int responseCode = connection.getResponseCode();
-                if (responseCode != 200) {
-                    SSoggySoulsMod.LOGGER.warn("Failed to check for updates. HTTP response code: {}", responseCode);
-                    return;
-                }
-
-                StringBuilder response = new StringBuilder();
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
+        HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .whenComplete((response, throwable) -> {
+                    if (throwable != null) {
+                        SSoggySoulsMod.LOGGER.warn("Failed to check for updates: {}", throwable.getMessage());
+                        return;
                     }
-                }
 
-                JsonObject json = JsonParser.parseString(response.toString()).getAsJsonObject();
-                String latestVersion = json.get("tag_name").getAsString();
+                    int responseCode = response.statusCode();
+                    if (responseCode != 200) {
+                        SSoggySoulsMod.LOGGER.warn("Failed to check for updates. HTTP response code: {}", responseCode);
+                        return;
+                    }
 
-                if (latestVersion.startsWith("v")) {
-                    latestVersion = latestVersion.substring(1);
-                }
+                    try {
+                        JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+                        String latestVersion = json.get("tag_name").getAsString();
 
-                if (isNewerVersion(latestVersion, currentVersion)) {
-                    showUpdateNotification(latestVersion);
-                } else {
-                    SSoggySoulsMod.LOGGER.info("You are running the latest version!");
-                }
+                        if (latestVersion.startsWith("v")) {
+                            latestVersion = latestVersion.substring(1);
+                        }
 
-            } catch (IOException e) {
-                SSoggySoulsMod.LOGGER.warn("Failed to check for updates: {}", e.getMessage());
-            }
-        });
+                        if (isNewerVersion(latestVersion, currentVersion)) {
+                            showUpdateNotification(latestVersion);
+                        } else {
+                            SSoggySoulsMod.LOGGER.info("You are running the latest version!");
+                        }
+                    } catch (Exception e) {
+                        SSoggySoulsMod.LOGGER.warn("Failed to parse update response: {}", e.getMessage());
+                    }
+                });
     }
 
     private boolean isNewerVersion(String latest, String current) {
