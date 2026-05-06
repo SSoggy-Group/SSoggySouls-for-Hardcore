@@ -211,12 +211,14 @@ public class CommandRegistration {
 
                     try {
                         java.util.Deque<String> lines = readLastLines(logFile, 15);
-                        source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
-                        for (String line : lines) {
-                            source.sendMessage(net.minecraft.text.Text.literal(line).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
-                        }
-                    } catch (Exception e) {
-                        source.sendError(net.minecraft.text.Text.literal("Error reading admin log: " + e.getMessage()));
+                        source.getServer().execute(() -> {
+                            source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
+                            for (String line : lines) {
+                                source.sendMessage(net.minecraft.text.Text.literal(line).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
+                            }
+                        });
+                    } catch (java.io.IOException e) {
+                        source.getServer().execute(() -> source.sendError(net.minecraft.text.Text.literal("Error reading admin log: " + e.getMessage())));
                     }
                 });
 
@@ -225,7 +227,8 @@ public class CommandRegistration {
         );
     }
 
-    private static java.util.Deque<String> readLastLines(java.io.File file, int maxLines) throws Exception {
+    private static java.util.Deque<String> readLastLines(java.io.File file, int maxLines) throws java.io.IOException {
+        if (maxLines <= 0) return new java.util.ArrayDeque<>();
         java.util.Deque<String> lastLines = new java.util.ArrayDeque<>(maxLines);
         try (java.util.stream.Stream<String> lines = java.nio.file.Files.lines(file.toPath())) {
             lines.forEach(line -> {

@@ -232,7 +232,7 @@ public class CommandRegistration {
                                 source.sendSystemMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY));
                             }
                         });
-                    } catch (Exception e) {
+                    } catch (java.io.IOException e) {
                         source.getServer().execute(() -> source.sendFailure(Component.literal("Error reading admin log: " + e.getMessage())));
                     }
                 });
@@ -242,7 +242,8 @@ public class CommandRegistration {
         );
     }
 
-    private static java.util.Deque<String> readLastLines(File file, int maxLines) throws Exception {
+    private static java.util.Deque<String> readLastLines(File file, int maxLines) throws java.io.IOException {
+        if (maxLines <= 0) return new java.util.ArrayDeque<>();
         java.util.Deque<String> lastLines = new java.util.ArrayDeque<>(maxLines);
         try (java.util.stream.Stream<String> lines = Files.lines(file.toPath())) {
             lines.forEach(line -> {
