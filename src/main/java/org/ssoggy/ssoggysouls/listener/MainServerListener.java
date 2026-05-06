@@ -76,13 +76,15 @@ public class MainServerListener implements Listener {
     private void handleJoinAsync(Player player) {
         org.bukkit.Location pendingRevival = org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.consumePendingRevival(player.getUniqueId());
         if (pendingRevival != null) {
-            // Must run synchronous Bukkit API calls on main thread
+            // Must run synchronous Bukkit API calls on main thread.
+            // Return early so the normal dead/limbo redirect logic cannot race with the revival.
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if (player == null || !player.isOnline()) {
                     return;
                 }
                 org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.restoreAtStructure(player, pendingRevival);
             });
+            return;
         }
 
         PlayerData data = db.getPlayer(player.getUniqueId());
