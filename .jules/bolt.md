@@ -1,0 +1,3 @@
+## 2024-05-06 - [Eliminated synchronous disk I/O bottlenecks in RPStats & RPSocial]
+**Learning:** Instantiating new FileConfiguration/Yaml objects and calling `loadConfig()` on the main thread inside frequently created classes (`RPStats`, `RPSocial`) causes severe O(N) disk I/O performance bottlenecks in Minecraft plugins. The Forge module lacks its `gradle-wrapper.jar` file, requiring copying it from `fabric` to run tests locally, though some Forge compilation errors persist from a recent refactor.
+**Action:** Cache file storage wrappers (e.g. `RPStorage`) as singletons (e.g. in `RPStatic`) instead of creating new instances. Avoid synchronous `loadConfig()` calls before setting values, as the in-memory state is already maintained.

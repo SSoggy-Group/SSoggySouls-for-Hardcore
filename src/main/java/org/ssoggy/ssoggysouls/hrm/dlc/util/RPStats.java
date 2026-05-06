@@ -28,7 +28,7 @@ public class RPStats {
     private final RPStorage storage;
     private final String table;
     public RPStats(UUID uuid) {
-        this.storage = new RPStorage(RPStatic.CLIENT, "stats.yml");
+        this.storage = RPStatic.STATS_STORAGE;
         this.table = uuid.toString().replace("-", "");
     }
 
@@ -44,7 +44,6 @@ public class RPStats {
     }
 
     public void overrideStat(STATSENUM option, Object value) {
-        storage.loadConfig();
         storage.setValue(this.table, option.name(), value);
         storage.saveConfig();
     }
