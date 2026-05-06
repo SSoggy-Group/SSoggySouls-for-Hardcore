@@ -51,7 +51,7 @@ public class SQLiteManager implements DatabaseManager {
         try {
             tableName = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDatabaseTableName();
             if (!isValidIdentifier(tableName)) {
-                SSoggySoulsMod.LOGGER.error("SQLite initialization failed: Invalid database.table-name '{}'. Table name must consist only of alphanumeric characters and underscores.", tableName);
+                SSoggySoulsMod.LOGGER.error("SQLite initialization failed: Invalid config value for 'databaseTableName' in ssoggysouls.json: '{}'. Table name must consist only of alphanumeric characters and underscores.", tableName);
                 return false;
             }
 
