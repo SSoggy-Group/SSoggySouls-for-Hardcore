@@ -12,6 +12,16 @@ public final class MessageUtil {
 
     private MessageUtil() {}
 
+    // Visible for testing
+    static void setMessages(Map<String, String> testMessages) {
+        messages.clear();
+        messages.putAll(testMessages);
+    }
+
+    static void setPrefix(String testPrefix) {
+        prefix = testPrefix;
+    }
+
     // Load from Fabric config
     public static void loadMessages() {
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
