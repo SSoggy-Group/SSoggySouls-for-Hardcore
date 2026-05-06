@@ -49,6 +49,7 @@ public class RPStatic {
 
     public static RPStorage SOCIAL_STORAGE;
     public static RPStorage USERNAME_CACHE;
+    public static RPStorage STATS_STORAGE;
 
     public static void init(JavaPlugin plugin) {
         RPStatic.PLUGIN_ID = "revivalplus"; // DO NOT CHANGE
@@ -67,5 +68,6 @@ public class RPStatic {
         RPStatic.SOCIAL_STORAGE = new RPStorage(plugin, "social.yml");
 
         RPStatic.USERNAME_CACHE = new RPStorage(plugin, "usernamecache.yml");
+        RPStatic.STATS_STORAGE = new RPStorage(plugin, "stats.yml");
     }
 }
