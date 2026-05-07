@@ -57,7 +57,7 @@ public class MySQLManager implements DatabaseManager {
         this.tableName = tableName;
     }
 
-    public boolean initialize() {
+    public void initialize() throws DatabaseInitializationException {
         try {
             String host = plugin.getConfigString("database.host", "localhost");
             int port = plugin.getConfigInt("database.port", 3306);
@@ -68,7 +68,7 @@ public class MySQLManager implements DatabaseManager {
             tableName = plugin.getConfigString("database.table-name", "hardcore_players");
             if (!isValidIdentifier(tableName)) {
                 plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", tableName);
-                return false;
+                throw new DatabaseInitializationException("Invalid database.table-name: " + tableName);
             }
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
@@ -90,27 +90,23 @@ public class MySQLManager implements DatabaseManager {
             config.addDataSourceProperty("prepStmtCacheSize", "64");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-            if (!createHikariDataSource(config)) {
-                return false;
-            }
+            createHikariDataSource(config);
 
             dataSource = hikariDataSource;
             createTable();
 
             plugin.getLogger().log(Level.INFO, "MySQL connection established ({0}:{1}/{2})",
                     new Object[] { host, port, dbName });
-            return true;
 
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed!", e);
-            return false;
+            throw new DatabaseInitializationException("MySQL initialization failed", e);
         }
     }
 
-    private boolean createHikariDataSource(HikariConfig config) {
+    private void createHikariDataSource(HikariConfig config) throws DatabaseInitializationException {
         try {
             hikariDataSource = new HikariDataSource(config);
-            return true;
         } catch (RuntimeException ex) {
             plugin.getLogger().severe("=====================================================");
             plugin.getLogger().severe("SEVERE: Could not connect to the MySQL database. The plugin will be disabled.");
@@ -118,7 +114,7 @@ public class MySQLManager implements DatabaseManager {
             plugin.getLogger().severe("NOTICE: If you are only running a single server, you DO NOT need MySQL! The default database is SQLite. Open config.yml and change type: \"mysql\" back to type: \"sqlite\" to fix this instantly.");
             plugin.getLogger().severe("=====================================================");
             plugin.getLogger().log(Level.SEVERE, "MySQL connection error:", ex);
-            return false;
+            throw new DatabaseInitializationException("Could not connect to MySQL database", ex);
         }
     }
 
