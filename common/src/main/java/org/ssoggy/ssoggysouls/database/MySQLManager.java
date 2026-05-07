@@ -73,7 +73,7 @@ public class MySQLManager implements DatabaseManager {
             }
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
-                    + "?sslMode=VERIFY_IDENTITY&autoReconnect=true"
+                    + "?sslMode=VERIFY_IDENTITY"
                     + "&characterEncoding=UTF-8&useUnicode=true";
 
             HikariConfig config = new HikariConfig();
