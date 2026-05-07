@@ -226,6 +226,7 @@ jobs:
           name: "SSoggySouls v${{ env.NEW_VERSION }} (Paper/Spigot)"
           version: "${{ env.NEW_VERSION }}+paper"
           version-type: release
+          changelog: ${{ github.event.head_commit.message }}
           loaders: |
             paper
             purpur
@@ -254,6 +255,7 @@ jobs:
           name: "SSoggySouls v${{ env.NEW_VERSION }} (Fabric/Quilt)"
           version: "${{ env.NEW_VERSION }}+fabric"
           version-type: release
+          changelog: ${{ github.event.head_commit.message }}
           loaders: |
             fabric
             quilt
@@ -280,6 +282,7 @@ jobs:
           name: "SSoggySouls v${{ env.NEW_VERSION }} (Forge)"
           version: "${{ env.NEW_VERSION }}+forge"
           version-type: release
+          changelog: ${{ github.event.head_commit.message }}
           loaders: forge
           game-versions: |
             1.21.1
