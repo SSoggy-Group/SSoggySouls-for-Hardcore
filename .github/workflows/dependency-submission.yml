@@ -2,8 +2,7 @@ name: Dependency Submission
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
@@ -16,12 +15,21 @@ jobs:
     permissions:
       contents: read
       dependency-graph: write
-    if: ${{ hashFiles('pom.xml') != '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check for root pom.xml
+        id: check-pom
+        run: |
+          if [ -f pom.xml ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Java
+        if: ${{ steps.check-pom.outputs.exists == 'true' }}
         uses: actions/setup-java@v4
         with:
           java-version: '21'
@@ -29,5 +37,6 @@ jobs:
           cache: maven
 
       - name: Submit dependency snapshot
+        if: ${{ steps.check-pom.outputs.exists == 'true' }}
         uses: advanced-security/maven-dependency-submission-action@v5
         continue-on-error: true
