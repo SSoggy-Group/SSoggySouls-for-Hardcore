@@ -217,22 +217,44 @@ jobs:
             ${{ steps.package.outputs.fabric_jar }}
             ${{ steps.package.outputs.forge_jar }}
 
-      - name: Publish to Modrinth
-        if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
+      - name: Publish Paper to Modrinth
+        if: steps.version_math.outputs.skip != 'true'
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          name: "Build ${{ env.NEW_VERSION }}"
-          version: "${{ env.NEW_VERSION }}"
+          name: "Paper ${{ env.NEW_VERSION }}"
+          version: "${{ env.NEW_VERSION }}+paper"
           version-type: release
-          loaders: |
-            paper
-            fabric
-            forge
+          loaders: paper
           game-versions: |
             1.21.1
-          files: |
-            ${{ steps.package.outputs.jar }}
-            ${{ steps.package.outputs.fabric_jar }}
-            ${{ steps.package.outputs.forge_jar }}
+          files: ${{ steps.package.outputs.jar }}
+
+      - name: Publish Fabric to Modrinth
+        if: steps.version_math.outputs.skip != 'true'
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: Pb03qu6T
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          name: "Fabric ${{ env.NEW_VERSION }}"
+          version: "${{ env.NEW_VERSION }}+fabric"
+          version-type: release
+          loaders: fabric
+          game-versions: |
+            1.21.1
+          files: ${{ steps.package.outputs.fabric_jar }}
+
+      - name: Publish Forge to Modrinth
+        if: steps.version_math.outputs.skip != 'true'
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: Pb03qu6T
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          name: "Forge ${{ env.NEW_VERSION }}"
+          version: "${{ env.NEW_VERSION }}+forge"
+          version-type: release
+          loaders: forge
+          game-versions: |
+            1.21.1
+          files: ${{ steps.package.outputs.forge_jar }}
