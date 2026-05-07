@@ -79,7 +79,6 @@ public class RevivalStructureListener {
         if (actorData == null || actorData.isDead()) {
             return ActionResult.PASS;
         }
-        }
 
         ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
         if (profile == null) {
