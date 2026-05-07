@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -45,6 +47,8 @@ jobs:
       - name: Select jars for release
         id: package
         shell: bash
+        env:
+          RELEASE_TAG_INPUT: ${{ inputs.release_tag }}
         run: |
           set -euo pipefail
 
@@ -59,9 +63,13 @@ jobs:
               exit 1
             fi
           else
-            TAG_NAME="${{ inputs.release_tag }}"
+            TAG_NAME="${RELEASE_TAG_INPUT}"
             if [[ -z "${TAG_NAME}" ]]; then
               TAG_NAME="${EXPECTED_TAG}"
+            elif [[ ! "${TAG_NAME}" =~ ^v[0-9]+(\.[0-9]+)*([.-][0-9A-Za-z]+)*$ ]]; then
+              echo "Manual release_tag '${TAG_NAME}' is invalid."
+              echo "Use a safe tag format like '${EXPECTED_TAG}'."
+              exit 1
             fi
           fi
 
