@@ -51,9 +51,9 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
         RPCommandOutput result = new RPCommandOutput();
         FileConfiguration config = RPStatic.CLIENT.getConfig();
 
-        long trustedAfterMin = config.getLong("trusted-obituary-after");
-        long friendsAfterMin = config.getLong("friends-obituary-after");
-        long publicAfterMin = config.getLong("public-obituary-after");
+        long trustedAfterMin = getObituaryDelayMinutes(config, "trusted-obituary-after", 60L);
+        long friendsAfterMin = getObituaryDelayMinutes(config, "friends-obituary-after", 600L);
+        long publicAfterMin = getObituaryDelayMinutes(config, "public-obituary-after", 3600L);
 
         String headerText = "Here is a list of all the current public deaths";
         StringBuilder deathListBuilder = new StringBuilder(headerText);
@@ -94,5 +94,13 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+    }
+
+    private static long getObituaryDelayMinutes(FileConfiguration config, String key, long fallback) {
+        String hrmPath = "hrm." + key;
+        if (config.contains(hrmPath)) {
+            return config.getLong(hrmPath);
+        }
+        return config.getLong(key, fallback);
     }
 }

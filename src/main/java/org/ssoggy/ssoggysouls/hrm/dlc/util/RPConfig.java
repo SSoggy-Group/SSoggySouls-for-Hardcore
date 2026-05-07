@@ -72,9 +72,28 @@ public class RPConfig {
         RPStatic.CLIENT.saveDefaultConfig();
         RPStatic.CLIENT.reloadConfig();
         FileConfiguration fileConfiguration = RPStatic.CLIENT.getConfig();
-        RPStatic.BLOCK_TAGS.replaceAll((key, value) -> fileConfiguration.contains("hrm." + key) ? fileConfiguration.getStringList("hrm." + key).stream().map(Material::matchMaterial).filter(m -> m != null).collect(Collectors.toSet()) : value);
-        RPStatic.CONFIG_RULES.replaceAll((key, value) -> fileConfiguration.getBoolean("hrm." + key, value));
-        RPStatic.CONFIG_TIMERS.replaceAll((key, value) -> fileConfiguration.getInt("hrm." + key, value));
+        RPStatic.BLOCK_TAGS.replaceAll((key, value) -> {
+            String hrmPath = "hrm." + key;
+            if (fileConfiguration.contains(hrmPath)) {
+                return fileConfiguration.getStringList(hrmPath).stream()
+                        .map(Material::matchMaterial)
+                        .filter(m -> m != null)
+                        .collect(Collectors.toSet());
+            }
+            if (fileConfiguration.contains(key)) {
+                return fileConfiguration.getStringList(key).stream()
+                        .map(Material::matchMaterial)
+                        .filter(m -> m != null)
+                        .collect(Collectors.toSet());
+            }
+            return value;
+        });
+        RPStatic.CONFIG_RULES.replaceAll((key, value) -> fileConfiguration.contains("hrm." + key)
+                ? fileConfiguration.getBoolean("hrm." + key, value)
+                : fileConfiguration.getBoolean(key, value));
+        RPStatic.CONFIG_TIMERS.replaceAll((key, value) -> fileConfiguration.contains("hrm." + key)
+                ? fileConfiguration.getInt("hrm." + key, value)
+                : fileConfiguration.getInt(key, value));
     }
 
     public static byte resetBlockTag(String where) {
@@ -86,7 +105,6 @@ public class RPConfig {
             JavaPlugin instance = RPStatic.CLIENT;
             instance.getConfig().set("hrm." + where, who.stream().map(Enum::name).toList());
             instance.saveConfig();
-            instance.reloadConfig();
             RPStatic.BLOCK_TAGS.put(where, who);
             return 1;
         } catch (Exception e) {
@@ -100,7 +118,6 @@ public class RPConfig {
             JavaPlugin instance = RPStatic.CLIENT;
             instance.getConfig().set("hrm." + where, who);
             instance.saveConfig();
-            instance.reloadConfig();
             RPStatic.CONFIG_RULES.put(where, who);
             return 1;
         } catch (Exception e) {
@@ -114,7 +131,6 @@ public class RPConfig {
             JavaPlugin instance = RPStatic.CLIENT;
             instance.getConfig().set("hrm." + where, who);
             instance.saveConfig();
-            instance.reloadConfig();
             RPStatic.CONFIG_TIMERS.put(where, who);
             return 1;
         } catch (Exception e) {
