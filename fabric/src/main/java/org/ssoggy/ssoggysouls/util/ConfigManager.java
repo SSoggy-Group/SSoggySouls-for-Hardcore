@@ -159,6 +159,7 @@ public class ConfigManager {
             messages.put("death-now-ghost", "§cYou have died! You are now a ghost.");
             messages.put("limbo-welcome-visitor", "§eWelcome to Limbo as a visitor!");
             messages.put("limbo-welcome-dead", "§cWelcome to Limbo. You are dead!");
+            messages.put("limbo-cannot-leave", "§cYou cannot leave Limbo while dead.");
             messages.put("revival-structure-incomplete", "§cThe revival structure is incomplete!");
             messages.put("admin-setlives-success", "§aSet §e%player%§a's lives to §e%lives%§a.");
         }
