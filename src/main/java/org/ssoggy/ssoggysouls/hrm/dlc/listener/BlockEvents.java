@@ -90,17 +90,35 @@ public class BlockEvents implements Listener {
             World world = location.getWorld();
             UUID uuid = skullOwner.getUniqueId();
             Instant now = Instant.now();
+            Player target = skullOwner.getPlayer();
 
             world.spawnParticle(Particle.SOUL, event.getBlock().getLocation().add(0.5, 0.5, 0.5), 1, 0, 0, 0, 0.005);
 
-            RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHHOLDER);
-            RPStatic.DEAD_HOLDERS.remove(uuid);
+            if (target == null || GAMEMODESENUM.getPlayerGameMode(target) != GAMEMODESENUM.GHOSTMODE) {
+                return;
+            }
 
-            RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(location, now));
-            RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHPOS,
-                    location.getBlockX() + "$" + location.getBlockY() + "$" + location.getBlockZ() + "$" + world.getName());
-            RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHTIME, now.toString());
-            RPStatic.DEAD_STORAGE.saveConfig();
+            Bukkit.getScheduler().runTaskLater(RPStatic.CLIENT, () -> {
+                String uuidString = uuid.toString();
+
+                if (!target.isOnline() || GAMEMODESENUM.getPlayerGameMode(target) != GAMEMODESENUM.GHOSTMODE) {
+                    RPStatic.DEAD_LOCATIONS.remove(uuid);
+                    RPStatic.DEAD_HOLDERS.remove(uuid);
+                    RPStatic.DEAD_STORAGE.removeValue(uuidString, KEY_DEATHHOLDER);
+                    RPStatic.DEAD_STORAGE.removeValue(uuidString, KEY_DEATHPOS);
+                    RPStatic.DEAD_STORAGE.removeValue(uuidString, KEY_DEATHTIME);
+                    RPStatic.DEAD_STORAGE.saveConfig();
+                    return;
+                }
+
+                RPStatic.DEAD_STORAGE.removeValue(uuidString, KEY_DEATHHOLDER);
+                RPStatic.DEAD_HOLDERS.remove(uuid);
+                RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(location, now));
+                RPStatic.DEAD_STORAGE.setValue(uuidString, KEY_DEATHPOS,
+                        location.getBlockX() + "$" + location.getBlockY() + "$" + location.getBlockZ() + "$" + world.getName());
+                RPStatic.DEAD_STORAGE.setValue(uuidString, KEY_DEATHTIME, now.toString());
+                RPStatic.DEAD_STORAGE.saveConfig();
+            }, 1L);
 
         }
     }

@@ -136,4 +136,33 @@ public class PlayerStateEvents implements Listener {
                 break;
         }
     }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerRevived(PlayerGameModeChangeEvent event) {
+        if (event.getNewGameMode() != GameMode.SURVIVAL) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        if (GAMEMODESENUM.getPlayerGameMode(player) != GAMEMODESENUM.GHOSTMODE) {
+            return;
+        }
+
+        Bukkit.getScheduler().runTask(RPStatic.CLIENT, () -> {
+            if (!player.isOnline() || player.getGameMode() != GameMode.SURVIVAL) {
+                return;
+            }
+            if (GAMEMODESENUM.getPlayerGameMode(player) != GAMEMODESENUM.GHOSTMODE) {
+                return;
+            }
+
+            UUID uuid = player.getUniqueId();
+            GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.SURVIVAL);
+            RPStatic.DEAD_LOCATIONS.remove(uuid);
+            RPStatic.DEAD_HOLDERS.remove(uuid);
+            RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHPOS);
+            RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHTIME);
+            RPStatic.DEAD_STORAGE.saveConfig();
+        });
+    }
 }
