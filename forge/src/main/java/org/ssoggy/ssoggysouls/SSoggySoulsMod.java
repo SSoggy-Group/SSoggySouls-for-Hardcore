@@ -74,19 +74,17 @@ public class SSoggySoulsMod implements PluginContext {
             MinecraftForge.EVENT_BUS.register(ServerLifecycleListener.class);
             ServerLifecycleListener.setDatabase(databaseManager);
 
-            if (ConfigManager.getConfig().isHrmEnabled()) {
-                MinecraftForge.EVENT_BUS.register(ExtraLifeManager.class);
-                ExtraLifeManager.register(databaseManager);
+            MinecraftForge.EVENT_BUS.register(ExtraLifeManager.class);
+            ExtraLifeManager.register(databaseManager);
 
-                MinecraftForge.EVENT_BUS.register(ReviveSkullManager.class);
-                ReviveSkullManager.register(databaseManager);
+            MinecraftForge.EVENT_BUS.register(ReviveSkullManager.class);
+            ReviveSkullManager.register(databaseManager);
 
-                MinecraftForge.EVENT_BUS.register(HeadEffectsTask.class);
-                HeadEffectsTask.register();
+            MinecraftForge.EVENT_BUS.register(HeadEffectsTask.class);
+            HeadEffectsTask.register();
 
-                MinecraftForge.EVENT_BUS.register(RevivalStructureListener.class);
-                RevivalStructureListener.register(databaseManager);
-            }
+            MinecraftForge.EVENT_BUS.register(RevivalStructureListener.class);
+            RevivalStructureListener.register(databaseManager);
 
             MinecraftForge.EVENT_BUS.register(GhostModeEvents.class);
             GhostModeEvents.register(databaseManager);

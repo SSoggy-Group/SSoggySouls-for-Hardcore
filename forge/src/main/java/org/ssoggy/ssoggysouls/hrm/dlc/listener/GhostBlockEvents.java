@@ -40,7 +40,7 @@ public class GhostBlockEvents {
 
     @SubscribeEvent
     public static void onItemPickup(EntityItemPickupEvent event) {
-        if (db == null || !(event.getEntity() instanceof ServerPlayer player)) {
+        if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled() || db == null || !(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
 
@@ -61,7 +61,7 @@ public class GhostBlockEvents {
 
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
-        if (db == null || event.getLevel().isClientSide() || !(event.getPlayer() instanceof ServerPlayer player)) {
+        if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled() || db == null || event.getLevel().isClientSide() || !(event.getPlayer() instanceof ServerPlayer player)) {
             return;
         }
 
@@ -108,7 +108,7 @@ public class GhostBlockEvents {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer player)) {
+        if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled() || db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
 

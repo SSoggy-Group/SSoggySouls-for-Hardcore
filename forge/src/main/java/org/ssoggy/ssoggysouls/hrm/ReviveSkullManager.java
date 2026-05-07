@@ -36,7 +36,7 @@ public class ReviveSkullManager {
 
     @SubscribeEvent
     public static void onItemRightClick(PlayerInteractEvent.RightClickItem event) {
-        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer serverPlayer)) {
+        if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled() || db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer serverPlayer)) {
             return;
         }
 
