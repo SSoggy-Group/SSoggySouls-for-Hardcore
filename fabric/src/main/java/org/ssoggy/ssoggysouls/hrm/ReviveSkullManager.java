@@ -74,7 +74,7 @@ public class ReviveSkullManager {
         SimpleInventory inventory = populateInventory(deadPlayers, slots);
 
         SimpleNamedScreenHandlerFactory factory = new SimpleNamedScreenHandlerFactory(
-            (syncId, playerInventory, p) -> createScreenHandler(syncId, playerInventory, inventory, rows, playerData),
+            (syncId, playerInventory, ignoredPlayer) -> createScreenHandler(syncId, playerInventory, inventory, rows, playerData),
             Text.literal("Revive - Select Player").styled(s -> s.withColor(Formatting.DARK_PURPLE).withBold(true))
         );
 
