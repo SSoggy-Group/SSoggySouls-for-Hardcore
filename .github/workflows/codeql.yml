@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: ["main"]
   schedule:
-    - cron: "30 0 * * 1" # Runs every Monday at midnight
+    - cron: "30 0 * * 1"
 
 jobs:
   analyze:
@@ -20,15 +20,31 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # Initialize CodeQL
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: java-kotlin
-          # THIS IS THE SECRET: It tells CodeQL to scan without building,
-          # exactly like the "Normal" setup does.
+          # 'none' bypasses the build but causes the "Low Quality" 84% warning.
+          # It is still the most stable way to scan Minecraft mods.
           build-mode: none
+          # This helps with the "Duplicate classes" warning by focusing only on your code
+          # and ignoring remapped/generated classes in build/ folders.
+          paths: |
+            common/src/main/java
+            fabric/src/main/java
+            forge/src/main/java
+            paper/src/main/java
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:java-kotlin"
