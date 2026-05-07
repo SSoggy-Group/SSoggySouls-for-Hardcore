@@ -86,7 +86,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-          cache: maven
+          cache: gradle
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -101,11 +101,11 @@ jobs:
         run: |
           OLD_VERSION="$(grep -o "version = '[^']*'" paper/build.gradle | cut -d"'" -f2)"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$OLD_VERSION"
-          
+
           BUMP_TYPE="$BUMP_TYPE_INPUT"
           MANUAL_VERSION="$MANUAL_VERSION_INPUT"
           SKIP_RELEASE="false"
-          
+
           if [[ "$EVENT_NAME" == "push" ]]; then
             COMMIT_MSG=$(git log -1 --pretty=%B)
             
