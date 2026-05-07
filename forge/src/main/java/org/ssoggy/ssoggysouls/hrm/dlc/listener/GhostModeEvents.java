@@ -107,12 +107,12 @@ public class GhostModeEvents {
         UUID uuid = player.getUUID();
         GhostState state = GhostState.getServerState(player.server);
 
-        if (state.deathHolders.containsKey(uuid)) {
+        if (state.getDeathHolder(uuid) != null) {
             return;
         }
 
-        if (state.deathLocations.containsKey(uuid)) {
-            BlockPos deathPos = state.deathLocations.get(uuid);
+        BlockPos deathPos = state.getDeathLocation(uuid);
+        if (deathPos != null) {
             BlockPos currentPos = player.blockPosition();
 
             double distanceSq = currentPos.distSqr(deathPos);

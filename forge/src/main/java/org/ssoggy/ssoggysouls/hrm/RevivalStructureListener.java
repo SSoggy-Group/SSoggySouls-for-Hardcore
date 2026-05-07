@@ -150,8 +150,8 @@ public class RevivalStructureListener {
         DlcDeaths.clearDeath(revivedUuid);
         GhostModeEvents.updateGhostStatus(revivedUuid, false);
         GhostState ghostState = GhostState.getServerState(world.getServer());
-        ghostState.deathLocations.remove(revivedUuid);
-        ghostState.deathHolders.remove(revivedUuid);
+        ghostState.removeDeathLocation(revivedUuid);
+        ghostState.removeDeathHolder(revivedUuid);
         ghostState.setDirty();
 
         summoner.sendSystemMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()));

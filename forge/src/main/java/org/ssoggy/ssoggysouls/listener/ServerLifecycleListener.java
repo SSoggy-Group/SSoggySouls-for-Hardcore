@@ -134,7 +134,7 @@ public class ServerLifecycleListener {
             player.sendSystemMessage(MessageUtil.get("death-now-ghost"));
             org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents.updateGhostStatus(player.getUUID(), true);
             GhostState state = GhostState.getServerState(player.server);
-            state.deathLocations.put(player.getUUID(), player.blockPosition());
+            state.setDeathLocation(player.getUUID(), player.blockPosition());
             state.setDirty();
             DlcDeaths.recordDeath(
                     player.getUUID(),
