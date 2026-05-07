@@ -27,6 +27,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcServices;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
+import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
 @Mod(SSoggySoulsMod.MODID)
 public class SSoggySoulsMod implements PluginContext {
@@ -100,7 +101,7 @@ public class SSoggySoulsMod implements PluginContext {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        // Some common setup code
+        ServerTransferUtil.register();
     }
 
     @SubscribeEvent
