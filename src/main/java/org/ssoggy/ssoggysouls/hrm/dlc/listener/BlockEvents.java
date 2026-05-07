@@ -95,18 +95,11 @@ public class BlockEvents implements Listener {
 
             RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHHOLDER);
             RPStatic.DEAD_HOLDERS.remove(uuid);
-            boolean isRevived = ReviveHelper.tryRevivePlayer(world, location, skullOwner.getPlayer(), event.getPlayer());
 
-            if (isRevived) {
-                RPStatic.DEAD_LOCATIONS.remove(uuid);
-                RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHPOS);
-                RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHTIME);
-            } else {
-                RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(location, now));
-                RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHPOS,
-                        location.getBlockX() + "$" + location.getBlockY() + "$" + location.getBlockZ() + "$" + world.getName());
-                RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHTIME, now.toString());
-            }
+            RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(location, now));
+            RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHPOS,
+                    location.getBlockX() + "$" + location.getBlockY() + "$" + location.getBlockZ() + "$" + world.getName());
+            RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHTIME, now.toString());
             RPStatic.DEAD_STORAGE.saveConfig();
 
         }
