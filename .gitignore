@@ -51,3 +51,6 @@ __pycache__/
 # Configuration & Others
 .markdownlint.json
 hs_err_pid*
+
+# SonarLint
+.sonarlint
