@@ -24,6 +24,7 @@ import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
 import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcServices;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 
 @Mod(SSoggySoulsMod.MODID)
@@ -61,6 +62,7 @@ public class SSoggySoulsMod implements PluginContext {
             LOGGER.error("Failed to initialize database. Disabling features.");
             return;
         }
+        DlcServices.init(this);
 
         // Set Database instances
         CommandRegistration.setDatabase(databaseManager);

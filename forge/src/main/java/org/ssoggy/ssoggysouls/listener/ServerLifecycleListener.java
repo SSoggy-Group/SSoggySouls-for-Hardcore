@@ -10,6 +10,12 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStat;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStats;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
@@ -46,6 +52,7 @@ public class ServerLifecycleListener {
                 data.setUsername(player.getScoreboardName());
                 db.savePlayer(data);
             }
+            DlcNames.cache(uuid, player.getScoreboardName());
 
             final PlayerData finalData = data;
             player.server.execute(() -> handleJoinSync(player, finalData));
@@ -92,6 +99,7 @@ public class ServerLifecycleListener {
         if (db == null || !(event.getEntity() instanceof ServerPlayer)) return;
         ServerPlayer player = (ServerPlayer) event.getEntity();
         UUID uuid = player.getUUID();
+        ServerPlayer killer = event.getSource().getEntity() instanceof ServerPlayer serverPlayer ? serverPlayer : null;
 
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(uuid);
@@ -103,6 +111,11 @@ public class ServerLifecycleListener {
 
             int remaining = data.decrementLife();
             db.savePlayer(data);
+            new DlcStats(uuid).incrementStat(DlcStat.DEATHS, 1);
+            if (killer != null) {
+                DlcNames.cache(killer.getUUID(), killer.getScoreboardName());
+                new DlcStats(killer.getUUID()).incrementStat(DlcStat.KILLS, 1);
+            }
 
             player.server.execute(() -> handleDeathSync(player, data, remaining));
         });
@@ -119,8 +132,22 @@ public class ServerLifecycleListener {
             player.setGameMode(GameType.ADVENTURE);
             setGhostModeAttributes(player, true);
             player.sendSystemMessage(MessageUtil.get("death-now-ghost"));
+            org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents.updateGhostStatus(player.getUUID(), true);
+            GhostState state = GhostState.getServerState(player.server);
+            state.deathLocations.put(player.getUUID(), player.blockPosition());
+            state.setDirty();
+            DlcDeaths.recordDeath(
+                    player.getUUID(),
+                    player.getScoreboardName(),
+                    player.serverLevel().dimension().location().toString(),
+                    player.blockPosition().getX(),
+                    player.blockPosition().getY(),
+                    player.blockPosition().getZ()
+            );
 
-            // Head drops triggered here (Ported in Phase 4)
+            if (ConfigManager.getConfig().isDropHeads()) {
+                HeadDropListener.triggerHeadDrop(player);
+            }
         } else {
             player.sendSystemMessage(MessageUtil.get("death-life-lost", "lives", remaining));
         }

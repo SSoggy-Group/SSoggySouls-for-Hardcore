@@ -14,6 +14,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.dlc.command.DlcCommandRegistration;
+import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
+import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.AdminLogger;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
@@ -50,7 +55,7 @@ public class CommandRegistration {
         registerReviveCommand(dispatcher);
         registerSetLivesCommand(dispatcher);
         registerAdminLogCommand(dispatcher);
-        registerObituariesCommand(dispatcher);
+        DlcCommandRegistration.register(dispatcher, db);
     }
 
     private static void registerStatusCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -131,12 +136,19 @@ public class CommandRegistration {
                         boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
                         if (success) {
                             source.getServer().execute(() -> {
+                                DlcDeaths.clearDeath(targetData.getUuid());
+                                GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
+                                GhostState ghostState = GhostState.getServerState(source.getServer());
+                                ghostState.deathLocations.remove(targetData.getUuid());
+                                ghostState.deathHolders.remove(targetData.getUuid());
+                                ghostState.setDirty();
                                 source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
                                 AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
 
                                 ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetData.getUuid());
                                 if (targetPlayer != null) {
                                     targetPlayer.setGameMode(GameType.SURVIVAL);
+                                    ServerLifecycleListener.setGhostModeAttributes(targetPlayer, false);
                                     targetPlayer.sendSystemMessage(MessageUtil.get("revive-success"));
                                 }
                             });
@@ -169,6 +181,19 @@ public class CommandRegistration {
                             }
                             db.setLives(data.getUuid(), lives);
                             source.getServer().execute(() -> {
+                                ServerPlayer online = source.getServer().getPlayerList().getPlayer(data.getUuid());
+                                if (lives > 0) {
+                                    DlcDeaths.clearDeath(data.getUuid());
+                                    GhostModeEvents.updateGhostStatus(data.getUuid(), false);
+                                    GhostState ghostState = GhostState.getServerState(source.getServer());
+                                    ghostState.deathLocations.remove(data.getUuid());
+                                    ghostState.deathHolders.remove(data.getUuid());
+                                    ghostState.setDirty();
+                                    if (online != null) {
+                                        ServerLifecycleListener.setGhostModeAttributes(online, false);
+                                        online.setGameMode(GameType.SURVIVAL);
+                                    }
+                                }
                                 source.sendSuccess(() -> MessageUtil.get("admin-setlives-success",
                                         PLAYER, data.getUsername(), LIVES, lives), true);
                                 AdminLogger.log(source.getTextName(), "Set lives for " + data.getUsername() + " to " + lives);

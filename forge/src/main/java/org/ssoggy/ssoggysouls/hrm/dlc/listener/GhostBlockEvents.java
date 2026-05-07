@@ -14,11 +14,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.model.PlayerData;
@@ -33,6 +36,27 @@ public class GhostBlockEvents {
 
     public static void register(DatabaseManager database) {
         db = database;
+    }
+
+    @SubscribeEvent
+    public static void onItemPickup(EntityItemPickupEvent event) {
+        if (db == null || !(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+
+        ItemStack stack = event.getItem().getItem();
+        if (!stack.is(Items.PLAYER_HEAD)) {
+            return;
+        }
+
+        ResolvableProfile profile = stack.get(DataComponents.PROFILE);
+        if (profile == null || profile.id().isEmpty()) {
+            return;
+        }
+
+        UUID ownerUuid = profile.id().get();
+        DlcDeaths.setHolder(ownerUuid, player.getUUID());
+        DlcNames.cache(player.getUUID(), player.getScoreboardName());
     }
 
     @SubscribeEvent
@@ -66,6 +90,8 @@ public class GhostBlockEvents {
                         ghostState.deathLocations.remove(ownerUuid);
                         ghostState.deathHolders.put(ownerUuid, player.getUUID());
                         ghostState.setDirty();
+                        DlcDeaths.setHolder(ownerUuid, player.getUUID());
+                        DlcNames.cache(player.getUUID(), player.getScoreboardName());
 
                         ServerPlayer ghost = world.getServer().getPlayerList().getPlayer(ownerUuid);
                         if (ghost != null) {
@@ -117,6 +143,15 @@ public class GhostBlockEvents {
         ghostState.deathHolders.remove(ownerUuid);
         ghostState.deathLocations.put(ownerUuid, targetPos);
         ghostState.setDirty();
+        DlcDeaths.setHolder(ownerUuid, null);
+        DlcDeaths.recordDeath(
+                ownerUuid,
+                DlcNames.getOrDefault(ownerUuid, ownerUuid.toString()),
+                world.dimension().location().toString(),
+                targetPos.getX(),
+                targetPos.getY(),
+                targetPos.getZ()
+        );
 
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(ownerUuid);

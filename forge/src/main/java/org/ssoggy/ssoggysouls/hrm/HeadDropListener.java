@@ -31,10 +31,14 @@ public class HeadDropListener {
     }
 
     private static void dropHead(ServerPlayer player) {
+        if (player.isCreative() && !ConfigManager.getConfig().isCreativePlayersDropHeads()) {
+            return;
+        }
+
         Level world = player.level();
         BlockPos pos = player.blockPosition();
 
-        if (ConfigManager.getConfig().isHeadPlaceAsBlock()) {
+        if (ConfigManager.getConfig().isHeadPlaceAsBlock() || !ConfigManager.getConfig().isHeadBurnsInLava()) {
             BlockPos headPos = findSafeBlockPos(world, pos);
             world.setBlock(headPos, Blocks.PLAYER_HEAD.defaultBlockState(), 3);
             BlockEntity be = world.getBlockEntity(headPos);
