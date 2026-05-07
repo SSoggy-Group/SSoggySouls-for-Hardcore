@@ -34,6 +34,8 @@ fabric/out/
 .nbcache
 .netbeans
 nbproject/
+.agents
+.sonarlint
 
 # OS specific
 .DS_Store
