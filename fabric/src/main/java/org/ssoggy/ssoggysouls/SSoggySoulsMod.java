@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.database.DatabaseInitializationException;
 import org.ssoggy.ssoggysouls.database.MySQLManager;
 import org.ssoggy.ssoggysouls.database.SQLiteManager;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
@@ -54,8 +55,10 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
         } else {
             databaseManager = new SQLiteManager(this);
         }
-        if (!databaseManager.initialize()) {
-            LOGGER.error("Failed to initialize database. Disabling features.");
+        try {
+            databaseManager.initialize();
+        } catch (DatabaseInitializationException e) {
+            LOGGER.error("Failed to initialize database. Disabling features. Error: {}", e.getMessage(), e);
             return;
         }
         DlcServices.init(this);

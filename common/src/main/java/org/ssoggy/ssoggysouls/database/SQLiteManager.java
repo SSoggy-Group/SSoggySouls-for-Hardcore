@@ -49,12 +49,12 @@ public class SQLiteManager implements DatabaseManager {
         this.plugin = plugin;
     }
 
-    public boolean initialize() {
+    public void initialize() throws DatabaseInitializationException {
         try {
             tableName = plugin.getConfigString("database.table-name", "hardcore_players");
             if (!isValidIdentifier(tableName)) {
                 plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", tableName);
-                return false;
+                throw new DatabaseInitializationException("Invalid database.table-name: " + tableName);
             }
 
             java.io.File dataFolder = plugin.getDataFolder();
@@ -71,15 +71,19 @@ public class SQLiteManager implements DatabaseManager {
             config.setConnectionTimeout(10_000);
             config.setPoolName("SSoggySouls-SQLite-Pool");
 
-            dataSource = new HikariDataSource(config);
+            try {
+                dataSource = new HikariDataSource(config);
+            } catch (RuntimeException ex) {
+                plugin.getLogger().log(Level.SEVERE, "SQLite connection pool error:", ex);
+                throw new DatabaseInitializationException("Could not create SQLite connection pool", ex);
+            }
             createTable();
 
             plugin.getLogger().log(Level.INFO, "SQLite connection established (database.db)");
-            return true;
 
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed!", e);
-            return false;
+            throw new DatabaseInitializationException("SQLite initialization failed", e);
         }
     }
 
