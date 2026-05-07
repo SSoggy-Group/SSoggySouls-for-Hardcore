@@ -72,6 +72,8 @@ public class SQLiteManager implements DatabaseManager {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(jdbcUrl);
             config.setDriverClassName("org.sqlite.JDBC");
+            // Keep SQLite pool configurable: writes are serialized, but a larger pool can
+            // reduce read-side contention under concurrent access patterns.
             int maxPoolSize = Math.max(1, plugin.getConfigInt("database.max-pool-size", 1));
             config.setMaximumPoolSize(maxPoolSize);
             config.setConnectionTimeout(10_000);
@@ -154,7 +156,7 @@ public class SQLiteManager implements DatabaseManager {
         }
         String normalizedDefinition = definition.trim().replaceAll("\\s+", " ").toUpperCase();
         if (!ALLOWED_COLUMN_DEFINITIONS.contains(normalizedDefinition)) {
-            throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + definition);
+            throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + normalizedDefinition);
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + normalizedDefinition;
@@ -312,6 +314,8 @@ public class SQLiteManager implements DatabaseManager {
 
         for (UUID uuid : toFetchList) {
             if (!found.contains(uuid)) {
+                // Missing records are treated as dead for safety to preserve current
+                // gameplay behavior, but only after queries complete successfully.
                 result.put(uuid, true);
             }
         }
