@@ -498,6 +498,9 @@ public class MySQLManager implements DatabaseManager {
     }
 
     private void createMetadataTableIfNeeded(Connection conn, String metaTable) throws SQLException {
+        if (!isValidIdentifier(metaTable)) {
+            throw new IllegalArgumentException("Invalid metadata table name identifier: " + metaTable);
+        }
         String createTableSql = "CREATE TABLE IF NOT EXISTS " + metaTable + " ("
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
