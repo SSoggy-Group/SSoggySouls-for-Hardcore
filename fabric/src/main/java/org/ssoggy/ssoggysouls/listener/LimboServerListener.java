@@ -74,7 +74,7 @@ public class LimboServerListener {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, _server) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
 
         // Restrict commands for dead players in Limbo mode
-        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, params) -> {
+        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, _params) -> {
             if (source.getEntity() instanceof ServerPlayerEntity player
                     && limboDeadPlayers.contains(player.getUuid())
                     && !isWhitelistedCommand(message.getContent().getString())) {
