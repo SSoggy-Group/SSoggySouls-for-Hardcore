@@ -872,8 +872,7 @@ If your issue isn't covered here:
 
    ```yaml
    debug: true
-
-```text
+   ```
 
 Restart both servers and reproduce the issue.
 
