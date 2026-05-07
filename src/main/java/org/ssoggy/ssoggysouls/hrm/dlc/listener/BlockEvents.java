@@ -98,6 +98,7 @@ public class BlockEvents implements Listener {
                 return;
             }
 
+            // Run after MONITOR listeners so successful ritual revives can update gamemode first.
             Bukkit.getScheduler().runTaskLater(RPStatic.CLIENT, () -> {
                 String uuidString = uuid.toString();
 
