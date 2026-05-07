@@ -46,7 +46,7 @@ public class ReviveSkullManager {
                 return TypedActionResult.pass(stack);
             }
 
-            if (!canUseReviveFeatures(serverPlayer, db)) {
+            if (serverPlayer.isSpectator()) {
                 return TypedActionResult.pass(stack);
             }
 
@@ -104,16 +104,13 @@ public class ReviveSkullManager {
         return new GenericContainerScreenHandler(type, syncId, playerInventory, inventory, rows) {
             @Override
             public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity clickingPlayer) {
-                if (actionType == SlotActionType.QUICK_MOVE || actionType == SlotActionType.SWAP) {
+                if (actionType == SlotActionType.QUICK_MOVE || actionType == SlotActionType.SWAP
+                        || slotIndex < 0 || slotIndex >= inventory.size()) {
                     super.onSlotClick(slotIndex, button, actionType, clickingPlayer);
                     return;
                 }
 
-                if (slotIndex >= 0 && slotIndex < inventory.size()) {
-                    handleMenuClick(inventory.getStack(slotIndex), clickingPlayer, db);
-                } else {
-                    super.onSlotClick(slotIndex, button, actionType, clickingPlayer);
-                }
+                handleMenuClick(inventory.getStack(slotIndex), clickingPlayer, db);
             }
         };
     }
@@ -135,7 +132,11 @@ public class ReviveSkullManager {
                 return;
             }
 
-            PlayerData data = getCachedPlayerData(spe, db);
+            PlayerData data = PLAYER_DATA_CACHE.get(spe.getUuid());
+            if (data == null) {
+                refreshPlayerDataAsync(spe, db);
+                return;
+            }
             if (!canUseReviveFeatures(spe, data)) {
                 return;
             }
@@ -161,16 +162,8 @@ public class ReviveSkullManager {
         }
     }
 
-    private static boolean canUseReviveFeatures(ServerPlayerEntity player, DatabaseManager db) {
-        return canUseReviveFeatures(player, getCachedPlayerData(player, db));
-    }
-
     private static boolean canUseReviveFeatures(ServerPlayerEntity player, PlayerData data) {
         return !player.isSpectator() && data != null && !data.isDead();
-    }
-
-    private static PlayerData getCachedPlayerData(ServerPlayerEntity player, DatabaseManager db) {
-        return PLAYER_DATA_CACHE.computeIfAbsent(player.getUuid(), db::getPlayer);
     }
 
     private static void cachePlayerData(UUID playerId, PlayerData data) {
@@ -179,6 +172,12 @@ public class ReviveSkullManager {
         } else {
             PLAYER_DATA_CACHE.put(playerId, data);
         }
+    }
+
+    private static void refreshPlayerDataAsync(ServerPlayerEntity player, DatabaseManager db) {
+        CompletableFuture
+                .supplyAsync(() -> db.getPlayer(player.getUuid()))
+                .thenAccept(data -> cachePlayerData(player.getUuid(), data));
     }
 
     private static ItemStack createMenuHead(PlayerData data) {

@@ -112,16 +112,17 @@ public class GhostModeEvents {
         }
 
         BlockPos deathPos = state.getDeathLocation(uuid);
-        if (deathPos != null) {
-            BlockPos currentPos = player.blockPosition();
+        if (deathPos == null) {
+            return;
+        }
 
-            double distanceSq = currentPos.distSqr(deathPos);
-            double maxDistance = ConfigManager.getConfig().getSpectatorHeadrestrictRadius();
+        BlockPos currentPos = player.blockPosition();
+        double distanceSq = currentPos.distSqr(deathPos);
+        double maxDistance = ConfigManager.getConfig().getSpectatorHeadrestrictRadius();
 
-            if (distanceSq > (maxDistance * maxDistance)) {
-                player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
-                player.sendSystemMessage(Component.literal("You may not travel that far away from your death location").withStyle(net.minecraft.ChatFormatting.GRAY));
-            }
+        if (distanceSq > (maxDistance * maxDistance)) {
+            player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
+            player.sendSystemMessage(Component.literal("You may not travel that far away from your death location").withStyle(net.minecraft.ChatFormatting.GRAY));
         }
     }
 
