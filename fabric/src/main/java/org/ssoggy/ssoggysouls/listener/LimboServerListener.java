@@ -14,6 +14,7 @@ import org.ssoggy.ssoggysouls.util.ConfigManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 
 import java.util.UUID;
@@ -34,7 +35,11 @@ public class LimboServerListener {
 
     public LimboServerListener(DatabaseManager db) {
         this.db = db;
-        registerEvents();
+        registerJoinEvent();
+        registerDisconnectEvent();
+        registerCommandRestrictionEvent();
+        registerCancelDamageEvent();
+        registerWorldChangeEvent();
     }
 
     public static void updateLimboStatus(UUID uuid, boolean isDead) {
@@ -45,36 +50,39 @@ public class LimboServerListener {
         }
     }
 
-    private void registerEvents() {
-        // Player Join
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+    private void registerJoinEvent() {
+        ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerPlayerEntity player = handler.getPlayer();
             UUID uuid = player.getUuid();
 
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
-
-                server.execute(() -> {
-                    if (server.getPlayerManager().getPlayer(uuid) == null) {
-                        return;
-                    }
-                    if (data != null && data.isDead()) {
-                        limboDeadPlayers.add(uuid);
-                        applyLimboState(player);
-                    } else {
-                        limboDeadPlayers.remove(uuid);
-                        player.changeGameMode(GameMode.SURVIVAL);
-                        player.sendMessage(MessageUtil.get("limbo-welcome-visitor"), false);
-                    }
-                });
+                server.execute(() -> handleJoinSync(player, data, server));
             });
         });
+    }
 
-        // Cleanup tracking on disconnect
+    private void handleJoinSync(ServerPlayerEntity player, PlayerData data, MinecraftServer server) {
+        UUID uuid = player.getUuid();
+        if (server.getPlayerManager().getPlayer(uuid) == null) {
+            return;
+        }
+        if (data != null && data.isDead()) {
+            limboDeadPlayers.add(uuid);
+            applyLimboState(player);
+        } else {
+            limboDeadPlayers.remove(uuid);
+            player.changeGameMode(GameMode.SURVIVAL);
+            player.sendMessage(MessageUtil.get("limbo-welcome-visitor"), false);
+        }
+    }
+
+    private void registerDisconnectEvent() {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, _) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
+    }
 
-        // Restrict commands for dead players in Limbo mode
-        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, _params) -> {
+    private void registerCommandRestrictionEvent() {
+        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, _) -> {
             if (source.getEntity() instanceof ServerPlayerEntity player
                     && limboDeadPlayers.contains(player.getUuid())
                     && !isWhitelistedCommand(message.getContent().getString())) {
@@ -83,14 +91,16 @@ public class LimboServerListener {
             }
             return true;
         });
+    }
 
-        // Cancel Damage
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) ->
+    private void registerCancelDamageEvent() {
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, _, _) ->
             !(entity instanceof ServerPlayerEntity player && player.interactionManager.getGameMode() == GameMode.ADVENTURE)
         );
+    }
 
-        // Prevent dead players from escaping Limbo through portals/dimension changes
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, destination) -> {
+    private void registerWorldChangeEvent() {
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, _, destination) -> {
             if (!limboDeadPlayers.contains(player.getUuid())) {
                 return;
             }
@@ -110,8 +120,6 @@ public class LimboServerListener {
             }
         });
     }
-
-
 
     private static boolean isWhitelistedCommand(String message) {
         String[] tokens = message.trim().split("\\s+");
