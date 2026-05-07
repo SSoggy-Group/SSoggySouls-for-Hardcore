@@ -24,6 +24,43 @@ on:
         description: "Manual Version (e.g., 4.1.0). Leave blank to use Bump Type/Commit logic."
         required: false
         type: string
+      paper_type:
+        description: "Paper release channel"
+        required: false
+        default: "release"
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
+      fabric_type:
+        description: "Fabric release channel"
+        required: false
+        default: "alpha"
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
+      forge_type:
+        description: "Forge release channel"
+        required: false
+        default: "alpha"
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
+      gh_prerelease:
+        description: "Mark as pre-release on GitHub"
+        required: false
+        default: false
+        type: boolean
+      gh_latest:
+        description: "Mark as latest release on GitHub"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: write # Needed to push commits, tags, and releases
@@ -212,6 +249,8 @@ jobs:
           tag_name: "v${{ env.NEW_VERSION }}"
           name: "Build ${{ env.NEW_VERSION }}"
           generate_release_notes: true
+          prerelease: ${{ github.event.inputs.gh_prerelease == 'true' || false }}
+          make_latest: ${{ github.event.inputs.gh_latest == 'false' && 'false' || 'true' }}
           files: |
             ${{ steps.package.outputs.jar }}
             ${{ steps.package.outputs.fabric_jar }}
@@ -225,7 +264,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           name: "SSoggySouls v${{ env.NEW_VERSION }} (Paper/Spigot)"
           version: "${{ env.NEW_VERSION }}+paper"
-          version-type: release
+          version-type: ${{ github.event.inputs.paper_type || 'release' }}
           changelog: ${{ github.event.head_commit.message }}
           loaders: |
             paper
@@ -254,7 +293,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           name: "SSoggySouls v${{ env.NEW_VERSION }} (Fabric/Quilt)"
           version: "${{ env.NEW_VERSION }}+fabric"
-          version-type: release
+          version-type: ${{ github.event.inputs.fabric_type || 'alpha' }}
           changelog: ${{ github.event.head_commit.message }}
           loaders: |
             fabric
@@ -281,7 +320,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           name: "SSoggySouls v${{ env.NEW_VERSION }} (Forge)"
           version: "${{ env.NEW_VERSION }}+forge"
-          version-type: release
+          version-type: ${{ github.event.inputs.forge_type || 'alpha' }}
           changelog: ${{ github.event.head_commit.message }}
           loaders: forge
           game-versions: |
