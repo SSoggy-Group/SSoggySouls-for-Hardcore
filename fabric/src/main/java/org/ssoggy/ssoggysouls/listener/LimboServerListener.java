@@ -75,7 +75,7 @@ public class LimboServerListener {
         );
 
         // Prevent dead players from escaping Limbo through portals/dimension changes
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, _origin, destination) -> {
             if (!limboDeadPlayers.contains(player.getUuid())) {
                 return;
             }
