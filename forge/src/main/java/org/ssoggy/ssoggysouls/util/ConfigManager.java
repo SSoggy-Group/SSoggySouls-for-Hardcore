@@ -182,10 +182,10 @@ public class ConfigManager {
         public int getMaxLives() { return maxLives; }
         public String getGracePeriod() { return gracePeriod; }
         public int getReviveCooldownSeconds() { return reviveCooldownSeconds; }
-        public boolean isLimboServer() { return isLimboServer; }
+        public boolean isLimboServer() { return !isSingleServerDatabase() && isLimboServer; }
         public String getMainServerName() { return mainServerName; }
         public String getLimboServerName() { return limboServerName; }
-        public boolean isSendToLimboOnDeath() { return sendToLimboOnDeath; }
+        public boolean isSendToLimboOnDeath() { return !isSingleServerDatabase() && sendToLimboOnDeath; }
         public String getLimboSpawnWorld() { return limboSpawnWorld; }
         public double getLimboSpawnX() { return limboSpawnX; }
         public double getLimboSpawnY() { return limboSpawnY; }
@@ -229,6 +229,20 @@ public class ConfigManager {
         public java.util.List<String> getStairBlocktag() { return stairBlocktag; }
         public boolean isDebug() { return debug; }
         public boolean isCheckForUpdates() { return checkForUpdates; }
+
+        public boolean isSingleServerDatabase() {
+            return isSqliteDatabaseType(databaseType);
+        }
+
+        private static boolean isSqliteDatabaseType(String type) {
+            if (type == null) {
+                return true;
+            }
+            String normalized = type.trim();
+            return normalized.isEmpty()
+                    || "sqlite".equalsIgnoreCase(normalized)
+                    || "local".equalsIgnoreCase(normalized);
+        }
 
         public String getConfigString(String path, String defaultValue) {
             return switch (path) {

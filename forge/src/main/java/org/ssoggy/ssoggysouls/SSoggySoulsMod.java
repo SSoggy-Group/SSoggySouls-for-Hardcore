@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
+import org.ssoggy.ssoggysouls.database.DatabaseInitializationException;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.database.MySQLManager;
 import org.ssoggy.ssoggysouls.database.SQLiteManager;
@@ -60,8 +61,10 @@ public class SSoggySoulsMod implements PluginContext {
             databaseManager = new SQLiteManager(this);
         }
         
-        if (!databaseManager.initialize()) {
-            LOGGER.error("Failed to initialize database. Disabling features.");
+        try {
+            databaseManager.initialize();
+        } catch (DatabaseInitializationException e) {
+            LOGGER.error("Failed to initialize database. Disabling features. Error: {}", e.getMessage(), e);
             return;
         }
         DlcServices.init(this);
