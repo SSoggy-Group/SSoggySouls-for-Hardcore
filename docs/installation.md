@@ -363,7 +363,7 @@ lives:
 # DEATH HANDLING
 
 main:
-  death-mode: "hybrid"           # hybrid | spectator | limbo
+  death-mode: "spectator"        # SQLite uses spectator; MySQL can use hybrid | spectator | limbo
 
   hybrid-timeout-seconds: 300    # 5 minutes for hybrid mode
 
@@ -477,9 +477,9 @@ Should show: "Lives: 2 - Status: Alive"
 
 - Depending on death mode:
 
-  - **hybrid:** Enter spectator for 5 minutes, then transfer to Limbo
+  - **hybrid:** Enter spectator for 5 minutes, then transfer to Limbo (MySQL/proxy only)
 
-  - **spectator:** Enter spectator on Main indefinitely
+  - **spectator:** Enter spectator on Main indefinitely (SQLite default)
 
   - **limbo:** Immediately transfer to Limbo
 

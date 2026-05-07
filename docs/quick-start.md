@@ -191,9 +191,9 @@ Having issues? Check the [Troubleshooting Guide](troubleshooting) for solutions 
 | Mode                 | Behavior                                                                              |
 | -------------------- | ------------------------------------------------------------------------------------- |
 
-| **hybrid** (default) | Dead players get 5 minutes in spectator mode to be revived, then transferred to Limbo |
+| **hybrid**           | Dead players get 5 minutes in spectator mode to be revived, then transferred to Limbo |
 
-| **spectator**        | Dead players stay on Main in spectator mode indefinitely until revived                |
+| **spectator**        | Dead players stay on Main in spectator mode indefinitely until revived (SQLite default) |
 
 | **limbo**            | Dead players immediately transferred to Limbo upon losing all lives                   |
 

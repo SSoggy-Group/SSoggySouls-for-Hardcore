@@ -13,7 +13,7 @@ A hardcore lives system plugin. When you die enough times, you get exiled to a L
 ## Features
 
 - **Lives System** - Start with 2 lives (configurable), max 5.
-- **Three Death Modes** - Instant Limbo, permanent spectator, or hybrid timeout.
+- **Death Handling** - SQLite keeps dead players as spectators; MySQL/proxy setups can use instant Limbo or hybrid timeout.
 - **Multiple Revival Methods** - Ritual structures, Revive Skull, or admin commands.
 - **Grace Period** - Newbies get protected time (only counts online time).
 - **Extra Life Items** - Craftable items for more lives (fully customizable).

@@ -14,7 +14,7 @@ A hardcore lives system mod/plugin for Minecraft 1.21.X (Supports Spigot, Paper,
 
 **Lives System** - start with 2 lives (configurable), max out at 5
 
-**Three Death Modes** - pick between instant Limbo exile, permanent spectator, or hybrid timeout
+**Death Handling** - SQLite keeps dead players in spectator; MySQL/proxy setups can use instant Limbo exile or hybrid timeout
 
 **Multiple Revival Methods** - ritual structures, Revive Skull item, or admin commands
 
@@ -64,9 +64,9 @@ Pick the one that fits your server's vibe:
 | Mode                   | What happens                                                                                                                                                                                     | Good for                                                      |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
 
-| **`hybrid`** (default) | Dead players chill in spectator on Main for 5 minutes. Team has that long to revive them or they get yeeted to Limbo. If they log out and back in, they skip spectator and go straight to Limbo. | Servers that want some tension - race against the clock vibes |
+| **`hybrid`**           | Dead players chill in spectator on Main for 5 minutes. Team has that long to revive them or they get yeeted to Limbo. If they log out and back in, they skip spectator and go straight to Limbo. | Dual-server MySQL setups that want some tension - race against the clock vibes |
 
-| **`spectator`**        | Dead players stay on Main as spectators forever until revived. Never get sent to Limbo.                                                                                                          | Servers where you want dead people watching their team 24/7   |
+| **`spectator`**        | Dead players stay on Main as spectators forever until revived. Never get sent to Limbo.                                                                                                          | SQLite single-server setups and servers where you want dead people watching their team 24/7 |
 
 | **`limbo`**            | Dead? Straight to Limbo. No spectator time.                                                                                                                                                      | Hardcore servers that want complete separation                |
 
@@ -517,7 +517,7 @@ lives:
 
 ```yaml
 main:
-  death-mode: "hybrid"            # hybrid | spectator | limbo
+  death-mode: "spectator"         # SQLite uses spectator; MySQL can use hybrid | spectator | limbo
 
   hybrid-timeout-seconds: 300     # Timeout for hybrid mode (5 min)
 
