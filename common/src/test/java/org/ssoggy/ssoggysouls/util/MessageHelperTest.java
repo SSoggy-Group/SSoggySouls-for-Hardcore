@@ -15,68 +15,68 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class MessageHelperTest {
 
-    @BeforeEach
-    void setUp() throws Exception {
-        // Use reflection to bypass config loading since we only want to test substitution logic
-        Field messagesField = MessageHelper.class.getDeclaredField("messages");
-        messagesField.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        Map<String, String> messages = (Map<String, String>) messagesField.get(null);
-        messages.clear();
-        messages.put("test_msg", "Hello %player%!");
-        messages.put("multi_replace", "%prefix% You have %amount% %item%.");
+    private static final String KEY_TEST_MSG = "test_msg";
+    private static final String TEMPLATE_HELLO_PLAYER = "Hello %player%!";
+    private static final String PLACEHOLDER_PLAYER = "player";
+    private static final String TEST_PLAYER_NAME = "SSoggy";
 
-        Field prefixField = MessageHelper.class.getDeclaredField("prefix");
-        prefixField.setAccessible(true);
-        prefixField.set(null, "\u00a78[\u00a74\u2620\u00a78] \u00a7r");
+    @BeforeEach
+    void setUp() {
+        // Since MessageHelper's messages map and prefix are protected and in the same package,
+        // we can access and modify them directly without reflection.
+        MessageHelper.messages.clear();
+        MessageHelper.messages.put(KEY_TEST_MSG, TEMPLATE_HELLO_PLAYER);
+        MessageHelper.messages.put("multi_replace", "%prefix% You have %amount% %item%.");
+
+        MessageHelper.prefix = "\u00a78[\u00a74\u2620\u00a78] \u00a7r";
     }
 
     @Test
-    void testGetRaw_ExistingKey() {
-        String result = MessageHelper.getRaw("test_msg", "player", "SSoggy");
+    void testGetRawExistingKey() {
+        String result = MessageHelper.getRaw(KEY_TEST_MSG, PLACEHOLDER_PLAYER, TEST_PLAYER_NAME);
         assertEquals("Hello SSoggy!", result);
     }
 
     @Test
-    void testGetRaw_MissingKey() {
-        String result = MessageHelper.getRaw("missing_key", "player", "SSoggy");
+    void testGetRawMissingKey() {
+        String result = MessageHelper.getRaw("missing_key", PLACEHOLDER_PLAYER, TEST_PLAYER_NAME);
         assertEquals("&cMissing message: missing_key", result);
     }
 
     @Test
-    void testGetRaw_MultipleReplacements() {
+    void testGetRawMultipleReplacements() {
         String result = MessageHelper.getRaw("multi_replace", "prefix", "&a[Info]", "amount", 5, "item", "apples");
         assertEquals("&a[Info] You have 5 apples.", result);
     }
 
     @Test
-    void testGetRaw_NoReplacements() {
-        String result = MessageHelper.getRaw("test_msg");
-        assertEquals("Hello %player%!", result);
+    void testGetRawNoReplacements() {
+        String result = MessageHelper.getRaw(KEY_TEST_MSG);
+        assertEquals(TEMPLATE_HELLO_PLAYER, result);
     }
 
     @Test
-    void testGetRaw_MissingReplacementValue() {
+    void testGetRawMissingReplacementValue() {
         // If uneven replacements are provided, the last key is ignored
-        String result = MessageHelper.getRaw("test_msg", "player");
-        assertEquals("Hello %player%!", result);
+        String result = MessageHelper.getRaw(KEY_TEST_MSG, PLACEHOLDER_PLAYER);
+        assertEquals(TEMPLATE_HELLO_PLAYER, result);
     }
 
     @Test
-    void testColorize_AmperstandToSection() {
+    void testColorizeAmpersandToSection() {
         String result = MessageHelper.colorize("&aGreen &cRed");
         assertEquals("\u00a7aGreen \u00a7cRed", result);
     }
 
     @Test
-    void testColorize_Null() {
+    void testColorizeNull() {
         String result = MessageHelper.colorize(null);
         assertEquals("", result);
     }
 
     @Test
     void testGetFormatted() {
-        String result = MessageHelper.getFormatted("test_msg", "player", "SSoggy");
+        String result = MessageHelper.getFormatted(KEY_TEST_MSG, PLACEHOLDER_PLAYER, TEST_PLAYER_NAME);
         // Should contain the prefix (colorized) + the message
         assertEquals("\u00a78[\u00a74\u2620\u00a78] \u00a7rHello SSoggy!", result);
     }
