@@ -219,7 +219,7 @@ jobs:
 
       - name: Publish to Modrinth
         if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
-        uses: Kir-Antipov/mc-publish@v3.3
+        uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: REPLACE_WITH_MODRINTH_ID
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
