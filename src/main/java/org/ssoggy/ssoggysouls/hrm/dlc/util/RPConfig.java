@@ -72,9 +72,9 @@ public class RPConfig {
         RPStatic.CLIENT.saveDefaultConfig();
         RPStatic.CLIENT.reloadConfig();
         FileConfiguration fileConfiguration = RPStatic.CLIENT.getConfig();
-        RPStatic.BLOCK_TAGS.forEach((key, value) -> RPStatic.BLOCK_TAGS.put(key, fileConfiguration.getStringList("hrm." + key).stream().map(Material::getMaterial).collect(Collectors.toSet())));
-        RPStatic.CONFIG_RULES.forEach((key, value) -> RPStatic.CONFIG_RULES.put(key, fileConfiguration.getBoolean("hrm." + key, value)));
-        RPStatic.CONFIG_TIMERS.forEach((key, value) -> RPStatic.CONFIG_TIMERS.put(key, fileConfiguration.getInt("hrm." + key, value)));
+        RPStatic.BLOCK_TAGS.replaceAll((key, value) -> fileConfiguration.contains("hrm." + key) ? fileConfiguration.getStringList("hrm." + key).stream().map(Material::matchMaterial).filter(m -> m != null).collect(Collectors.toSet()) : value);
+        RPStatic.CONFIG_RULES.replaceAll((key, value) -> fileConfiguration.getBoolean("hrm." + key, value));
+        RPStatic.CONFIG_TIMERS.replaceAll((key, value) -> fileConfiguration.getInt("hrm." + key, value));
     }
 
     public static byte resetBlockTag(String where) {
