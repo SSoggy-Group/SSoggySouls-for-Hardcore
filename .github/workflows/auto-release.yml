@@ -58,15 +58,19 @@ jobs:
       # --- VERSION BUMPING LOGIC ---
       - name: Calculate Next Version
         id: version_math
+        env:
+          BUMP_TYPE_INPUT: ${{ inputs.bump_type }}
+          MANUAL_VERSION_INPUT: ${{ inputs.manual_version }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           OLD_VERSION="$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$OLD_VERSION"
           
-          BUMP_TYPE="${{ inputs.bump_type }}"
-          MANUAL_VERSION="${{ inputs.manual_version }}"
+          BUMP_TYPE="$BUMP_TYPE_INPUT"
+          MANUAL_VERSION="$MANUAL_VERSION_INPUT"
           SKIP_RELEASE="false"
           
-          if [[ "${{ github.event_name }}" == "push" ]]; then
+          if [[ "$EVENT_NAME" == "push" ]]; then
             COMMIT_MSG=$(git log -1 --pretty=%B)
             
             # 1. Check for skips first (docs, github actions, tests)
@@ -90,6 +94,10 @@ jobs:
           if [ "$SKIP_RELEASE" == "false" ]; then
             # Priority: Manual Version -> Major -> Minor -> Patch
             if [[ -n "$MANUAL_VERSION" ]]; then
+              if ! [[ "$MANUAL_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.+][A-Za-z0-9.-]+)?$ ]]; then
+                echo "Invalid manual_version input: '$MANUAL_VERSION'. Expected semantic version like 1.2.3 or 1.2.3-rc.1."
+                exit 1
+              fi
               NEW_VERSION="$MANUAL_VERSION"
             elif [ "$BUMP_TYPE" == "major" ]; then
               NEW_VERSION="$((MAJOR + 1)).0.0"
