@@ -20,6 +20,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.TypedActionResult;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,9 @@ public class ReviveSkullManager {
 
     public static void register(DatabaseManager db) {
         UseItemCallback.EVENT.register((player, world, hand) -> {
+            if (!ConfigManager.getConfig().isHrmEnabled()) {
+                return TypedActionResult.pass(player.getStackInHand(hand));
+            }
             if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) {
                 return TypedActionResult.pass(player.getStackInHand(hand));
             }

@@ -56,6 +56,9 @@ public class RevivalStructureListener {
 
     public static void register(DatabaseManager db) {
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (!ConfigManager.getConfig().isHrmEnabled()) {
+                return ActionResult.PASS;
+            }
             if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer)) {
                 return ActionResult.PASS;
             }

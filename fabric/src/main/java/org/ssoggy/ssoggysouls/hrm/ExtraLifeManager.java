@@ -32,7 +32,12 @@ public class ExtraLifeManager {
     }
 
     public static void register(DatabaseManager db) {
-        UseItemCallback.EVENT.register((player, world, hand) -> handleExtraLifeUse(player, world, hand, db));
+        UseItemCallback.EVENT.register((player, world, hand) -> {
+            if (!ConfigManager.getConfig().isHrmEnabled()) {
+                return TypedActionResult.pass(player.getStackInHand(hand));
+            }
+            return handleExtraLifeUse(player, world, hand, db);
+        });
     }
 
     private static TypedActionResult<ItemStack> handleExtraLifeUse(PlayerEntity player, World world, Hand hand, DatabaseManager db) {

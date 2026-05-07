@@ -1,6 +1,7 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
@@ -41,6 +42,7 @@ public class GhostBlockEvents {
     private static void registerHeadBreak(DatabaseManager db) {
         // Detect when a player breaks a player's head block
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
+            if (!ConfigManager.getConfig().isHrmEnabled()) return;
             if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer))
                 return;
 
@@ -91,6 +93,8 @@ public class GhostBlockEvents {
     private static void registerHeadPlace(DatabaseManager db) {
         // Detect when a player places a player's head block
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (!ConfigManager.getConfig().isHrmEnabled())
+                return ActionResult.PASS;
             if (world.isClient || !(player instanceof ServerPlayerEntity))
                 return ActionResult.PASS;
 
@@ -115,6 +119,9 @@ public class GhostBlockEvents {
     private static void registerInventoryHeadTracker() {
         final int[] tickCounter = {0};
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            if (!ConfigManager.getConfig().isHrmEnabled()) {
+                return;
+            }
             tickCounter[0] = (tickCounter[0] + 1) % 20;
             if (tickCounter[0] != 0) {
                 return;

@@ -6,6 +6,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class HeadEffectsTask {
     public static void register() {
         final Set<UUID> wearingHead = new HashSet<>();
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            if (!ConfigManager.getConfig().isHrmEnabled()) return;
             if (server.getTicks() % 20 != 0) return; // Run once per second
 
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {

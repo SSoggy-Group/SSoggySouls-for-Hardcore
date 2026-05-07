@@ -38,6 +38,7 @@ public class GhostModeEvents {
     private static void registerLifecycleEvents(DatabaseManager db) {
         // Populate cache on join
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            if (!ConfigManager.getConfig().isHrmEnabled()) return;
             UUID uuid = handler.getPlayer().getUuid();
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
@@ -97,6 +98,7 @@ public class GhostModeEvents {
     private static void registerTickEvents() {
         // Handle movement restriction via ticking (since Fabric lacks a PlayerMoveEvent)
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            if (!ConfigManager.getConfig().isHrmEnabled()) return;
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                 if (isGhost(player)) {
                     enforceGhostRestrictions(player);
@@ -135,11 +137,13 @@ public class GhostModeEvents {
     }
 
     public static void updateGhostStatus(UUID uuid, boolean isDead) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
         if (isDead) GHOST_CACHE.add(uuid);
         else GHOST_CACHE.remove(uuid);
     }
 
     private static boolean isGhost(PlayerEntity player) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return false;
         return GHOST_CACHE.contains(player.getUuid());
     }
 }
