@@ -24,7 +24,6 @@ import org.ssoggy.ssoggysouls.hrm.dlc.enums.COMMANDOUTPUTENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPCommandOutput;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStats;
-import org.ssoggy.ssoggysouls.hrm.dlc.util.RPUtil;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.Pair;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -59,12 +58,17 @@ public class PlayerStateEvents implements Listener {
         int minHeight = world.getMinHeight();
         int maxHeight = world.getMaxHeight();
         Location location = player.getLocation();
-        Location deathPos = new Location(world, location.getBlockX(), Math.clamp(location.getY(), minHeight, maxHeight), location.getZ());
+        Location deathPos = new Location(world, location.getBlockX(), Math.clamp(location.getY(), minHeight, maxHeight),
+                location.getZ());
         String[] dimensionName = world.getKey().asString().split(":");
-        if (dimensionName.length < 2) dimensionName = new String[]{"minecraft" + dimensionName[0]};
+        if (dimensionName.length < 2)
+            dimensionName = new String[] { "minecraft" + dimensionName[0] };
         RPCommandOutput deathMessage = new RPCommandOutput();
         deathMessage.success = COMMANDOUTPUTENUM.INFO;
-        deathMessage.message = "<red>--- <bold>You have died!</bold> ---</red>\n<gray>Reclaim your loot at</gray> <gold><bold>X" + deathPos.getBlockX() + " Y" + deathPos.getBlockY() + " Z" + deathPos.getBlockZ() + "</bold></gold> <gray>inside</gray> " + dimensionName[0] + ":<gold><bold>" + dimensionName[1] + "</bold></gold>";
+        deathMessage.message = "<red>--- <bold>You have died!</bold> ---</red>\n<gray>Reclaim your loot at</gray> <gold><bold>X"
+                + deathPos.getBlockX() + " Y" + deathPos.getBlockY() + " Z" + deathPos.getBlockZ()
+                + "</bold></gold> <gray>inside</gray> " + dimensionName[0] + ":<gold><bold>" + dimensionName[1]
+                + "</bold></gold>";
         player.sendRichMessage(deathMessage.toString());
         world.playSound(deathPos, Sound.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS, 2, -2);
         world.playSound(deathPos, Sound.ENTITY_PIGLIN_DEATH, SoundCategory.PLAYERS, 2, -2);
@@ -76,7 +80,8 @@ public class PlayerStateEvents implements Listener {
             return;
         }
 
-        if (gamemode == GAMEMODESENUM.CREATIVE && !Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("creative-players-drop-heads", false))) {
+        if (gamemode == GAMEMODESENUM.CREATIVE
+                && !Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("creative-players-drop-heads", false))) {
             return;
         }
 
@@ -84,7 +89,8 @@ public class PlayerStateEvents implements Listener {
         UUID uuid = player.getUniqueId();
         RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(deathPos, now));
         RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHPOS,
-                deathPos.getBlockX() + "$" + deathPos.getBlockY() + "$" + deathPos.getBlockZ() + "$" + deathPos.getWorld().getName());
+                deathPos.getBlockX() + "$" + deathPos.getBlockY() + "$" + deathPos.getBlockZ() + "$"
+                        + deathPos.getWorld().getName());
         RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHTIME, now.toString());
         RPStatic.DEAD_STORAGE.saveConfig();
 
@@ -102,7 +108,8 @@ public class PlayerStateEvents implements Listener {
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
         World world = player.getWorld();
-        Location deathPos = RPStatic.DEAD_LOCATIONS.getOrDefault(player.getUniqueId(), Pair.of(world.getSpawnLocation(), Instant.now())).getLeft();
+        Location deathPos = RPStatic.DEAD_LOCATIONS
+                .getOrDefault(player.getUniqueId(), Pair.of(world.getSpawnLocation(), Instant.now())).getLeft();
         event.setRespawnLocation(deathPos);
     }
 
@@ -138,7 +145,8 @@ public class PlayerStateEvents implements Listener {
         }
 
         Player player = event.getPlayer();
-        // Run next tick so the SURVIVAL transition is fully applied before clearing DLC ghost state.
+        // Run next tick so the SURVIVAL transition is fully applied before clearing DLC
+        // ghost state.
         Bukkit.getScheduler().runTask(RPStatic.CLIENT, () -> {
             if (!player.isOnline() || player.getGameMode() != GameMode.SURVIVAL) {
                 return;
