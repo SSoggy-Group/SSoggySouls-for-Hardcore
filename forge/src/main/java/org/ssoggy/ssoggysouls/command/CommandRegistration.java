@@ -243,7 +243,7 @@ public class CommandRegistration {
                 CommandSourceStack source = context.getSource();
 
                 CompletableFuture.runAsync(() -> {
-                    File logFile = net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve(SSoggySoulsMod.MODID).resolve("admin_abuse.log").toFile();
+                    File logFile = net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve(SSoggySoulsMod.MODID).resolve("admin.log").toFile();
                     if (!logFile.exists()) {
                         source.sendFailure(Component.literal("No admin logs found."));
                         return;

@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 
 public class AdminLogger {
 
-    private static final String LOG_FILE_NAME = "admin_abuse.log";
+    private static final String LOG_FILE_NAME = "admin.log";
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Object WRITE_LOCK = new Object();
 

@@ -34,7 +34,7 @@ public class AdminLogCommand implements CommandExecutor {
         int linesToRead = parseLineCount(sender, args);
         if (linesToRead < 0) return true; // error already sent
 
-        File logFile = new File(plugin.getDataFolder(), "admin_abuse.log");
+        File logFile = new File(plugin.getDataFolder(), "admin.log");
         if (!logFile.exists()) {
             sender.sendMessage(MessageUtil.colorize("&eNo admin log file found. No admin actions have been recorded yet."));
             return true;
