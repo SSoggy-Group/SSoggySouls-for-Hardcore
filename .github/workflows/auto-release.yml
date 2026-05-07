@@ -147,13 +147,7 @@ jobs:
             echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           fi
 
-      - name: Sync branch and tags
-        if: steps.version_math.outputs.skip != 'true'
-        run: |
-          git fetch --prune --tags origin
-          git pull --rebase origin main
-
-      # --- APPLY AND COMMIT ---
+      # --- APPLY VERSION ---
       - name: Apply Version to Gradle files
         if: steps.version_math.outputs.skip != 'true'
         run: |
@@ -162,18 +156,19 @@ jobs:
           sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
           sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
 
-      - name: Auto-Update Docs References
-        if: steps.version_math.outputs.skip != 'true'
-        run: |
-          # Safely scans ALL .md files anywhere in the repo and swaps the version text
-          find . -type f -name "*.md" -print0 | xargs -0 sed -i "s/$OLD_VERSION/$NEW_VERSION/g"
-
       # --- BUILDING JARS ---
       - name: Build Minecraft Mods
         if: steps.version_math.outputs.skip != 'true'
         run: |
           chmod +x ./gradlew
           ./gradlew build
+
+      # --- DOCS & RELEASE COMMITTING ---
+      - name: Auto-Update Docs References
+        if: steps.version_math.outputs.skip != 'true'
+        run: |
+          # Safely scans ALL .md files anywhere in the repo and swaps the version text
+          find . -type f -name "*.md" -print0 | xargs -0 sed -i "s/$OLD_VERSION/$NEW_VERSION/g"
 
       - name: Commit version bump to Repository
         if: steps.version_math.outputs.skip != 'true'
@@ -185,24 +180,28 @@ jobs:
           TAG="v${NEW_VERSION}"
           TAG_CREATED="false"
 
-          # Refresh tags before deciding whether this release version is new.
-          git fetch --prune --tags origin
-
-          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
-            echo "Tag ${TAG} already exists locally; skipping release commit and tag."
-            echo "tag_created=false" >> "${GITHUB_OUTPUT}"
-            exit 0
-          elif git ls-remote --tags origin "${TAG}" | grep -q "refs/tags/${TAG}$"; then
-            echo "Tag ${TAG} already exists on origin; skipping release commit and tag."
-            echo "tag_created=false" >> "${GITHUB_OUTPUT}"
-            exit 0
-          fi
-
           # Stage only tracked files changed by the version/doc update.
           git add -u || true
 
           if ! git diff-index --quiet HEAD; then
             git commit -m "chore(release): bump version to ${TAG} [skip ci]"
+
+            # Fetch origin latest to see if we need to rebase or check existing tags
+            git fetch --prune --tags origin
+
+            if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+              echo "Tag ${TAG} already exists locally; skipping release tag and push."
+              echo "tag_created=false" >> "${GITHUB_OUTPUT}"
+              exit 0
+            elif git ls-remote --tags origin "${TAG}" | grep -q "refs/tags/${TAG}$"; then
+              echo "Tag ${TAG} already exists on origin; skipping release tag and push."
+              echo "tag_created=false" >> "${GITHUB_OUTPUT}"
+              exit 0
+            fi
+
+            # Rebase on origin/main cleanly since our local changes are committed
+            git pull --rebase origin main
+
             git tag "${TAG}"
             TAG_CREATED="true"
 
