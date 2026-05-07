@@ -34,7 +34,7 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (db == null || !(event.getEntity() instanceof ServerPlayer player)) return;
+        if (!ConfigManager.getConfig().isHrmEnabled() || db == null || !(event.getEntity() instanceof ServerPlayer player)) return;
         UUID uuid = player.getUUID();
         
         CompletableFuture.runAsync(() -> {
@@ -56,6 +56,7 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
         if (isGhost(event.getEntity())) {
             event.setCanceled(true);
         }
@@ -63,6 +64,7 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
         if (isGhost(event.getEntity())) {
             event.setCanceled(true);
         }
@@ -70,6 +72,7 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onAttackEntity(AttackEntityEvent event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
         if (isGhost(event.getEntity())) {
             event.setCanceled(true);
         }
@@ -77,6 +80,7 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onItemToss(ItemTossEvent event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
         if (isGhost(event.getPlayer())) {
             event.setCanceled(true);
         }
@@ -84,6 +88,7 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onInteractEntity(PlayerInteractEvent.EntityInteract event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
         if (isGhost(event.getEntity())) {
             if (event.getEntity() instanceof ServerPlayer serverPlayer) {
                 serverPlayer.setCamera(event.getTarget());
@@ -94,6 +99,7 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
         if (event.phase != TickEvent.Phase.END) return;
 
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
@@ -126,11 +132,13 @@ public class GhostModeEvents {
     }
 
     public static void updateGhostStatus(UUID uuid, boolean isDead) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
         if (isDead) GHOST_CACHE.add(uuid);
         else GHOST_CACHE.remove(uuid);
     }
 
     private static boolean isGhost(Player player) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return false;
         return GHOST_CACHE.contains(player.getUUID());
     }
 }
