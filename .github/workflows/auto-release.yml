@@ -103,6 +103,12 @@ jobs:
             echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           fi
 
+      - name: Sync branch and tags
+        if: steps.version_math.outputs.skip != 'true'
+        run: |
+          git fetch --prune --tags origin
+          git pull --rebase origin main
+
       # --- APPLY AND COMMIT ---
       - name: Apply Version to POM and Gradle files
         if: steps.version_math.outputs.skip != 'true'
@@ -119,25 +125,6 @@ jobs:
         run: |
           # Safely scans ALL .md files anywhere in the repo and swaps the version text
           find . -type f -name "*.md" -print0 | xargs -0 sed -i "s/$OLD_VERSION/$NEW_VERSION/g"
-
-      - name: Commit version bump to Repository
-        if: steps.version_math.outputs.skip != 'true'
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git add -A || true
-          
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "chore(release): bump version to v${NEW_VERSION} [skip ci]"
-            git tag "v${NEW_VERSION}"
-            
-            # Pull latest changes and rebase to avoid "rejected" push errors
-            git pull --rebase origin main
-            
-            git push origin main
-            git push origin "v${NEW_VERSION}"
-          fi
 
       # --- BUILDING JARS ---
       - name: Build Root Plugin (Maven)
@@ -156,9 +143,46 @@ jobs:
           chmod +x ./forge/gradlew
           ./forge/gradlew -p forge build
 
+      - name: Commit version bump to Repository
+        if: steps.version_math.outputs.skip != 'true'
+        id: commit_version
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          TAG="v${NEW_VERSION}"
+          TAG_CREATED="false"
+
+          # Refresh tags before deciding whether this release version is new.
+          git fetch --prune --tags origin
+
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "Tag ${TAG} already exists locally; skipping release commit and tag."
+            echo "tag_created=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          elif git ls-remote --tags origin "${TAG}" | grep -q "refs/tags/${TAG}$"; then
+            echo "Tag ${TAG} already exists on origin; skipping release commit and tag."
+            echo "tag_created=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          # Stage only tracked files changed by the version/doc update.
+          git add -u || true
+
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "chore(release): bump version to ${TAG} [skip ci]"
+            git tag "${TAG}"
+            TAG_CREATED="true"
+
+            git push origin main
+            git push origin "${TAG}"
+          fi
+
+          echo "tag_created=${TAG_CREATED}" >> "${GITHUB_OUTPUT}"
+
       # --- PACKAGING AND RELEASING ---
       - name: Locate and Rename Jars
-        if: steps.version_math.outputs.skip != 'true'
+        if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
         id: package
         run: |
           # 1. Find the raw files
@@ -182,7 +206,7 @@ jobs:
           echo "forge_jar=$FINAL_FORGE" >> "${GITHUB_OUTPUT}"
 
       - name: Create GitHub Release
-        if: steps.version_math.outputs.skip != 'true'
+        if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "v${{ env.NEW_VERSION }}"
@@ -194,7 +218,7 @@ jobs:
             ${{ steps.package.outputs.forge_jar }}
 
       - name: Publish to Modrinth
-        if: steps.version_math.outputs.skip != 'true'
+        if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: REPLACE_WITH_MODRINTH_ID
