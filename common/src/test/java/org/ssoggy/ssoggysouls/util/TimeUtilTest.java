@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TimeUtilTest {
 
     @Test
-    void testParseTimeToMillis_ValidComponents() {
+    void testParseTimeToMillisValidComponents() {
         assertEquals(3600_000L + 1800_000L, TimeUtil.parseTimeToMillis("1h30m"));
         assertEquals(60_000L * 90, TimeUtil.parseTimeToMillis("90m"));
         assertEquals(1000L * 45, TimeUtil.parseTimeToMillis("45s"));
@@ -17,13 +17,13 @@ class TimeUtilTest {
     }
 
     @Test
-    void testParseTimeToMillis_ValidInteger() {
+    void testParseTimeToMillisValidInteger() {
         assertEquals(3600_000L * 5, TimeUtil.parseTimeToMillis("5"));
         assertEquals(3600_000L * 24, TimeUtil.parseTimeToMillis("24"));
     }
 
     @Test
-    void testParseTimeToMillis_InvalidStrings() {
+    void testParseTimeToMillisInvalidStrings() {
         assertEquals(-1L, TimeUtil.parseTimeToMillis(""));
         assertEquals(-1L, TimeUtil.parseTimeToMillis("   "));
         assertEquals(-1L, TimeUtil.parseTimeToMillis(null));
@@ -33,7 +33,7 @@ class TimeUtilTest {
     }
 
     @Test
-    void testParseTimeToMillis_EdgeCases() {
+    void testParseTimeToMillisEdgeCases() {
         // overflow: values exceeding Integer.MAX_VALUE are handled via Long.parseLong
         assertEquals(3000000000L * 3600_000L, TimeUtil.parseTimeToMillis("3000000000h"));
         // negative plain integer is invalid

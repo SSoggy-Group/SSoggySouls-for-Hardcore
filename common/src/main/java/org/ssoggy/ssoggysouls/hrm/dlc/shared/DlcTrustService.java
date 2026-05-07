@@ -78,6 +78,7 @@ public final class DlcTrustService {
         return new TrustResult(DlcCommandResult.success("You no longer trust " + targetName), null);
     }
 
+    @SuppressWarnings("java:S107")
     private static TrustResult handleGrant(DlcSocial social,
                                            DlcSocial targetSocial,
                                            UUID playerUuid,

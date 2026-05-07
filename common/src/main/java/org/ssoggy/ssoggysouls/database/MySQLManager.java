@@ -91,15 +91,7 @@ public class MySQLManager implements DatabaseManager {
             config.addDataSourceProperty("prepStmtCacheSize", "64");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-            try {
-                hikariDataSource = new HikariDataSource(config);
-            } catch (RuntimeException ex) {
-                plugin.getLogger().severe("=====================================================");
-                plugin.getLogger().severe("SEVERE: Could not connect to the MySQL database. The plugin will be disabled.");
-                plugin.getLogger().severe("Please check your connection details in config.yml and see the server log for the full error.");
-                plugin.getLogger().severe("NOTICE: If you are only running a single server, you DO NOT need MySQL! The default database is SQLite. Open config.yml and change type: \"mysql\" back to type: \"sqlite\" to fix this instantly.");
-                plugin.getLogger().severe("=====================================================");
-                plugin.getLogger().log(Level.SEVERE, "MySQL connection error:", ex);
+            if (!createHikariDataSource(config)) {
                 return false;
             }
 
@@ -112,6 +104,21 @@ public class MySQLManager implements DatabaseManager {
 
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed!", e);
+            return false;
+        }
+    }
+
+    private boolean createHikariDataSource(HikariConfig config) {
+        try {
+            hikariDataSource = new HikariDataSource(config);
+            return true;
+        } catch (RuntimeException ex) {
+            plugin.getLogger().severe("=====================================================");
+            plugin.getLogger().severe("SEVERE: Could not connect to the MySQL database. The plugin will be disabled.");
+            plugin.getLogger().severe("Please check your connection details in config.yml and see the server log for the full error.");
+            plugin.getLogger().severe("NOTICE: If you are only running a single server, you DO NOT need MySQL! The default database is SQLite. Open config.yml and change type: \"mysql\" back to type: \"sqlite\" to fix this instantly.");
+            plugin.getLogger().severe("=====================================================");
+            plugin.getLogger().log(Level.SEVERE, "MySQL connection error:", ex);
             return false;
         }
     }

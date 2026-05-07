@@ -15,15 +15,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class MessageHelperTest {
 
+    private static final String TEST_MSG = "test_msg";
+    private static final String HELLO_PLAYER = "Hello %player%!";
+    private static final String PLAYER = "player";
+    private static final String SSOGGY = "SSoggy";
+
     @BeforeEach
-    void setUp() throws Exception {
+    @SuppressWarnings("java:S3011") // Suppress accessibility bypass warning
+    void setUp() throws NoSuchFieldException, IllegalAccessException {
         // Use reflection to bypass config loading since we only want to test substitution logic
         Field messagesField = MessageHelper.class.getDeclaredField("messages");
         messagesField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<String, String> messages = (Map<String, String>) messagesField.get(null);
         messages.clear();
-        messages.put("test_msg", "Hello %player%!");
+        messages.put(TEST_MSG, HELLO_PLAYER);
         messages.put("multi_replace", "%prefix% You have %amount% %item%.");
 
         Field prefixField = MessageHelper.class.getDeclaredField("prefix");
@@ -32,51 +38,51 @@ class MessageHelperTest {
     }
 
     @Test
-    void testGetRaw_ExistingKey() {
-        String result = MessageHelper.getRaw("test_msg", "player", "SSoggy");
+    void testGetRawExistingKey() {
+        String result = MessageHelper.getRaw(TEST_MSG, PLAYER, SSOGGY);
         assertEquals("Hello SSoggy!", result);
     }
 
     @Test
-    void testGetRaw_MissingKey() {
-        String result = MessageHelper.getRaw("missing_key", "player", "SSoggy");
+    void testGetRawMissingKey() {
+        String result = MessageHelper.getRaw("missing_key", PLAYER, SSOGGY);
         assertEquals("&cMissing message: missing_key", result);
     }
 
     @Test
-    void testGetRaw_MultipleReplacements() {
+    void testGetRawMultipleReplacements() {
         String result = MessageHelper.getRaw("multi_replace", "prefix", "&a[Info]", "amount", 5, "item", "apples");
         assertEquals("&a[Info] You have 5 apples.", result);
     }
 
     @Test
-    void testGetRaw_NoReplacements() {
-        String result = MessageHelper.getRaw("test_msg");
-        assertEquals("Hello %player%!", result);
+    void testGetRawNoReplacements() {
+        String result = MessageHelper.getRaw(TEST_MSG);
+        assertEquals(HELLO_PLAYER, result);
     }
 
     @Test
-    void testGetRaw_MissingReplacementValue() {
+    void testGetRawMissingReplacementValue() {
         // If uneven replacements are provided, the last key is ignored
-        String result = MessageHelper.getRaw("test_msg", "player");
-        assertEquals("Hello %player%!", result);
+        String result = MessageHelper.getRaw(TEST_MSG, PLAYER);
+        assertEquals(HELLO_PLAYER, result);
     }
 
     @Test
-    void testColorize_AmperstandToSection() {
+    void testColorizeAmperstandToSection() {
         String result = MessageHelper.colorize("&aGreen &cRed");
         assertEquals("\u00a7aGreen \u00a7cRed", result);
     }
 
     @Test
-    void testColorize_Null() {
+    void testColorizeNull() {
         String result = MessageHelper.colorize(null);
         assertEquals("", result);
     }
 
     @Test
     void testGetFormatted() {
-        String result = MessageHelper.getFormatted("test_msg", "player", "SSoggy");
+        String result = MessageHelper.getFormatted(TEST_MSG, PLAYER, SSOGGY);
         // Should contain the prefix (colorized) + the message
         assertEquals("\u00a78[\u00a74\u2620\u00a78] \u00a7rHello SSoggy!", result);
     }
