@@ -18,7 +18,6 @@ along with RevivePlus.  If not, see <https://www.gnu.org/licenses/>
 
 package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 
-import org.ssoggy.ssoggysouls.hrm.dlc.action.ReviveHelper;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.GAMEMODESENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.COMMANDOUTPUTENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPCommandOutput;

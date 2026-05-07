@@ -18,7 +18,6 @@ along with RevivePlus.  If not, see <https://www.gnu.org/licenses/>
 
 package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 
-import org.ssoggy.ssoggysouls.hrm.dlc.action.ReviveHelper;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.GAMEMODESENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.STATSENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.COMMANDOUTPUTENUM;
@@ -28,8 +27,6 @@ import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStats;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPUtil;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.Pair;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.Skull;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -38,7 +35,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.inventory.ItemStack;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -66,8 +62,6 @@ public class PlayerStateEvents implements Listener {
         Location deathPos = new Location(world, location.getBlockX(), Math.clamp(location.getY(), minHeight, maxHeight), location.getZ());
         String[] dimensionName = world.getKey().asString().split(":");
         if (dimensionName.length < 2) dimensionName = new String[]{"minecraft" + dimensionName[0]};
-        ItemStack skull = RPUtil.createSkullWithName(player.getName());
-
         RPCommandOutput deathMessage = new RPCommandOutput();
         deathMessage.success = COMMANDOUTPUTENUM.INFO;
         deathMessage.message = "<red>--- <bold>You have died!</bold> ---</red>\n<gray>Reclaim your loot at</gray> <gold><bold>X" + deathPos.getBlockX() + " Y" + deathPos.getBlockY() + " Z" + deathPos.getBlockZ() + "</bold></gold> <gray>inside</gray> " + dimensionName[0] + ":<gold><bold>" + dimensionName[1] + "</bold></gold>";

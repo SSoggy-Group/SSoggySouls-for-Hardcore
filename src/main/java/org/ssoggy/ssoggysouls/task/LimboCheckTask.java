@@ -16,8 +16,6 @@ import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
 public class LimboCheckTask extends BukkitRunnable {
 
-    private static final String PERM_BYPASS = "ssoggysouls.bypass";
-
     private final SSoggySouls plugin;
 
     public LimboCheckTask(SSoggySouls plugin) {
