@@ -16,8 +16,6 @@ import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
 public class LimboCheckTask extends BukkitRunnable {
 
-    private static final String PERM_BYPASS = "ssoggysouls.bypass";
-
     private final SSoggySouls plugin;
 
     public LimboCheckTask(SSoggySouls plugin) {
@@ -44,9 +42,11 @@ public class LimboCheckTask extends BukkitRunnable {
     private Set<UUID> collectOnlinePlayers() {
         Set<UUID> players = new java.util.HashSet<>();
         Set<UUID> deadPlayers = plugin.getLimboDeadPlayers();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            UUID uuid = player.getUniqueId();
-            if (!player.hasPermission(PERM_BYPASS) && deadPlayers.contains(uuid)) {
+        // Bolt Optimization: Iterate over dead players instead of all online players
+        // This changes the complexity from O(N) to O(M) where M is typically much smaller than N
+        for (UUID uuid : deadPlayers) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
                 players.add(uuid);
             }
         }

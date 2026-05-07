@@ -28,8 +28,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,7 +40,14 @@ public class RPStorage {
     private final File file;
     private final Logger logger;
     private FileConfiguration config;
-    private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService ioExecutor = new ThreadPoolExecutor(
+            1,
+            1,
+            0L,
+            TimeUnit.MILLISECONDS,
+            new ArrayBlockingQueue<>(1),
+            new ThreadPoolExecutor.DiscardOldestPolicy()
+    );
 
 
     public RPStorage(JavaPlugin plugin, String fileName) {

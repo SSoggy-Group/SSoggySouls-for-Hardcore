@@ -42,6 +42,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ObituariesCommand implements CommandExecutor, TabCompleter {
+    private static final long DEFAULT_TRUSTED_OBITUARY_DELAY_MINUTES = 60L;
+    private static final long DEFAULT_FRIENDS_OBITUARY_DELAY_MINUTES = 600L;
+    private static final long DEFAULT_PUBLIC_OBITUARY_DELAY_MINUTES = 3600L;
 
     @Override
     public boolean onCommand(@NotNull CommandSender cmdSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -51,9 +54,9 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
         RPCommandOutput result = new RPCommandOutput();
         FileConfiguration config = RPStatic.CLIENT.getConfig();
 
-        long trustedAfterMin = config.getLong("trusted-obituary-after");
-        long friendsAfterMin = config.getLong("friends-obituary-after");
-        long publicAfterMin = config.getLong("public-obituary-after");
+        long trustedAfterMin = getObituaryDelayMinutes(config, "trusted-obituary-after", DEFAULT_TRUSTED_OBITUARY_DELAY_MINUTES);
+        long friendsAfterMin = getObituaryDelayMinutes(config, "friends-obituary-after", DEFAULT_FRIENDS_OBITUARY_DELAY_MINUTES);
+        long publicAfterMin = getObituaryDelayMinutes(config, "public-obituary-after", DEFAULT_PUBLIC_OBITUARY_DELAY_MINUTES);
 
         String headerText = "Here is a list of all the current public deaths";
         StringBuilder deathListBuilder = new StringBuilder(headerText);
@@ -94,5 +97,13 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+    }
+
+    private static long getObituaryDelayMinutes(FileConfiguration config, String key, long fallback) {
+        String hrmPath = "hrm." + key;
+        if (config.contains(hrmPath)) {
+            return config.getLong(hrmPath);
+        }
+        return config.getLong(key, fallback);
     }
 }
