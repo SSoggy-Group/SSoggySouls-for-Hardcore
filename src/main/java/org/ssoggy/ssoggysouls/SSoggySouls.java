@@ -324,6 +324,12 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         spectatorOnDeath = cfg.getBoolean("main.spectator-on-death", true);
         detectHrmRevive = cfg.getBoolean("main.detect-hrm-revive", true);
         deathMode = cfg.getString("main.death-mode", MODE_HYBRID);
+
+        if (isDatabaseSqlite() && !deathMode.equals(MODE_SPECTATOR)) {
+            getLogger().log(Level.WARNING, "SQLite is meant for single-server mode. Overriding death-mode to 'spectator'.");
+            deathMode = MODE_SPECTATOR;
+        }
+
         hybridTimeoutSeconds = cfg.getInt("main.hybrid-timeout-seconds", 300);
         reviveCooldownSeconds = cfg.getInt("lives.revive-cooldown-seconds", 30);
         extraLifeEnabled = cfg.getBoolean("extra-life.enabled", true);
@@ -488,6 +494,11 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
     public boolean isLimboServer() {
         return isLimboServer;
+    }
+
+    public boolean isDatabaseSqlite() {
+        String dbType = getConfig().getString("database.type", "mysql").toLowerCase();
+        return dbType.equals("sqlite") || dbType.equals("local");
     }
 
     public String getMainServerName() {

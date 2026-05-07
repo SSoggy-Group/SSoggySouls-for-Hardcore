@@ -32,6 +32,13 @@ public class ConfigManager {
             config = new ModConfig();
             save();
         }
+
+        // Force spectator mode if using SQLite
+        if (("sqlite".equalsIgnoreCase(config.getDatabaseType()) || "local".equalsIgnoreCase(config.getDatabaseType()))
+                && config.isSendToLimboOnDeath()) {
+            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.warn("SQLite is meant for single-server mode. Overriding sendToLimboOnDeath to false.");
+            config.setSendToLimboOnDeath(false);
+        }
     }
 
     public static void save() {
