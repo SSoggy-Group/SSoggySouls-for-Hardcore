@@ -4,7 +4,7 @@
       [![CI Tests](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml) [![Build Plugin/Mod Jars And Tag Release](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/build-plugin-release.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/build-plugin-release.yml) [![Deploy Documentation to GitHub Pages](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/deploy-docs.yml)
 
 
-**Version 4.2.1** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore) 
+**Version 4.3.27** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore) 
 A hardcore lives system mod/plugin for Minecraft 1.21.X (Supports Spigot, Paper, Purpur, Fabric, and Forge). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
 > **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 >
@@ -14,7 +14,7 @@ A hardcore lives system mod/plugin for Minecraft 1.21.X (Supports Spigot, Paper,
 
 **Lives System** - start with 2 lives (configurable), max out at 5
 
-**Three Death Modes** - pick between instant Limbo exile, permanent spectator, or hybrid timeout
+**Death Handling** - SQLite keeps dead players in spectator; MySQL/proxy setups can use instant Limbo exile or hybrid timeout
 
 **Multiple Revival Methods** - ritual structures, Revive Skull item, or admin commands
 
@@ -64,9 +64,9 @@ Pick the one that fits your server's vibe:
 | Mode                   | What happens                                                                                                                                                                                     | Good for                                                      |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
 
-| **`hybrid`** (default) | Dead players chill in spectator on Main for 5 minutes. Team has that long to revive them or they get yeeted to Limbo. If they log out and back in, they skip spectator and go straight to Limbo. | Servers that want some tension - race against the clock vibes |
+| **`hybrid`**           | Dead players chill in spectator on Main for 5 minutes. Team has that long to revive them or they get yeeted to Limbo. If they log out and back in, they skip spectator and go straight to Limbo. | Dual-server MySQL setups that want some tension - race against the clock vibes |
 
-| **`spectator`**        | Dead players stay on Main as spectators forever until revived. Never get sent to Limbo.                                                                                                          | Servers where you want dead people watching their team 24/7   |
+| **`spectator`**        | Dead players stay on Main as spectators forever until revived. Never get sent to Limbo.                                                                                                          | SQLite single-server setups and servers where you want dead people watching their team 24/7 |
 
 | **`limbo`**            | Dead? Straight to Limbo. No spectator time.                                                                                                                                                      | Hardcore servers that want complete separation                |
 
@@ -346,15 +346,15 @@ After setup, test everything:
 
 ### Step 1: Download
 
-Download the latest release (`SSoggySouls-4.2.1.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
+Download the latest release (`SSoggySouls-4.3.27.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
 
 ### Step 2: Install Plugin
 
-Place `SSoggySouls-4.2.1.jar` in the `plugins/` folder of **both** servers:
+Place `SSoggySouls-4.3.27.jar` in the `plugins/` folder of **both** servers:
 
-- Main server: `/plugins/SSoggySouls-4.2.1.jar`
+- Main server: `/plugins/SSoggySouls-4.3.27.jar`
 
-- Limbo server: `/plugins/SSoggySouls-4.2.1.jar`
+- Limbo server: `/plugins/SSoggySouls-4.3.27.jar`
 
 ### Step 3: Generate Config
 
@@ -517,7 +517,7 @@ lives:
 
 ```yaml
 main:
-  death-mode: "hybrid"            # hybrid | spectator | limbo
+  death-mode: "spectator"         # SQLite uses spectator; MySQL can use hybrid | spectator | limbo
 
   hybrid-timeout-seconds: 300     # Timeout for hybrid mode (5 min)
 
@@ -891,7 +891,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 
 ## Changelog
 
-### v4.2.1
+### v4.3.27
 
 **What's Changed:**
 
@@ -905,7 +905,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 
 - **Rename: PolarSouls to SSoggySouls** - Finished renaming everything internally. No config changes needed.
 
-**Full Changelog:** [v1...v4.2.1](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v4.2.1)
+**Full Changelog:** [v1...v4.3.27](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v4.3.27)
 
 ## Credits
 

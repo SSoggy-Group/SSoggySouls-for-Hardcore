@@ -27,7 +27,7 @@ This guide will help you get SSoggySouls up and running in 8 simple steps. For m
 
 ### Step 1: Download
 
-Download the latest `SSoggySouls-4.2.1.jar` from:
+Download the latest `SSoggySouls-4.3.27.jar` from:
 
 - [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases)
 
@@ -35,12 +35,12 @@ Download the latest `SSoggySouls-4.2.1.jar` from:
 
 ### Step 2: Install Plugin
 
-Place `SSoggySouls-4.2.1.jar` in your server's `plugins/` folder.
+Place `SSoggySouls-4.3.27.jar` in your server's `plugins/` folder.
 
 If using a 2-server setup, install it on **both** backend servers:
 
-- Main server: `/plugins/SSoggySouls-4.2.1.jar`
-- Limbo server: `/plugins/SSoggySouls-4.2.1.jar`
+- Main server: `/plugins/SSoggySouls-4.3.27.jar`
+- Limbo server: `/plugins/SSoggySouls-4.3.27.jar`
 
 > **Important:** If using a proxy, install on backend servers only, NOT on Velocity!
 
@@ -191,9 +191,9 @@ Having issues? Check the [Troubleshooting Guide](troubleshooting) for solutions 
 | Mode                 | Behavior                                                                              |
 | -------------------- | ------------------------------------------------------------------------------------- |
 
-| **hybrid** (default) | Dead players get 5 minutes in spectator mode to be revived, then transferred to Limbo |
+| **hybrid**           | Dead players get 5 minutes in spectator mode to be revived, then transferred to Limbo |
 
-| **spectator**        | Dead players stay on Main in spectator mode indefinitely until revived                |
+| **spectator**        | Dead players stay on Main in spectator mode indefinitely until revived (SQLite default) |
 
 | **limbo**            | Dead players immediately transferred to Limbo upon losing all lives                   |
 

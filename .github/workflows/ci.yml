@@ -1,46 +1,73 @@
-name: CI Tests
+name: Continuous Integration
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
-  workflow_dispatch:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  build:
+    name: Build and Analyze
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      # 1. Root Bukkit/Spigot/Paper Plugin (Maven)
-      - name: Set up Java
-        uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
+          fetch-depth: 0 # Shallow clones disabled for accurate SonarQube analysis
 
-      - name: Run Root Plugin Tests
-        run: mvn -B test
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: "21"
+          distribution: "temurin"
 
-      # 2. Setup Gradle globally (handles caching for BOTH Fabric and Forge)
+      - name: Cache SonarQube Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
       - name: Setup Gradle
-        if: always()
         uses: gradle/actions/setup-gradle@v4
 
-      # 3. Fabric Mod (Gradle)
-      - name: Run Fabric Tests
-        if: always()
+      - name: Build with Gradle Wrapper
         run: |
-          chmod +x ./fabric/gradlew
-          ./fabric/gradlew -p fabric test
+          chmod +x ./gradlew
+          ./gradlew build
 
-      # 4. Forge Mod (Gradle)
-      - name: Run Forge Tests
-        if: always()
-        run: |
-          chmod +x ./forge/gradlew
-          ./forge/gradlew -p forge test
+      - name: Run SonarQube Analysis
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --info
+
+  dependency-submission:
+    name: Submit Dependency Graph
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    # Only submit dependency graphs on pushes to main to prevent PR overhead and fork failures
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Generate and Submit Dependency Graph
+        uses: gradle/actions/dependency-submission@v4

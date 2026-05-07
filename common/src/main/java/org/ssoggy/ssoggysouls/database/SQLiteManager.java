@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -49,12 +48,12 @@ public class SQLiteManager implements DatabaseManager {
         this.plugin = plugin;
     }
 
-    public boolean initialize() {
+    public void initialize() throws DatabaseInitializationException {
         try {
             tableName = plugin.getConfigString("database.table-name", "hardcore_players");
             if (!isValidIdentifier(tableName)) {
                 plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", tableName);
-                return false;
+                throw new DatabaseInitializationException("Invalid database.table-name: " + tableName);
             }
 
             java.io.File dataFolder = plugin.getDataFolder();
@@ -71,15 +70,23 @@ public class SQLiteManager implements DatabaseManager {
             config.setConnectionTimeout(10_000);
             config.setPoolName("SSoggySouls-SQLite-Pool");
 
-            dataSource = new HikariDataSource(config);
+            createHikariDataSource(config);
             createTable();
 
             plugin.getLogger().log(Level.INFO, "SQLite connection established (database.db)");
-            return true;
 
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed!", e);
-            return false;
+            throw new DatabaseInitializationException("SQLite initialization failed", e);
+        }
+    }
+
+    private void createHikariDataSource(HikariConfig config) throws DatabaseInitializationException {
+        try {
+            dataSource = new HikariDataSource(config);
+        } catch (RuntimeException ex) {
+            plugin.getLogger().log(Level.SEVERE, "SQLite connection pool error:", ex);
+            throw new DatabaseInitializationException("Could not create SQLite connection pool", ex);
         }
     }
 
@@ -103,8 +110,8 @@ public class SQLiteManager implements DatabaseManager {
                 + ");";
 
         try (Connection conn = dataSource.getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
             ensureLastSeenColumn(conn);
             ensureGraceUntilColumn(conn);
             plugin.debug("Table '" + tableName + "' verified/created.");
@@ -143,8 +150,8 @@ public class SQLiteManager implements DatabaseManager {
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
-        try (Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
         } catch (SQLException e) {
             boolean duplicateColumn = e.getMessage() != null
@@ -473,12 +480,15 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     private void createMetadataTableIfNeeded(Connection conn, String metaTable) throws SQLException {
+        if (!isValidIdentifier(metaTable)) {
+            throw new IllegalArgumentException("Invalid metadata table name identifier: " + metaTable);
+        }
         String createTableSql = "CREATE TABLE IF NOT EXISTS " + metaTable + " ("
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
                 + ");";
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute(createTableSql);
+        try (PreparedStatement ps = conn.prepareStatement(createTableSql)) {
+            ps.execute();
         }
     }
 }

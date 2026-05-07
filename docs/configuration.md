@@ -359,7 +359,7 @@ Choose how your server handles player death.
 
 ```yaml
 main:
-  death-mode: "hybrid"            # hybrid | spectator | limbo
+  death-mode: "spectator"         # SQLite uses spectator; MySQL can use hybrid | spectator | limbo
 
   hybrid-timeout-seconds: 300     # Timeout for hybrid mode (5 min)
 
@@ -371,7 +371,9 @@ main:
 
 ```
 
-### Hybrid Mode (Default - Recommended)
+> **SQLite single-server note:** SQLite always uses spectator mode. Use MySQL with a proxy/Limbo server for `hybrid` or `limbo`.
+
+### Hybrid Mode (Dual-Server Recommended)
 
 ```yaml
 death-mode: "hybrid"

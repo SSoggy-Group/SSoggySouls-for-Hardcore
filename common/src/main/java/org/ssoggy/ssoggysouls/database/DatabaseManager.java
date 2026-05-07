@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
 public interface DatabaseManager {
-    boolean initialize();
+    void initialize() throws DatabaseInitializationException;
     void shutdown();
     PlayerData getPlayer(UUID uuid);
     PlayerData getPlayerByName(String username);

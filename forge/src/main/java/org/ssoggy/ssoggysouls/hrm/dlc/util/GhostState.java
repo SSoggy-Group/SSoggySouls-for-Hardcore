@@ -31,7 +31,7 @@ public class GhostState extends SavedData {
         return tag;
     }
 
-    public static GhostState load(CompoundTag tag, @SuppressWarnings("unused") HolderLookup.Provider registries) {
+    public static GhostState load(CompoundTag tag) {
         GhostState state = new GhostState();
 
         if (tag.contains(DEATH_LOCATIONS)) {
@@ -55,10 +55,8 @@ public class GhostState extends SavedData {
         return server.overworld().getDataStorage().computeIfAbsent(
                 new SavedData.Factory<>(
                         GhostState::new,
-                        GhostState::load,
-                        null
-                ),
-                "ssoggysouls_ghost_data"
-        );
+                        (tag, registries) -> GhostState.load(tag),
+                        null),
+                "ssoggysouls_ghost_data");
     }
 }

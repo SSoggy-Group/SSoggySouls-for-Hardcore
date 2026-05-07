@@ -19,7 +19,7 @@ Hardcore lives system mod/plugin for Minecraft 1.21.X with Limbo exile, revival 
 SSoggySouls is designed for Velocity proxy networks and provides a high-stakes hardcore loop:
 
 - Configurable lives with max cap and extra-life mechanics
-- Three death modes: `hybrid`, `spectator`, `limbo`
+- SQLite spectator mode, plus `hybrid` and `limbo` modes for MySQL/proxy setups
 - Ritual and command-based revival flows
 - Automatic transfer between Main and Limbo servers
 - MySQL/MariaDB persistence across backend servers

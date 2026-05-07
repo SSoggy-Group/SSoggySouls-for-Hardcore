@@ -189,35 +189,7 @@ public class CommandRegistration {
         );
     }
 
-    private static void registerObituariesCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
-        dispatcher.register(CommandManager.literal("obituaries")
-            .executes(context -> {
-                ServerCommandSource source = context.getSource();
 
-                CompletableFuture.runAsync(() -> {
-                    java.util.List<PlayerData> deadPlayers = db.getDeadPlayers();
-                    source.getServer().execute(() -> {
-                        if (deadPlayers.isEmpty()) {
-                            source.sendMessage(net.minecraft.text.Text.literal("Nobody has died recently. The server is peaceful.").styled(s -> s.withColor(net.minecraft.util.Formatting.GREEN)));
-                            return;
-                        }
-
-                        source.sendMessage(net.minecraft.text.Text.literal("--- Server Obituaries ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
-                        for (PlayerData dead : deadPlayers) {
-                            String time = "Recently";
-                            if (dead.getLastDeath() > 0) {
-                                long days = (System.currentTimeMillis() - dead.getLastDeath()) / (1000 * 60 * 60 * 24);
-                                time = days + " days ago";
-                            }
-                            source.sendMessage(net.minecraft.text.Text.literal("- " + dead.getUsername() + " (" + time + ")").styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
-                        }
-                    });
-                });
-
-                return 1;
-            })
-        );
-    }
 
     private static void registerAdminLogCommand(CommandDispatcher<ServerCommandSource> dispatcher, SSoggySoulsMod plugin) {
         dispatcher.register(CommandManager.literal("adminlog")
@@ -226,7 +198,7 @@ public class CommandRegistration {
                 ServerCommandSource source = context.getSource();
 
                 CompletableFuture.runAsync(() -> {
-                    java.io.File logFile = new java.io.File(plugin.getDataFolder(), "admin_abuse.log");
+                    java.io.File logFile = new java.io.File(plugin.getDataFolder(), AdminLogger.LOG_FILE_NAME);
                     if (!logFile.exists()) {
                         source.sendError(net.minecraft.text.Text.literal("No admin logs found."));
                         return;
