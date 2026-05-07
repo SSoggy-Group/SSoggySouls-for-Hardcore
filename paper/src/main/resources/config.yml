@@ -306,17 +306,19 @@ main:
   #   "spectator" = Keep on Main server in SPECTATOR mode until revived
   #   "hybrid"    = Spectator for a time window, then auto-transfer to Limbo
   #
-  # Recommended: "hybrid" (gives players time to be rescued, then Limbo if not)
-  # [CONFIG] SINGLE SERVER: Configure as desired
+  # SQLite single-server mode always uses "spectator" because there is no
+  # proxy/Limbo server to transfer players to.
+  # Recommended: "spectator" for SQLite, "hybrid" for dual-server MySQL setups
+  # [CONFIG] SINGLE SERVER: Leave as "spectator"
   # [CONFIG] DUAL SERVER: Configure on Main server (ignored on Limbo)
-  death-mode: "hybrid"
+  death-mode: "spectator"
 
   # For "hybrid" mode: timeout in seconds before auto-transfer to Limbo
   # After losing all lives, player has this long to be revived while in spectator mode
   # After timeout expires, they're auto-sent to Limbo
   # 300 seconds = 5 minutes
   # Recommended: 300-600 (5-10 minutes)
-  # [CONFIG] SINGLE SERVER: Configure as desired (only matters if death-mode is "hybrid")
+  # [CONFIG] SINGLE SERVER: Ignored with SQLite
   # [CONFIG] DUAL SERVER: Configure on Main server (ignored on Limbo) (only matters if death-mode is "hybrid")
   hybrid-timeout-seconds: 300
 

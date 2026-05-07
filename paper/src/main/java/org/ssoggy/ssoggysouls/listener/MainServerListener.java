@@ -61,6 +61,10 @@ public class MainServerListener implements Listener {
         this.cachedHybridTimeout = plugin.getHybridTimeoutSeconds();
     }
 
+    private String effectiveDeathMode() {
+        return plugin.isSingleServerMode() ? SSoggySouls.MODE_SPECTATOR : cachedDeathMode;
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
@@ -173,18 +177,14 @@ public class MainServerListener implements Listener {
     }
 
     private void redirectToLimbo(Player player) {
-        String deathMode = cachedDeathMode; // Use cached value
+        String deathMode = effectiveDeathMode();
         plugin.debug(player.getName() + " is dead (mode: " + deathMode + ")");
 
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (!player.isOnline()) return;
 
             switch (deathMode) {
-                case SSoggySouls.MODE_SPECTATOR -> {
-                    player.sendMessage(MessageUtil.get(MSG_NOW_SPECTATOR));
-                    expectedGamemodeChanges.add(player.getUniqueId());
-                    player.setGameMode(GameMode.SPECTATOR);
-                }
+                case SSoggySouls.MODE_SPECTATOR -> applySpectatorMode(player);
                 case SSoggySouls.MODE_HYBRID -> {
                     if (hybridWindowUsed.contains(player.getUniqueId())) {
                         sendDirectToLimbo(player);
@@ -198,12 +198,23 @@ public class MainServerListener implements Listener {
     }
 
     private void sendDirectToLimbo(Player player) {
+        if (plugin.isSingleServerMode()) {
+            applySpectatorMode(player);
+            return;
+        }
+
         player.sendMessage(MessageUtil.get(MSG_SENT_TO_LIMBO));
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (player.isOnline()) {
                 ServerTransferUtil.sendToLimbo(player);
             }
         }, 20L);
+    }
+
+    private void applySpectatorMode(Player player) {
+        player.sendMessage(MessageUtil.get(MSG_NOW_SPECTATOR));
+        expectedGamemodeChanges.add(player.getUniqueId());
+        player.setGameMode(GameMode.SPECTATOR);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -323,7 +334,7 @@ public class MainServerListener implements Listener {
     }
 
     private void handleFinalDeath(Player player, UUID uuid) {
-        String deathMode = cachedDeathMode; // Use cached value
+        String deathMode = effectiveDeathMode();
 
         // send death message only, gamemode change sent to onPlayerRespawn
         Bukkit.getScheduler().runTask(plugin, () -> {
@@ -345,6 +356,11 @@ public class MainServerListener implements Listener {
     }
 
     private void applyHybridOnJoin(Player player, UUID uuid) {
+        if (plugin.isSingleServerMode()) {
+            applySpectatorMode(player);
+            return;
+        }
+
         hybridWindowUsed.add(uuid);
         player.sendMessage(MessageUtil.get("death-hybrid-warning",
                 "timeout", formatTime(cachedHybridTimeout))); // Use cached value
@@ -354,6 +370,10 @@ public class MainServerListener implements Listener {
     }
 
     private void scheduleHybridTimeout(Player player, UUID uuid) {
+        if (plugin.isSingleServerMode()) {
+            return;
+        }
+
         int timeoutSeconds = cachedHybridTimeout; // Use cached value
         long delayTicks = timeoutSeconds * 20L;
         BukkitTask task = Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -406,7 +426,7 @@ public class MainServerListener implements Listener {
     }
 
     private void handleFinalDeathRespawn(Player player, UUID uuid) {
-        String deathMode = cachedDeathMode; // Use cached value
+        String deathMode = effectiveDeathMode();
 
         // 1 tick delay so client doesn lag behind
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -442,7 +462,7 @@ public class MainServerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onGameModeChange(PlayerGameModeChangeEvent event) {
         // detect external SPECTATOR->SURVIVAL change (HRM or other plugin revive)
-        String deathMode = cachedDeathMode; // Use cached value
+        String deathMode = effectiveDeathMode();
         boolean shouldDetect = !SSoggySouls.MODE_LIMBO.equals(deathMode) || plugin.isDetectHrmRevive();
         if (!shouldDetect) return;
 

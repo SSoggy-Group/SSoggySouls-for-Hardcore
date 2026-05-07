@@ -431,6 +431,12 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     private void applyDeathTransition(Player target) {
         if (!target.isOnline()) return;
 
+        if (plugin.isSingleServerMode()) {
+            target.setGameMode(GameMode.SPECTATOR);
+            target.sendMessage(MessageUtil.get("death-now-spectator"));
+            return;
+        }
+
         String deathMode = plugin.getDeathMode();
         switch (deathMode) {
             case SSoggySouls.MODE_SPECTATOR -> {

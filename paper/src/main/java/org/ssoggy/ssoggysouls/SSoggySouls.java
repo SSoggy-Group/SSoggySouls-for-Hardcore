@@ -2,6 +2,7 @@ package org.ssoggy.ssoggysouls;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -27,6 +28,7 @@ import org.ssoggy.ssoggysouls.command.SetLimboSpawnCommand;
 import org.ssoggy.ssoggysouls.command.SetLivesCommand;
 import org.ssoggy.ssoggysouls.command.StatusCommand;
 import org.ssoggy.ssoggysouls.command.VisitLimboCommand;
+import org.ssoggy.ssoggysouls.database.DatabaseInitializationException;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
 import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
@@ -49,6 +51,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     private DatabaseManager databaseManager;
     private boolean isLimboServer;
     private boolean debugMode;
+    private String databaseType;
 
     // Store listeners to call refresh methods on config reload
     private MainServerListener mainServerListener;
@@ -142,17 +145,20 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
 
-        String dbType = getConfig().getString("database.type", "sqlite").toLowerCase();
+        String dbType = databaseType;
 
-        if (dbType.equals("sqlite") || dbType.equals("local")) {
+        if (isSqliteDatabaseType(dbType)) {
             databaseManager = new org.ssoggy.ssoggysouls.database.SQLiteManager(this);
         } else {
             databaseManager = new org.ssoggy.ssoggysouls.database.MySQLManager(this);
         }
 
-        if (!databaseManager.initialize()) {
-            boolean isSqlite = dbType.equals("sqlite") || dbType.equals("local");
+        try {
+            databaseManager.initialize();
+        } catch (DatabaseInitializationException e) {
+            boolean isSqlite = isSqliteDatabaseType(dbType);
             getLogger().log(Level.SEVERE, "Failed to connect to {0}! Disabling plugin.", isSqlite ? "SQLite" : "MySQL");
+            getLogger().log(Level.SEVERE, "Initialization error details:", e);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -328,7 +334,15 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         reloadConfig();
         FileConfiguration cfg = getConfig();
 
+        databaseType = normalizeConfigValue(cfg.getString("database.type", "sqlite"));
+        if (databaseType.isEmpty()) {
+            databaseType = "sqlite";
+        }
         isLimboServer = cfg.getBoolean("is-limbo-server", false);
+        if (isSingleServerMode() && isLimboServer) {
+            getLogger().info("SQLite single-server mode ignores is-limbo-server; starting in main spectator mode.");
+            isLimboServer = false;
+        }
         debugMode = cfg.getBoolean("debug", false);
         mainServerName = cfg.getString("main-server-name", "main");
         limboServerName = cfg.getString("limbo-server-name", MODE_LIMBO);
@@ -341,7 +355,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         sendToLimboDelayTicks = cfg.getInt("main.send-to-limbo-delay-ticks", 60);
         spectatorOnDeath = cfg.getBoolean("main.spectator-on-death", true);
         detectHrmRevive = cfg.getBoolean("main.detect-hrm-revive", true);
-        deathMode = cfg.getString("main.death-mode", MODE_HYBRID);
+        deathMode = resolveDeathMode(cfg.getString("main.death-mode", MODE_HYBRID));
         hybridTimeoutSeconds = cfg.getInt("main.hybrid-timeout-seconds", 300);
         reviveCooldownSeconds = cfg.getInt("lives.revive-cooldown-seconds", 30);
         extraLifeEnabled = cfg.getBoolean("extra-life.enabled", true);
@@ -388,6 +402,35 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         if (limboServerListener != null) {
             limboServerListener.refreshLimboSpawnCache();
         }
+    }
+
+    private String resolveDeathMode(String configuredMode) {
+        String normalizedMode = normalizeConfigValue(configuredMode);
+        if (normalizedMode.isEmpty()) {
+            normalizedMode = MODE_HYBRID;
+        }
+
+        if (isSingleServerMode()) {
+            if (!MODE_SPECTATOR.equals(normalizedMode)) {
+                getLogger().log(Level.INFO,
+                        "SQLite single-server mode only supports spectator death mode; using spectator instead of {0}.",
+                        normalizedMode);
+            }
+            return MODE_SPECTATOR;
+        }
+
+        return normalizedMode;
+    }
+
+    private static String normalizeConfigValue(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static boolean isSqliteDatabaseType(String type) {
+        return "sqlite".equals(type) || "local".equals(type);
     }
 
     private long loadGracePeriod(FileConfiguration cfg) {
@@ -498,6 +541,14 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
     public DatabaseManager getDatabaseManager() {
         return databaseManager;
+    }
+
+    public String getDatabaseType() {
+        return databaseType;
+    }
+
+    public boolean isSingleServerMode() {
+        return isSqliteDatabaseType(databaseType);
     }
 
     public MainServerListener getMainServerListener() {
