@@ -70,14 +70,15 @@ public class RevivalStructureListener {
             return ActionResult.PASS;
         }
 
+        ItemStack stack = serverPlayer.getStackInHand(hand);
+        if (!stack.isOf(Items.PLAYER_HEAD)) {
+            return ActionResult.PASS;
+        }
+
         PlayerData actorData = db.getPlayer(serverPlayer.getUuid());
         if (actorData == null || actorData.isDead()) {
             return ActionResult.PASS;
         }
-
-        ItemStack stack = serverPlayer.getStackInHand(hand);
-        if (!stack.isOf(Items.PLAYER_HEAD)) {
-            return ActionResult.PASS;
         }
 
         ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
