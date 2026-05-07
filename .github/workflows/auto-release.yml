@@ -223,12 +223,26 @@ jobs:
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          name: "Paper ${{ env.NEW_VERSION }}"
+          name: "SSoggySouls v${{ env.NEW_VERSION }} (Paper/Spigot)"
           version: "${{ env.NEW_VERSION }}+paper"
           version-type: release
-          loaders: paper
+          loaders: |
+            paper
+            purpur
+            spigot
+            bukkit
           game-versions: |
             1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
           files: ${{ steps.package.outputs.jar }}
 
       - name: Publish Fabric to Modrinth
@@ -237,12 +251,24 @@ jobs:
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          name: "Fabric ${{ env.NEW_VERSION }}"
+          name: "SSoggySouls v${{ env.NEW_VERSION }} (Fabric/Quilt)"
           version: "${{ env.NEW_VERSION }}+fabric"
           version-type: release
-          loaders: fabric
+          loaders: |
+            fabric
+            quilt
           game-versions: |
             1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
           files: ${{ steps.package.outputs.fabric_jar }}
 
       - name: Publish Forge to Modrinth
@@ -251,10 +277,20 @@ jobs:
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          name: "Forge ${{ env.NEW_VERSION }}"
+          name: "SSoggySouls v${{ env.NEW_VERSION }} (Forge)"
           version: "${{ env.NEW_VERSION }}+forge"
           version-type: release
           loaders: forge
           game-versions: |
             1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
           files: ${{ steps.package.outputs.forge_jar }}
