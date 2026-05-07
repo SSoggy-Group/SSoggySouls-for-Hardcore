@@ -110,6 +110,11 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         Material whoMat;
         String whoName;
         OPTIONEDITENUM action = OPTIONEDITENUM.getEnumFromVal(what);
+        if (!RPStatic.BLOCK_TAGS.containsKey(where)) {
+            result.success = COMMANDOUTPUTENUM.FALSE;
+            result.message = "Invalid structure: " + where;
+            return;
+        }
         if (action == null) {
             result.success = COMMANDOUTPUTENUM.FALSE;
             result.message = "Use add, remove, or reset.";
