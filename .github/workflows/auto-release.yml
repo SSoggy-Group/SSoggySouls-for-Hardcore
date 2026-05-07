@@ -266,7 +266,7 @@ jobs:
 
       - name: Publish Paper to Modrinth
         if: steps.version_math.outputs.skip != 'true'
-        uses: Kir-Antipov/mc-publish@v3.3
+        uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
@@ -295,7 +295,7 @@ jobs:
 
       - name: Publish Fabric to Modrinth
         if: steps.version_math.outputs.skip != 'true'
-        uses: Kir-Antipov/mc-publish@v3.3
+        uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
@@ -322,7 +322,7 @@ jobs:
 
       - name: Publish Forge to Modrinth
         if: steps.version_math.outputs.skip != 'true'
-        uses: Kir-Antipov/mc-publish@v3.3
+        uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
