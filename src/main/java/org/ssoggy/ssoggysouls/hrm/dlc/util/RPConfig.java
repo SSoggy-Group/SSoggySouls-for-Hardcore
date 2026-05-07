@@ -72,9 +72,9 @@ public class RPConfig {
         RPStatic.CLIENT.saveDefaultConfig();
         RPStatic.CLIENT.reloadConfig();
         FileConfiguration fileConfiguration = RPStatic.CLIENT.getConfig();
-        RPStatic.BLOCK_TAGS.forEach((key, value) -> RPStatic.BLOCK_TAGS.put(key, fileConfiguration.getStringList(key).stream().map(Material::getMaterial).collect(Collectors.toSet())));
-        RPStatic.CONFIG_RULES.forEach((key, value) -> RPStatic.CONFIG_RULES.put(key, fileConfiguration.getBoolean(key, value)));
-        RPStatic.CONFIG_TIMERS.forEach((key, value) -> RPStatic.CONFIG_TIMERS.put(key, fileConfiguration.getInt(key, value)));
+        RPStatic.BLOCK_TAGS.forEach((key, value) -> RPStatic.BLOCK_TAGS.put(key, fileConfiguration.getStringList("hrm." + key).stream().map(Material::getMaterial).collect(Collectors.toSet())));
+        RPStatic.CONFIG_RULES.forEach((key, value) -> RPStatic.CONFIG_RULES.put(key, fileConfiguration.getBoolean("hrm." + key, value)));
+        RPStatic.CONFIG_TIMERS.forEach((key, value) -> RPStatic.CONFIG_TIMERS.put(key, fileConfiguration.getInt("hrm." + key, value)));
     }
 
     public static byte resetBlockTag(String where) {
@@ -84,7 +84,7 @@ public class RPConfig {
     public static byte setBlockTag(String where, Set<Material> who) {
         try {
             JavaPlugin instance = RPStatic.CLIENT;
-            instance.getConfig().set(where, who.stream().map(Enum::name).toList());
+            instance.getConfig().set("hrm." + where, who.stream().map(Enum::name).toList());
             instance.saveConfig();
             instance.reloadConfig();
             RPStatic.BLOCK_TAGS.put(where, who);
@@ -98,7 +98,7 @@ public class RPConfig {
     public static byte setConfigRule(String where, boolean who) {
         try {
             JavaPlugin instance = RPStatic.CLIENT;
-            instance.getConfig().set(where, who);
+            instance.getConfig().set("hrm." + where, who);
             instance.saveConfig();
             instance.reloadConfig();
             RPStatic.CONFIG_RULES.put(where, who);
@@ -112,7 +112,7 @@ public class RPConfig {
     public static byte setConfigTimer(String where, int who) {
         try {
             JavaPlugin instance = RPStatic.CLIENT;
-            instance.getConfig().set(where, who);
+            instance.getConfig().set("hrm." + where, who);
             instance.saveConfig();
             instance.reloadConfig();
             RPStatic.CONFIG_TIMERS.put(where, who);

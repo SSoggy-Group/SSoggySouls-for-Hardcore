@@ -371,6 +371,86 @@ hrm:
   # [CONFIG] BOTH
   revive-skull-recipe: true
 
+
+  # Hardcore Revive DLC (RevivalPlus) Settings
+  # ───────────────────────────────────────────────────────────────────────────────
+  # These settings control the advanced mechanics ported from the RevivalPlus DLC
+  # created by Cera and Jakeccz. You can also edit these in-game using /revivalconfig.
+  #
+  # -- GAMERULES --
+  # Do players drop their entire inventory upon hardcore death?
+  lose-inventory: false
+
+  # Can ghosts (dead players) open menus and inventories?
+  restrict-menu-access: true
+
+  # Do creative mode players drop heads when killed?
+  creative-players-drop-heads: false
+
+  # Does the base of the revival structure remain after a successful ritual?
+  keep-structure-base: true
+
+  # Do players get Speed and Night Vision when wearing a player head?
+  head-effects: true
+
+  # Do dropped player heads burn in lava? (If false, they are placed as blocks instead)
+  head-burns-in-lava: false
+
+  # Does lightning strike the structure when a player is revived?
+  ritual-lightning-strike: true
+
+  # Does the Totem of Undying animation play on the revived player's screen?
+  ritual-totem-effect: true
+
+  # Do dead players (ghosts) emit Dragon Breath particles so others can see them?
+  ghost-mode-particles: false
+
+  # -- TIMERS --
+  # Minutes until a death is visible to 'trusted' players in /deathlist
+  trusted-obituary-after: 60
+
+  # Minutes until a death is visible to 'friends' in /deathlist
+  friends-obituary-after: 600
+
+  # Minutes until a death is visible to everyone in /deathlist
+  public-obituary-after: 3600
+
+  # Max block radius ghosts can travel from their death point without a head
+  spectator-headrestrict-radius: 16
+
+  # Ticks of Resistance given to a revived player (20 ticks = 1 second)
+  revive-resistance-ticks: 100
+
+  # Ticks of Glowing given to a revived player
+  revive-glowing-ticks: 100
+
+  # -- STRUCTURE BLOCK TAGS --
+  # The blocks required for different parts of the revival structure.
+  soul-sand-blocktag:
+    - "CRYING_OBSIDIAN"
+    - "OBSIDIAN"
+  flower-blocktag:
+    - "SOUL_TORCH"
+    - "REDSTONE_TORCH"
+  ore-blocktag:
+    - "ENCHANTING_TABLE"
+  fence-blocktag:
+    - "OAK_FENCE"
+    - "SPRUCE_FENCE"
+    - "BIRCH_FENCE"
+    - "JUNGLE_FENCE"
+    - "ACACIA_FENCE"
+    - "DARK_OAK_FENCE"
+    - "MANGROVE_FENCE"
+    - "CHERRY_FENCE"
+    - "BAMBOO_FENCE"
+    - "CRIMSON_FENCE"
+    - "WARPED_FENCE"
+    - "NETHER_BRICK_FENCE"
+  stair-blocktag:
+    - "MAGMA_BLOCK"
+
+
 # ───────────────────────────────────────────────────────────────────────────────
 # Extra Life Item Settings
 # Players can craft/find items that grant them an extra life when used
@@ -504,81 +584,3 @@ messages:
 # Only enable for troubleshooting - disable for production!
 debug: false
 
-# ───────────────────────────────────────────────────────────────────────────────
-# Hardcore Revive DLC (RevivalPlus) Settings
-# ───────────────────────────────────────────────────────────────────────────────
-# These settings control the advanced mechanics ported from the RevivalPlus DLC
-# created by Cera and Jakeccz. You can also edit these in-game using /revivalconfig.
-#
-# -- GAMERULES --
-# Do players drop their entire inventory upon hardcore death?
-lose-inventory: false
-
-# Can ghosts (dead players) open menus and inventories?
-restrict-menu-access: true
-
-# Do creative mode players drop heads when killed?
-creative-players-drop-heads: false
-
-# Does the base of the revival structure remain after a successful ritual?
-keep-structure-base: true
-
-# Do players get Speed and Night Vision when wearing a player head?
-head-effects: true
-
-# Do dropped player heads burn in lava? (If false, they are placed as blocks instead)
-head-burns-in-lava: false
-
-# Does lightning strike the structure when a player is revived?
-ritual-lightning-strike: true
-
-# Does the Totem of Undying animation play on the revived player's screen?
-ritual-totem-effect: true
-
-# Do dead players (ghosts) emit Dragon Breath particles so others can see them?
-ghost-mode-particles: false
-
-# -- TIMERS --
-# Minutes until a death is visible to 'trusted' players in /deathlist
-trusted-obituary-after: 60
-
-# Minutes until a death is visible to 'friends' in /deathlist
-friends-obituary-after: 600
-
-# Minutes until a death is visible to everyone in /deathlist
-public-obituary-after: 3600
-
-# Max block radius ghosts can travel from their death point without a head
-spectator-headrestrict-radius: 16
-
-# Ticks of Resistance given to a revived player (20 ticks = 1 second)
-revive-resistance-ticks: 100
-
-# Ticks of Glowing given to a revived player
-revive-glowing-ticks: 100
-
-# -- STRUCTURE BLOCK TAGS --
-# The blocks required for different parts of the revival structure.
-soul-sand-blocktag:
-  - "CRYING_OBSIDIAN"
-  - "OBSIDIAN"
-flower-blocktag:
-  - "SOUL_TORCH"
-  - "REDSTONE_TORCH"
-ore-blocktag:
-  - "ENCHANTING_TABLE"
-fence-blocktag:
-  - "OAK_FENCE"
-  - "SPRUCE_FENCE"
-  - "BIRCH_FENCE"
-  - "JUNGLE_FENCE"
-  - "ACACIA_FENCE"
-  - "DARK_OAK_FENCE"
-  - "MANGROVE_FENCE"
-  - "CHERRY_FENCE"
-  - "BAMBOO_FENCE"
-  - "CRIMSON_FENCE"
-  - "WARPED_FENCE"
-  - "NETHER_BRICK_FENCE"
-stair-blocktag:
-  - "MAGMA_BLOCK"
