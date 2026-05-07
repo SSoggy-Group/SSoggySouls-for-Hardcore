@@ -148,6 +148,7 @@ public class ConfigManager {
 
         // --- Debug ---
         private boolean debug = false;
+        private boolean checkForUpdates = true;
 
         public ModConfig() {
             // Default messages
@@ -227,6 +228,7 @@ public class ConfigManager {
         public java.util.List<String> getFenceBlocktag() { return fenceBlocktag; }
         public java.util.List<String> getStairBlocktag() { return stairBlocktag; }
         public boolean isDebug() { return debug; }
+        public boolean isCheckForUpdates() { return checkForUpdates; }
 
         public String getConfigString(String path, String defaultValue) {
             return switch (path) {
@@ -298,6 +300,7 @@ public class ConfigManager {
         public void setFenceBlocktag(java.util.Collection<String> blocks) { fenceBlocktag = normalizeBlockList(blocks); }
         public void setStairBlocktag(java.util.Collection<String> blocks) { stairBlocktag = normalizeBlockList(blocks); }
         public void setDebug(boolean d) { debug = d; }
+        public void setCheckForUpdates(boolean check) { checkForUpdates = check; }
 
         private static java.util.List<String> normalizeBlockList(java.util.Collection<String> blocks) {
             java.util.List<String> normalized = new java.util.ArrayList<>();
