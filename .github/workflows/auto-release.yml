@@ -110,7 +110,9 @@ jobs:
             COMMIT_MSG=$(git log -1 --pretty=%B)
             
             # 1. Check for skips first (docs, ci, test, chore, refactor with optional scopes)
-            if [[ "$COMMIT_MSG" =~ ^(docs|ci|test|chore|refactor)(\([^)]+\))?: ]]; then
+            # Define regex in a variable to avoid syntax errors across different bash versions
+            SKIP_REGEX="^(docs|ci|test|chore|refactor)(\([^)]+\))?:"
+            if [[ "$COMMIT_MSG" =~ $SKIP_REGEX ]]; then
               echo "Housekeeping commit detected. Skipping release."
               SKIP_RELEASE="true"
             # 2. Check for Major
@@ -130,7 +132,9 @@ jobs:
           if [ "$SKIP_RELEASE" == "false" ]; then
             # Priority: Manual Version -> Major -> Minor -> Patch
             if [[ -n "$MANUAL_VERSION" ]]; then
-              if ! [[ "$MANUAL_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.+][A-Za-z0-9.-]+)?$ ]]; then
+              # Define regex in a variable to avoid syntax errors across different bash versions
+              VERSION_REGEX="^[0-9]+\.[0-9]+\.[0-9]+([-.+][A-Za-z0-9.-]+)?$"
+              if ! [[ "$MANUAL_VERSION" =~ $VERSION_REGEX ]]; then
                 echo "Invalid manual_version input: '$MANUAL_VERSION'. Expected semantic version like 1.2.3 or 1.2.3-rc.1."
                 exit 1
               fi
