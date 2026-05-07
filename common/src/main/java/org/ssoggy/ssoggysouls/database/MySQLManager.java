@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -143,8 +142,8 @@ public class MySQLManager implements DatabaseManager {
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
         try (Connection conn = dataSource.getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
             ensureLastSeenColumn(conn);
             ensureGraceUntilColumn(conn);
             plugin.debug("Table '" + tableName + "' verified/created.");
@@ -183,8 +182,8 @@ public class MySQLManager implements DatabaseManager {
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
-        try (Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
         } catch (SQLException e) {
             String sqlState = e.getSQLState();
@@ -523,8 +522,8 @@ public class MySQLManager implements DatabaseManager {
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
                 + ") DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute(createTableSql);
+        try (PreparedStatement ps = conn.prepareStatement(createTableSql)) {
+            ps.execute();
         }
     }
 }

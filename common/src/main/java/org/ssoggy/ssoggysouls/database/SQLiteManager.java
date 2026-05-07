@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -103,8 +102,8 @@ public class SQLiteManager implements DatabaseManager {
                 + ");";
 
         try (Connection conn = dataSource.getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
             ensureLastSeenColumn(conn);
             ensureGraceUntilColumn(conn);
             plugin.debug("Table '" + tableName + "' verified/created.");
@@ -143,8 +142,8 @@ public class SQLiteManager implements DatabaseManager {
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
-        try (Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
         } catch (SQLException e) {
             boolean duplicateColumn = e.getMessage() != null
@@ -480,8 +479,8 @@ public class SQLiteManager implements DatabaseManager {
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
                 + ");";
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute(createTableSql);
+        try (PreparedStatement ps = conn.prepareStatement(createTableSql)) {
+            ps.execute();
         }
     }
 }
