@@ -78,7 +78,6 @@ public class MainServerListener {
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
                 ServerTransferUtil.sendToLimbo(player);
-                return;
             }
 
             // Dead player joined -> Ghost mode (Adventure)
@@ -137,7 +136,6 @@ public class MainServerListener {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
                 player.sendMessage(MessageUtil.get("death-sending-to-limbo"), false);
                 ServerTransferUtil.sendToLimbo(player);
-                return;
             }
 
             GhostState state = GhostState.getServerState(player.getServer());
@@ -182,7 +180,6 @@ public class MainServerListener {
     private void handleRespawnSync(ServerPlayerEntity player) {
         if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
             ServerTransferUtil.sendToLimbo(player);
-            return;
         }
 
         player.changeGameMode(GameMode.ADVENTURE);
