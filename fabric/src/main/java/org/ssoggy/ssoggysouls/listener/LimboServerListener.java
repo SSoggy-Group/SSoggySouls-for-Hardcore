@@ -78,7 +78,7 @@ public class LimboServerListener {
     }
 
     private void registerDisconnectEvent() {
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, _server) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
     }
 
     private void registerCommandRestrictionEvent() {
@@ -100,7 +100,7 @@ public class LimboServerListener {
     }
 
     private void registerWorldChangeEvent() {
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, _origin, destination) -> {
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
             if (!limboDeadPlayers.contains(player.getUuid())) {
                 return;
             }
