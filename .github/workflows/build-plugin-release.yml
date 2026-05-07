@@ -99,19 +99,19 @@ jobs:
           echo "forge_jar=${FORGE_JAR_PATH}" >> "${GITHUB_OUTPUT}"
 
       - name: Upload plugin build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: plugin-jar
           path: ${{ steps.package.outputs.jar }}
 
       - name: Upload fabric build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fabric-jar
           path: ${{ steps.package.outputs.fabric_jar }}
 
       - name: Upload forge build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: forge-jar
           path: ${{ steps.package.outputs.forge_jar }}
