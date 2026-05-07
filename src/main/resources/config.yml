@@ -241,16 +241,16 @@ lives:
 # ───────────────────────────────────────────────────────────────────────────────
 # Limbo Server Settings
 # ───────────────────────────────────────────────────────────────────────────────
-# [CONFIG] SINGLE SERVER: Skip this section (ignored)
-# [CONFIG] DUAL SERVER: Configure on Limbo server only (ignored on Main server)
+# [CONFIG] SINGLE SERVER: Configure check-interval-seconds (spawn settings are ignored)
+# [CONFIG] DUAL SERVER: Configure check-interval-seconds on both (spawn settings ignored on Main)
 #
 limbo:
   # How often to check if dead players should be transferred back to Main
   # Lower = more frequent checks (uses more CPU)
   # Higher = less frequent checks (delays revival detection)
   # Recommended: 3-5 seconds
-  # [CONFIG] SINGLE SERVER: Skip this setting (ignored)
-  # [CONFIG] DUAL SERVER: Configure on Limbo server (ignored on Main)
+  # [CONFIG] SINGLE SERVER: Configure as desired
+  # [CONFIG] DUAL SERVER: Configure as desired on both servers
   check-interval-seconds: 3
 
   # Spawn location for dead players in Limbo
@@ -325,7 +325,7 @@ main:
 # These control the revival structures and items for reviving dead players
 # ───────────────────────────────────────────────────────────────────────────────
 # [CONFIG] SINGLE SERVER: Configure as desired
-# [CONFIG] DUAL SERVER: Keep these settings the same on both servers
+# [CONFIG] DUAL SERVER: Configure on Main server only (ignored on Limbo server)
 #
 hrm:
   # Enable HRM features (revival structures, revive skull, head dropping, etc)
@@ -403,7 +403,7 @@ hrm:
 # Players can craft/find items that grant them an extra life when used
 # ───────────────────────────────────────────────────────────────────────────────
 # [CONFIG] SINGLE SERVER: Configure as desired
-# [CONFIG] DUAL SERVER: Keep these settings the same on both servers
+# [CONFIG] DUAL SERVER: Configure on Main server only (ignored on Limbo server)
 #
 extra-life:
   # Enable extra life items
@@ -543,7 +543,7 @@ debug: false
 # created by Cera and Jakeccz. You can also edit these in-game using /revivalconfig.
 #
 # [CONFIG] SINGLE SERVER: Configure as desired
-# [CONFIG] DUAL SERVER: Keep these settings the same on both servers
+# [CONFIG] DUAL SERVER: Configure on Main server only (ignored on Limbo server)
 #
 # -- GAMERULES --
 # Do players drop their entire inventory upon hardcore death?
