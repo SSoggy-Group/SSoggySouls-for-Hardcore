@@ -66,6 +66,15 @@ public class RevivalStructureListener {
 
     private static ActionResult handleStructureInteraction(ServerPlayerEntity serverPlayer, World world, Hand hand,
             net.minecraft.util.hit.BlockHitResult hitResult, DatabaseManager db) {
+        if (serverPlayer.isSpectator()) {
+            return ActionResult.PASS;
+        }
+
+        PlayerData actorData = db.getPlayer(serverPlayer.getUuid());
+        if (actorData == null || actorData.isDead()) {
+            return ActionResult.PASS;
+        }
+
         ItemStack stack = serverPlayer.getStackInHand(hand);
         if (!stack.isOf(Items.PLAYER_HEAD)) {
             return ActionResult.PASS;
