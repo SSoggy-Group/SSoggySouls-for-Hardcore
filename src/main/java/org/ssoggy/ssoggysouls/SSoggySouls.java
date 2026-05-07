@@ -156,7 +156,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         } catch (DatabaseInitializationException e) {
             boolean isSqlite = dbType.equals("sqlite") || dbType.equals("local");
             getLogger().log(Level.SEVERE, "Failed to connect to {0}! Disabling plugin.", isSqlite ? "SQLite" : "MySQL");
-            getLogger().log(Level.SEVERE, "Initialization error: " + e.getMessage());
+            getLogger().log(Level.SEVERE, "Initialization error details:", e);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
