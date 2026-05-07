@@ -22,10 +22,15 @@ import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ReviveSkullManager {
+
+    private static final Map<UUID, PlayerData> PLAYER_DATA_CACHE = new ConcurrentHashMap<>();
 
     private ReviveSkullManager() {
         // Utility class
@@ -64,6 +69,11 @@ public class ReviveSkullManager {
     }
 
     private static void openMenu(ServerPlayerEntity player, List<PlayerData> deadPlayers, DatabaseManager db) {
+        if (deadPlayers == null || deadPlayers.isEmpty()) {
+            player.sendMessage(Text.literal("No dead players found.").styled(s -> s.withColor(Formatting.GRAY)), false);
+            return;
+        }
+
         int rows = Math.min(6, ((deadPlayers.size() - 1) / 9) + 1);
         int slots = rows * 9;
         SimpleInventory inventory = populateInventory(deadPlayers, slots);
@@ -90,9 +100,14 @@ public class ReviveSkullManager {
         return new GenericContainerScreenHandler(type, syncId, playerInventory, inventory, rows) {
             @Override
             public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity clickingPlayer) {
+                if (actionType == SlotActionType.QUICK_MOVE || actionType == SlotActionType.SWAP) {
+                    super.onSlotClick(slotIndex, button, actionType, clickingPlayer);
+                    return;
+                }
+
                 if (slotIndex >= 0 && slotIndex < inventory.size()) {
                     handleMenuClick(inventory.getStack(slotIndex), clickingPlayer, db);
-                } else if (actionType != SlotActionType.QUICK_MOVE && actionType != SlotActionType.SWAP) {
+                } else {
                     super.onSlotClick(slotIndex, button, actionType, clickingPlayer);
                 }
             }
@@ -112,7 +127,12 @@ public class ReviveSkullManager {
 
     private static void handleMenuClick(ItemStack clicked, PlayerEntity clickingPlayer, DatabaseManager db) {
         if (!clicked.isEmpty() && clicked.isOf(Items.PLAYER_HEAD)) {
-            if (!(clickingPlayer instanceof ServerPlayerEntity spe) || !canUseReviveFeatures(spe, db)) {
+            if (!(clickingPlayer instanceof ServerPlayerEntity spe)) {
+                return;
+            }
+
+            PlayerData data = getPlayerData(spe, db);
+            if (!canUseReviveFeatures(spe, data)) {
                 return;
             }
 
@@ -131,19 +151,39 @@ public class ReviveSkullManager {
                     }
                     clickingPlayer.sendMessage(Text.literal("Received " + name + "'s head.").styled(s -> s.withColor(Formatting.GREEN)), false);
 
-                    spe.getServer().execute(spe::closeHandledScreen);
+                    spe.closeHandledScreen();
                 });
             }
         }
     }
 
     private static boolean canUseReviveFeatures(ServerPlayerEntity player, DatabaseManager db) {
+        PlayerData data = getPlayerData(player, db);
+        return canUseReviveFeatures(player, data);
+    }
+
+    private static boolean canUseReviveFeatures(ServerPlayerEntity player, PlayerData data) {
         if (player.isSpectator()) {
             return false;
         }
 
-        PlayerData data = db.getPlayer(player.getUuid());
         return data != null && !data.isDead();
+    }
+
+    private static PlayerData getPlayerData(ServerPlayerEntity player, DatabaseManager db) {
+        UUID playerId = player.getUuid();
+        PlayerData cached = PLAYER_DATA_CACHE.get(playerId);
+        if (cached != null) {
+            return cached;
+        }
+
+        PlayerData data = db.getPlayer(playerId);
+        if (data != null) {
+            PLAYER_DATA_CACHE.put(playerId, data);
+        } else {
+            PLAYER_DATA_CACHE.remove(playerId);
+        }
+        return data;
     }
 
     private static ItemStack createMenuHead(PlayerData data) {
