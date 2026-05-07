@@ -31,7 +31,7 @@ public class GhostState extends SavedData {
         return tag;
     }
 
-    public static GhostState load(CompoundTag tag) {
+    public static GhostState load(CompoundTag tag, HolderLookup.Provider registries) {
         GhostState state = new GhostState();
 
         if (tag.contains(DEATH_LOCATIONS)) {
