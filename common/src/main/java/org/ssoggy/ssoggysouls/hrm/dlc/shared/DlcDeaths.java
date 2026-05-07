@@ -39,7 +39,7 @@ public final class DlcDeaths {
                     holder = UUID.fromString(values.get(KEY_HOLDER));
                 }
 
-                DlcDeathRecord record = new DlcDeathRecord(
+                DlcDeathRecord deathRecord = new DlcDeathRecord(
                         uuid,
                         username,
                         world,
@@ -49,7 +49,7 @@ public final class DlcDeaths {
                         Instant.parse(time),
                         holder
                 );
-                DEATHS.put(uuid, record);
+                DEATHS.put(uuid, deathRecord);
             } catch (RuntimeException e) {
                 DlcServices.logger().warning("Skipping invalid RevivalPlus death record: " + table);
             }
@@ -57,8 +57,8 @@ public final class DlcDeaths {
     }
 
     public static void recordDeath(UUID uuid, String username, String worldId, int x, int y, int z) {
-        DlcDeathRecord record = new DlcDeathRecord(uuid, username, worldId, x, y, z, Instant.now(), null);
-        DEATHS.put(uuid, record);
+        DlcDeathRecord deathRecord = new DlcDeathRecord(uuid, username, worldId, x, y, z, Instant.now(), null);
+        DEATHS.put(uuid, deathRecord);
         DlcNames.cache(uuid, username);
 
         DlcStorage storage = DlcServices.deathStorage();
@@ -68,7 +68,7 @@ public final class DlcDeaths {
         storage.setValue(table, KEY_X, x);
         storage.setValue(table, KEY_Y, y);
         storage.setValue(table, KEY_Z, z);
-        storage.setValue(table, KEY_TIME, record.time().toString());
+        storage.setValue(table, KEY_TIME, deathRecord.time().toString());
         storage.removeValue(table, KEY_HOLDER);
         storage.save();
     }
@@ -88,9 +88,9 @@ public final class DlcDeaths {
     }
 
     public static void setHolder(UUID deadUuid, UUID holderUuid) {
-        DlcDeathRecord record = DEATHS.get(deadUuid);
-        if (record != null) {
-            DEATHS.put(deadUuid, record.withHolder(holderUuid));
+        DlcDeathRecord deathRecord = DEATHS.get(deadUuid);
+        if (deathRecord != null) {
+            DEATHS.put(deadUuid, deathRecord.withHolder(holderUuid));
         }
         if (holderUuid == null) {
             DlcServices.deathStorage().removeValue(deadUuid.toString(), KEY_HOLDER);
@@ -106,19 +106,19 @@ public final class DlcDeaths {
                                                      long publicAfterSeconds) {
         Instant now = Instant.now();
         List<DlcDeathRecord> result = new ArrayList<>();
-        for (DlcDeathRecord record : DEATHS.values()) {
-            if (record.uuid().equals(viewerUuid)) {
-                result.add(record);
+        for (DlcDeathRecord deathRecord : DEATHS.values()) {
+            if (deathRecord.uuid().equals(viewerUuid)) {
+                result.add(deathRecord);
                 continue;
             }
 
-            DlcRelation relationship = new DlcSocial(record.uuid()).getRelationTo(viewerUuid);
-            Instant deathTime = record.time();
+            DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
+            Instant deathTime = deathRecord.time();
             boolean visible = deathTime.isBefore(now.minusSeconds(publicAfterSeconds))
                     || (relationship == DlcRelation.FRIENDS && deathTime.isBefore(now.minusSeconds(friendsAfterSeconds)))
                     || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfterSeconds)));
             if (visible) {
-                result.add(record);
+                result.add(deathRecord);
             }
         }
         result.sort(Comparator.comparing(DlcDeathRecord::time));

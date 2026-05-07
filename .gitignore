@@ -34,6 +34,7 @@ fabric/out/
 .nbcache
 .netbeans
 nbproject/
+.agents
 
 # OS specific
 .DS_Store
@@ -50,3 +51,6 @@ __pycache__/
 # Configuration & Others
 .markdownlint.json
 hs_err_pid*
+
+# SonarLint
+.sonarlint

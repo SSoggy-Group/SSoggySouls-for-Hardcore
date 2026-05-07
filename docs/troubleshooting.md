@@ -111,11 +111,12 @@ bungeecord: true
 
 ```yaml
 main:
-  death-mode: "hybrid"  # or "limbo" for immediate transfer
+  death-mode: "hybrid"  # MySQL/proxy only; SQLite always uses spectator
 
 ```
 
 If using `spectator` mode, players won't transfer to Limbo automatically.
+If using SQLite, spectator mode is forced automatically because there is no proxy/Limbo transfer target.
 
 #### - Look for Plugin Messaging Errors
 
@@ -382,7 +383,7 @@ Check console logs on both servers:
 
 ```text
 
-[SSoggySouls] Version 4.2.1 enabled
+[SSoggySouls] Version 4.3.21 enabled
 
 ```
 
@@ -517,6 +518,7 @@ ______________________________________________________________________
 ### Solution
 
 **This is intended behavior** for hybrid mode!
+SQLite servers do not use hybrid mode; dead players remain spectators instead.
 
 In hybrid mode:
 

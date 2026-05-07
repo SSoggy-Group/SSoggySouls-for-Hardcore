@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -58,7 +57,7 @@ public class MySQLManager implements DatabaseManager {
         this.tableName = tableName;
     }
 
-    public boolean initialize() {
+    public void initialize() throws DatabaseInitializationException {
         try {
             String host = plugin.getConfigString("database.host", "localhost");
             int port = plugin.getConfigInt("database.port", 3306);
@@ -69,11 +68,11 @@ public class MySQLManager implements DatabaseManager {
             tableName = plugin.getConfigString("database.table-name", "hardcore_players");
             if (!isValidIdentifier(tableName)) {
                 plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", tableName);
-                return false;
+                throw new DatabaseInitializationException("Invalid database.table-name: " + tableName);
             }
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
-                    + "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true"
+                    + "?sslMode=VERIFY_IDENTITY"
                     + "&characterEncoding=UTF-8&useUnicode=true";
 
             HikariConfig config = new HikariConfig();
@@ -91,17 +90,31 @@ public class MySQLManager implements DatabaseManager {
             config.addDataSourceProperty("prepStmtCacheSize", "64");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-            hikariDataSource = new HikariDataSource(config);
+            createHikariDataSource(config);
+
             dataSource = hikariDataSource;
             createTable();
 
             plugin.getLogger().log(Level.INFO, "MySQL connection established ({0}:{1}/{2})",
                     new Object[] { host, port, dbName });
-            return true;
 
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed!", e);
-            return false;
+            throw new DatabaseInitializationException("MySQL initialization failed", e);
+        }
+    }
+
+    private void createHikariDataSource(HikariConfig config) throws DatabaseInitializationException {
+        try {
+            hikariDataSource = new HikariDataSource(config);
+        } catch (RuntimeException ex) {
+            plugin.getLogger().severe("=====================================================");
+            plugin.getLogger().severe("SEVERE: Could not connect to the MySQL database. The plugin will be disabled.");
+            plugin.getLogger().severe("Please check your connection details in config.yml and see the server log for the full error.");
+            plugin.getLogger().severe("NOTICE: If you are only running a single server, you DO NOT need MySQL! The default database is SQLite. Open config.yml and change type: \"mysql\" back to type: \"sqlite\" to fix this instantly.");
+            plugin.getLogger().severe("=====================================================");
+            plugin.getLogger().log(Level.SEVERE, "MySQL connection error:", ex);
+            throw new DatabaseInitializationException("Could not connect to MySQL database", ex);
         }
     }
 
@@ -125,8 +138,8 @@ public class MySQLManager implements DatabaseManager {
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
         try (Connection conn = dataSource.getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
             ensureLastSeenColumn(conn);
             ensureGraceUntilColumn(conn);
             plugin.debug("Table '" + tableName + "' verified/created.");
@@ -165,8 +178,8 @@ public class MySQLManager implements DatabaseManager {
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
-        try (Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
         } catch (SQLException e) {
             String sqlState = e.getSQLState();
@@ -498,12 +511,15 @@ public class MySQLManager implements DatabaseManager {
     }
 
     private void createMetadataTableIfNeeded(Connection conn, String metaTable) throws SQLException {
+        if (!isValidIdentifier(metaTable)) {
+            throw new IllegalArgumentException("Invalid metadata table name identifier: " + metaTable);
+        }
         String createTableSql = "CREATE TABLE IF NOT EXISTS " + metaTable + " ("
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
                 + ") DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute(createTableSql);
+        try (PreparedStatement ps = conn.prepareStatement(createTableSql)) {
+            ps.execute();
         }
     }
 }

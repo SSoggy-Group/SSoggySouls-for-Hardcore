@@ -5,6 +5,10 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.SimpleChannel;
+import net.minecraftforge.network.Channel;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,6 +18,20 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 
 public class ServerTransferUtil {
+
+    private static final int PROTOCOL_VERSION = 1;
+    public static final SimpleChannel CHANNEL = ChannelBuilder
+            .named(ResourceLocation.fromNamespaceAndPath(SSoggySoulsMod.MODID, "bungee_connect"))
+            .networkProtocolVersion(PROTOCOL_VERSION)
+            .acceptedVersions(Channel.VersionTest.exact(PROTOCOL_VERSION))
+            .simpleChannel();
+
+    public static void register() {
+        CHANNEL.messageBuilder(BungeeConnectPayload.class, 1)
+                .codec(BungeeConnectPayload.CODEC)
+                .consumerMainThread((payload, context) -> {}) // No action needed on the client or server side to handle this specific custom payload besides what the proxy does
+                .add();
+    }
 
     public static void sendToServer(ServerPlayer player, String serverName) {
         player.connection.send(new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(

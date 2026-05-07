@@ -12,12 +12,14 @@ import org.slf4j.Logger;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
+import org.ssoggy.ssoggysouls.database.DatabaseInitializationException;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.database.MySQLManager;
 import org.ssoggy.ssoggysouls.database.SQLiteManager;
 import org.ssoggy.ssoggysouls.command.CommandRegistration;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.UpdateChecker;
 import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
 import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
 import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
@@ -26,6 +28,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcServices;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
+import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
 @Mod(SSoggySoulsMod.MODID)
 public class SSoggySoulsMod implements PluginContext {
@@ -58,8 +61,10 @@ public class SSoggySoulsMod implements PluginContext {
             databaseManager = new SQLiteManager(this);
         }
         
-        if (!databaseManager.initialize()) {
-            LOGGER.error("Failed to initialize database. Disabling features.");
+        try {
+            databaseManager.initialize();
+        } catch (DatabaseInitializationException e) {
+            LOGGER.error("Failed to initialize database. Disabling features. Error: {}", e.getMessage(), e);
             return;
         }
         DlcServices.init(this);
@@ -92,10 +97,14 @@ public class SSoggySoulsMod implements PluginContext {
             MinecraftForge.EVENT_BUS.register(GhostBlockEvents.class);
             GhostBlockEvents.register(databaseManager);
         }
+
+        if (ConfigManager.getConfig().isCheckForUpdates()) {
+            new UpdateChecker().checkForUpdates();
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        // Some common setup code
+        ServerTransferUtil.register();
     }
 
     @SubscribeEvent

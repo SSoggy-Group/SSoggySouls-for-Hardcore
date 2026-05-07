@@ -14,9 +14,9 @@ import java.time.Duration;
 public class UpdateChecker {
     private static final String GITHUB_API = "https://api.github.com/repos/SSoggy-Group/SSoggySouls-for-Hardcore/releases/latest";
     private static final String DOWNLOAD_PAGE = "https://modrinth.com/project/Pb03qu6T";
-    private static final String BORDER_EMPTY = "║                                                           ║";
-    private static final String BORDER_TOP = "╔═══════════════════════════════════════════════════════════╗";
-    private static final String BORDER_BOTTOM = "╚═══════════════════════════════════════════════════════════╝";
+    private static final String BORDER_EMPTY = "║                                                             ║";
+    private static final String BORDER_TOP = "╔═════════════════════════════════════════════════════════════╗";
+    private static final String BORDER_BOTTOM = "╚═════════════════════════════════════════════════════════════╝";
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.NORMAL)
@@ -111,12 +111,12 @@ public class UpdateChecker {
             SSoggySoulsMod.LOGGER.info("");
             SSoggySoulsMod.LOGGER.info(BORDER_TOP);
             SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
-            SSoggySoulsMod.LOGGER.info("║           ⚡ UPDATE AVAILABLE ⚡                          ║");
+            SSoggySoulsMod.LOGGER.info("║              ⚡ UPDATE AVAILABLE ⚡                           ║");
             SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
-            SSoggySoulsMod.LOGGER.info("║   Current version: {}║", String.format("%-35s", currentVersion));
-            SSoggySoulsMod.LOGGER.info("║   Latest version:  {}║", String.format("%-35s", latestVersion));
+            SSoggySoulsMod.LOGGER.info("║   Current version: {}║", String.format("%-41s", currentVersion));
+            SSoggySoulsMod.LOGGER.info("║   Latest version:  {}║", String.format("%-41s", latestVersion));
             SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
-            SSoggySoulsMod.LOGGER.info("║   Download: {}║", String.format("%-43s", DOWNLOAD_PAGE));
+            SSoggySoulsMod.LOGGER.info("║   Download: {}║", String.format("%-48s", DOWNLOAD_PAGE));
             SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
             SSoggySoulsMod.LOGGER.info(BORDER_BOTTOM);
             SSoggySoulsMod.LOGGER.info("");

@@ -31,6 +31,18 @@ public class ConfigManager {
         } else {
             config = new ModConfig();
             save();
+            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("\n" +
+                    "===============================================================\n" +
+                    "                       SSOGGY SOULS\n" +
+                    "===============================================================\n" +
+                    " The mod is using SQLite (single-server mode) by default.\n" +
+                    " \n" +
+                    " If you are setting up a Dual-Server Network (Main + Limbo),\n" +
+                    " you MUST stop the server, open ssoggysouls.json, and change the\n" +
+                    " 'databaseType' to 'mysql', then fill in your DB details.\n" +
+                    " \n" +
+                    " If you are using a single server, you can ignore this message.\n" +
+                    "===============================================================\n");
         }
     }
 
@@ -169,10 +181,10 @@ public class ConfigManager {
         public int getMaxLives() { return maxLives; }
         public String getGracePeriod() { return gracePeriod; }
         public int getReviveCooldownSeconds() { return reviveCooldownSeconds; }
-        public boolean isLimboServer() { return isLimboServer; }
+        public boolean isLimboServer() { return !isSingleServerDatabase() && isLimboServer; }
         public String getMainServerName() { return mainServerName; }
         public String getLimboServerName() { return limboServerName; }
-        public boolean isSendToLimboOnDeath() { return sendToLimboOnDeath; }
+        public boolean isSendToLimboOnDeath() { return !isSingleServerDatabase() && sendToLimboOnDeath; }
         public String getLimboSpawnWorld() { return limboSpawnWorld; }
         public double getLimboSpawnX() { return limboSpawnX; }
         public double getLimboSpawnY() { return limboSpawnY; }
@@ -215,6 +227,20 @@ public class ConfigManager {
         public java.util.List<String> getFenceBlocktag() { return fenceBlocktag; }
         public java.util.List<String> getStairBlocktag() { return stairBlocktag; }
         public boolean isDebug() { return debug; }
+
+        public boolean isSingleServerDatabase() {
+            return isSqliteDatabaseType(databaseType);
+        }
+
+        private static boolean isSqliteDatabaseType(String type) {
+            if (type == null) {
+                return true;
+            }
+            String normalized = type.trim();
+            return normalized.isEmpty()
+                    || "sqlite".equalsIgnoreCase(normalized)
+                    || "local".equalsIgnoreCase(normalized);
+        }
 
         /**
          * Bridge method for PluginContext compatibility.

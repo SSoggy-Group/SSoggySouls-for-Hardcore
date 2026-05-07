@@ -46,43 +46,68 @@ public final class DlcCommandRegistration {
     private static final String EDIT = "edit";
     private static final String BLOCK = "block";
 
+    private static final String C_STRUCTURE = "structure";
+    private static final String C_GAMERULE = "gamerule";
+    private static final String C_TIMER = "timer";
+    private static final String C_RELOAD = "reload";
+    private static final String C_SOUL_SAND = "soul-sand-blocktag";
+    private static final String C_FLOWER = "flower-blocktag";
+    private static final String C_ORE = "ore-blocktag";
+    private static final String C_FENCE = "fence-blocktag";
+    private static final String C_STAIR = "stair-blocktag";
+    private static final String C_LOSE_INV = "lose-inventory";
+    private static final String C_RESTRICT_MENU = "restrict-menu-access";
+    private static final String C_CREATIVE_HEADS = "creative-players-drop-heads";
+    private static final String C_KEEP_BASE = "keep-structure-base";
+    private static final String C_HEAD_EFFECTS = "head-effects";
+    private static final String C_HEAD_BURNS = "head-burns-in-lava";
+    private static final String C_RITUAL_LIGHTNING = "ritual-lightning-strike";
+    private static final String C_RITUAL_TOTEM = "ritual-totem-effect";
+    private static final String C_GHOST_PARTICLES = "ghost-mode-particles";
+    private static final String C_TRUSTED_OBIT = "trusted-obituary-after";
+    private static final String C_FRIENDS_OBIT = "friends-obituary-after";
+    private static final String C_PUBLIC_OBIT = "public-obituary-after";
+    private static final String C_HEADRESTRICT = "spectator-headrestrict-radius";
+    private static final String C_REVIVE_RESIST = "revive-resistance-ticks";
+    private static final String C_REVIVE_GLOW = "revive-glowing-ticks";
+
     private static final List<String> TRUST_ACTIONS = Arrays.stream(DlcTrustAction.values())
             .map(action -> action.name().toLowerCase(Locale.ROOT))
             .toList();
-    private static final List<String> CONFIG_GROUPS = List.of("structure", "gamerule", "timer", "reload");
+    private static final List<String> CONFIG_GROUPS = List.of(C_STRUCTURE, C_GAMERULE, C_TIMER, C_RELOAD);
     private static final List<String> STRUCTURE_KEYS = List.of(
-            "soul-sand-blocktag",
-            "flower-blocktag",
-            "ore-blocktag",
-            "fence-blocktag",
-            "stair-blocktag"
+            C_SOUL_SAND,
+            C_FLOWER,
+            C_ORE,
+            C_FENCE,
+            C_STAIR
     );
     private static final List<String> GAMERULE_KEYS = List.of(
-            "lose-inventory",
-            "restrict-menu-access",
-            "creative-players-drop-heads",
-            "keep-structure-base",
-            "head-effects",
-            "head-burns-in-lava",
-            "ritual-lightning-strike",
-            "ritual-totem-effect",
-            "ghost-mode-particles"
+            C_LOSE_INV,
+            C_RESTRICT_MENU,
+            C_CREATIVE_HEADS,
+            C_KEEP_BASE,
+            C_HEAD_EFFECTS,
+            C_HEAD_BURNS,
+            C_RITUAL_LIGHTNING,
+            C_RITUAL_TOTEM,
+            C_GHOST_PARTICLES
     );
     private static final List<String> TIMER_KEYS = List.of(
-            "trusted-obituary-after",
-            "friends-obituary-after",
-            "public-obituary-after",
-            "spectator-headrestrict-radius",
-            "revive-resistance-ticks",
-            "revive-glowing-ticks"
+            C_TRUSTED_OBIT,
+            C_FRIENDS_OBIT,
+            C_PUBLIC_OBIT,
+            C_HEADRESTRICT,
+            C_REVIVE_RESIST,
+            C_REVIVE_GLOW
     );
     private static final List<String> EDIT_ACTIONS = List.of("add", "remove", "reset");
     private static final Map<String, List<String>> DEFAULT_STRUCTURE = Map.of(
-            "soul-sand-blocktag", List.of("CRYING_OBSIDIAN", "OBSIDIAN"),
-            "flower-blocktag", List.of("SOUL_TORCH", "REDSTONE_TORCH"),
-            "ore-blocktag", List.of("ENCHANTING_TABLE"),
-            "fence-blocktag", List.of("OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE", "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE", "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"),
-            "stair-blocktag", List.of("MAGMA_BLOCK")
+            C_SOUL_SAND, List.of("CRYING_OBSIDIAN", "OBSIDIAN"),
+            C_FLOWER, List.of("SOUL_TORCH", "REDSTONE_TORCH"),
+            C_ORE, List.of("ENCHANTING_TABLE"),
+            C_FENCE, List.of("OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE", "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE", "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"),
+            C_STAIR, List.of("MAGMA_BLOCK")
     );
 
     private DlcCommandRegistration() {
@@ -279,18 +304,18 @@ public final class DlcCommandRegistration {
 
     private static int executeConfig(ServerCommandSource source, String group, String key, String editOrValue, String block) {
         String normalizedGroup = normalizeGroup(group);
-        if ("reload".equals(normalizedGroup)) {
+        if (C_RELOAD.equals(normalizedGroup)) {
             ConfigManager.load();
             sendResult(source, DlcCommandResult.info("Reloaded SSoggySouls config."));
             return 1;
         }
-        if ("gamerule".equals(normalizedGroup)) {
+        if (C_GAMERULE.equals(normalizedGroup)) {
             return executeGameruleConfig(source, key, editOrValue);
         }
-        if ("timer".equals(normalizedGroup)) {
+        if (C_TIMER.equals(normalizedGroup)) {
             return executeTimerConfig(source, key, editOrValue);
         }
-        if ("structure".equals(normalizedGroup)) {
+        if (C_STRUCTURE.equals(normalizedGroup)) {
             return executeStructureConfig(source, key, editOrValue, block);
         }
         sendResult(source, DlcCommandResult.fail("Unknown config group: " + group));
@@ -441,23 +466,23 @@ public final class DlcCommandRegistration {
 
     private static String normalizeGroup(String group) {
         return switch (group.toLowerCase(Locale.ROOT)) {
-            case "s", "struc", "struct", "structure", "1" -> "structure";
-            case "g", "gr", "gmr", "gamerule", "gamerules", "2" -> "gamerule";
-            case "t", "timer", "3" -> "timer";
-            case "r", "reload", "0" -> "reload";
+            case "s", "struc", "struct", C_STRUCTURE, "1" -> C_STRUCTURE;
+            case "g", "gr", "gmr", C_GAMERULE, "gamerules", "2" -> C_GAMERULE;
+            case "t", C_TIMER, "3" -> C_TIMER;
+            case "r", C_RELOAD, "0" -> C_RELOAD;
             default -> group.toLowerCase(Locale.ROOT);
         };
     }
 
     private static CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestConfigKeys(String group, com.mojang.brigadier.suggestion.SuggestionsBuilder builder) {
         String normalized = normalizeGroup(group);
-        if ("structure".equals(normalized)) {
+        if (C_STRUCTURE.equals(normalized)) {
             return CommandSource.suggestMatching(STRUCTURE_KEYS, builder);
         }
-        if ("gamerule".equals(normalized)) {
+        if (C_GAMERULE.equals(normalized)) {
             return CommandSource.suggestMatching(GAMERULE_KEYS, builder);
         }
-        if ("timer".equals(normalized)) {
+        if (C_TIMER.equals(normalized)) {
             return CommandSource.suggestMatching(TIMER_KEYS, builder);
         }
         return CommandSource.suggestMatching(List.of(), builder);
@@ -465,13 +490,13 @@ public final class DlcCommandRegistration {
 
     private static CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestConfigValues(String group, String key, com.mojang.brigadier.suggestion.SuggestionsBuilder builder) {
         String normalized = normalizeGroup(group);
-        if ("structure".equals(normalized)) {
+        if (C_STRUCTURE.equals(normalized)) {
             return CommandSource.suggestMatching(EDIT_ACTIONS, builder);
         }
-        if ("gamerule".equals(normalized)) {
+        if (C_GAMERULE.equals(normalized)) {
             return CommandSource.suggestMatching(List.of("true", "false"), builder);
         }
-        if ("timer".equals(normalized)) {
+        if (C_TIMER.equals(normalized)) {
             return CommandSource.suggestMatching(List.of(String.valueOf(getTimer(key))), builder);
         }
         return CommandSource.suggestMatching(List.of(), builder);
@@ -502,15 +527,15 @@ public final class DlcCommandRegistration {
     private static boolean getRule(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
         return switch (key) {
-            case "lose-inventory" -> config.isLoseInventory();
-            case "restrict-menu-access" -> config.isRestrictMenuAccess();
-            case "creative-players-drop-heads" -> config.isCreativePlayersDropHeads();
-            case "keep-structure-base" -> config.isLeaveStructureBase();
-            case "head-effects" -> config.isHeadWearingEffects();
-            case "head-burns-in-lava" -> config.isHeadBurnsInLava();
-            case "ritual-lightning-strike" -> config.isRitualLightningStrike();
-            case "ritual-totem-effect" -> config.isRitualTotemEffect();
-            case "ghost-mode-particles" -> config.isGhostModeParticles();
+            case C_LOSE_INV -> config.isLoseInventory();
+            case C_RESTRICT_MENU -> config.isRestrictMenuAccess();
+            case C_CREATIVE_HEADS -> config.isCreativePlayersDropHeads();
+            case C_KEEP_BASE -> config.isLeaveStructureBase();
+            case C_HEAD_EFFECTS -> config.isHeadWearingEffects();
+            case C_HEAD_BURNS -> config.isHeadBurnsInLava();
+            case C_RITUAL_LIGHTNING -> config.isRitualLightningStrike();
+            case C_RITUAL_TOTEM -> config.isRitualTotemEffect();
+            case C_GHOST_PARTICLES -> config.isGhostModeParticles();
             default -> false;
         };
     }
@@ -518,32 +543,31 @@ public final class DlcCommandRegistration {
     private static void setRule(String key, boolean value) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
         switch (key) {
-            case "lose-inventory" -> config.setLoseInventory(value);
-            case "restrict-menu-access" -> config.setRestrictMenuAccess(value);
-            case "creative-players-drop-heads" -> config.setCreativePlayersDropHeads(value);
-            case "keep-structure-base" -> config.setLeaveStructureBase(value);
-            case "head-effects" -> config.setHeadWearingEffects(value);
-            case "head-burns-in-lava" -> {
+            case C_LOSE_INV -> config.setLoseInventory(value);
+            case C_RESTRICT_MENU -> config.setRestrictMenuAccess(value);
+            case C_CREATIVE_HEADS -> config.setCreativePlayersDropHeads(value);
+            case C_KEEP_BASE -> config.setLeaveStructureBase(value);
+            case C_HEAD_EFFECTS -> config.setHeadWearingEffects(value);
+            case C_HEAD_BURNS -> {
                 config.setHeadBurnsInLava(value);
                 config.setHeadPlaceAsBlock(!value);
             }
-            case "ritual-lightning-strike" -> config.setRitualLightningStrike(value);
-            case "ritual-totem-effect" -> config.setRitualTotemEffect(value);
-            case "ghost-mode-particles" -> config.setGhostModeParticles(value);
-            default -> {
-            }
+            case C_RITUAL_LIGHTNING -> config.setRitualLightningStrike(value);
+            case C_RITUAL_TOTEM -> config.setRitualTotemEffect(value);
+            case C_GHOST_PARTICLES -> config.setGhostModeParticles(value);
+            default -> { /* ignored */ }
         }
     }
 
     private static int getTimer(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
         return switch (key) {
-            case "trusted-obituary-after" -> config.getTrustedObituaryAfter();
-            case "friends-obituary-after" -> config.getFriendsObituaryAfter();
-            case "public-obituary-after" -> config.getPublicObituaryAfter();
-            case "spectator-headrestrict-radius" -> config.getSpectatorHeadrestrictRadius();
-            case "revive-resistance-ticks" -> config.getReviveResistanceTicks();
-            case "revive-glowing-ticks" -> config.getReviveGlowingTicks();
+            case C_TRUSTED_OBIT -> config.getTrustedObituaryAfter();
+            case C_FRIENDS_OBIT -> config.getFriendsObituaryAfter();
+            case C_PUBLIC_OBIT -> config.getPublicObituaryAfter();
+            case C_HEADRESTRICT -> config.getSpectatorHeadrestrictRadius();
+            case C_REVIVE_RESIST -> config.getReviveResistanceTicks();
+            case C_REVIVE_GLOW -> config.getReviveGlowingTicks();
             default -> 0;
         };
     }
@@ -551,25 +575,24 @@ public final class DlcCommandRegistration {
     private static void setTimer(String key, int value) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
         switch (key) {
-            case "trusted-obituary-after" -> config.setTrustedObituaryAfter(value);
-            case "friends-obituary-after" -> config.setFriendsObituaryAfter(value);
-            case "public-obituary-after" -> config.setPublicObituaryAfter(value);
-            case "spectator-headrestrict-radius" -> config.setSpectatorHeadrestrictRadius(value);
-            case "revive-resistance-ticks" -> config.setReviveResistanceTicks(value);
-            case "revive-glowing-ticks" -> config.setReviveGlowingTicks(value);
-            default -> {
-            }
+            case C_TRUSTED_OBIT -> config.setTrustedObituaryAfter(value);
+            case C_FRIENDS_OBIT -> config.setFriendsObituaryAfter(value);
+            case C_PUBLIC_OBIT -> config.setPublicObituaryAfter(value);
+            case C_HEADRESTRICT -> config.setSpectatorHeadrestrictRadius(value);
+            case C_REVIVE_RESIST -> config.setReviveResistanceTicks(value);
+            case C_REVIVE_GLOW -> config.setReviveGlowingTicks(value);
+            default -> { /* ignored */ }
         }
     }
 
     private static List<String> getStructureList(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
         return switch (key) {
-            case "soul-sand-blocktag" -> config.getSoulSandBlocktag();
-            case "flower-blocktag" -> config.getFlowerBlocktag();
-            case "ore-blocktag" -> config.getOreBlocktag();
-            case "fence-blocktag" -> config.getFenceBlocktag();
-            case "stair-blocktag" -> config.getStairBlocktag();
+            case C_SOUL_SAND -> config.getSoulSandBlocktag();
+            case C_FLOWER -> config.getFlowerBlocktag();
+            case C_ORE -> config.getOreBlocktag();
+            case C_FENCE -> config.getFenceBlocktag();
+            case C_STAIR -> config.getStairBlocktag();
             default -> List.of();
         };
     }
@@ -577,13 +600,12 @@ public final class DlcCommandRegistration {
     private static void setStructureList(String key, Collection<String> values) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
         switch (key) {
-            case "soul-sand-blocktag" -> config.setSoulSandBlocktag(values);
-            case "flower-blocktag" -> config.setFlowerBlocktag(values);
-            case "ore-blocktag" -> config.setOreBlocktag(values);
-            case "fence-blocktag" -> config.setFenceBlocktag(values);
-            case "stair-blocktag" -> config.setStairBlocktag(values);
-            default -> {
-            }
+            case C_SOUL_SAND -> config.setSoulSandBlocktag(values);
+            case C_FLOWER -> config.setFlowerBlocktag(values);
+            case C_ORE -> config.setOreBlocktag(values);
+            case C_FENCE -> config.setFenceBlocktag(values);
+            case C_STAIR -> config.setStairBlocktag(values);
+            default -> { /* ignored */ }
         }
     }
 

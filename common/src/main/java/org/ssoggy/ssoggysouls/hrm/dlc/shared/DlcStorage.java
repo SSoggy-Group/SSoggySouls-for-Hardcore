@@ -37,7 +37,7 @@ public class DlcStorage {
         try (FileInputStream input = new FileInputStream(file)) {
             properties.load(input);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not load RevivalPlus storage " + file.getPath(), e);
+            logger.log(Level.SEVERE, e, () -> "Could not load RevivalPlus storage " + file.getPath());
         }
     }
 
@@ -45,7 +45,7 @@ public class DlcStorage {
         try (FileOutputStream output = new FileOutputStream(file)) {
             properties.store(output, "SSoggySouls RevivalPlus data");
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save RevivalPlus storage " + file.getPath(), e);
+            logger.log(Level.SEVERE, e, () -> "Could not save RevivalPlus storage " + file.getPath());
         }
     }
 
