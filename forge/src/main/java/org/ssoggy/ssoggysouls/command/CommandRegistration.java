@@ -206,35 +206,7 @@ public class CommandRegistration {
         );
     }
 
-    private static void registerObituariesCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("obituaries")
-            .executes(context -> {
-                CommandSourceStack source = context.getSource();
 
-                CompletableFuture.runAsync(() -> {
-                    List<PlayerData> deadPlayers = db.getDeadPlayers();
-                    source.getServer().execute(() -> {
-                        if (deadPlayers.isEmpty()) {
-                            source.sendSystemMessage(Component.literal("Nobody has died recently. The server is peaceful.").withStyle(net.minecraft.ChatFormatting.GREEN));
-                            return;
-                        }
-
-                        source.sendSystemMessage(Component.literal("--- Server Obituaries ---").withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD));
-                        for (PlayerData dead : deadPlayers) {
-                            String time = "Recently";
-                            if (dead.getLastDeath() > 0) {
-                                long days = (System.currentTimeMillis() - dead.getLastDeath()) / (1000 * 60 * 60 * 24);
-                                time = days + " days ago";
-                            }
-                            source.sendSystemMessage(Component.literal("- " + dead.getUsername() + " (" + time + ")").withStyle(net.minecraft.ChatFormatting.GRAY));
-                        }
-                    });
-                });
-
-                return 1;
-            })
-        );
-    }
 
     private static void registerAdminLogCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("adminlog")
