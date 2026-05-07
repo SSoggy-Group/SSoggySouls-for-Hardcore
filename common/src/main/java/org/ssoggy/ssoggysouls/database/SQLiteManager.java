@@ -130,6 +130,23 @@ public class SQLiteManager implements DatabaseManager {
         return identifier != null && identifier.matches("^\\w+$");
     }
 
+    private boolean hasValidQuotedLiterals(String definition) {
+        boolean inQuotedLiteral = false;
+        for (int i = 0; i < definition.length(); i++) {
+            if (definition.charAt(i) != '\'') {
+                continue;
+            }
+
+            if (inQuotedLiteral && i + 1 < definition.length() && definition.charAt(i + 1) == '\'') {
+                i++;
+                continue;
+            }
+
+            inQuotedLiteral = !inQuotedLiteral;
+        }
+        return !inQuotedLiteral;
+    }
+
     /**
      * Ensures a column exists in the table, ignoring duplicate-column errors.
      *
@@ -142,11 +159,14 @@ public class SQLiteManager implements DatabaseManager {
         if (!isValidIdentifier(columnName)) {
             throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
         }
-        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),.\\-]+$")) {
+        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'.\\-]+$")) {
             throw new IllegalArgumentException("Invalid column definition characters: " + definition);
         }
         if (definition.contains("--")) {
             throw new IllegalArgumentException("SQL comments are not allowed in column definition: " + definition);
+        }
+        if (!hasValidQuotedLiterals(definition)) {
+            throw new IllegalArgumentException("Unbalanced quoted literal in column definition: " + definition);
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
