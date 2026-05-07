@@ -78,7 +78,7 @@ public class LimboServerListener {
     }
 
     private void registerDisconnectEvent() {
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, _server) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
     }
 
     private void registerCommandRestrictionEvent() {
