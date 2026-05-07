@@ -66,9 +66,9 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     public static final String MODE_LIMBO = "limbo";
     public static final String MODE_SPECTATOR = "spectator";
     public static final String MODE_HYBRID = "hybrid";
-    private static final String BORDER_EMPTY = "║                                                           ║";
-    private static final String BORDER_TOP = "╔═══════════════════════════════════════════════════════════╗";
-    private static final String BORDER_BOTTOM = "╚═══════════════════════════════════════════════════════════╝";
+    private static final String BORDER_EMPTY = "║                                                             ║";
+    private static final String BORDER_TOP = "╔═════════════════════════════════════════════════════════════╗";
+    private static final String BORDER_BOTTOM = "╚═════════════════════════════════════════════════════════════╝";
     private static final String ROLE_LIMBO = "Limbo";
     private static final String ROLE_MAIN = "Main";
 
@@ -113,7 +113,25 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     @Override
     public void onEnable() {
         setInstance(this);
-        saveDefaultConfig();
+
+        java.io.File configFile = new java.io.File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            saveDefaultConfig();
+            getLogger().info("\n" +
+                    "===============================================================\n" +
+                    "                       SSOGGY SOULS\n" +
+                    "===============================================================\n" +
+                    " The plugin is using SQLite (single-server mode) by default.\n" +
+                    " \n" +
+                    " If you are setting up a Dual-Server Network (Main + Limbo),\n" +
+                    " you MUST stop the server, open config.yml, and change the\n" +
+                    " 'database.type' to 'mysql', then fill in your DB details.\n" +
+                    " \n" +
+                    " If you are using a single server, you can ignore this message.\n" +
+                    "===============================================================\n");
+        } else {
+            saveDefaultConfig();
+        }
 
         for (World world : getServer().getWorlds()) {
             originalWorldHardcore.put(world.getName(), world.isHardcore());
@@ -124,7 +142,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
 
-        String dbType = getConfig().getString("database.type", "mysql").toLowerCase();
+        String dbType = getConfig().getString("database.type", "sqlite").toLowerCase();
 
         if (dbType.equals("sqlite") || dbType.equals("local")) {
             databaseManager = new org.ssoggy.ssoggysouls.database.SQLiteManager(this);
@@ -157,24 +175,24 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         getLogger().info("");
         getLogger().info(BORDER_TOP);
         getLogger().info(BORDER_EMPTY);
-        getLogger().info("║     ██████╗  ██████╗ ██╗      █████╗ ██████╗            ║");
-        getLogger().info("║     ██╔══██╗██╔═══██╗██║     ██╔══██╗██╔══██╗           ║");
-        getLogger().info("║     ██████╔╝██║   ██║██║     ███████║██████╔╝           ║");
-        getLogger().info("║     ██╔═══╝ ██║   ██║██║     ██╔══██║██╔══██╗           ║");
-        getLogger().info("║     ██║     ╚██████╔╝███████╗██║  ██║██║  ██║           ║");
-        getLogger().info("║     ╚═╝      ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝           ║");
+        getLogger().info("║     ███████╗███████╗ ██████╗  ██████╗  ██████╗██╗   ██╗     ║");
+        getLogger().info("║     ██╔════╝██╔════╝██╔═══██╗██╔════╝ ██╔════╝╚██╗ ██╔╝     ║");
+        getLogger().info("║     ███████╗███████╗██║   ██║██║  ███╗██║  ███╗╚████╔╝      ║");
+        getLogger().info("║     ╚════██║╚════██║██║   ██║██║   ██║██║   ██║ ╚██╔╝       ║");
+        getLogger().info("║     ███████║███████║╚██████╔╝╚██████╔╝╚██████╔╝  ██║        ║");
+        getLogger().info("║     ╚══════╝╚══════╝ ╚═════╝  ╚═════╝  ╚═════╝   ╚═╝        ║");
         getLogger().info(BORDER_EMPTY);
-        getLogger().info("║      ███████╗ ██████╗ ██╗   ██╗██╗     ███████╗         ║");
-        getLogger().info("║      ██╔════╝██╔═══██╗██║   ██║██║     ██╔════╝         ║");
-        getLogger().info("║      ███████╗██║   ██║██║   ██║██║     ███████╗         ║");
-        getLogger().info("║      ╚════██║██║   ██║██║   ██║██║     ╚════██║         ║");
-        getLogger().info("║      ███████║╚██████╔╝╚██████╔╝███████╗███████║         ║");
-        getLogger().info("║      ╚══════╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝         ║");
+        getLogger().info("║         ███████╗ ██████╗ ██╗   ██╗██╗     ███████╗          ║");
+        getLogger().info("║         ██╔════╝██╔═══██╗██║   ██║██║     ██╔════╝          ║");
+        getLogger().info("║         ███████╗██║   ██║██║   ██║██║     ███████╗          ║");
+        getLogger().info("║         ╚════██║██║   ██║██║   ██║██║     ╚════██║          ║");
+        getLogger().info("║         ███████║╚██████╔╝╚██████╔╝███████╗███████║          ║");
+        getLogger().info("║         ╚══════╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝          ║");
         getLogger().info(BORDER_EMPTY);
-        getLogger().log(Level.INFO, "║   Version: {0}║", String.format("%-47s", version));
-        getLogger().log(Level.INFO, "║   Mode:    {0}║", String.format("%-47s", mode));
+        getLogger().log(Level.INFO, "║   Version: {0}║", String.format("%-49s", version));
+        getLogger().log(Level.INFO, "║   Mode:    {0}║", String.format("%-49s", mode));
         getLogger().info(BORDER_EMPTY);
-        getLogger().info("║   ☠ Hardcore Lives • Limbo Exile • Revive System ☠      ║");
+        getLogger().info("║    ☠ Hardcore Lives • Limbo Exile • Revive System ☠         ║");
         getLogger().info(BORDER_EMPTY);
         getLogger().info(BORDER_BOTTOM);
         getLogger().info("");

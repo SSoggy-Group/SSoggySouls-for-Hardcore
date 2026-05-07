@@ -56,9 +56,7 @@ public class GhostState extends SavedData {
                 new SavedData.Factory<>(
                         GhostState::new,
                         GhostState::load,
-                        null
-                ),
-                "ssoggysouls_ghost_data"
-        );
+                        null),
+                "ssoggysouls_ghost_data");
     }
 }

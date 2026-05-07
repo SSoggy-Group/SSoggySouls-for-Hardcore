@@ -6,15 +6,15 @@ on:
       - main
     paths-ignore:
       # Ignore docs and configs so the bot's own commits don't trigger an infinite loop
-      - 'pom.xml'
-      - '**/gradle.properties'
-      - '**/*.md'
+      - "pom.xml"
+      - "**/gradle.properties"
+      - "**/*.md"
   workflow_dispatch:
     inputs:
       bump_type:
         description: "Force Bump Type (Ignored if Manual Version is set)"
         required: true
-        default: 'patch'
+        default: "patch"
         type: choice
         options:
           - patch
@@ -24,6 +24,43 @@ on:
         description: "Manual Version (e.g., 4.1.0). Leave blank to use Bump Type/Commit logic."
         required: false
         type: string
+      paper_type:
+        description: "Paper release channel"
+        required: false
+        default: "release"
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
+      fabric_type:
+        description: "Fabric release channel"
+        required: false
+        default: "alpha"
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
+      forge_type:
+        description: "Forge release channel"
+        required: false
+        default: "alpha"
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
+      gh_prerelease:
+        description: "Mark as pre-release on GitHub"
+        required: false
+        default: false
+        type: boolean
+      gh_latest:
+        description: "Mark as latest release on GitHub"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: write # Needed to push commits, tags, and releases
@@ -49,7 +86,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
 
       - name: Setup Gradle
@@ -88,9 +125,9 @@ jobs:
               BUMP_TYPE="patch"
             fi
           fi
-          
+
           echo "skip=$SKIP_RELEASE" >> $GITHUB_OUTPUT
-          
+
           if [ "$SKIP_RELEASE" == "false" ]; then
             # Priority: Manual Version -> Major -> Minor -> Patch
             if [[ -n "$MANUAL_VERSION" ]]; then
@@ -123,7 +160,7 @@ jobs:
         run: |
           # Safely update the maven pom.xml
           mvn versions:set -DnewVersion=${NEW_VERSION} -DgenerateBackupPoms=false
-          
+
           # Safely update the gradle properties
           sed -i "s/$OLD_VERSION/$NEW_VERSION/g" fabric/gradle.properties || true
           sed -i "s/$OLD_VERSION/$NEW_VERSION/g" forge/gradle.properties || true
@@ -197,17 +234,17 @@ jobs:
           RAW_PAPER="$(ls target/*-shaded.jar | head -n 1)"
           RAW_FABRIC="$(ls fabric/build/libs/*.jar | grep -v sources | head -n 1)"
           RAW_FORGE="$(ls forge/build/libs/*.jar | grep -v sources | head -n 1)"
-          
+
           # 2. Define the clean names
           FINAL_PAPER="SSoggySouls-Paper-${NEW_VERSION}.jar"
           FINAL_FABRIC="SSoggySouls-Fabric-${NEW_VERSION}.jar"
           FINAL_FORGE="SSoggySouls-Forge-${NEW_VERSION}.jar"
-          
+
           # 3. Rename them on the runner
           mv "$RAW_PAPER" "$FINAL_PAPER"
           mv "$RAW_FABRIC" "$FINAL_FABRIC"
           mv "$RAW_FORGE" "$FINAL_FORGE"
-          
+
           # 4. Output the new paths for the Release step
           echo "jar=$FINAL_PAPER" >> "${GITHUB_OUTPUT}"
           echo "fabric_jar=$FINAL_FABRIC" >> "${GITHUB_OUTPUT}"
@@ -220,27 +257,90 @@ jobs:
           tag_name: "v${{ env.NEW_VERSION }}"
           name: "Build ${{ env.NEW_VERSION }}"
           generate_release_notes: true
+          prerelease: ${{ github.event.inputs.gh_prerelease == 'true' || false }}
+          make_latest: ${{ github.event.inputs.gh_latest == 'false' && 'false' || 'true' }}
           files: |
             ${{ steps.package.outputs.jar }}
             ${{ steps.package.outputs.fabric_jar }}
             ${{ steps.package.outputs.forge_jar }}
 
-      - name: Publish to Modrinth
-        if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
+      - name: Publish Paper to Modrinth
+        if: steps.version_math.outputs.skip != 'true'
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: REPLACE_WITH_MODRINTH_ID
+          modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          name: "Build ${{ env.NEW_VERSION }}"
-          version: "${{ env.NEW_VERSION }}"
-          version-type: release
+          name: "SSoggySouls v${{ env.NEW_VERSION }} (Paper/Spigot)"
+          version: "${{ env.NEW_VERSION }}+paper"
+          version-type: ${{ github.event.inputs.paper_type || 'release' }}
+          changelog: ${{ github.event.head_commit.message }}
           loaders: |
             paper
-            fabric
-            forge
+            purpur
+            spigot
+            bukkit
           game-versions: |
             1.21.1
-          files: |
-            ${{ steps.package.outputs.jar }}
-            ${{ steps.package.outputs.fabric_jar }}
-            ${{ steps.package.outputs.forge_jar }}
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
+          files: ${{ steps.package.outputs.jar }}
+
+      - name: Publish Fabric to Modrinth
+        if: steps.version_math.outputs.skip != 'true'
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: Pb03qu6T
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          name: "SSoggySouls v${{ env.NEW_VERSION }} (Fabric/Quilt)"
+          version: "${{ env.NEW_VERSION }}+fabric"
+          version-type: ${{ github.event.inputs.fabric_type || 'alpha' }}
+          changelog: ${{ github.event.head_commit.message }}
+          loaders: |
+            fabric
+            quilt
+          game-versions: |
+            1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
+          files: ${{ steps.package.outputs.fabric_jar }}
+
+      - name: Publish Forge to Modrinth
+        if: steps.version_math.outputs.skip != 'true'
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: Pb03qu6T
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          name: "SSoggySouls v${{ env.NEW_VERSION }} (Forge)"
+          version: "${{ env.NEW_VERSION }}+forge"
+          version-type: ${{ github.event.inputs.forge_type || 'alpha' }}
+          changelog: ${{ github.event.head_commit.message }}
+          loaders: forge
+          game-versions: |
+            1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
+          files: ${{ steps.package.outputs.forge_jar }}

@@ -16,9 +16,9 @@ import com.google.gson.JsonParser;
 public class UpdateChecker {
     private static final String GITHUB_API = "https://api.github.com/repos/SSoggy-Group/SSoggySouls-for-Hardcore/releases/latest";
     private static final String DOWNLOAD_PAGE = "https://modrinth.com/project/Pb03qu6T";
-    private static final String BORDER_EMPTY = "║                                                           ║";
-    private static final String BORDER_TOP = "╔═══════════════════════════════════════════════════════════╗";
-    private static final String BORDER_BOTTOM = "╚═══════════════════════════════════════════════════════════╝";
+    private static final String BORDER_EMPTY = "║                                                             ║";
+    private static final String BORDER_TOP = "╔═════════════════════════════════════════════════════════════╗";
+    private static final String BORDER_BOTTOM = "╚═════════════════════════════════════════════════════════════╝";
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.NORMAL)
@@ -107,12 +107,12 @@ public class UpdateChecker {
             plugin.getLogger().info("");
             plugin.getLogger().info(BORDER_TOP);
             plugin.getLogger().info(BORDER_EMPTY);
-            plugin.getLogger().info("║           ⚡ UPDATE AVAILABLE ⚡                          ║");
+            plugin.getLogger().info("║              ⚡ UPDATE AVAILABLE ⚡                           ║");
             plugin.getLogger().info(BORDER_EMPTY);
-            plugin.getLogger().log(Level.INFO, "║   Current version: {0}║", String.format("%-35s", currentVersion));
-            plugin.getLogger().log(Level.INFO, "║   Latest version:  {0}║", String.format("%-35s", latestVersion));
+            plugin.getLogger().log(Level.INFO, "║   Current version: {0}║", String.format("%-41s", currentVersion));
+            plugin.getLogger().log(Level.INFO, "║   Latest version:  {0}║", String.format("%-41s", latestVersion));
             plugin.getLogger().info(BORDER_EMPTY);
-            plugin.getLogger().log(Level.INFO, "║   Download: {0}║", String.format("%-43s", DOWNLOAD_PAGE));
+            plugin.getLogger().log(Level.INFO, "║   Download: {0}║", String.format("%-48s", DOWNLOAD_PAGE));
             plugin.getLogger().info(BORDER_EMPTY);
             plugin.getLogger().info(BORDER_BOTTOM);
             plugin.getLogger().info("");
