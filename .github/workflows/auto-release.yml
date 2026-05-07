@@ -240,7 +240,7 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: "v${{ env.NEW_VERSION }}"
           name: "Build ${{ env.NEW_VERSION }}"
