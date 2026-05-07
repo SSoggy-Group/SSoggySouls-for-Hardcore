@@ -91,7 +91,17 @@ public class MySQLManager implements DatabaseManager {
             config.addDataSourceProperty("prepStmtCacheSize", "64");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-            hikariDataSource = new HikariDataSource(config);
+            try {
+                hikariDataSource = new HikariDataSource(config);
+            } catch (Exception ex) {
+                plugin.getLogger().severe("=====================================================");
+                plugin.getLogger().severe("SEVERE: Could not connect to the MySQL database. The connection was refused.");
+                plugin.getLogger().severe("If you are setting up a multi-server Limbo network, please double-check your IP, port, username, and password in config.yml.");
+                plugin.getLogger().severe("NOTICE: If you are only running a single server, you DO NOT need MySQL! The default database is SQLite. Open config.yml and change type: \"mysql\" back to type: \"sqlite\" to fix this instantly.");
+                plugin.getLogger().severe("=====================================================");
+                return false;
+            }
+
             dataSource = hikariDataSource;
             createTable();
 
