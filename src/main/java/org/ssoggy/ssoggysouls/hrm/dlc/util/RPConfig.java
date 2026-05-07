@@ -19,7 +19,9 @@ along with RevivePlus.  If not, see <https://www.gnu.org/licenses/>
 package org.ssoggy.ssoggysouls.hrm.dlc.util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -75,16 +77,10 @@ public class RPConfig {
         RPStatic.BLOCK_TAGS.replaceAll((key, value) -> {
             String hrmPath = "hrm." + key;
             if (fileConfiguration.contains(hrmPath)) {
-                return fileConfiguration.getStringList(hrmPath).stream()
-                        .map(Material::matchMaterial)
-                        .filter(m -> m != null)
-                        .collect(Collectors.toSet());
+                return parseMaterials(fileConfiguration.getStringList(hrmPath));
             }
             if (fileConfiguration.contains(key)) {
-                return fileConfiguration.getStringList(key).stream()
-                        .map(Material::matchMaterial)
-                        .filter(m -> m != null)
-                        .collect(Collectors.toSet());
+                return parseMaterials(fileConfiguration.getStringList(key));
             }
             return value;
         });
@@ -137,5 +133,9 @@ public class RPConfig {
             RPStatic.LOGGER.severe(e.getMessage());
             return 0;
         }
+    }
+
+    private static Set<Material> parseMaterials(List<String> values) {
+        return values.stream().map(Material::matchMaterial).filter(Objects::nonNull).collect(Collectors.toSet());
     }
 }
