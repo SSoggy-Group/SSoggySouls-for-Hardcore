@@ -51,7 +51,7 @@ public class LimboServerListener {
     }
 
     private void registerJoinEvent() {
-        ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayerEntity player = handler.getPlayer();
             UUID uuid = player.getUuid();
 
@@ -78,11 +78,11 @@ public class LimboServerListener {
     }
 
     private void registerDisconnectEvent() {
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, _) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
     }
 
     private void registerCommandRestrictionEvent() {
-        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, _) -> {
+        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, params) -> {
             if (source.getEntity() instanceof ServerPlayerEntity player
                     && limboDeadPlayers.contains(player.getUuid())
                     && !isWhitelistedCommand(message.getContent().getString())) {
@@ -94,13 +94,13 @@ public class LimboServerListener {
     }
 
     private void registerCancelDamageEvent() {
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, _, _) ->
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) ->
             !(entity instanceof ServerPlayerEntity player && player.interactionManager.getGameMode() == GameMode.ADVENTURE)
         );
     }
 
     private void registerWorldChangeEvent() {
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, _, destination) -> {
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
             if (!limboDeadPlayers.contains(player.getUuid())) {
                 return;
             }
