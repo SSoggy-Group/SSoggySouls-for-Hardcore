@@ -124,16 +124,14 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
 
-        String dbType = getConfig().getString("database.type", "mysql").toLowerCase();
-
-        if (dbType.equals("sqlite") || dbType.equals("local")) {
+        if (isDatabaseSqlite()) {
             databaseManager = new org.ssoggy.ssoggysouls.database.SQLiteManager(this);
         } else {
             databaseManager = new org.ssoggy.ssoggysouls.database.MySQLManager(this);
         }
 
         if (!databaseManager.initialize()) {
-            boolean isSqlite = dbType.equals("sqlite") || dbType.equals("local");
+            boolean isSqlite = isDatabaseSqlite();
             getLogger().log(Level.SEVERE, "Failed to connect to {0}! Disabling plugin.", isSqlite ? "SQLite" : "MySQL");
             getServer().getPluginManager().disablePlugin(this);
             return;
