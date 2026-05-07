@@ -54,9 +54,7 @@ public class LimboServerListener {
         });
 
         // Cleanup tracking on disconnect
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, _server) ->
-            limboDeadPlayers.remove(handler.getPlayer().getUuid())
-        );
+        ServerPlayConnectionEvents.DISCONNECT.register(this::onDisconnect);
 
         // Restrict commands for dead players in Limbo mode
         ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source) -> {
@@ -91,6 +89,11 @@ public class LimboServerListener {
                 }
             }
         });
+    }
+
+    private void onDisconnect(net.fabricmc.fabric.api.networking.v1.ServerPlayNetworkHandler handler,
+                              net.minecraft.server.MinecraftServer server) {
+        limboDeadPlayers.remove(handler.getPlayer().getUuid());
     }
 
     private static boolean isWhitelistedCommand(String message) {
