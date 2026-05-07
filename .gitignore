@@ -35,6 +35,7 @@ fabric/out/
 .netbeans
 nbproject/
 .agents
+.sonarlint
 
 # OS specific
 .DS_Store
