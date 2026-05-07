@@ -80,7 +80,7 @@ public class ConfigManager {
         private boolean isLimboServer = false;
         private String mainServerName = "main";
         private String limboServerName = "limbo";
-        private boolean sendToLimboOnDeath = true;
+        private boolean sendToLimboOnDeath = false;
         private String limboSpawnWorld = "minecraft:overworld";
         private double limboSpawnX = 0;
         private double limboSpawnY = 100;
