@@ -496,8 +496,9 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
     public boolean isDatabaseSqlite() {
         String dbType = getConfig().getString("database.type", "mysql").toLowerCase();
-        return dbType.equals("sqlite") || dbType.equals("local");
+        return java.util.Set.of("sqlite", "local").contains(dbType);
     }
+
 
     public String getMainServerName() {
         return mainServerName;
