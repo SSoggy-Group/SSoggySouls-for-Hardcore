@@ -461,10 +461,10 @@ public final class DlcCommandRegistration {
 
     private static String normalizeGroup(String group) {
         return switch (group.toLowerCase(Locale.ROOT)) {
-            case "s", "struc", "struct", "structure", "1" -> GROUP_STRUCTURE;
-            case "g", "gr", "gmr", "gamerule", "gamerules", "2" -> GROUP_GAMERULE;
-            case "t", "timer", "3" -> GROUP_TIMER;
-            case "r", "reload", "0" -> GROUP_RELOAD;
+            case "s", "struc", "struct", GROUP_STRUCTURE, "1" -> GROUP_STRUCTURE;
+            case "g", "gr", "gmr", GROUP_GAMERULE, "gamerules", "2" -> GROUP_GAMERULE;
+            case "t", GROUP_TIMER, "3" -> GROUP_TIMER;
+            case "r", GROUP_RELOAD, "0" -> GROUP_RELOAD;
             default -> group.toLowerCase(Locale.ROOT);
         };
     }
