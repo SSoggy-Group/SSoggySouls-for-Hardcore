@@ -143,9 +143,12 @@ public class LimboServerListener implements Listener {
         if (player.hasPermission("ssoggysouls.admin")) return;
 
         if (plugin.getLimboStatusPendingPlayers().contains(player.getUniqueId())) {
-            event.setCancelled(true);
-            player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
-            return;
+            String cmd = event.getMessage().toLowerCase().split(" ")[0];
+            if (!isWhitelistedCommand(cmd)) {
+                event.setCancelled(true);
+                player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+                return;
+            }
         }
 
         // visitors (not dead in main) are unrestricted
