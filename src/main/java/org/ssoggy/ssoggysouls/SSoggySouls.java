@@ -113,7 +113,25 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     @Override
     public void onEnable() {
         setInstance(this);
-        saveDefaultConfig();
+
+        java.io.File configFile = new java.io.File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            saveDefaultConfig();
+            getLogger().info("\n" +
+                    "===============================================================\n" +
+                    "                       SSOGGY SOULS\n" +
+                    "===============================================================\n" +
+                    " The plugin is using SQLite (single-server mode) by default.\n" +
+                    " \n" +
+                    " If you are setting up a Dual-Server Network (Main + Limbo),\n" +
+                    " you MUST stop the server, open config.yml, and change the\n" +
+                    " 'database.type' to 'mysql', then fill in your DB details.\n" +
+                    " \n" +
+                    " If you are using a single server, you can ignore this message.\n" +
+                    "===============================================================\n");
+        } else {
+            saveDefaultConfig();
+        }
 
         for (World world : getServer().getWorlds()) {
             originalWorldHardcore.put(world.getName(), world.isHardcore());
@@ -124,7 +142,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
 
-        String dbType = getConfig().getString("database.type", "mysql").toLowerCase();
+        String dbType = getConfig().getString("database.type", "sqlite").toLowerCase();
 
         if (dbType.equals("sqlite") || dbType.equals("local")) {
             databaseManager = new org.ssoggy.ssoggysouls.database.SQLiteManager(this);
