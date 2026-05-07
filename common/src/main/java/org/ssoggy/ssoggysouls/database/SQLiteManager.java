@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -17,6 +18,12 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 public class SQLiteManager implements DatabaseManager {
+
+    private static final int MAX_SQLITE_IN_PARAMS = 900;
+
+    private static final Set<String> ALLOWED_COLUMN_DEFINITIONS = Set.of(
+            "BIGINT NOT NULL DEFAULT 0"
+    );
 
     private static final String COL_IS_DEAD = "is_dead";
     private static final String SELECT_ALL = "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
@@ -66,7 +73,8 @@ public class SQLiteManager implements DatabaseManager {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(jdbcUrl);
             config.setDriverClassName("org.sqlite.JDBC");
-            config.setMaximumPoolSize(1);
+            int maxPoolSize = Math.max(1, plugin.getConfigInt("database.max-pool-size", 1));
+            config.setMaximumPoolSize(maxPoolSize);
             config.setConnectionTimeout(10_000);
             config.setPoolName("SSoggySouls-SQLite-Pool");
 
@@ -142,14 +150,15 @@ public class SQLiteManager implements DatabaseManager {
         if (!isValidIdentifier(columnName)) {
             throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
         }
-        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),.\\-]+$")) {
-            throw new IllegalArgumentException("Invalid column definition characters: " + definition);
+        if (definition == null) {
+            throw new IllegalArgumentException("Column definition cannot be null");
         }
-        if (definition.contains("--")) {
-            throw new IllegalArgumentException("SQL comments are not allowed in column definition: " + definition);
+        String normalizedDefinition = definition.trim().replaceAll("\\s+", " ").toUpperCase();
+        if (!ALLOWED_COLUMN_DEFINITIONS.contains(normalizedDefinition)) {
+            throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + definition);
         }
 
-        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
+        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + normalizedDefinition;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.executeUpdate();
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
@@ -266,33 +275,43 @@ public class SQLiteManager implements DatabaseManager {
             return result;
         }
 
-        // Default missing to true
-        for (UUID uuid : toFetch) {
-            result.put(uuid, true);
-        }
+        List<UUID> toFetchList = new ArrayList<>(toFetch);
+        try (Connection conn = dataSource.getConnection()) {
+            java.util.Set<UUID> found = new java.util.HashSet<>();
+            for (int start = 0; start < toFetchList.size(); start += MAX_SQLITE_IN_PARAMS) {
+                int end = Math.min(start + MAX_SQLITE_IN_PARAMS, toFetchList.size());
+                List<UUID> batch = toFetchList.subList(start, end);
 
-        StringBuilder placeholders = new StringBuilder();
-        for (int i = 0; i < toFetch.size(); i++) {
-            placeholders.append("?");
-            if (i < toFetch.size() - 1) placeholders.append(",");
-        }
+                StringBuilder placeholders = new StringBuilder();
+                for (int i = 0; i < batch.size(); i++) {
+                    placeholders.append("?");
+                    if (i < batch.size() - 1) placeholders.append(",");
+                }
 
-        String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
+                String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    int i = 1;
+                    for (UUID uuid : batch) {
+                        ps.setString(i++, uuid.toString());
+                    }
 
-            int i = 1;
-            for (UUID uuid : toFetch) {
-                ps.setString(i++, uuid.toString());
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            UUID uuid = UUID.fromString(rs.getString("uuid"));
+                            boolean isDead = rs.getBoolean(COL_IS_DEAD);
+                            result.put(uuid, isDead);
+                            found.add(uuid);
+                            deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                        }
+                    }
+                }
             }
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    result.put(uuid, isDead);
-                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+            // Only default to true for UUIDs confirmed missing from the database.
+            for (UUID uuid : toFetch) {
+                if (!found.contains(uuid)) {
+                    result.put(uuid, true);
                 }
             }
         } catch (SQLException e) {
