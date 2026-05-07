@@ -128,20 +128,27 @@ public class GhostBlockEvents {
             }
 
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                for (int slot = 0; slot < player.getInventory().size(); slot++) {
-                    ItemStack stack = player.getInventory().getStack(slot);
-                    if (!stack.isOf(Items.PLAYER_HEAD)) {
-                        continue;
-                    }
-                    ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
-                    if (profile == null || profile.id().isEmpty()) {
-                        continue;
-                    }
-                    DlcDeaths.setHolder(profile.id().get(), player.getUuid());
-                    DlcNames.cache(player.getUuid(), player.getName().getString());
-                }
+                scanPlayerInventoryForHeads(player);
             }
         });
+    }
+
+    private static void scanPlayerInventoryForHeads(ServerPlayerEntity player) {
+        for (int slot = 0; slot < player.getInventory().size(); slot++) {
+            updateHolderIfPlayerHead(player, player.getInventory().getStack(slot));
+        }
+    }
+
+    private static void updateHolderIfPlayerHead(ServerPlayerEntity player, ItemStack stack) {
+        if (stack.isOf(Items.PLAYER_HEAD)) {
+            ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
+            if (profile != null) {
+                profile.id().ifPresent(ownerUuid -> {
+                    DlcDeaths.setHolder(ownerUuid, player.getUuid());
+                    DlcNames.cache(player.getUuid(), player.getName().getString());
+                });
+            }
+        }
     }
 
     private static void handleHeadPlace(net.minecraft.world.World world, UUID ownerUuid, BlockPos targetPos,
