@@ -93,7 +93,6 @@ public class PlayerStateEvents implements Listener {
                 deathPos.getBlockX() + "$" + deathPos.getBlockY() + "$" + deathPos.getBlockZ() + "$" + deathPos.getWorld().getName());
         RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHTIME, now.toString());
         RPStatic.DEAD_STORAGE.saveConfig();
-        GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.GHOSTMODE);
 
         RPStats stats = new RPStats(uuid);
         stats.incrementStat(STATSENUM.DEATHS, 1);
@@ -103,29 +102,6 @@ public class PlayerStateEvents implements Listener {
             RPStats killerStats = new RPStats(killer.getUniqueId());
             killerStats.incrementStat(STATSENUM.KILLS, 1);
         }
-
-        placeOrDropHead(world, player, deathPos, skull, minHeight, maxHeight);
-    }
-
-    private void placeOrDropHead(World world, Player player, Location deathPos, ItemStack skull, int minHeight, int maxHeight) {
-        if (!Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("head-burns-in-lava", true))) {
-            for (byte i = 0; deathPos.getY() < (maxHeight - 1) && !deathPos.getBlock().getType().isAir() && i < 127; i++) { // After 128 Blocks it force places the block
-                deathPos.add(0, 1, 0);
-            }
-            if (deathPos.getY() == minHeight) {deathPos.add(0, 1, 0);}
-            Block blockA = deathPos.getBlock();
-            Block blockB = deathPos.clone().add(0, -1, 0).getBlock();
-
-            if (blockA.getType() != Material.BEDROCK) { // Does not replace bedrock "e.g. The Nether Roof"
-                RPUtil.createSkullBlockWithName(player.getName(), deathPos);
-                if (blockB.getType().isAir()) {
-                    blockB.setType(Material.OBSIDIAN);
-                }
-            }
-            return;
-        }
-
-        world.dropItem(deathPos, skull);
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -134,19 +110,8 @@ public class PlayerStateEvents implements Listener {
         World world = player.getWorld();
         Location deathPos = RPStatic.DEAD_LOCATIONS.getOrDefault(player.getUniqueId(), Pair.of(world.getSpawnLocation(), Instant.now())).getLeft();
         event.setRespawnLocation(deathPos);
-        if (deathPos.getBlock().getState() instanceof Skull skullBlock) {
-            OfflinePlayer skullOwner = skullBlock.getOwningPlayer();
-            if (skullOwner == null || !skullOwner.getUniqueId().equals(player.getUniqueId())) return;
-            GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.GHOSTMODE);
-            boolean isRevived = ReviveHelper.tryRevivePlayer(world, deathPos, player, player);
-            if (isRevived) {
-                RPStatic.DEAD_LOCATIONS.remove(player.getUniqueId());
-                RPStatic.DEAD_STORAGE.removeValue(player.getUniqueId().toString(), KEY_DEATHPOS);
-                RPStatic.DEAD_STORAGE.removeValue(player.getUniqueId().toString(), KEY_DEATHTIME);
-                RPStatic.DEAD_STORAGE.saveConfig();
-            }
-        }
     }
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
@@ -170,5 +135,31 @@ public class PlayerStateEvents implements Listener {
             default:
                 break;
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerRevived(PlayerGameModeChangeEvent event) {
+        if (event.getNewGameMode() != GameMode.SURVIVAL) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        // Run next tick so the SURVIVAL transition is fully applied before clearing DLC ghost state.
+        Bukkit.getScheduler().runTask(RPStatic.CLIENT, () -> {
+            if (!player.isOnline() || player.getGameMode() != GameMode.SURVIVAL) {
+                return;
+            }
+            if (GAMEMODESENUM.getPlayerGameMode(player) != GAMEMODESENUM.GHOSTMODE) {
+                return;
+            }
+
+            UUID uuid = player.getUniqueId();
+            GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.SURVIVAL);
+            RPStatic.DEAD_LOCATIONS.remove(uuid);
+            RPStatic.DEAD_HOLDERS.remove(uuid);
+            RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHPOS);
+            RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHTIME);
+            RPStatic.DEAD_STORAGE.saveConfig();
+        });
     }
 }

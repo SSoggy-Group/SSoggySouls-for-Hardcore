@@ -90,24 +90,36 @@ public class BlockEvents implements Listener {
             World world = location.getWorld();
             UUID uuid = skullOwner.getUniqueId();
             Instant now = Instant.now();
+            Player ownerPlayer = skullOwner.getPlayer();
 
             world.spawnParticle(Particle.SOUL, event.getBlock().getLocation().add(0.5, 0.5, 0.5), 1, 0, 0, 0, 0.005);
 
-            RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHHOLDER);
-            RPStatic.DEAD_HOLDERS.remove(uuid);
-            boolean isRevived = ReviveHelper.tryRevivePlayer(world, location, skullOwner.getPlayer(), event.getPlayer());
-
-            if (isRevived) {
-                RPStatic.DEAD_LOCATIONS.remove(uuid);
-                RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHPOS);
-                RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHTIME);
-            } else {
-                RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(location, now));
-                RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHPOS,
-                        location.getBlockX() + "$" + location.getBlockY() + "$" + location.getBlockZ() + "$" + world.getName());
-                RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHTIME, now.toString());
+            if (ownerPlayer == null || GAMEMODESENUM.getPlayerGameMode(ownerPlayer) != GAMEMODESENUM.GHOSTMODE) {
+                return;
             }
-            RPStatic.DEAD_STORAGE.saveConfig();
+
+            // Run after MONITOR listeners so successful ritual revives can update gamemode first.
+            Bukkit.getScheduler().runTaskLater(RPStatic.CLIENT, () -> {
+                String uuidString = uuid.toString();
+
+                if (!ownerPlayer.isOnline() || GAMEMODESENUM.getPlayerGameMode(ownerPlayer) != GAMEMODESENUM.GHOSTMODE) {
+                    RPStatic.DEAD_LOCATIONS.remove(uuid);
+                    RPStatic.DEAD_HOLDERS.remove(uuid);
+                    RPStatic.DEAD_STORAGE.removeValue(uuidString, KEY_DEATHHOLDER);
+                    RPStatic.DEAD_STORAGE.removeValue(uuidString, KEY_DEATHPOS);
+                    RPStatic.DEAD_STORAGE.removeValue(uuidString, KEY_DEATHTIME);
+                    RPStatic.DEAD_STORAGE.saveConfig();
+                    return;
+                }
+
+                RPStatic.DEAD_STORAGE.removeValue(uuidString, KEY_DEATHHOLDER);
+                RPStatic.DEAD_HOLDERS.remove(uuid);
+                RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(location, now));
+                RPStatic.DEAD_STORAGE.setValue(uuidString, KEY_DEATHPOS,
+                        location.getBlockX() + "$" + location.getBlockY() + "$" + location.getBlockZ() + "$" + world.getName());
+                RPStatic.DEAD_STORAGE.setValue(uuidString, KEY_DEATHTIME, now.toString());
+                RPStatic.DEAD_STORAGE.saveConfig();
+            }, 1L);
 
         }
     }
