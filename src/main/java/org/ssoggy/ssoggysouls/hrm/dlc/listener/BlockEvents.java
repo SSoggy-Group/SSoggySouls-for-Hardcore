@@ -90,11 +90,11 @@ public class BlockEvents implements Listener {
             World world = location.getWorld();
             UUID uuid = skullOwner.getUniqueId();
             Instant now = Instant.now();
-            Player target = skullOwner.getPlayer();
+            Player ownerPlayer = skullOwner.getPlayer();
 
             world.spawnParticle(Particle.SOUL, event.getBlock().getLocation().add(0.5, 0.5, 0.5), 1, 0, 0, 0, 0.005);
 
-            if (target == null || GAMEMODESENUM.getPlayerGameMode(target) != GAMEMODESENUM.GHOSTMODE) {
+            if (ownerPlayer == null || GAMEMODESENUM.getPlayerGameMode(ownerPlayer) != GAMEMODESENUM.GHOSTMODE) {
                 return;
             }
 
@@ -102,7 +102,7 @@ public class BlockEvents implements Listener {
             Bukkit.getScheduler().runTaskLater(RPStatic.CLIENT, () -> {
                 String uuidString = uuid.toString();
 
-                if (!target.isOnline() || GAMEMODESENUM.getPlayerGameMode(target) != GAMEMODESENUM.GHOSTMODE) {
+                if (!ownerPlayer.isOnline() || GAMEMODESENUM.getPlayerGameMode(ownerPlayer) != GAMEMODESENUM.GHOSTMODE) {
                     RPStatic.DEAD_LOCATIONS.remove(uuid);
                     RPStatic.DEAD_HOLDERS.remove(uuid);
                     RPStatic.DEAD_STORAGE.removeValue(uuidString, KEY_DEATHHOLDER);

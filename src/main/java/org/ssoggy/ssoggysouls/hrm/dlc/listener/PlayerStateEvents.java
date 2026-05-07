@@ -144,10 +144,6 @@ public class PlayerStateEvents implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (GAMEMODESENUM.getPlayerGameMode(player) != GAMEMODESENUM.GHOSTMODE) {
-            return;
-        }
-
         // Run next tick so the SURVIVAL transition is fully applied before clearing DLC ghost state.
         Bukkit.getScheduler().runTask(RPStatic.CLIENT, () -> {
             if (!player.isOnline() || player.getGameMode() != GameMode.SURVIVAL) {
