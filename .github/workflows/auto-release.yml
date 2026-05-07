@@ -192,3 +192,23 @@ jobs:
             ${{ steps.package.outputs.jar }}
             ${{ steps.package.outputs.fabric_jar }}
             ${{ steps.package.outputs.forge_jar }}
+
+      - name: Publish to Modrinth
+        if: steps.version_math.outputs.skip != 'true'
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: REPLACE_WITH_MODRINTH_ID
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          name: "Build ${{ env.NEW_VERSION }}"
+          version: "${{ env.NEW_VERSION }}"
+          version-type: release
+          loaders: |
+            paper
+            fabric
+            forge
+          game-versions: |
+            1.21.1
+          files: |
+            ${{ steps.package.outputs.jar }}
+            ${{ steps.package.outputs.fabric_jar }}
+            ${{ steps.package.outputs.forge_jar }}

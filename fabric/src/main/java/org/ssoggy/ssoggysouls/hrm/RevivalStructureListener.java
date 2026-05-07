@@ -174,7 +174,7 @@ public class RevivalStructureListener {
         world.getPlayers().forEach(p -> {
             if (!p.getUuid().equals(summoner.getUuid())) {
                 p.sendMessage(
-                        MessageUtil.colorize("§e" + summoner.getName().getString() + " revived " + revivedName + "!"),
+                        MessageUtil.colorizeText("§e" + summoner.getName().getString() + " revived " + revivedName + "!"),
                         false);
             }
         });
@@ -280,7 +280,7 @@ public class RevivalStructureListener {
     }
 
     private static void sendError(ServerPlayerEntity player, String msg) {
-        player.sendMessage(MessageUtil.colorize("§c" + msg), false);
+        player.sendMessage(MessageUtil.colorizeText("§c" + msg), false);
     }
 
     private static boolean isRitualStructure(World world, BlockPos headPos) {
