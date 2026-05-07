@@ -83,9 +83,14 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     }
 
     private void executeTimerCMD(String who, String where, RPCommandOutput result) {
-        int whoInt = Integer.parseInt(who);
-        result.success = COMMANDOUTPUTENUM.valueOf(RPConfig.setConfigTimer(where, whoInt));
-        result.message = "Set " + where + " to " + whoInt;
+        try {
+            int whoInt = Integer.parseInt(who);
+            result.success = COMMANDOUTPUTENUM.valueOf(RPConfig.setConfigTimer(where, whoInt));
+            result.message = "Set " + where + " to " + whoInt;
+        } catch (NumberFormatException e) {
+            result.success = COMMANDOUTPUTENUM.FALSE;
+            result.message = "Timer value must be a number.";
+        }
     }
 
     private void executeGameruleCMD(String who, String where, RPCommandOutput result) {
@@ -98,9 +103,14 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         Set<Material> whoSet;
         Material whoMat;
         String whoName;
-        switch(OPTIONEDITENUM.getEnumFromVal(what)) {
-            case null:
-                break;
+        OPTIONEDITENUM action = OPTIONEDITENUM.getEnumFromVal(what);
+        if (action == null) {
+            result.success = COMMANDOUTPUTENUM.FALSE;
+            result.message = "Use add, remove, or reset.";
+            return;
+        }
+
+        switch(action) {
             case OPTIONEDITENUM.ADD: // add
                 if (!Objects.equals(who, "ALL")) {
                     whoMat = Material.getMaterial(who);
@@ -159,7 +169,8 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
 
         OPTIONCONFIGENUM option = OPTIONCONFIGENUM.getEnumFromVal(opt1);
         if (option == null) {
-            // No-op: null option is silently ignored
+            result.success = COMMANDOUTPUTENUM.FALSE;
+            result.message = "Please use /revivalconfig <structure|gamerule|timer|reload>";
         } else {
             switch (option) {
                 case OPTIONCONFIGENUM.STRUCTURE -> handleStructure(args, result);
