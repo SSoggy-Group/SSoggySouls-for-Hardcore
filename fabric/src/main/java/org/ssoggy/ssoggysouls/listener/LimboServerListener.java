@@ -54,7 +54,7 @@ public class LimboServerListener {
         });
 
         // Cleanup tracking on disconnect
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, _server) ->
             limboDeadPlayers.remove(handler.getPlayer().getUuid())
         );
 
