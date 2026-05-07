@@ -48,7 +48,7 @@ public class LimboCheckTask extends BukkitRunnable {
         // This changes the complexity from O(N) to O(M) where M is typically much smaller than N
         for (UUID uuid : deadPlayers) {
             Player player = Bukkit.getPlayer(uuid);
-            if (player != null && !player.hasPermission(PERM_BYPASS)) {
+            if (player != null) {
                 players.add(uuid);
             }
         }
