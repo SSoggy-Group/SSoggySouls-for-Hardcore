@@ -49,6 +49,7 @@ public class SQLiteManager implements DatabaseManager {
         this.plugin = plugin;
     }
 
+    @Override
     public void initialize() throws DatabaseInitializationException {
         try {
             tableName = plugin.getConfigString("database.table-name", "hardcore_players");
