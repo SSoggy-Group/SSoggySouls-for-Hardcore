@@ -30,16 +30,26 @@ public class LeaveLimboCommand implements CommandExecutor {
     }
 
     private void handleLeave(Player player) {
-        if (plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
-            player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
-            return;
-        }
+        // Run asynchronously to catch players who might not yet be in limboDeadPlayers
+        // during the initial join delay
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            boolean isDead = plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
 
-        player.sendMessage(MessageUtil.get("limbo-visit-leaving"));
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (player.isOnline()) {
-                ServerTransferUtil.sendToMain(player);
-            }
-        }, 20L);
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (!player.isOnline()) return;
+
+                if (isDead || plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
+                    player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+                    return;
+                }
+
+                player.sendMessage(MessageUtil.get("limbo-visit-leaving"));
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    if (player.isOnline()) {
+                        ServerTransferUtil.sendToMain(player);
+                    }
+                }, 20L);
+            });
+        });
     }
 }
