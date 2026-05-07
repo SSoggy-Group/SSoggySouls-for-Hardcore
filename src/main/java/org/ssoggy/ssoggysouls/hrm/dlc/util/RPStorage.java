@@ -40,7 +40,7 @@ public class RPStorage {
     private final File file;
     private final Logger logger;
     private FileConfiguration config;
-    private final ThreadPoolExecutor ioExecutor = new ThreadPoolExecutor(
+    private final ExecutorService ioExecutor = new ThreadPoolExecutor(
             1,
             1,
             0L,
