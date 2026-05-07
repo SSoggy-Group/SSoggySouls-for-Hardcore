@@ -115,6 +115,13 @@ public class ConfigManager {
         private boolean ghostModeParticles = false;
         private int spectatorHeadrestrictRadius = 16;
         private boolean restrictMenuAccess = true;
+        private boolean creativePlayersDropHeads = false;
+        private boolean headBurnsInLava = false;
+        private int trustedObituaryAfter = 60;
+        private int friendsObituaryAfter = 600;
+        private int publicObituaryAfter = 3600;
+        private int reviveResistanceTicks = 100;
+        private int reviveGlowingTicks = 100;
 
         // --- Messages ---
         private String messagePrefix = "§8[§4☠§8] §r";
@@ -193,6 +200,13 @@ public class ConfigManager {
         public boolean isGhostModeParticles() { return ghostModeParticles; }
         public int getSpectatorHeadrestrictRadius() { return spectatorHeadrestrictRadius; }
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
+        public boolean isCreativePlayersDropHeads() { return creativePlayersDropHeads; }
+        public boolean isHeadBurnsInLava() { return headBurnsInLava; }
+        public int getTrustedObituaryAfter() { return trustedObituaryAfter; }
+        public int getFriendsObituaryAfter() { return friendsObituaryAfter; }
+        public int getPublicObituaryAfter() { return publicObituaryAfter; }
+        public int getReviveResistanceTicks() { return reviveResistanceTicks; }
+        public int getReviveGlowingTicks() { return reviveGlowingTicks; }
         public String getMessagePrefix() { return messagePrefix; }
         public java.util.Map<String, String> getMessages() { return messages; }
         public java.util.List<String> getSoulSandBlocktag() { return soulSandBlocktag; }
@@ -267,6 +281,28 @@ public class ConfigManager {
         public void setGhostModeParticles(boolean particles) { ghostModeParticles = particles; }
         public void setSpectatorHeadrestrictRadius(int radius) { spectatorHeadrestrictRadius = radius; }
         public void setRestrictMenuAccess(boolean restrict) { restrictMenuAccess = restrict; }
+        public void setCreativePlayersDropHeads(boolean drop) { creativePlayersDropHeads = drop; }
+        public void setHeadBurnsInLava(boolean burns) { headBurnsInLava = burns; }
+        public void setTrustedObituaryAfter(int seconds) { trustedObituaryAfter = seconds; }
+        public void setFriendsObituaryAfter(int seconds) { friendsObituaryAfter = seconds; }
+        public void setPublicObituaryAfter(int seconds) { publicObituaryAfter = seconds; }
+        public void setReviveResistanceTicks(int ticks) { reviveResistanceTicks = ticks; }
+        public void setReviveGlowingTicks(int ticks) { reviveGlowingTicks = ticks; }
+        public void setSoulSandBlocktag(java.util.Collection<String> blocks) { soulSandBlocktag = normalizeBlockList(blocks); }
+        public void setFlowerBlocktag(java.util.Collection<String> blocks) { flowerBlocktag = normalizeBlockList(blocks); }
+        public void setOreBlocktag(java.util.Collection<String> blocks) { oreBlocktag = normalizeBlockList(blocks); }
+        public void setFenceBlocktag(java.util.Collection<String> blocks) { fenceBlocktag = normalizeBlockList(blocks); }
+        public void setStairBlocktag(java.util.Collection<String> blocks) { stairBlocktag = normalizeBlockList(blocks); }
         public void setDebug(boolean d) { debug = d; }
+
+        private static java.util.List<String> normalizeBlockList(java.util.Collection<String> blocks) {
+            java.util.List<String> normalized = new java.util.ArrayList<>();
+            for (String block : blocks) {
+                if (block != null && !block.isBlank()) {
+                    normalized.add(block.trim().toUpperCase(java.util.Locale.ROOT));
+                }
+            }
+            return normalized;
+        }
     }
 }

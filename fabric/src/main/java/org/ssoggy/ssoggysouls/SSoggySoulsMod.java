@@ -21,6 +21,7 @@ import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
 import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcServices;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 import org.ssoggy.ssoggysouls.util.UpdateChecker;
@@ -57,6 +58,7 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
             LOGGER.error("Failed to initialize database. Disabling features.");
             return;
         }
+        DlcServices.init(this);
 
         // Phase 3: Register commands (Brigadier)
         CommandRegistration.register(this, databaseManager);

@@ -22,6 +22,12 @@ import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStat;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStats;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
+import org.ssoggy.ssoggysouls.listener.MainServerListener;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
@@ -105,6 +111,7 @@ public class RevivalStructureListener {
 
     private static void triggerRevival(ServerPlayerEntity serverPlayer, World world, BlockPos placedPos, UUID ownerUuid,
             DatabaseManager db, ItemStack refundedItem) {
+        new DlcStats(serverPlayer.getUuid()).incrementStat(DlcStat.RITUAL_STARTED, 1);
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(ownerUuid);
             if (data == null) {
@@ -133,6 +140,8 @@ public class RevivalStructureListener {
                 return;
             }
 
+            new DlcStats(serverPlayer.getUuid()).incrementStat(DlcStat.RITUAL_COMPLETED, 1);
+            new DlcStats(ownerUuid).incrementStat(DlcStat.REVIVES, 1);
             SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getName().getString(),
                     data.getUsername());
 
@@ -149,6 +158,12 @@ public class RevivalStructureListener {
     private static void performRevival(World world, BlockPos placedPos, ServerPlayerEntity summoner, UUID revivedUuid,
             String revivedName) {
         breakStructure(world, placedPos);
+        DlcDeaths.clearDeath(revivedUuid);
+        GhostModeEvents.updateGhostStatus(revivedUuid, false);
+        GhostState ghostState = GhostState.getServerState(world.getServer());
+        ghostState.deathLocations.remove(revivedUuid);
+        ghostState.deathHolders.remove(revivedUuid);
+        ghostState.markDirty();
 
         // Notify summoner
         summoner.sendMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives",
@@ -187,11 +202,18 @@ public class RevivalStructureListener {
     public static void restoreAtStructure(ServerPlayerEntity revived, ServerWorld world, BlockPos spawnPos) {
         revived.teleport(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 0, 0);
         revived.changeGameMode(GameMode.SURVIVAL);
+        MainServerListener.setGhostModeAttributes(revived, false);
         revived.sendMessage(MessageUtil.get("revive-success"), false);
 
         revived.clearStatusEffects();
-        revived.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 100, 4, false, true));
-        revived.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 100, 0, false, true));
+        int resistanceTicks = ConfigManager.getConfig().getReviveResistanceTicks();
+        if (resistanceTicks > 0) {
+            revived.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, resistanceTicks, 4, false, true));
+        }
+        int glowingTicks = ConfigManager.getConfig().getReviveGlowingTicks();
+        if (glowingTicks > 0) {
+            revived.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, glowingTicks, 0, false, true));
+        }
 
         // Totem effect
         if (ConfigManager.getConfig().isRitualTotemEffect()) {

@@ -11,6 +11,10 @@ import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
 import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStat;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStats;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
@@ -53,6 +57,7 @@ public class MainServerListener {
                     data.setUsername(player.getName().getString());
                     db.savePlayer(data);
                 }
+                DlcNames.cache(uuid, player.getName().getString());
 
                 final PlayerData finalData = data;
                 server.execute(() -> handleJoinSync(player, finalData));
@@ -104,6 +109,7 @@ public class MainServerListener {
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
             if (!(entity instanceof ServerPlayerEntity player)) return;
             UUID uuid = player.getUuid();
+            ServerPlayerEntity killer = damageSource.getAttacker() instanceof ServerPlayerEntity serverPlayer ? serverPlayer : null;
 
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
@@ -115,6 +121,11 @@ public class MainServerListener {
 
                 int remaining = data.decrementLife();
                 db.savePlayer(data);
+                new DlcStats(uuid).incrementStat(DlcStat.DEATHS, 1);
+                if (killer != null) {
+                    DlcNames.cache(killer.getUuid(), killer.getName().getString());
+                    new DlcStats(killer.getUuid()).incrementStat(DlcStat.KILLS, 1);
+                }
 
                 player.server.execute(() -> handleDeathSync(player, data, remaining));
             });
@@ -132,6 +143,14 @@ public class MainServerListener {
             GhostState state = GhostState.getServerState(player.getServer());
             state.deathLocations.put(player.getUuid(), player.getBlockPos());
             state.markDirty();
+            DlcDeaths.recordDeath(
+                    player.getUuid(),
+                    player.getName().getString(),
+                    player.getServerWorld().getRegistryKey().getValue().toString(),
+                    player.getBlockPos().getX(),
+                    player.getBlockPos().getY(),
+                    player.getBlockPos().getZ()
+            );
 
             player.changeGameMode(GameMode.ADVENTURE);
             setGhostModeAttributes(player, true);

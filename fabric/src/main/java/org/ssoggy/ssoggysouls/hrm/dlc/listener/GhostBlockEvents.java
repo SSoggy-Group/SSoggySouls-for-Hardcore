@@ -2,6 +2,7 @@ package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -17,6 +18,8 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
@@ -32,6 +35,7 @@ public class GhostBlockEvents {
     public static void register(DatabaseManager db) {
         registerHeadBreak(db);
         registerHeadPlace(db);
+        registerInventoryHeadTracker();
     }
 
     private static void registerHeadBreak(DatabaseManager db) {
@@ -61,6 +65,8 @@ public class GhostBlockEvents {
                         ghostState.deathLocations.remove(ownerUuid);
                         ghostState.deathHolders.put(ownerUuid, serverPlayer.getUuid());
                         ghostState.markDirty();
+                        DlcDeaths.setHolder(ownerUuid, serverPlayer.getUuid());
+                        DlcNames.cache(serverPlayer.getUuid(), serverPlayer.getName().getString());
 
                         ServerPlayerEntity ghost = world.getServer().getPlayerManager().getPlayer(ownerUuid);
                         if (ghost != null) {
@@ -106,6 +112,31 @@ public class GhostBlockEvents {
         });
     }
 
+    private static void registerInventoryHeadTracker() {
+        final int[] tickCounter = {0};
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            tickCounter[0] = (tickCounter[0] + 1) % 20;
+            if (tickCounter[0] != 0) {
+                return;
+            }
+
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                for (int slot = 0; slot < player.getInventory().size(); slot++) {
+                    ItemStack stack = player.getInventory().getStack(slot);
+                    if (!stack.isOf(Items.PLAYER_HEAD)) {
+                        continue;
+                    }
+                    ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
+                    if (profile == null || profile.id().isEmpty()) {
+                        continue;
+                    }
+                    DlcDeaths.setHolder(profile.id().get(), player.getUuid());
+                    DlcNames.cache(player.getUuid(), player.getName().getString());
+                }
+            }
+        });
+    }
+
     private static void handleHeadPlace(net.minecraft.world.World world, UUID ownerUuid, BlockPos targetPos,
             DatabaseManager db) {
         BlockState state = world.getBlockState(targetPos);
@@ -132,6 +163,15 @@ public class GhostBlockEvents {
         ghostState.deathHolders.remove(ownerUuid);
         ghostState.deathLocations.put(ownerUuid, targetPos);
         ghostState.markDirty();
+        DlcDeaths.setHolder(ownerUuid, null);
+        DlcDeaths.recordDeath(
+                ownerUuid,
+                DlcNames.getOrDefault(ownerUuid, ownerUuid.toString()),
+                world.getRegistryKey().getValue().toString(),
+                targetPos.getX(),
+                targetPos.getY(),
+                targetPos.getZ()
+        );
 
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(ownerUuid);

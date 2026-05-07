@@ -34,11 +34,15 @@ public class HeadDropListener {
     }
 
     private static void dropHead(ServerPlayerEntity player) {
+        if (player.isCreative() && !ConfigManager.getConfig().isCreativePlayersDropHeads()) {
+            return;
+        }
+
         World world = player.getServerWorld();
         BlockPos pos = player.getBlockPos();
 
         // Handle placing as block vs dropping as item
-        if (ConfigManager.getConfig().isHeadPlaceAsBlock()) {
+        if (ConfigManager.getConfig().isHeadPlaceAsBlock() || !ConfigManager.getConfig().isHeadBurnsInLava()) {
             BlockPos headPos = findSafeBlockPos(world, pos);
             world.setBlockState(headPos, net.minecraft.block.Blocks.PLAYER_HEAD.getDefaultState());
             net.minecraft.block.entity.BlockEntity be = world.getBlockEntity(headPos);
