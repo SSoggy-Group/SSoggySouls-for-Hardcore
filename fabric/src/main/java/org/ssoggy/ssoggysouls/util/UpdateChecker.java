@@ -112,12 +112,12 @@ public class UpdateChecker {
             SSoggySoulsMod.LOGGER.info("");
             SSoggySoulsMod.LOGGER.info(BORDER_TOP);
             SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
-            SSoggySoulsMod.LOGGER.info("║             ⚡ UPDATE AVAILABLE ⚡                          ║");
+            SSoggySoulsMod.LOGGER.info("║              ⚡ UPDATE AVAILABLE ⚡                           ║");
             SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
-            SSoggySoulsMod.LOGGER.info("║   Current version: {}║", String.format("%-37s", currentVersion));
-            SSoggySoulsMod.LOGGER.info("║   Latest version:  {}║", String.format("%-37s", latestVersion));
+            SSoggySoulsMod.LOGGER.info("║   Current version: {}║", String.format("%-41s", currentVersion));
+            SSoggySoulsMod.LOGGER.info("║   Latest version:  {}║", String.format("%-41s", latestVersion));
             SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
-            SSoggySoulsMod.LOGGER.info("║   Download: {}║", String.format("%-45s", DOWNLOAD_PAGE));
+            SSoggySoulsMod.LOGGER.info("║   Download: {}║", String.format("%-48s", DOWNLOAD_PAGE));
             SSoggySoulsMod.LOGGER.info(BORDER_EMPTY);
             SSoggySoulsMod.LOGGER.info(BORDER_BOTTOM);
             SSoggySoulsMod.LOGGER.info("");

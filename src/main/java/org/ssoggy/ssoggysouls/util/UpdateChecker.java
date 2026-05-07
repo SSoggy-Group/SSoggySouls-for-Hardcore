@@ -107,12 +107,12 @@ public class UpdateChecker {
             plugin.getLogger().info("");
             plugin.getLogger().info(BORDER_TOP);
             plugin.getLogger().info(BORDER_EMPTY);
-            plugin.getLogger().info("║             ⚡ UPDATE AVAILABLE ⚡                          ║");
+            plugin.getLogger().info("║              ⚡ UPDATE AVAILABLE ⚡                           ║");
             plugin.getLogger().info(BORDER_EMPTY);
-            plugin.getLogger().log(Level.INFO, "║   Current version: {0}║", String.format("%-37s", currentVersion));
-            plugin.getLogger().log(Level.INFO, "║   Latest version:  {0}║", String.format("%-37s", latestVersion));
+            plugin.getLogger().log(Level.INFO, "║   Current version: {0}║", String.format("%-41s", currentVersion));
+            plugin.getLogger().log(Level.INFO, "║   Latest version:  {0}║", String.format("%-41s", latestVersion));
             plugin.getLogger().info(BORDER_EMPTY);
-            plugin.getLogger().log(Level.INFO, "║   Download: {0}║", String.format("%-45s", DOWNLOAD_PAGE));
+            plugin.getLogger().log(Level.INFO, "║   Download: {0}║", String.format("%-48s", DOWNLOAD_PAGE));
             plugin.getLogger().info(BORDER_EMPTY);
             plugin.getLogger().info(BORDER_BOTTOM);
             plugin.getLogger().info("");
