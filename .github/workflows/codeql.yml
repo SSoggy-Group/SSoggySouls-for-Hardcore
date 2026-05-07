@@ -2,13 +2,15 @@ name: "CodeQL Advanced"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+  schedule:
+    - cron: "30 0 * * 1" # Runs every Monday at midnight
 
 jobs:
   analyze:
-    name: Analyze Java
+    name: Analyze
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -21,22 +23,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@v3
         with:
           languages: java-kotlin
-          build-mode: manual
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Build Minecraft Mod
-        shell: bash
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean build
+          # THIS IS THE SECRET: It tells CodeQL to scan without building,
+          # exactly like the "Normal" setup does.
+          build-mode: none
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@v3
