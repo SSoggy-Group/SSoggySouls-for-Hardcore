@@ -120,6 +120,7 @@ public class CommandRegistration {
                             source.getServer().execute(() -> {
                                 DlcDeaths.clearDeath(targetData.getUuid());
                                 GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
+                                org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(targetData.getUuid(), false);
                                 GhostState ghostState = GhostState.getServerState(source.getServer());
                                 ghostState.deathLocations.remove(targetData.getUuid());
                                 ghostState.deathHolders.remove(targetData.getUuid());
@@ -168,6 +169,7 @@ public class CommandRegistration {
                                 if (lives > 0) {
                                     DlcDeaths.clearDeath(data.getUuid());
                                     GhostModeEvents.updateGhostStatus(data.getUuid(), false);
+                                    org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(data.getUuid(), false);
                                     GhostState ghostState = GhostState.getServerState(source.getServer());
                                     ghostState.deathLocations.remove(data.getUuid());
                                     ghostState.deathHolders.remove(data.getUuid());

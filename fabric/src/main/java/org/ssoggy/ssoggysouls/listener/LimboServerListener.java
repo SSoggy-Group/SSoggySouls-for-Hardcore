@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.World;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
@@ -24,11 +25,24 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LimboServerListener {
 
     private final DatabaseManager db;
-    private final Set<UUID> limboDeadPlayers = ConcurrentHashMap.newKeySet();
+    private static final Set<UUID> limboDeadPlayers = ConcurrentHashMap.newKeySet();
+
+    private static final Set<String> WHITELISTED_COMMANDS = Set.of(
+            "/msg", "/tell", "/r", "/reply", "/help", "/list",
+            "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
+    );
 
     public LimboServerListener(DatabaseManager db) {
         this.db = db;
         registerEvents();
+    }
+
+    public static void updateLimboStatus(UUID uuid, boolean isDead) {
+        if (isDead) {
+            limboDeadPlayers.add(uuid);
+        } else {
+            limboDeadPlayers.remove(uuid);
+        }
     }
 
     private void registerEvents() {
@@ -41,6 +55,9 @@ public class LimboServerListener {
                 PlayerData data = db.getPlayer(uuid);
 
                 server.execute(() -> {
+                    if (server.getPlayerManager().getPlayer(uuid) == null) {
+                        return;
+                    }
                     if (data != null && data.isDead()) {
                         limboDeadPlayers.add(uuid);
                         applyLimboState(player);
@@ -54,13 +71,13 @@ public class LimboServerListener {
         });
 
         // Cleanup tracking on disconnect
-        ServerPlayConnectionEvents.DISCONNECT.register(this::onDisconnect);
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
 
         // Restrict commands for dead players in Limbo mode
-        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source) -> {
+        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, params) -> {
             if (source.getEntity() instanceof ServerPlayerEntity player
                     && limboDeadPlayers.contains(player.getUuid())
-                    && !isWhitelistedCommand(message)) {
+                    && !isWhitelistedCommand(message.getContent().getString())) {
                 player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
                 return false;
             }
@@ -79,8 +96,11 @@ public class LimboServerListener {
             }
 
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            Identifier worldId = Identifier.of(cfg.getLimboSpawnWorld());
-            RegistryKey<ServerWorld> limboWorldKey = RegistryKey.of(RegistryKeys.WORLD, worldId);
+            Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+            if (worldId == null) {
+                return;
+            }
+            RegistryKey<World> limboWorldKey = RegistryKey.of(RegistryKeys.WORLD, worldId);
             if (!destination.getRegistryKey().equals(limboWorldKey)) {
                 ServerWorld limboWorld = player.getServer().getWorld(limboWorldKey);
                 if (limboWorld != null) {
@@ -91,20 +111,12 @@ public class LimboServerListener {
         });
     }
 
-    private void onDisconnect(net.fabricmc.fabric.api.networking.v1.ServerPlayNetworkHandler handler,
-                              net.minecraft.server.MinecraftServer server) {
-        limboDeadPlayers.remove(handler.getPlayer().getUuid());
-    }
+
 
     private static boolean isWhitelistedCommand(String message) {
-        String[] tokens = message.trim().toLowerCase(Locale.ROOT).split("\\s+");
-        String command = tokens.length > 0 ? tokens[0] : "";
-        return "/msg".equals(command) || "/tell".equals(command)
-                || "/r".equals(command) || "/reply".equals(command)
-                || "/help".equals(command) || "/list".equals(command)
-                || "/pstatus".equals(command)
-                || "/psadmin".equals(command) || "/psa".equals(command)
-                || "/revive".equals(command) || "/psetlives".equals(command);
+        String[] tokens = message.trim().split("\\s+");
+        String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
+        return WHITELISTED_COMMANDS.contains(command);
     }
 
     private void applyLimboState(ServerPlayerEntity player) {
@@ -118,10 +130,12 @@ public class LimboServerListener {
 
         // Teleport to specific limbo spawn location config
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = Identifier.of(cfg.getLimboSpawnWorld());
-        ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
-        if (world != null) {
-            player.teleport(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        if (worldId != null) {
+            ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
+            if (world != null) {
+                player.teleport(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+            }
         }
 
         player.sendMessage(MessageUtil.get("limbo-welcome-dead"), false);

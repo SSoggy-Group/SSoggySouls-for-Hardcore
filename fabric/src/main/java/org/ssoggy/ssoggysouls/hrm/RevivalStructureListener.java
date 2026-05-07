@@ -160,6 +160,7 @@ public class RevivalStructureListener {
         breakStructure(world, placedPos);
         DlcDeaths.clearDeath(revivedUuid);
         GhostModeEvents.updateGhostStatus(revivedUuid, false);
+        org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(revivedUuid, false);
         GhostState ghostState = GhostState.getServerState(world.getServer());
         ghostState.deathLocations.remove(revivedUuid);
         ghostState.deathHolders.remove(revivedUuid);
