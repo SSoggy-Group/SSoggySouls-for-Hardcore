@@ -108,9 +108,11 @@ jobs:
 
       - name: Sync branch and tags
         if: steps.version_math.outputs.skip != 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          git fetch --prune --tags origin
-          git pull --rebase origin main
+          git fetch --prune --tags "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git pull --rebase "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" main
 
       # --- APPLY AND COMMIT ---
       - name: Apply Version to POM and Gradle files
@@ -159,13 +161,13 @@ jobs:
           TAG_CREATED="false"
 
           # Refresh tags before deciding whether this release version is new.
-          git fetch --prune --tags origin
+          git fetch --prune --tags "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
           if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
             echo "Tag ${TAG} already exists locally; skipping release commit and tag."
             echo "tag_created=false" >> "${GITHUB_OUTPUT}"
             exit 0
-          elif git ls-remote --tags origin "${TAG}" | grep -q "refs/tags/${TAG}$"; then
+          elif git ls-remote --tags "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "${TAG}" | grep -q "refs/tags/${TAG}$"; then
             echo "Tag ${TAG} already exists on origin; skipping release commit and tag."
             echo "tag_created=false" >> "${GITHUB_OUTPUT}"
             exit 0
