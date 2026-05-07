@@ -30,7 +30,8 @@ public class LeaveLimboCommand implements CommandExecutor {
     }
 
     private void handleLeave(Player player) {
-        if (plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
+        if (plugin.getLimboStatusPendingPlayers().contains(player.getUniqueId())
+                || plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
             player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
             return;
         }

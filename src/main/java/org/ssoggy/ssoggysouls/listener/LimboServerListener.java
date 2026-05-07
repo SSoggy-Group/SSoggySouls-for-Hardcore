@@ -50,11 +50,18 @@ public class LimboServerListener implements Listener {
             return;
         }
 
+        plugin.getLimboStatusPendingPlayers().add(player.getUniqueId());
+
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             boolean isDead = plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
 
             Bukkit.getScheduler().runTask(plugin, () -> {
-                if (!player.isOnline()) return;
+                if (!player.isOnline()) {
+                    plugin.getLimboStatusPendingPlayers().remove(player.getUniqueId());
+                    return;
+                }
+
+                plugin.getLimboStatusPendingPlayers().remove(player.getUniqueId());
 
                 if (isDead) {
                     plugin.getLimboDeadPlayers().add(player.getUniqueId());
@@ -73,6 +80,7 @@ public class LimboServerListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         plugin.getLimboDeadPlayers().remove(event.getPlayer().getUniqueId());
+        plugin.getLimboStatusPendingPlayers().remove(event.getPlayer().getUniqueId());
     }
 
     private void applyLimboState(Player player) {
@@ -133,6 +141,12 @@ public class LimboServerListener implements Listener {
         Player player = event.getPlayer();
         if (player.hasPermission(PERM_BYPASS)) return;
         if (player.hasPermission("ssoggysouls.admin")) return;
+
+        if (plugin.getLimboStatusPendingPlayers().contains(player.getUniqueId())) {
+            event.setCancelled(true);
+            player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+            return;
+        }
 
         // visitors (not dead in main) are unrestricted
         if (!plugin.getLimboDeadPlayers().contains(player.getUniqueId())) return;

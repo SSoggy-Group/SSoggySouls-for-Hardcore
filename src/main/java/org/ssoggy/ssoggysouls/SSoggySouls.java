@@ -109,6 +109,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
     private Location limboSpawn;
     private final Set<UUID> limboDeadPlayers = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> limboStatusPendingPlayers = ConcurrentHashMap.newKeySet();
 
     @Override
     public void onEnable() {
@@ -544,6 +545,10 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
     public Set<UUID> getLimboDeadPlayers() {
         return limboDeadPlayers;
+    }
+
+    public Set<UUID> getLimboStatusPendingPlayers() {
+        return limboStatusPendingPlayers;
     }
 
     public boolean isHrmEnabled() {
