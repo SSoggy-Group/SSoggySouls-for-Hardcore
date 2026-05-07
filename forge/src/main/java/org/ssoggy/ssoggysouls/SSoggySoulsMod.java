@@ -82,6 +82,7 @@ public class SSoggySoulsMod implements PluginContext {
 
             MinecraftForge.EVENT_BUS.register(HeadEffectsTask.class);
             HeadEffectsTask.register();
+            org.ssoggy.ssoggysouls.hrm.HeadDespawnListener.register(databaseManager);
 
             MinecraftForge.EVENT_BUS.register(RevivalStructureListener.class);
             RevivalStructureListener.register(databaseManager);

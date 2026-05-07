@@ -15,6 +15,7 @@ import org.ssoggy.ssoggysouls.listener.MainServerListener;
 import org.ssoggy.ssoggysouls.command.CommandRegistration;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
+import org.ssoggy.ssoggysouls.hrm.HeadDespawnListener;
 import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
 import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
 import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
@@ -81,6 +82,7 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
 
             // Phase 4: Init Built-in Hardcore Revive Features
             HeadDropListener.register(databaseManager);
+            HeadDespawnListener.register(databaseManager);
             RevivalStructureListener.register(databaseManager);
             ExtraLifeManager.register(databaseManager);
             ReviveSkullManager.register(databaseManager);
