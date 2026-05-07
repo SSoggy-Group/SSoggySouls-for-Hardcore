@@ -77,6 +77,7 @@ public class MainServerListener {
 
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
+                player.sendMessage(MessageUtil.get("death-sending-to-limbo"), false);
                 ServerTransferUtil.sendToLimbo(player);
             }
 
@@ -179,6 +180,7 @@ public class MainServerListener {
 
     private void handleRespawnSync(ServerPlayerEntity player) {
         if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
+            player.sendMessage(MessageUtil.get("death-sending-to-limbo"), false);
             ServerTransferUtil.sendToLimbo(player);
         }
 
