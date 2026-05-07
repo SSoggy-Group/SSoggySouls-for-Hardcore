@@ -73,7 +73,7 @@ hardcore-hearts: true
 database:
   # Options: "sqlite" or "mysql"
   # If you pick "sqlite", you can ignore everything below this line in this section.
-  type: "mysql"
+  type: "sqlite"
 
   # ── MySQL connection details (ignored when type is "sqlite") ──
 
