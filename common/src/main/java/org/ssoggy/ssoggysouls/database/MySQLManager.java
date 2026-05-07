@@ -58,6 +58,7 @@ public class MySQLManager implements DatabaseManager {
         this.tableName = tableName;
     }
 
+    @Override
     public void initialize() throws DatabaseInitializationException {
         try {
             String host = plugin.getConfigString("database.host", "localhost");
