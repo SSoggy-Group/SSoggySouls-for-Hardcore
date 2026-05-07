@@ -139,8 +139,8 @@ public class CommandRegistration {
                                 DlcDeaths.clearDeath(targetData.getUuid());
                                 GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
                                 GhostState ghostState = GhostState.getServerState(source.getServer());
-                                ghostState.deathLocations.remove(targetData.getUuid());
-                                ghostState.deathHolders.remove(targetData.getUuid());
+                                ghostState.removeDeathLocation(targetData.getUuid());
+                                ghostState.removeDeathHolder(targetData.getUuid());
                                 ghostState.setDirty();
                                 source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
                                 AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
@@ -186,8 +186,8 @@ public class CommandRegistration {
                                     DlcDeaths.clearDeath(data.getUuid());
                                     GhostModeEvents.updateGhostStatus(data.getUuid(), false);
                                     GhostState ghostState = GhostState.getServerState(source.getServer());
-                                    ghostState.deathLocations.remove(data.getUuid());
-                                    ghostState.deathHolders.remove(data.getUuid());
+                                    ghostState.removeDeathLocation(data.getUuid());
+                                    ghostState.removeDeathHolder(data.getUuid());
                                     ghostState.setDirty();
                                     if (online != null) {
                                         ServerLifecycleListener.setGhostModeAttributes(online, false);

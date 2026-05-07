@@ -6,17 +6,41 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GhostState extends SavedData {
 
     private static final String DEATH_LOCATIONS = "deathLocations";
     private static final String DEATH_HOLDERS = "deathHolders";
 
-    public final Map<UUID, BlockPos> deathLocations = new HashMap<>();
-    public final Map<UUID, UUID> deathHolders = new HashMap<>();
+    private final Map<UUID, BlockPos> deathLocations = new ConcurrentHashMap<>();
+    private final Map<UUID, UUID> deathHolders = new ConcurrentHashMap<>();
+
+    public BlockPos getDeathLocation(UUID ghostId) {
+        return deathLocations.get(ghostId);
+    }
+
+    public void setDeathLocation(UUID ghostId, BlockPos pos) {
+        deathLocations.put(ghostId, pos);
+    }
+
+    public void removeDeathLocation(UUID ghostId) {
+        deathLocations.remove(ghostId);
+    }
+
+    public UUID getDeathHolder(UUID ghostId) {
+        return deathHolders.get(ghostId);
+    }
+
+    public void setDeathHolder(UUID ghostId, UUID holderId) {
+        deathHolders.put(ghostId, holderId);
+    }
+
+    public void removeDeathHolder(UUID ghostId) {
+        deathHolders.remove(ghostId);
+    }
 
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
@@ -37,14 +61,14 @@ public class GhostState extends SavedData {
         if (tag.contains(DEATH_LOCATIONS)) {
             CompoundTag locations = tag.getCompound(DEATH_LOCATIONS);
             for (String key : locations.getAllKeys()) {
-                state.deathLocations.put(UUID.fromString(key), BlockPos.of(locations.getLong(key)));
+                state.setDeathLocation(UUID.fromString(key), BlockPos.of(locations.getLong(key)));
             }
         }
 
         if (tag.contains(DEATH_HOLDERS)) {
             CompoundTag holders = tag.getCompound(DEATH_HOLDERS);
             for (String key : holders.getAllKeys()) {
-                state.deathHolders.put(UUID.fromString(key), holders.getUUID(key));
+                state.setDeathHolder(UUID.fromString(key), holders.getUUID(key));
             }
         }
 

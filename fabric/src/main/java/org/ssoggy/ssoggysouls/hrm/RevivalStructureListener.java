@@ -368,27 +368,27 @@ public class RevivalStructureListener {
 
     private static boolean isOre(World world, int x, int y, int z) {
         BlockState state = world.getBlockState(new BlockPos(x, y, z));
-        return isBlockInTagList(state, ConfigManager.getConfig().getOreBlocktag());
+        return isBlockInTagList(state, ConfigManager.getConfig().getOreBlockTag());
     }
 
     private static boolean isFlower(World world, int x, int y, int z) {
         BlockState state = world.getBlockState(new BlockPos(x, y, z));
-        return isBlockInTagList(state, ConfigManager.getConfig().getFlowerBlocktag());
+        return isBlockInTagList(state, ConfigManager.getConfig().getFlowerBlockTag());
     }
 
     private static boolean isFence(World world, int x, int y, int z) {
         BlockPos pos = new BlockPos(x, y, z);
         BlockState fence = world.getBlockState(pos);
-        return isBlockInTagList(fence, ConfigManager.getConfig().getFenceBlocktag());
+        return isBlockInTagList(fence, ConfigManager.getConfig().getFenceBlockTag());
     }
 
     private static boolean isSoulSand(World world, int x, int y, int z) {
         BlockState state = world.getBlockState(new BlockPos(x, y, z));
-        return isBlockInTagList(state, ConfigManager.getConfig().getSoulSandBlocktag());
+        return isBlockInTagList(state, ConfigManager.getConfig().getSoulSandBlockTag());
     }
 
     private static boolean isStair(World world, int x, int y, int z) {
         BlockState state = world.getBlockState(new BlockPos(x, y, z));
-        return isBlockInTagList(state, ConfigManager.getConfig().getStairBlocktag());
+        return isBlockInTagList(state, ConfigManager.getConfig().getStairBlockTag());
     }
 }

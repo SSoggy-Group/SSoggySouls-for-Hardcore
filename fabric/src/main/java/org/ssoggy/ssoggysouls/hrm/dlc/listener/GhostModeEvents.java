@@ -125,7 +125,7 @@ public class GhostModeEvents {
             BlockPos currentPos = player.getBlockPos();
 
             double distanceSq = currentPos.getSquaredDistance(deathPos);
-            double maxDistance = ConfigManager.getConfig().getSpectatorHeadrestrictRadius();
+            double maxDistance = ConfigManager.getConfig().getSpectatorHeadRestrictRadius();
 
             if (distanceSq > (maxDistance * maxDistance)) {
                 player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());

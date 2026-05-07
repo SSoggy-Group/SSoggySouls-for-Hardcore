@@ -27,6 +27,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class ReviveSkullManager {
 
+    private record MenuContext(PlayerData playerData, List<PlayerData> deadPlayers) {
+    }
+
     private ReviveSkullManager() {
         // Utility class
     }
@@ -42,34 +45,36 @@ public class ReviveSkullManager {
                 return TypedActionResult.pass(stack);
             }
 
-            if (!canUseReviveFeatures(serverPlayer, db)) {
+            if (serverPlayer.isSpectator()) {
                 return TypedActionResult.pass(stack);
             }
 
-            // Async DB fetch
-            CompletableFuture.runAsync(() -> {
-                List<PlayerData> deadPlayers = db.getDeadPlayers();
+            CompletableFuture
+                    .supplyAsync(() -> new MenuContext(db.getPlayer(serverPlayer.getUuid()), db.getDeadPlayers()))
+                    .thenAccept(menuContext -> serverPlayer.server.execute(() -> {
+                        if (!canUseReviveFeatures(serverPlayer, menuContext.playerData())) {
+                            return;
+                        }
 
-                serverPlayer.server.execute(() -> {
-                    if (deadPlayers.isEmpty()) {
-                        serverPlayer.sendMessage(Text.literal("No dead players found.").styled(s -> s.withColor(Formatting.GRAY)), false);
-                        return;
-                    }
-                    openMenu(serverPlayer, deadPlayers, db);
-                });
-            });
+                        openMenu(serverPlayer, menuContext.deadPlayers(), menuContext.playerData());
+                    }));
 
             return TypedActionResult.consume(stack); // Prevent placing
         });
     }
 
-    private static void openMenu(ServerPlayerEntity player, List<PlayerData> deadPlayers, DatabaseManager db) {
+    private static void openMenu(ServerPlayerEntity player, List<PlayerData> deadPlayers, PlayerData playerData) {
+        if (deadPlayers == null || deadPlayers.isEmpty()) {
+            player.sendMessage(Text.literal("No dead players found.").styled(s -> s.withColor(Formatting.GRAY)), false);
+            return;
+        }
+
         int rows = Math.min(6, ((deadPlayers.size() - 1) / 9) + 1);
         int slots = rows * 9;
         SimpleInventory inventory = populateInventory(deadPlayers, slots);
 
         SimpleNamedScreenHandlerFactory factory = new SimpleNamedScreenHandlerFactory(
-            (syncId, playerInventory, p) -> createScreenHandler(syncId, playerInventory, inventory, rows, db),
+            (syncId, playerInventory, p) -> createScreenHandler(syncId, playerInventory, inventory, rows, playerData),
             Text.literal("Revive - Select Player").styled(s -> s.withColor(Formatting.DARK_PURPLE).withBold(true))
         );
 
@@ -85,14 +90,19 @@ public class ReviveSkullManager {
     }
 
     private static GenericContainerScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory,
-            SimpleInventory inventory, int rows, DatabaseManager db) {
+            SimpleInventory inventory, int rows, PlayerData playerData) {
         ScreenHandlerType<GenericContainerScreenHandler> type = getScreenHandlerType(rows);
         return new GenericContainerScreenHandler(type, syncId, playerInventory, inventory, rows) {
             @Override
             public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity clickingPlayer) {
+                if (actionType == SlotActionType.QUICK_MOVE || actionType == SlotActionType.SWAP) {
+                    super.onSlotClick(slotIndex, button, actionType, clickingPlayer);
+                    return;
+                }
+
                 if (slotIndex >= 0 && slotIndex < inventory.size()) {
-                    handleMenuClick(inventory.getStack(slotIndex), clickingPlayer, db);
-                } else if (actionType != SlotActionType.QUICK_MOVE && actionType != SlotActionType.SWAP) {
+                    handleMenuClick(inventory.getStack(slotIndex), clickingPlayer, playerData);
+                } else {
                     super.onSlotClick(slotIndex, button, actionType, clickingPlayer);
                 }
             }
@@ -110,9 +120,9 @@ public class ReviveSkullManager {
         };
     }
 
-    private static void handleMenuClick(ItemStack clicked, PlayerEntity clickingPlayer, DatabaseManager db) {
+    private static void handleMenuClick(ItemStack clicked, PlayerEntity clickingPlayer, PlayerData playerData) {
         if (!clicked.isEmpty() && clicked.isOf(Items.PLAYER_HEAD)) {
-            if (!(clickingPlayer instanceof ServerPlayerEntity spe) || !canUseReviveFeatures(spe, db)) {
+            if (!(clickingPlayer instanceof ServerPlayerEntity spe) || !canUseReviveFeatures(spe, playerData)) {
                 return;
             }
 
@@ -131,18 +141,17 @@ public class ReviveSkullManager {
                     }
                     clickingPlayer.sendMessage(Text.literal("Received " + name + "'s head.").styled(s -> s.withColor(Formatting.GREEN)), false);
 
-                    spe.getServer().execute(spe::closeHandledScreen);
+                    spe.closeHandledScreen();
                 });
             }
         }
     }
 
-    private static boolean canUseReviveFeatures(ServerPlayerEntity player, DatabaseManager db) {
+    private static boolean canUseReviveFeatures(ServerPlayerEntity player, PlayerData data) {
         if (player.isSpectator()) {
             return false;
         }
 
-        PlayerData data = db.getPlayer(player.getUuid());
         return data != null && !data.isDead();
     }
 

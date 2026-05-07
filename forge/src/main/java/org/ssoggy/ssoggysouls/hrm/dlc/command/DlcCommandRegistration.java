@@ -250,8 +250,8 @@ public final class DlcCommandRegistration {
                 ServerLifecycleListener.setGhostModeAttributes(target, true);
                 GhostModeEvents.updateGhostStatus(target.getUUID(), true);
                 GhostState ghostState = GhostState.getServerState(source.getServer());
-                ghostState.deathLocations.put(target.getUUID(), target.blockPosition());
-                ghostState.deathHolders.remove(target.getUUID());
+                ghostState.setDeathLocation(target.getUUID(), target.blockPosition());
+                ghostState.removeDeathHolder(target.getUUID());
                 ghostState.setDirty();
                 DlcDeaths.recordDeath(
                         target.getUUID(),

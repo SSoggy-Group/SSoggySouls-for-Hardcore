@@ -131,7 +131,7 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     /**
-     * ensures a column exists in the table, ignoring duplicate-column errors.
+     * Ensures a column exists in the table, ignoring duplicate-column errors.
      *
      * @param conn       database connection
      * @param columnName name of the column to add
@@ -142,7 +142,7 @@ public class SQLiteManager implements DatabaseManager {
         if (!isValidIdentifier(columnName)) {
             throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
         }
-        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'.\\-]+$")) {
+        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),.\\-]+$")) {
             throw new IllegalArgumentException("Invalid column definition characters: " + definition);
         }
         if (definition.contains("--")) {
@@ -438,7 +438,7 @@ public class SQLiteManager implements DatabaseManager {
         return result;
     }
 
-    // gets plugin version from db, returns null if first time running
+    // Gets plugin version from db, returns null if first time running
     // The key parameter allows tracking different versions per server role
     // (main/limbo)
     public String getPluginVersion(String key) {
