@@ -93,12 +93,13 @@ public class MySQLManager implements DatabaseManager {
 
             try {
                 hikariDataSource = new HikariDataSource(config);
-            } catch (Exception ex) {
+            } catch (RuntimeException ex) {
                 plugin.getLogger().severe("=====================================================");
-                plugin.getLogger().severe("SEVERE: Could not connect to the MySQL database. The connection was refused.");
-                plugin.getLogger().severe("If you are setting up a multi-server Limbo network, please double-check your IP, port, username, and password in config.yml.");
+                plugin.getLogger().severe("SEVERE: Could not connect to the MySQL database. The plugin will be disabled.");
+                plugin.getLogger().severe("Please check your connection details in config.yml and see the server log for the full error.");
                 plugin.getLogger().severe("NOTICE: If you are only running a single server, you DO NOT need MySQL! The default database is SQLite. Open config.yml and change type: \"mysql\" back to type: \"sqlite\" to fix this instantly.");
                 plugin.getLogger().severe("=====================================================");
+                plugin.getLogger().log(Level.SEVERE, "MySQL connection error:", ex);
                 return false;
             }
 
