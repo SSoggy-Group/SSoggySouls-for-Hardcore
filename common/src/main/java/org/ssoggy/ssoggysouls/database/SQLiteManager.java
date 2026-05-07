@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
@@ -274,7 +275,7 @@ public class SQLiteManager implements DatabaseManager {
         }
 
         List<UUID> toFetchList = new ArrayList<>(toFetch);
-        Set<UUID> found = new java.util.HashSet<>();
+        Set<UUID> found = new HashSet<>();
         try (Connection conn = dataSource.getConnection()) {
             for (int start = 0; start < toFetchList.size(); start += MAX_SQLITE_IN_PARAMS) {
                 int end = Math.min(start + MAX_SQLITE_IN_PARAMS, toFetchList.size());
