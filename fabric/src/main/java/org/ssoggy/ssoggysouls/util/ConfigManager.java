@@ -32,7 +32,11 @@ public class ConfigManager {
             config = new ModConfig();
             save();
         }
+        checkSqliteOverride();
+    }
 
+    public static void checkSqliteOverride() {
+        if (config == null) return;
         // Force spectator mode if using SQLite
         if (("sqlite".equalsIgnoreCase(config.getDatabaseType()) || "local".equalsIgnoreCase(config.getDatabaseType()))
                 && config.isSendToLimboOnDeath()) {
