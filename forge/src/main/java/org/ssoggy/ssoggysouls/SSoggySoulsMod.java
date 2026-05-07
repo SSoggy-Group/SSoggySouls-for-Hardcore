@@ -18,6 +18,7 @@ import org.ssoggy.ssoggysouls.database.SQLiteManager;
 import org.ssoggy.ssoggysouls.command.CommandRegistration;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.UpdateChecker;
 import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
 import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
 import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
@@ -26,6 +27,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcServices;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
+import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
 @Mod(SSoggySoulsMod.MODID)
 public class SSoggySoulsMod implements PluginContext {
@@ -82,7 +84,6 @@ public class SSoggySoulsMod implements PluginContext {
 
             MinecraftForge.EVENT_BUS.register(HeadEffectsTask.class);
             HeadEffectsTask.register();
-            org.ssoggy.ssoggysouls.hrm.HeadDespawnListener.register(databaseManager);
 
             MinecraftForge.EVENT_BUS.register(RevivalStructureListener.class);
             RevivalStructureListener.register(databaseManager);
@@ -93,10 +94,14 @@ public class SSoggySoulsMod implements PluginContext {
             MinecraftForge.EVENT_BUS.register(GhostBlockEvents.class);
             GhostBlockEvents.register(databaseManager);
         }
+
+        if (ConfigManager.getConfig().isCheckForUpdates()) {
+            new UpdateChecker().checkForUpdates();
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        // Some common setup code
+        ServerTransferUtil.register();
     }
 
     @SubscribeEvent

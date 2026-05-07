@@ -4,3 +4,6 @@
 ## 2024-05-06 - [Eliminated ForkJoinPool commonPool starvation in UpdateCheckers]
 **Learning:** Wrapping blocking `HttpURLConnection` calls within `CompletableFuture.runAsync()` (which uses `ForkJoinPool.commonPool()`) can cause severe thread starvation and latency spikes across the entire JVM, particularly affecting other async tasks running on the same server instance. The Spigot version already uses `HttpClient.sendAsync`, but the Fabric and Forge ports still relied on the legacy pattern.
 **Action:** When making asynchronous HTTP requests, use the non-blocking `java.net.http.HttpClient.sendAsync()` API built into Java 11+, which utilizes efficient NIO thread multiplexing instead of pinning dedicated worker threads.
+## 2026-05-07 - [Optimized LimboCheckTask Player Iteration]
+**Learning:** Iterating over `Bukkit.getOnlinePlayers()` and doing a set `.contains(uuid)` lookup inside periodic tasks scales linearly O(N) with the number of online players. When tracking a specific subset of players (like `deadPlayers`), it's significantly faster to iterate the smaller subset O(M) and use `Bukkit.getPlayer(uuid)` for O(1) online verification.
+**Action:** Iterate over tracking sets directly and verify online presence with `Bukkit.getPlayer(uuid)` instead of iterating all online players, drastically reducing time complexity in tasks.

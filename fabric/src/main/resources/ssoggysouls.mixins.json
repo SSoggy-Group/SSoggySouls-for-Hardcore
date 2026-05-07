@@ -2,9 +2,7 @@
   "required": true,
   "package": "org.ssoggy.ssoggysouls.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "ItemEntityMixin"
-  ],
+  "mixins": [],
   "client": [],
   "server": [],
   "injectors": {

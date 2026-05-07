@@ -73,7 +73,7 @@ public class MySQLManager implements DatabaseManager {
             }
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
-                    + "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true"
+                    + "?sslMode=VERIFY_IDENTITY"
                     + "&characterEncoding=UTF-8&useUnicode=true";
 
             HikariConfig config = new HikariConfig();
@@ -91,7 +91,18 @@ public class MySQLManager implements DatabaseManager {
             config.addDataSourceProperty("prepStmtCacheSize", "64");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-            hikariDataSource = new HikariDataSource(config);
+            try {
+                hikariDataSource = new HikariDataSource(config);
+            } catch (RuntimeException ex) {
+                plugin.getLogger().severe("=====================================================");
+                plugin.getLogger().severe("SEVERE: Could not connect to the MySQL database. The plugin will be disabled.");
+                plugin.getLogger().severe("Please check your connection details in config.yml and see the server log for the full error.");
+                plugin.getLogger().severe("NOTICE: If you are only running a single server, you DO NOT need MySQL! The default database is SQLite. Open config.yml and change type: \"mysql\" back to type: \"sqlite\" to fix this instantly.");
+                plugin.getLogger().severe("=====================================================");
+                plugin.getLogger().log(Level.SEVERE, "MySQL connection error:", ex);
+                return false;
+            }
+
             dataSource = hikariDataSource;
             createTable();
 
@@ -498,6 +509,9 @@ public class MySQLManager implements DatabaseManager {
     }
 
     private void createMetadataTableIfNeeded(Connection conn, String metaTable) throws SQLException {
+        if (!isValidIdentifier(metaTable)) {
+            throw new IllegalArgumentException("Invalid metadata table name identifier: " + metaTable);
+        }
         String createTableSql = "CREATE TABLE IF NOT EXISTS " + metaTable + " ("
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
