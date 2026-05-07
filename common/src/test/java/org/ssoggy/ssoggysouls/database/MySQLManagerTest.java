@@ -323,7 +323,7 @@ class MySQLManagerTest {
         assertEquals("1.0.0", version);
         verify(preparedStatement).setString(1, "main");
         // Verify metadata table was created
-        verify(statement).execute(anyString());
+        verify(preparedStatement).execute();
     }
 
     @Test
@@ -345,7 +345,7 @@ class MySQLManagerTest {
         verify(preparedStatement).setString(2, "2.0.0");
         verify(preparedStatement).executeUpdate();
         // Verify metadata table was created
-        verify(statement).execute(anyString());
+        verify(preparedStatement).execute();
     }
 
     @Test
