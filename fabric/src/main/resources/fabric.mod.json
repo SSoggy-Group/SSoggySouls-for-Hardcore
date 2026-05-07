@@ -16,7 +16,7 @@
   "icon": "assets/ssoggysouls/icon.png",
   "environment": "*",
   "entrypoints": {
-    "server": [
+    "main": [
       "org.ssoggy.ssoggysouls.SSoggySoulsMod"
     ],
     "modmenu": [
