@@ -83,10 +83,16 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     }
 
     private void executeTimerCMD(String who, String where, RPCommandOutput result) {
+        if (!RPStatic.CONFIG_TIMERS.containsKey(where)) {
+            result.success = COMMANDOUTPUTENUM.FALSE;
+            result.message = "Invalid timer: " + where;
+            return;
+        }
         try {
             int whoInt = Integer.parseInt(who);
-            result.success = COMMANDOUTPUTENUM.valueOf(RPConfig.setConfigTimer(where, whoInt));
-            result.message = "Set " + where + " to " + whoInt;
+            byte status = RPConfig.setConfigTimer(where, whoInt);
+            result.success = COMMANDOUTPUTENUM.valueOf(status);
+            result.message = (status == 1) ? "Set " + where + " to " + whoInt : "Failed to update configuration.";
         } catch (NumberFormatException e) {
             result.success = COMMANDOUTPUTENUM.FALSE;
             result.message = "Timer value must be a number.";
