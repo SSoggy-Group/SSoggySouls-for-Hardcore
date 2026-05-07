@@ -100,7 +100,7 @@ public class MySQLManager implements DatabaseManager {
                 plugin.getLogger().severe("NOTICE: If you are only running a single server, you DO NOT need MySQL! The default database is SQLite. Open config.yml and change type: \"mysql\" back to type: \"sqlite\" to fix this instantly.");
                 plugin.getLogger().severe("=====================================================");
                 plugin.getLogger().log(Level.SEVERE, "MySQL connection error:", ex);
-                return false;
+                throw ex;
             }
 
             dataSource = hikariDataSource;
