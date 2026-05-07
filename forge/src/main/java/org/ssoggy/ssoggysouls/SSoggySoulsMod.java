@@ -18,6 +18,7 @@ import org.ssoggy.ssoggysouls.database.SQLiteManager;
 import org.ssoggy.ssoggysouls.command.CommandRegistration;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.UpdateChecker;
 import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
 import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
 import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
@@ -91,6 +92,10 @@ public class SSoggySoulsMod implements PluginContext {
 
             MinecraftForge.EVENT_BUS.register(GhostBlockEvents.class);
             GhostBlockEvents.register(databaseManager);
+        }
+
+        if (ConfigManager.getConfig().isCheckForUpdates()) {
+            new UpdateChecker().checkForUpdates();
         }
     }
 
