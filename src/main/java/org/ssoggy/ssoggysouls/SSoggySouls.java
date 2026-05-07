@@ -28,6 +28,7 @@ import org.ssoggy.ssoggysouls.command.SetLivesCommand;
 import org.ssoggy.ssoggysouls.command.StatusCommand;
 import org.ssoggy.ssoggysouls.command.VisitLimboCommand;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.database.DatabaseInitializationException;
 import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
 import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
 import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
@@ -150,9 +151,12 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
             databaseManager = new org.ssoggy.ssoggysouls.database.MySQLManager(this);
         }
 
-        if (!databaseManager.initialize()) {
+        try {
+            databaseManager.initialize();
+        } catch (DatabaseInitializationException e) {
             boolean isSqlite = dbType.equals("sqlite") || dbType.equals("local");
             getLogger().log(Level.SEVERE, "Failed to connect to {0}! Disabling plugin.", isSqlite ? "SQLite" : "MySQL");
+            getLogger().log(Level.SEVERE, "Initialization error details:", e);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
