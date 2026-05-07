@@ -60,7 +60,7 @@ public class RevivalStructureListener {
 
     @SubscribeEvent
     public static void onBlockPlace(PlayerInteractEvent.RightClickBlock event) {
-        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer)) {
+        if (!ConfigManager.getConfig().isHrmEnabled() || db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer)) {
             return;
         }
 
