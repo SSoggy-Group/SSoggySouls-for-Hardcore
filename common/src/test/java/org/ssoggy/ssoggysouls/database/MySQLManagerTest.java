@@ -29,7 +29,6 @@ import static org.mockito.Mockito.*;
 class MySQLManagerTest {
 
     private PreparedStatement preparedStatement;
-    private Statement statement;
     private ResultSet resultSet;
     private MySQLManager mySQLManager;
     private final UUID testUuid = UUID.randomUUID();
@@ -54,7 +53,7 @@ class MySQLManagerTest {
         // This avoids the MockitoExtension's field injection which triggers module checks
         Connection connection = mock(Connection.class);
         preparedStatement = mock(PreparedStatement.class);
-        statement = mock(Statement.class);
+        Statement statement = mock(Statement.class);
         resultSet = mock(ResultSet.class);
 
         when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);

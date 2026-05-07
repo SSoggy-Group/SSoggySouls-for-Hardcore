@@ -70,12 +70,7 @@ public class SQLiteManager implements DatabaseManager {
             config.setConnectionTimeout(10_000);
             config.setPoolName("SSoggySouls-SQLite-Pool");
 
-            try {
-                dataSource = new HikariDataSource(config);
-            } catch (RuntimeException ex) {
-                plugin.getLogger().log(Level.SEVERE, "SQLite connection pool error:", ex);
-                throw new DatabaseInitializationException("Could not create SQLite connection pool", ex);
-            }
+            createHikariDataSource(config);
             createTable();
 
             plugin.getLogger().log(Level.INFO, "SQLite connection established (database.db)");
@@ -83,6 +78,15 @@ public class SQLiteManager implements DatabaseManager {
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed!", e);
             throw new DatabaseInitializationException("SQLite initialization failed", e);
+        }
+    }
+
+    private void createHikariDataSource(HikariConfig config) throws DatabaseInitializationException {
+        try {
+            dataSource = new HikariDataSource(config);
+        } catch (RuntimeException ex) {
+            plugin.getLogger().log(Level.SEVERE, "SQLite connection pool error:", ex);
+            throw new DatabaseInitializationException("Could not create SQLite connection pool", ex);
         }
     }
 
