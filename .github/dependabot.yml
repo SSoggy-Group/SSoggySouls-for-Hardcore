@@ -28,8 +28,9 @@ updates:
         patterns:
           - "*"
 
-    # PROTECTION: Avoid the "Gradle 8.11 + Loom" disaster
-    # You might want to ignore major Gradle updates until you know Loom is ready
+    # PROTECTION: Avoid the "Gradle 9.x + Loom" disaster
     ignore:
-      - dependency-name: "org.gradle:gradle"
+      - dependency-name: "gradle"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "io.papermc.paper:paper-api"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
