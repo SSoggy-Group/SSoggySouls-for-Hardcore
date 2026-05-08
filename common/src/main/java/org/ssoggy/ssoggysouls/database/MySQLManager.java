@@ -245,14 +245,14 @@ public class MySQLManager implements DatabaseManager {
     public void savePlayer(PlayerData data) {
         String sql = "INSERT INTO " + tableName
                 + " (uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) AS new "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
                 + "ON DUPLICATE KEY UPDATE "
-                + "username = new.username, "
-                + "lives = new.lives, "
-                + "is_dead = new.is_dead, "
-                + "last_death = new.last_death, "
-                + "last_seen = new.last_seen, "
-                + "grace_until = new.grace_until";
+                + "username = ?, "
+                + "lives = ?, "
+                + "is_dead = ?, "
+                + "last_death = ?, "
+                + "last_seen = ?, "
+                + "grace_until = ?";
 
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
@@ -265,6 +265,12 @@ public class MySQLManager implements DatabaseManager {
             ps.setLong(6, data.getLastDeath());
             ps.setLong(7, data.getLastSeen());
             ps.setLong(8, data.getGraceUntil());
+            ps.setString(9, data.getUsername());
+            ps.setInt(10, data.getLives());
+            ps.setBoolean(11, data.isDead());
+            ps.setLong(12, data.getLastDeath());
+            ps.setLong(13, data.getLastSeen());
+            ps.setLong(14, data.getGraceUntil());
 
             ps.executeUpdate();
             deathStatusCache.remove(data.getUuid());
@@ -501,11 +507,12 @@ public class MySQLManager implements DatabaseManager {
         try (Connection conn = dataSource.getConnection()) {
             createMetadataTableIfNeeded(conn, metaTable);
 
-            String sql = "INSERT INTO " + metaTable + " (key_, version) VALUES (?, ?) AS new_vals "
-                    + "ON DUPLICATE KEY UPDATE version = new_vals.version";
+            String sql = "INSERT INTO " + metaTable + " (key_, version) VALUES (?, ?) "
+                    + "ON DUPLICATE KEY UPDATE version = ?";
             try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
                 ps.setString(1, key);
                 ps.setString(2, version);
+                ps.setString(3, version);
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
