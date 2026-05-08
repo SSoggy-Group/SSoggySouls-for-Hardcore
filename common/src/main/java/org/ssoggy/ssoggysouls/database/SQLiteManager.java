@@ -327,6 +327,7 @@ public class SQLiteManager implements DatabaseManager {
         return found;
     }
 
+    @Override
     public boolean isPlayerDead(UUID uuid) {
         CachedDeathStatus cached = deathStatusCache.get(uuid);
         if (cached != null && !cached.isExpired()) {
