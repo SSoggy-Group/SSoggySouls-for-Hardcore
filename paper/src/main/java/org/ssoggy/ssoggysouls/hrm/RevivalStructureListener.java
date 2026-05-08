@@ -29,7 +29,7 @@ import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
-// detects when player head is placed for HRM strcuture (so cool to short it to HRM i know)
+// detects when player head is placed for HRM structure (so cool to short it to HRM i know)
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -130,13 +130,13 @@ public class RevivalStructureListener implements Listener {
         revived.getActivePotionEffects().forEach(e ->
                 revived.removePotionEffect(e.getType()));
 
-        int duration = 100; // 5 seconds (for people who dont uderstand ticks ig)
+        int duration = 100; // 5 seconds (for people who dont understand ticks ig)
         revived.addPotionEffect(new PotionEffect(
                 PotionEffectType.RESISTANCE, duration, 4, false, true));
         revived.addPotionEffect(new PotionEffect(
                 PotionEffectType.GLOWING, duration, 0, false, true));
 
-        // attempt to do totem of undying animation (will prob oinly work if you are revived within the spectator time window but hey its worth a shot and its cool for that window anyway)
+        // attempt to do totem of undying animation (will prob only work if you are revived within the spectator time window but hey its worth a shot and its cool for that window anyway)
         revived.playEffect(EntityEffect.TOTEM_RESURRECT);
     }
 
@@ -231,7 +231,7 @@ public class RevivalStructureListener implements Listener {
         Block fence = world.getBlockAt(hx, hy - 1, hz);
         Block ore = world.getBlockAt(hx, hy - 2, hz);
 
-        // partial match - fence+ore present but rest is wrong (for retarded people)
+        // Partial match: fence and ore are present, but the rest of the structure is incomplete.
         if (Tag.FENCES.isTagged(fence.getType())
                 && Tag.BEACON_BASE_BLOCKS.isTagged(ore.getType())) {
             placer.sendRichMessage("<red>The revival structure is incomplete!</red>");
