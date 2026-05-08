@@ -34,6 +34,8 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
+
         if (db == null || !(event.getEntity() instanceof ServerPlayer player)) return;
         UUID uuid = player.getUUID();
         
@@ -49,6 +51,8 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onPlayerQuit(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
+
         if (event.getEntity() instanceof ServerPlayer player) {
             GHOST_CACHE.remove(player.getUUID());
         }
@@ -56,34 +60,36 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (isGhost(event.getEntity())) {
-            event.setCanceled(true);
-        }
+        handleCancelableEvent(event, event.getEntity());
     }
 
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (isGhost(event.getEntity())) {
-            event.setCanceled(true);
-        }
+        handleCancelableEvent(event, event.getEntity());
     }
 
     @SubscribeEvent
     public static void onAttackEntity(AttackEntityEvent event) {
-        if (isGhost(event.getEntity())) {
-            event.setCanceled(true);
-        }
+        handleCancelableEvent(event, event.getEntity());
     }
 
     @SubscribeEvent
     public static void onItemToss(ItemTossEvent event) {
-        if (isGhost(event.getPlayer())) {
+        handleCancelableEvent(event, event.getPlayer());
+    }
+
+    private static void handleCancelableEvent(net.minecraftforge.eventbus.api.Event event, Player player) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
+
+        if (isGhost(player) && event.isCancelable()) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public static void onInteractEntity(PlayerInteractEvent.EntityInteract event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
+
         if (isGhost(event.getEntity())) {
             if (event.getEntity() instanceof ServerPlayer serverPlayer) {
                 serverPlayer.setCamera(event.getTarget());
@@ -94,6 +100,8 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
+
         if (event.phase != TickEvent.Phase.END) return;
 
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {

@@ -60,11 +60,11 @@ public class RevivalStructureListener {
 
     @SubscribeEvent
     public static void onBlockPlace(PlayerInteractEvent.RightClickBlock event) {
-        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer)) {
+        ServerPlayer serverPlayer = org.ssoggy.ssoggysouls.util.HrmUtil.getValidServerPlayer(event, db);
+        if (serverPlayer == null) {
             return;
         }
 
-        ServerPlayer serverPlayer = (ServerPlayer) event.getEntity();
         Level world = event.getLevel();
         ItemStack stack = event.getItemStack();
 
