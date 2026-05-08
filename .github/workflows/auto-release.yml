@@ -5,9 +5,14 @@ on:
     branches:
       - main
     paths-ignore:
-      # Ignore docs and configs so the bot's own commits don't trigger an infinite loop
+      # Non-runtime changes should build through CI when needed, but never release.
+      - ".github/**"
+      - ".codex/**"
+      - "docs/**"
       - "**/gradle.properties"
       - "**/*.md"
+      - "**/*.txt"
+      - "**/*.log"
   workflow_dispatch:
     inputs:
       bump_type:
@@ -72,8 +77,8 @@ concurrency:
 jobs:
   bump-and-release:
     runs-on: ubuntu-latest
-    # Prevents the bot from triggering itself in an infinite loop
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    # Prevents bot commits and explicit skips from triggering release work.
+    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, '[skip ci]')
 
     steps:
       - name: Checkout Repository
@@ -109,17 +114,19 @@ jobs:
           if [[ "$EVENT_NAME" == "push" ]]; then
             COMMIT_MSG=$(git log -1 --pretty=%B)
             
-            # 1. Check for skips first (docs, ci, test, chore, refactor with optional scopes)
+            # 1. Check for skips first (docs, ci, test with optional scopes)
             # Define regex in a variable to avoid syntax errors across different bash versions
-            SKIP_REGEX="^(docs|ci|test|chore|refactor)(\([^)]+\))?:"
+            SKIP_REGEX="^(docs|ci|test)(\([^)]+\))?:"
+            MAJOR_REGEX="^[a-z]+(\([^)]+\))?!:"
+            MINOR_REGEX="^feat(\([^)]+\))?:"
             if [[ "$COMMIT_MSG" =~ $SKIP_REGEX ]]; then
               echo "Housekeeping commit detected. Skipping release."
               SKIP_RELEASE="true"
             # 2. Check for Major
-            elif [[ "$COMMIT_MSG" == *"BREAKING"* ]] || [[ "$COMMIT_MSG" == *"[major]"* ]]; then
+            elif [[ "$COMMIT_MSG" =~ $MAJOR_REGEX ]] || [[ "$COMMIT_MSG" == *"BREAKING CHANGE"* ]] || [[ "$COMMIT_MSG" == *"BREAKING-CHANGE"* ]] || [[ "$COMMIT_MSG" == *"[major]"* ]]; then
               BUMP_TYPE="major"
             # 3. Check for Minor
-            elif [[ "$COMMIT_MSG" == *"feat:"* ]] || [[ "$COMMIT_MSG" == *"[minor]"* ]]; then
+            elif [[ "$COMMIT_MSG" =~ $MINOR_REGEX ]] || [[ "$COMMIT_MSG" == *"[minor]"* ]]; then
               BUMP_TYPE="minor"
             # 4. Default to Patch
             else
@@ -188,7 +195,10 @@ jobs:
           git add -u || true
 
           if ! git diff-index --quiet HEAD; then
-            git commit -m "chore(release): bump version to ${TAG} [skip ci]"
+            git commit \
+              -m "chore(common): bump mod version to ${TAG}" \
+              -m "- Update platform version files to ${TAG}." \
+              -m "- Refresh documentation references for ${TAG}."
 
             # Fetch origin latest to see if we need to rebase or check existing tags
             git fetch --prune --tags origin
@@ -255,7 +265,7 @@ jobs:
             ${{ steps.package.outputs.forge_jar }}
 
       - name: Publish Paper to Modrinth
-        if: steps.version_math.outputs.skip != 'true'
+        if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
@@ -284,7 +294,7 @@ jobs:
           files: ${{ steps.package.outputs.jar }}
 
       - name: Publish Fabric to Modrinth
-        if: steps.version_math.outputs.skip != 'true'
+        if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
@@ -311,7 +321,7 @@ jobs:
           files: ${{ steps.package.outputs.fabric_jar }}
 
       - name: Publish Forge to Modrinth
-        if: steps.version_math.outputs.skip != 'true'
+        if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
