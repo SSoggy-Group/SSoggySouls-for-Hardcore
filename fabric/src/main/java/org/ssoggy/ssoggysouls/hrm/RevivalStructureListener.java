@@ -75,8 +75,7 @@ public class RevivalStructureListener {
             return ActionResult.PASS;
         }
 
-        PlayerData actorData = db.getPlayer(serverPlayer.getUuid());
-        if (actorData == null || actorData.isDead()) {
+        if (db.isPlayerDead(serverPlayer.getUuid())) {
             return ActionResult.PASS;
         }
 
@@ -169,7 +168,6 @@ public class RevivalStructureListener {
         breakStructure(world, placedPos);
         DlcDeaths.clearDeath(revivedUuid);
         GhostModeEvents.updateGhostStatus(revivedUuid, false);
-        org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(revivedUuid, false);
         GhostState ghostState = GhostState.getServerState(world.getServer());
         ghostState.deathLocations.remove(revivedUuid);
         ghostState.deathHolders.remove(revivedUuid);
