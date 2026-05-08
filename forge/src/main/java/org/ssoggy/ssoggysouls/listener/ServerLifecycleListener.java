@@ -161,8 +161,7 @@ public class ServerLifecycleListener {
         UUID uuid = player.getUUID();
 
         CompletableFuture.runAsync(() -> {
-            PlayerData data = db.getPlayer(uuid);
-            if (data != null && data.isDead()) {
+            if (db.isPlayerDead(uuid)) {
                 player.server.execute(() -> handleRespawnSync(player));
             }
         });

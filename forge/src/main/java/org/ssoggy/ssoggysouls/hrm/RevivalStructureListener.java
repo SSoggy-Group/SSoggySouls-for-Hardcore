@@ -104,18 +104,12 @@ public class RevivalStructureListener {
                                        DatabaseManager db, ItemStack refundedItem) {
         new DlcStats(serverPlayer.getUUID()).incrementStat(DlcStat.RITUAL_STARTED, 1);
         CompletableFuture.runAsync(() -> {
-            PlayerData data = db.getPlayer(ownerUuid);
-            if (data == null) {
-                serverPlayer.server.execute(() -> {
-                    sendError(serverPlayer, "Unknown player.");
-                    refundHead(serverPlayer, refundedItem);
-                });
-                return;
-            }
+            boolean isDead = db.isPlayerDead(ownerUuid);
+            String ownerName = org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames.getOrDefault(ownerUuid, "Player");
 
-            if (!data.isDead()) {
+            if (!isDead) {
                 serverPlayer.server.execute(() -> {
-                    sendError(serverPlayer, data.getUsername() + " is not dead!");
+                    sendError(serverPlayer, ownerName + " is not dead!");
                     world.playSound(null, placedPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.4f, 2f);
                     refundHead(serverPlayer, refundedItem);
                 });
@@ -133,9 +127,9 @@ public class RevivalStructureListener {
 
             new DlcStats(serverPlayer.getUUID()).incrementStat(DlcStat.RITUAL_COMPLETED, 1);
             new DlcStats(ownerUuid).incrementStat(DlcStat.REVIVES, 1);
-            SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getScoreboardName(), data.getUsername());
+            SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getScoreboardName(), ownerName);
 
-            serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, data.getUsername()));
+            serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, ownerName));
         });
     }
 
