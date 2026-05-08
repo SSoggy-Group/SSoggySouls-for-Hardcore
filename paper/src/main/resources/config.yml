@@ -572,6 +572,9 @@ messages:
   # Message shown when a command can only be used by players
   command-only-players: "&cOnly players can use this command."
 
+  # Message shown when a database-backed command cannot be completed
+  command-error-database: "&cUnable to process your request right now. Please try again."
+
   # --- Revival Messages ---
   # Sent to revived player (returned to Main)
   revive-success: "&a&l✦ REVIVED! &aReturning to the world of the living..."

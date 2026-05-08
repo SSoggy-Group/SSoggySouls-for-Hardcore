@@ -61,7 +61,7 @@ public class LeaveLimboCommand implements CommandExecutor {
                                 + e.getMessage());
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     if (player.isOnline()) {
-                        player.sendMessage("Unable to process your request right now. Please try again.");
+                        player.sendMessage(MessageUtil.get("command-error-database"));
                     }
                 });
             }
