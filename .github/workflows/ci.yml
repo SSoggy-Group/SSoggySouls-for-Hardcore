@@ -3,8 +3,22 @@ name: Continuous Integration
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - ".codex/**"
+      - ".jules/**"
+      - "docs/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/*.log"
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - ".codex/**"
+      - ".jules/**"
+      - "docs/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/*.log"
 
 permissions:
   contents: read

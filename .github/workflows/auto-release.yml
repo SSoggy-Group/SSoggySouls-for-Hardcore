@@ -5,9 +5,14 @@ on:
     branches:
       - main
     paths-ignore:
-      # Ignore docs and configs so the bot's own commits don't trigger an infinite loop
+      # Non-runtime changes should build through CI when needed, but never release.
+      - ".github/**"
+      - ".codex/**"
+      - "docs/**"
       - "**/gradle.properties"
       - "**/*.md"
+      - "**/*.txt"
+      - "**/*.log"
   workflow_dispatch:
     inputs:
       bump_type:
@@ -70,28 +75,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  bump-and-release:
+  prepare-release:
+    name: Prepare Release
     runs-on: ubuntu-latest
-    # Prevents the bot from triggering itself in an infinite loop
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    # Prevents bot commits and explicit skips from triggering release work.
+    if: github.event_name == 'workflow_dispatch' || (github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, '[skip ci]'))
+    outputs:
+      old_version: ${{ steps.version_math.outputs.old_version }}
+      new_version: ${{ steps.version_math.outputs.new_version }}
+      skip: ${{ steps.version_math.outputs.skip }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0 # Needed to push tags and commits back to the repo
 
-      - name: Set up Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      # --- VERSION BUMPING LOGIC ---
       - name: Calculate Next Version
         id: version_math
         env:
@@ -105,34 +102,29 @@ jobs:
           BUMP_TYPE="$BUMP_TYPE_INPUT"
           MANUAL_VERSION="$MANUAL_VERSION_INPUT"
           SKIP_RELEASE="false"
+          NEW_VERSION=""
 
           if [[ "$EVENT_NAME" == "push" ]]; then
             COMMIT_MSG=$(git log -1 --pretty=%B)
-            
-            # 1. Check for skips first (docs, ci, test, chore, refactor with optional scopes)
-            # Define regex in a variable to avoid syntax errors across different bash versions
-            SKIP_REGEX="^(docs|ci|test|chore|refactor)(\([^)]+\))?:"
+
+            # Define regex in variables to avoid syntax issues across bash versions.
+            SKIP_REGEX="^(docs|ci|test)(\([^)]+\))?:"
+            MAJOR_REGEX="^[a-z]+(\([^)]+\))?!:"
+            MINOR_REGEX="^feat(\([^)]+\))?:"
             if [[ "$COMMIT_MSG" =~ $SKIP_REGEX ]]; then
               echo "Housekeeping commit detected. Skipping release."
               SKIP_RELEASE="true"
-            # 2. Check for Major
-            elif [[ "$COMMIT_MSG" == *"BREAKING"* ]] || [[ "$COMMIT_MSG" == *"[major]"* ]]; then
+            elif [[ "$COMMIT_MSG" =~ $MAJOR_REGEX ]] || [[ "$COMMIT_MSG" == *"BREAKING CHANGE"* ]] || [[ "$COMMIT_MSG" == *"BREAKING-CHANGE"* ]] || [[ "$COMMIT_MSG" == *"[major]"* ]]; then
               BUMP_TYPE="major"
-            # 3. Check for Minor
-            elif [[ "$COMMIT_MSG" == *"feat:"* ]] || [[ "$COMMIT_MSG" == *"[minor]"* ]]; then
+            elif [[ "$COMMIT_MSG" =~ $MINOR_REGEX ]] || [[ "$COMMIT_MSG" == *"[minor]"* ]]; then
               BUMP_TYPE="minor"
-            # 4. Default to Patch
             else
               BUMP_TYPE="patch"
             fi
           fi
 
-          echo "skip=$SKIP_RELEASE" >> $GITHUB_OUTPUT
-
           if [ "$SKIP_RELEASE" == "false" ]; then
-            # Priority: Manual Version -> Major -> Minor -> Patch
             if [[ -n "$MANUAL_VERSION" ]]; then
-              # Define regex in a variable to avoid syntax errors across different bash versions
               VERSION_REGEX="^[0-9]+\.[0-9]+\.[0-9]+([-.+][A-Za-z0-9.-]+)?$"
               if ! [[ "$MANUAL_VERSION" =~ $VERSION_REGEX ]]; then
                 echo "Invalid manual_version input: '$MANUAL_VERSION'. Expected semantic version like 1.2.3 or 1.2.3-rc.1."
@@ -146,37 +138,105 @@ jobs:
             else
               NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
             fi
-            
-            echo "OLD_VERSION=$OLD_VERSION" >> $GITHUB_ENV
-            echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           fi
 
-      # --- APPLY VERSION ---
+          echo "old_version=$OLD_VERSION" >> "${GITHUB_OUTPUT}"
+          echo "new_version=$NEW_VERSION" >> "${GITHUB_OUTPUT}"
+          echo "skip=$SKIP_RELEASE" >> "${GITHUB_OUTPUT}"
+
+  build:
+    name: Build Jars
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    if: needs.prepare-release.outputs.skip != 'true'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Apply Version to Gradle files
-        if: steps.version_math.outputs.skip != 'true'
+        env:
+          OLD_VERSION: ${{ needs.prepare-release.outputs.old_version }}
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          # Safely update the gradle properties
           sed -i "s/version = '$OLD_VERSION'/version = '$NEW_VERSION'/g" paper/build.gradle || true
           sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
           sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
 
-      # --- BUILDING JARS ---
       - name: Build Minecraft Mods
-        if: steps.version_math.outputs.skip != 'true'
         run: |
           chmod +x ./gradlew
           ./gradlew build
 
-      # --- DOCS & RELEASE COMMITTING ---
-      - name: Auto-Update Docs References
-        if: steps.version_math.outputs.skip != 'true'
+      - name: Locate and Rename Jars
+        env:
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          # Safely scans ALL .md files anywhere in the repo and swaps the version text
+          RAW_PAPER="$(ls paper/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
+          RAW_FABRIC="$(ls fabric/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
+          RAW_FORGE="$(ls forge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
+
+          mv "$RAW_PAPER" "SSoggySouls-Paper-${NEW_VERSION}.jar"
+          mv "$RAW_FABRIC" "SSoggySouls-Fabric-${NEW_VERSION}.jar"
+          mv "$RAW_FORGE" "SSoggySouls-Forge-${NEW_VERSION}.jar"
+
+      - name: Upload Release Jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-jars
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
+            SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
+            SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+
+  commit-version:
+    name: Commit Version
+    runs-on: ubuntu-latest
+    needs:
+      - prepare-release
+      - build
+    if: needs.prepare-release.outputs.skip != 'true'
+    outputs:
+      tag_created: ${{ steps.commit_version.outputs.tag_created }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Apply Version to Gradle files
+        env:
+          OLD_VERSION: ${{ needs.prepare-release.outputs.old_version }}
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          sed -i "s/version = '$OLD_VERSION'/version = '$NEW_VERSION'/g" paper/build.gradle || true
+          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
+          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
+
+      - name: Auto-Update Docs References
+        env:
+          OLD_VERSION: ${{ needs.prepare-release.outputs.old_version }}
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
           find . -type f -name "*.md" -print0 | xargs -0 sed -i "s/$OLD_VERSION/$NEW_VERSION/g"
 
       - name: Commit version bump to Repository
-        if: steps.version_math.outputs.skip != 'true'
         id: commit_version
+        env:
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -184,13 +244,14 @@ jobs:
           TAG="v${NEW_VERSION}"
           TAG_CREATED="false"
 
-          # Stage only tracked files changed by the version/doc update.
           git add -u || true
 
           if ! git diff-index --quiet HEAD; then
-            git commit -m "chore(release): bump version to ${TAG} [skip ci]"
+            git commit \
+              -m "chore(common): bump mod version to ${TAG}" \
+              -m "- Update platform version files to ${TAG}." \
+              -m "- Refresh documentation references for ${TAG}."
 
-            # Fetch origin latest to see if we need to rebase or check existing tags
             git fetch --prune --tags origin
 
             if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
@@ -203,7 +264,6 @@ jobs:
               exit 0
             fi
 
-            # Rebase on origin/main cleanly since our local changes are committed
             git pull --rebase origin main
 
             git tag "${TAG}"
@@ -215,55 +275,60 @@ jobs:
 
           echo "tag_created=${TAG_CREATED}" >> "${GITHUB_OUTPUT}"
 
-      # --- PACKAGING AND RELEASING ---
-      - name: Locate and Rename Jars
-        if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
-        id: package
-        run: |
-          # 1. Find the raw files
-          RAW_PAPER="$(ls paper/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
-          RAW_FABRIC="$(ls fabric/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
-          RAW_FORGE="$(ls forge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
+  github-release:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    needs:
+      - prepare-release
+      - build
+      - commit-version
+    if: needs.commit-version.outputs.tag_created == 'true'
 
-          # 2. Define the clean names
-          FINAL_PAPER="SSoggySouls-Paper-${NEW_VERSION}.jar"
-          FINAL_FABRIC="SSoggySouls-Fabric-${NEW_VERSION}.jar"
-          FINAL_FORGE="SSoggySouls-Forge-${NEW_VERSION}.jar"
-
-          # 3. Rename them on the runner
-          mv "$RAW_PAPER" "$FINAL_PAPER"
-          mv "$RAW_FABRIC" "$FINAL_FABRIC"
-          mv "$RAW_FORGE" "$FINAL_FORGE"
-
-          # 4. Output the new paths for the Release step
-          echo "jar=$FINAL_PAPER" >> "${GITHUB_OUTPUT}"
-          echo "fabric_jar=$FINAL_FABRIC" >> "${GITHUB_OUTPUT}"
-          echo "forge_jar=$FINAL_FORGE" >> "${GITHUB_OUTPUT}"
+    steps:
+      - name: Download Release Jars
+        uses: actions/download-artifact@v4
+        with:
+          name: release-jars
+          path: release-jars
 
       - name: Create GitHub Release
-        if: steps.version_math.outputs.skip != 'true' && steps.commit_version.outputs.tag_created == 'true'
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: "v${{ env.NEW_VERSION }}"
-          name: "Build ${{ env.NEW_VERSION }}"
+          tag_name: "v${{ needs.prepare-release.outputs.new_version }}"
+          name: "Build ${{ needs.prepare-release.outputs.new_version }}"
           generate_release_notes: true
           prerelease: ${{ github.event.inputs.gh_prerelease == 'true' || false }}
           make_latest: ${{ github.event.inputs.gh_latest == 'false' && 'false' || 'true' }}
           files: |
-            ${{ steps.package.outputs.jar }}
-            ${{ steps.package.outputs.fabric_jar }}
-            ${{ steps.package.outputs.forge_jar }}
+            release-jars/SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
+            release-jars/SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
+            release-jars/SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+
+  publish-paper:
+    name: Publish Paper
+    runs-on: ubuntu-latest
+    needs:
+      - prepare-release
+      - commit-version
+      - github-release
+    if: needs.commit-version.outputs.tag_created == 'true'
+
+    steps:
+      - name: Download Release Jars
+        uses: actions/download-artifact@v4
+        with:
+          name: release-jars
+          path: release-jars
 
       - name: Publish Paper to Modrinth
-        if: steps.version_math.outputs.skip != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          name: "SSoggySouls v${{ env.NEW_VERSION }} (Paper/Spigot)"
-          version: "${{ env.NEW_VERSION }}+paper"
+          name: "SSoggySouls v${{ needs.prepare-release.outputs.new_version }} (Paper/Spigot)"
+          version: "${{ needs.prepare-release.outputs.new_version }}+paper"
           version-type: ${{ github.event.inputs.paper_type || 'release' }}
-          changelog: ${{ github.event.head_commit.message }}
+          changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: |
             paper
             purpur
@@ -281,18 +346,33 @@ jobs:
             1.21.9
             1.21.10
             1.21.11
-          files: ${{ steps.package.outputs.jar }}
+          files: release-jars/SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
+
+  publish-fabric:
+    name: Publish Fabric
+    runs-on: ubuntu-latest
+    needs:
+      - prepare-release
+      - commit-version
+      - github-release
+    if: needs.commit-version.outputs.tag_created == 'true'
+
+    steps:
+      - name: Download Release Jars
+        uses: actions/download-artifact@v4
+        with:
+          name: release-jars
+          path: release-jars
 
       - name: Publish Fabric to Modrinth
-        if: steps.version_math.outputs.skip != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          name: "SSoggySouls v${{ env.NEW_VERSION }} (Fabric/Quilt)"
-          version: "${{ env.NEW_VERSION }}+fabric"
+          name: "SSoggySouls v${{ needs.prepare-release.outputs.new_version }} (Fabric/Quilt)"
+          version: "${{ needs.prepare-release.outputs.new_version }}+fabric"
           version-type: ${{ github.event.inputs.fabric_type || 'alpha' }}
-          changelog: ${{ github.event.head_commit.message }}
+          changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: |
             fabric
             quilt
@@ -308,18 +388,33 @@ jobs:
             1.21.9
             1.21.10
             1.21.11
-          files: ${{ steps.package.outputs.fabric_jar }}
+          files: release-jars/SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
+
+  publish-forge:
+    name: Publish Forge
+    runs-on: ubuntu-latest
+    needs:
+      - prepare-release
+      - commit-version
+      - github-release
+    if: needs.commit-version.outputs.tag_created == 'true'
+
+    steps:
+      - name: Download Release Jars
+        uses: actions/download-artifact@v4
+        with:
+          name: release-jars
+          path: release-jars
 
       - name: Publish Forge to Modrinth
-        if: steps.version_math.outputs.skip != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          name: "SSoggySouls v${{ env.NEW_VERSION }} (Forge)"
-          version: "${{ env.NEW_VERSION }}+forge"
+          name: "SSoggySouls v${{ needs.prepare-release.outputs.new_version }} (Forge)"
+          version: "${{ needs.prepare-release.outputs.new_version }}+forge"
           version-type: ${{ github.event.inputs.forge_type || 'alpha' }}
-          changelog: ${{ github.event.head_commit.message }}
+          changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: forge
           game-versions: |
             1.21.1
@@ -333,4 +428,4 @@ jobs:
             1.21.9
             1.21.10
             1.21.11
-          files: ${{ steps.package.outputs.forge_jar }}
+          files: release-jars/SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar

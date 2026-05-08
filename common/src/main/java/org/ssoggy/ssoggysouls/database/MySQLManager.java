@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -22,6 +23,10 @@ public class MySQLManager implements DatabaseManager {
     private static final String SELECT_ALL = "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
     private static final String UPDATE = "UPDATE ";
     private static final int MYSQL_DUPLICATE_COLUMN = 1060;
+    private static final String BIGINT_NOT_NULL_DEFAULT_0 = "BIGINT NOT NULL DEFAULT 0";
+    private static final Set<String> ALLOWED_COLUMN_DEFINITIONS = Set.of(
+            BIGINT_NOT_NULL_DEFAULT_0
+    );
 
     // simple cache for death status with TTL to reduce DB queries
     private static final long CACHE_TTL_MS = 2000; // 2 second cache
@@ -54,7 +59,7 @@ public class MySQLManager implements DatabaseManager {
     MySQLManager(PluginContext plugin, javax.sql.DataSource dataSource, String tableName) {
         this.plugin = plugin;
         this.dataSource = dataSource;
-        this.tableName = tableName;
+        this.tableName = SqlSafety.requireIdentifier(tableName, "table name");
     }
 
     public void initialize() throws DatabaseInitializationException {
@@ -65,11 +70,12 @@ public class MySQLManager implements DatabaseManager {
             String user = plugin.getConfigString("database.username", "minecraft");
             String pass = plugin.getConfigString("database.password", "changeme");
             int poolSize = plugin.getConfigInt("database.pool-size", 5);
-            tableName = plugin.getConfigString("database.table-name", "hardcore_players");
-            if (!isValidIdentifier(tableName)) {
-                plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", tableName);
-                throw new DatabaseInitializationException("Invalid database.table-name: " + tableName);
+            String configuredTableName = plugin.getConfigString("database.table-name", "hardcore_players");
+            if (!SqlSafety.isIdentifier(configuredTableName)) {
+                plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", configuredTableName);
+                throw new DatabaseInitializationException("Invalid database.table-name: " + configuredTableName);
             }
+            tableName = SqlSafety.requireIdentifier(configuredTableName, "database.table-name");
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
                     + "?sslMode=VERIFY_IDENTITY"
@@ -138,7 +144,7 @@ public class MySQLManager implements DatabaseManager {
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.executeUpdate();
             ensureLastSeenColumn(conn);
             ensureGraceUntilColumn(conn);
@@ -147,19 +153,15 @@ public class MySQLManager implements DatabaseManager {
     }
 
     private void ensureLastSeenColumn(Connection conn) {
-        ensureColumn(conn, "last_seen", "BIGINT NOT NULL DEFAULT 0");
+        ensureColumn(conn, "last_seen", BIGINT_NOT_NULL_DEFAULT_0);
     }
 
     private void ensureGraceUntilColumn(Connection conn) {
-        ensureColumn(conn, "grace_until", "BIGINT NOT NULL DEFAULT 0");
-    }
-
-    private boolean isValidIdentifier(String identifier) {
-        return identifier != null && identifier.matches("^\\w+$");
+        ensureColumn(conn, "grace_until", BIGINT_NOT_NULL_DEFAULT_0);
     }
 
     /**
-     * ensures a column exists in the table, ignoring duplicate-column errors.
+     * Ensures a column exists in the table, ignoring duplicate-column errors.
      *
      * @param conn       database connection
      * @param columnName name of the column to add
@@ -167,18 +169,19 @@ public class MySQLManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
-        if (!isValidIdentifier(columnName)) {
+        if (!SqlSafety.isIdentifier(columnName)) {
             throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
         }
-        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'.\\-]+$")) {
-            throw new IllegalArgumentException("Invalid column definition characters: " + definition);
+        if (definition == null) {
+            throw new IllegalArgumentException("Column definition cannot be null");
         }
-        if (definition.contains("--")) {
-            throw new IllegalArgumentException("SQL comments are not allowed in column definition: " + definition);
+        String normalizedDefinition = definition.trim().replaceAll("\\s+", " ").toUpperCase();
+        if (!ALLOWED_COLUMN_DEFINITIONS.contains(normalizedDefinition)) {
+            throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + normalizedDefinition);
         }
 
-        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + normalizedDefinition;
+        try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.executeUpdate();
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
         } catch (SQLException e) {
@@ -207,7 +210,7 @@ public class MySQLManager implements DatabaseManager {
         String sql = SELECT_ALL + tableName + " WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -225,7 +228,7 @@ public class MySQLManager implements DatabaseManager {
         String sql = SELECT_ALL + tableName + " WHERE LOWER(username) = LOWER(?)";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -244,15 +247,15 @@ public class MySQLManager implements DatabaseManager {
                 + " (uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
                 + "ON DUPLICATE KEY UPDATE "
-                + "username = VALUES(username), "
-                + "lives = VALUES(lives), "
-                + "is_dead = VALUES(is_dead), "
-                + "last_death = VALUES(last_death), "
-                + "last_seen = VALUES(last_seen), "
-                + "grace_until = VALUES(grace_until)";
+                + "username = ?, "
+                + "lives = ?, "
+                + "is_dead = ?, "
+                + "last_death = ?, "
+                + "last_seen = ?, "
+                + "grace_until = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, data.getUuid().toString());
             ps.setString(2, data.getUsername());
@@ -262,6 +265,12 @@ public class MySQLManager implements DatabaseManager {
             ps.setLong(6, data.getLastDeath());
             ps.setLong(7, data.getLastSeen());
             ps.setLong(8, data.getGraceUntil());
+            ps.setString(9, data.getUsername());
+            ps.setInt(10, data.getLives());
+            ps.setBoolean(11, data.isDead());
+            ps.setLong(12, data.getLastDeath());
+            ps.setLong(13, data.getLastSeen());
+            ps.setLong(14, data.getGraceUntil());
 
             ps.executeUpdate();
             deathStatusCache.remove(data.getUuid());
@@ -309,7 +318,7 @@ public class MySQLManager implements DatabaseManager {
         String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
 
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             int i = 1;
             for (UUID uuid : toFetch) {
@@ -340,7 +349,7 @@ public class MySQLManager implements DatabaseManager {
         String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -363,7 +372,7 @@ public class MySQLManager implements DatabaseManager {
                 + " SET is_dead = FALSE, lives = ? WHERE uuid = ? AND is_dead = TRUE";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setInt(1, livesToRestore);
             ps.setString(2, uuid.toString());
@@ -388,7 +397,7 @@ public class MySQLManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET lives = ?, is_dead = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             boolean dead = lives <= 0;
             ps.setInt(1, Math.max(0, lives));
@@ -407,7 +416,7 @@ public class MySQLManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET first_join = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setLong(1, firstJoin);
             ps.setString(2, uuid.toString());
@@ -421,7 +430,7 @@ public class MySQLManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET last_seen = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setLong(1, lastSeen);
             ps.setString(2, uuid.toString());
@@ -435,7 +444,7 @@ public class MySQLManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET grace_until = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setLong(1, graceUntil);
             ps.setString(2, uuid.toString());
@@ -459,7 +468,7 @@ public class MySQLManager implements DatabaseManager {
 
         List<PlayerData> result = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql);
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 result.add(mapResultSet(rs));
@@ -470,7 +479,7 @@ public class MySQLManager implements DatabaseManager {
         return result;
     }
 
-    // gets plugin version from db, returns null if first time running
+    // Gets plugin version from db, returns null if first time running.
     // The key parameter allows tracking different versions per server role
     // (main/limbo)
     public String getPluginVersion(String key) {
@@ -479,7 +488,7 @@ public class MySQLManager implements DatabaseManager {
             createMetadataTableIfNeeded(conn, metaTable);
 
             String sql = "SELECT version FROM " + metaTable + " WHERE key_ = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
                 ps.setString(1, key);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
@@ -499,10 +508,11 @@ public class MySQLManager implements DatabaseManager {
             createMetadataTableIfNeeded(conn, metaTable);
 
             String sql = "INSERT INTO " + metaTable + " (key_, version) VALUES (?, ?) "
-                    + "ON DUPLICATE KEY UPDATE version = VALUES(version)";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    + "ON DUPLICATE KEY UPDATE version = ?";
+            try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
                 ps.setString(1, key);
                 ps.setString(2, version);
+                ps.setString(3, version);
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
@@ -511,14 +521,12 @@ public class MySQLManager implements DatabaseManager {
     }
 
     private void createMetadataTableIfNeeded(Connection conn, String metaTable) throws SQLException {
-        if (!isValidIdentifier(metaTable)) {
-            throw new IllegalArgumentException("Invalid metadata table name identifier: " + metaTable);
-        }
+        SqlSafety.requireIdentifier(metaTable, "metadata table name");
         String createTableSql = "CREATE TABLE IF NOT EXISTS " + metaTable + " ("
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
                 + ") DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-        try (PreparedStatement ps = conn.prepareStatement(createTableSql)) {
+        try (PreparedStatement ps = SqlSafety.prepareStatement(conn, createTableSql)) {
             ps.execute();
         }
     }

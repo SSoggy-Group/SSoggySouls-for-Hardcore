@@ -50,14 +50,14 @@
 }
 
 .docs-sidebar a:focus-visible {
-  outline: 3px solid #0b2e4a;
+  outline: 2px solid #1f4f73;
   outline-offset: 2px;
   background: #f1f8f8;
 }
 
 .docs-sidebar a.is-active {
   background: #e8f5f4;
-  color: #0b3f3c;
+  color: #155e5a;
   font-weight: 700;
 }
 

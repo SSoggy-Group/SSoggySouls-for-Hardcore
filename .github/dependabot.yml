@@ -15,9 +15,10 @@ updates:
       interval: "weekly"
     # IMPORTANT: This tells Dependabot to also check your gradlew / wrapper properties
     # so you don't get stuck on old versions manually.
+    versioning-strategy: increase
     commit-message:
       prefix: "deps"
-
+    
     # Grouping is smart to prevent PR spam
     groups:
       minecraft-dependencies:

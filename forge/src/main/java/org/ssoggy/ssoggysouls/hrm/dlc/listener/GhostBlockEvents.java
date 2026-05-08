@@ -87,8 +87,8 @@ public class GhostBlockEvents {
                     world.getServer().execute(() -> {
                         GhostState ghostState = GhostState.getServerState(world.getServer());
 
-                        ghostState.deathLocations.remove(ownerUuid);
-                        ghostState.deathHolders.put(ownerUuid, player.getUUID());
+                        ghostState.removeDeathLocation(ownerUuid);
+                        ghostState.setDeathHolder(ownerUuid, player.getUUID());
                         ghostState.setDirty();
                         DlcDeaths.setHolder(ownerUuid, player.getUUID());
                         DlcNames.cache(player.getUUID(), player.getScoreboardName());
@@ -140,8 +140,8 @@ public class GhostBlockEvents {
     private static void updateGhostStateOnPlace(Level world, UUID ownerUuid, BlockPos targetPos) {
         GhostState ghostState = GhostState.getServerState(world.getServer());
 
-        ghostState.deathHolders.remove(ownerUuid);
-        ghostState.deathLocations.put(ownerUuid, targetPos);
+        ghostState.removeDeathHolder(ownerUuid);
+        ghostState.setDeathLocation(ownerUuid, targetPos);
         ghostState.setDirty();
         DlcDeaths.setHolder(ownerUuid, null);
         DlcDeaths.recordDeath(
