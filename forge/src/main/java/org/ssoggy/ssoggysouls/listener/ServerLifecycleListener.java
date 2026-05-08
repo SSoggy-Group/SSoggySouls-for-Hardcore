@@ -23,7 +23,11 @@ import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+
+@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ServerLifecycleListener {
+
+    private static final int GHOST_MODE_DARKNESS_DURATION_TICKS = 60;
     
     private ServerLifecycleListener() {
         // Utility class
@@ -186,7 +190,7 @@ public class ServerLifecycleListener {
 
         if (isGhost) {
             player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-                    net.minecraft.world.effect.MobEffects.DARKNESS, 60, 0, false, false));
+                    net.minecraft.world.effect.MobEffects.DARKNESS, GHOST_MODE_DARKNESS_DURATION_TICKS, 0, false, false));
         }
     }
 }
