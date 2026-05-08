@@ -25,34 +25,24 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class LimboServerListener {
 
-    private final DatabaseManager db;
-    private static final Set<UUID> limboDeadPlayers = ConcurrentHashMap.newKeySet();
+    private static DatabaseManager db;
 
     private static final Set<String> WHITELISTED_COMMANDS = Set.of(
             "/msg", "/tell", "/r", "/reply", "/help", "/list",
             "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
     );
 
-    private LimboServerListener(DatabaseManager db) {
-        this.db = db;
+    private LimboServerListener() {
         registerJoinEvent();
-        registerDisconnectEvent();
-        registerCommandRestrictionEvent();
         registerCancelDamageEvent();
         registerWorldChangeEvent();
     }
 
     public static void register(DatabaseManager db) {
-        new LimboServerListener(db);
+        LimboServerListener.db = db;
+        new LimboServerListener();
     }
 
-    public static void updateLimboStatus(UUID uuid, boolean isDead) {
-        if (isDead) {
-            limboDeadPlayers.add(uuid);
-        } else {
-            limboDeadPlayers.remove(uuid);
-        }
-    }
 
     private void registerJoinEvent() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
@@ -72,30 +62,14 @@ public class LimboServerListener {
             return;
         }
         if (data != null && data.isDead()) {
-            limboDeadPlayers.add(uuid);
             applyLimboState(player);
         } else {
-            limboDeadPlayers.remove(uuid);
+
             player.changeGameMode(GameMode.SURVIVAL);
             player.sendMessage(MessageUtil.get("limbo-welcome-visitor"), false);
         }
     }
 
-    private void registerDisconnectEvent() {
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
-    }
-
-    private void registerCommandRestrictionEvent() {
-        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, unusedParams) -> {
-            if (source.getEntity() instanceof ServerPlayerEntity player
-                    && limboDeadPlayers.contains(player.getUuid())
-                    && !isWhitelistedCommand(message.getContent().getString())) {
-                player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
-                return false;
-            }
-            return true;
-        });
-    }
 
     private void registerCancelDamageEvent() {
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) ->
@@ -105,7 +79,7 @@ public class LimboServerListener {
 
     private void registerWorldChangeEvent() {
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
-            if (!limboDeadPlayers.contains(player.getUuid())) {
+            if (db == null || !db.isPlayerDead(player.getUuid())) {
                 return;
             }
 
@@ -128,7 +102,19 @@ public class LimboServerListener {
     private static boolean isWhitelistedCommand(String message) {
         String[] tokens = message.trim().split("\\s+");
         String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
-        return WHITELISTED_COMMANDS.contains(command);
+        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
+    }
+
+    public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {
+        if (db == null) return false;
+        
+        // Command will be checked starting with / in the mixin if needed, but brigadier drops the /
+        String fullCmd = "/" + command;
+        if (db.isPlayerDead(player.getUuid()) && !isWhitelistedCommand(fullCmd)) {
+            player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
+            return true;
+        }
+        return false;
     }
 
     private void applyLimboState(ServerPlayerEntity player) {
