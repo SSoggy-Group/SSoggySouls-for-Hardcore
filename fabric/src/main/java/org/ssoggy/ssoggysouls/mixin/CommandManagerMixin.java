@@ -13,10 +13,8 @@ import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 public class CommandManagerMixin {
     @Inject(method = "executeWithPrefix", at = @At("HEAD"), cancellable = true)
     private void onExecuteWithPrefix(ServerCommandSource source, String command, CallbackInfoReturnable<Integer> cir) {
-        if (source.getEntity() instanceof ServerPlayerEntity player) {
-            if (LimboServerListener.shouldBlockCommand(player, command)) {
-                cir.setReturnValue(0);
-            }
+        if (source.getEntity() instanceof ServerPlayerEntity player && LimboServerListener.shouldBlockCommand(player, command)) {
+            cir.setReturnValue(0);
         }
     }
 }

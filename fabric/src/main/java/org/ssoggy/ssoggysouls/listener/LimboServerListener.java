@@ -32,11 +32,15 @@ public class LimboServerListener {
             "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
     );
 
-    public LimboServerListener(DatabaseManager db) {
-        LimboServerListener.db = db;
+    private LimboServerListener() {
         registerJoinEvent();
         registerCancelDamageEvent();
         registerWorldChangeEvent();
+    }
+
+    public static void register(DatabaseManager db) {
+        LimboServerListener.db = db;
+        new LimboServerListener();
     }
 
 
