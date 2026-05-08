@@ -307,28 +307,36 @@ public class MySQLManager implements DatabaseManager {
             result.put(uuid, true);
         }
 
-        StringBuilder placeholders = new StringBuilder();
-        for (int i = 0; i < toFetch.size(); i++) {
-            placeholders.append("?");
-            if (i < toFetch.size() - 1) placeholders.append(",");
-        }
+        final int BATCH_SIZE = 500;
+        List<UUID> toFetchList = new ArrayList<>(toFetch);
 
-        String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
+        try (Connection conn = dataSource.getConnection()) {
+            for (int start = 0; start < toFetchList.size(); start += BATCH_SIZE) {
+                int end = Math.min(start + BATCH_SIZE, toFetchList.size());
+                List<UUID> batch = toFetchList.subList(start, end);
 
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+                StringBuilder placeholders = new StringBuilder();
+                for (int i = 0; i < batch.size(); i++) {
+                    placeholders.append("?");
+                    if (i < batch.size() - 1) placeholders.append(",");
+                }
 
-            int i = 1;
-            for (UUID uuid : toFetch) {
-                ps.setString(i++, uuid.toString());
-            }
+                String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders + ")";
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    result.put(uuid, isDead);
-                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+                    int i = 1;
+                    for (UUID uuid : batch) {
+                        ps.setString(i++, uuid.toString());
+                    }
+
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            UUID uuid = UUID.fromString(rs.getString("uuid"));
+                            boolean isDead = rs.getBoolean(COL_IS_DEAD);
+                            result.put(uuid, isDead);
+                            deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                        }
+                    }
                 }
             }
         } catch (SQLException e) {
