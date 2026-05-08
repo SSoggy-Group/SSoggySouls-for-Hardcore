@@ -39,31 +39,31 @@ class PermissionUtilTest {
     }
 
     @Test
-    void testIsBlockedByLimboOpSecurity_Disabled() {
+    void testIsBlockedByLimboOpSecurityDisabled() {
         when(plugin.isLimboOpSecurityEnabled()).thenReturn(false);
         assertFalse(PermissionUtil.isBlockedByLimboOpSecurity(sender, plugin));
     }
 
     @Test
-    void testIsBlockedByLimboOpSecurity_NonPlayer() {
+    void testIsBlockedByLimboOpSecurityNonPlayer() {
         assertFalse(PermissionUtil.isBlockedByLimboOpSecurity(sender, plugin));
     }
 
     @Test
-    void testIsBlockedByLimboOpSecurity_NotLimbo() {
+    void testIsBlockedByLimboOpSecurityNotLimbo() {
         when(plugin.isLimboServer()).thenReturn(false);
         when(player.isOp()).thenReturn(true);
         assertFalse(PermissionUtil.isBlockedByLimboOpSecurity(player, plugin));
     }
 
     @Test
-    void testIsBlockedByLimboOpSecurity_NotOp() {
+    void testIsBlockedByLimboOpSecurityNotOp() {
         when(player.isOp()).thenReturn(false);
         assertFalse(PermissionUtil.isBlockedByLimboOpSecurity(player, plugin));
     }
 
     @Test
-    void testIsBlockedByLimboOpSecurity_WhitelistedUuid() {
+    void testIsBlockedByLimboOpSecurityWhitelistedUuid() {
         UUID uuid = UUID.randomUUID();
         when(player.isOp()).thenReturn(true);
         when(player.getUniqueId()).thenReturn(uuid);
@@ -73,7 +73,7 @@ class PermissionUtilTest {
     }
 
     @Test
-    void testIsBlockedByLimboOpSecurity_WhitelistedName() {
+    void testIsBlockedByLimboOpSecurityWhitelistedName() {
         String name = "TestPlayer";
         when(player.isOp()).thenReturn(true);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
@@ -84,7 +84,7 @@ class PermissionUtilTest {
     }
 
     @Test
-    void testIsBlockedByLimboOpSecurity_BypassPermission() {
+    void testIsBlockedByLimboOpSecurityBypassPermission() {
         when(player.isOp()).thenReturn(true);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.hasPermission("ssoggysouls.bypass-limbo-op-security")).thenReturn(true);
@@ -93,7 +93,7 @@ class PermissionUtilTest {
     }
 
     @Test
-    void testIsBlockedByLimboOpSecurity_Blocked() {
+    void testIsBlockedByLimboOpSecurityBlocked() {
         when(player.isOp()).thenReturn(true);
         when(player.getUniqueId()).thenReturn(UUID.randomUUID());
         when(player.getName()).thenReturn("BlockedPlayer");
