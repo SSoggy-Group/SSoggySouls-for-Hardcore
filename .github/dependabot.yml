@@ -1,6 +1,5 @@
 version: 2
 updates:
-  # 1. Keep GitHub Actions up to date
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -12,23 +11,18 @@ updates:
         patterns:
           - "*"
 
-  # 2. Keep Gradle dependencies (Minecraft APIs, Libs) up to date
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
       interval: "weekly"
-    # IMPORTANT: This tells Dependabot to also check your gradlew / wrapper properties
-    # so you don't get stuck on old versions manually.
     commit-message:
       prefix: "deps"
     
-    # Group all dependencies together to prevent PR spam
     groups:
       gradle-dependencies:
         patterns:
           - "*"
 
-    # PROTECTION: Avoid the "Gradle 9.x + Loom" disaster
     ignore:
       - dependency-name: "gradle"
         update-types: ["version-update:semver-major"]
