@@ -77,9 +77,11 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
 
         if (ConfigManager.getConfig().isLimboServer()) {
             LOGGER.info("Starting in LIMBO server mode...");
+            // Intentionally not stored: listener self-registers with Fabric event hooks in its constructor.
             new LimboServerListener(databaseManager);
         } else {
             LOGGER.info("Starting in MAIN server mode...");
+            // Intentionally not stored: listener self-registers with Fabric event hooks in its constructor.
             new MainServerListener(databaseManager);
 
             // Phase 4: Init Built-in Hardcore Revive Features
