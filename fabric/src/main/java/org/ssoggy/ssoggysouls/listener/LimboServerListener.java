@@ -82,7 +82,7 @@ public class LimboServerListener {
     }
 
     private void registerCommandRestrictionEvent() {
-        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, unusedParams) -> {
+        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, _) -> {
             if (source.getEntity() instanceof ServerPlayerEntity player
                     && limboDeadPlayers.contains(player.getUuid())
                     && !isWhitelistedCommand(message.getContent().getString())) {
