@@ -30,3 +30,5 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "io.papermc.paper:paper-api"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "com.terraformersmc:modmenu"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
