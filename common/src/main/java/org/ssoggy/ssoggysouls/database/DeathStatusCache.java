@@ -4,15 +4,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Nullable;
-
-import javax.annotation.Nullable;
-
 /**
- * Handles thread-safe in-memory caching of player death status with a TTL (Time-To-Live).
+ * Handles thread-safe in-memory caching of player death status with a
+ * Time-To-Live (TTL) of 2 seconds to reduce repeated database queries.
  */
 public class DeathStatusCache {
-    private static final long CACHE_TTL_MS = 2000; // 2 second cache
+
+    private static final long CACHE_TTL_MS = 2000;
     private final Map<UUID, CachedDeathStatus> cache = new ConcurrentHashMap<>();
 
     private static class CachedDeathStatus {
@@ -27,16 +25,15 @@ public class DeathStatusCache {
         boolean isExpired() {
             return System.currentTimeMillis() - timestamp > CACHE_TTL_MS;
         }
+    }
+
     /**
-     * Gets a cached death status if it exists and is not expired.
+     * Returns the cached death status for the given UUID if it exists and has not
+     * expired, or {@code null} otherwise.
      *
      * @param uuid player's UUID
-     * @return the cached boolean value, or null if not cached or expired
+     * @return cached value, or {@code null} if absent or expired
      */
-    @Nullable
-    public Boolean get(UUID uuid) {
-     */
-    @Nullable
     public Boolean get(UUID uuid) {
         if (uuid == null) return null;
         CachedDeathStatus cached = cache.get(uuid);
@@ -59,7 +56,7 @@ public class DeathStatusCache {
     }
 
     /**
-     * Invalidates/removes a player's death status from the cache.
+     * Removes a player's death status from the cache.
      *
      * @param uuid player's UUID
      */

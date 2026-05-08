@@ -2,50 +2,45 @@ package org.ssoggy.ssoggysouls.database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+
+import javax.sql.DataSource;
 
 import org.ssoggy.ssoggysouls.PluginContext;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-public class MySQLManager implements DatabaseManager {
+public class MySQLManager extends AbstractDatabaseManager {
 
-    private static final String COL_IS_DEAD = "is_dead";
-    private static final String SELECT_ALL = "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
-    private static final String UPDATE = "UPDATE ";
     private static final int MYSQL_DUPLICATE_COLUMN = 1060;
     private static final String BIGINT_NOT_NULL_DEFAULT_0 = "BIGINT NOT NULL DEFAULT 0";
     private static final Set<String> ALLOWED_COLUMN_DEFINITIONS = Set.of(
             BIGINT_NOT_NULL_DEFAULT_0
     );
 
-    private final DeathStatusCache deathStatusCache = new DeathStatusCache();
-
-    private final PluginContext plugin;
     private javax.sql.DataSource dataSource;
     private HikariDataSource hikariDataSource; // kept for shutdown()
-    private String tableName;
 
     public MySQLManager(PluginContext plugin) {
-        this.plugin = plugin;
+        super(plugin);
     }
 
     // Package-private constructor for testing / dependency injection
     MySQLManager(PluginContext plugin, javax.sql.DataSource dataSource, String tableName) {
-        this.plugin = plugin;
+        super(plugin);
         this.dataSource = dataSource;
         this.tableName = SqlSafety.requireIdentifier(tableName, "table name");
     }
 
+    @Override
+    protected DataSource getDataSource() {
+        return dataSource;
+    }
+
+    @Override
     public void initialize() throws DatabaseInitializationException {
         try {
             String host = plugin.getConfigString("database.host", "localhost");
@@ -109,6 +104,7 @@ public class MySQLManager implements DatabaseManager {
         }
     }
 
+    @Override
     public void shutdown() {
         if (hikariDataSource != null && !hikariDataSource.isClosed()) {
             hikariDataSource.close();
@@ -145,14 +141,6 @@ public class MySQLManager implements DatabaseManager {
         ensureColumn(conn, "grace_until", BIGINT_NOT_NULL_DEFAULT_0);
     }
 
-    /**
-     * Ensures a column exists in the table, ignoring duplicate-column errors.
-     *
-     * @param conn       database connection
-     * @param columnName name of the column to add
-     * @param definition SQL definition of the column (for example, "BIGINT NOT NULL
-     *                   DEFAULT 0")
-     */
     private void ensureColumn(Connection conn, String columnName, String definition) {
         String safeColumnName = SqlSafety.requireIdentifier(columnName, "column name");
         if (definition == null) {
@@ -177,54 +165,8 @@ public class MySQLManager implements DatabaseManager {
         }
     }
 
-    private PlayerData mapResultSet(ResultSet rs) throws SQLException {
-        return new PlayerData(
-                UUID.fromString(rs.getString("uuid")),
-                rs.getString("username"),
-                rs.getInt("lives"),
-                rs.getBoolean(COL_IS_DEAD),
-                rs.getLong("first_join"),
-                rs.getLong("last_death"),
-                rs.getLong("last_seen"),
-                rs.getLong("grace_until"));
-    }
-
-    public PlayerData getPlayer(UUID uuid) {
-        String sql = SELECT_ALL + tableName + " WHERE uuid = ?";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-
-            ps.setString(1, uuid.toString());
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSet(rs);
-                }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player " + uuid);
-        }
-        return null;
-    }
-
-    public PlayerData getPlayerByName(String username) {
-        String sql = SELECT_ALL + tableName + " WHERE LOWER(username) = LOWER(?)";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-
-            ps.setString(1, username);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSet(rs);
-                }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player by name: " + username);
-        }
-        return null;
-    }
-
+    // MySQL-specific upsert: two parameter sets for INSERT + ON DUPLICATE KEY UPDATE
+    @Override
     public void savePlayer(PlayerData data) {
         String sql = "INSERT INTO " + tableName
                 + " (uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until) "
@@ -268,234 +210,12 @@ public class MySQLManager implements DatabaseManager {
         }
     }
 
-
-    public java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids) {
-        java.util.Map<UUID, Boolean> result = new java.util.HashMap<>();
-        if (uuids == null || uuids.isEmpty()) return result;
-
-        java.util.Set<UUID> toFetch = new java.util.HashSet<>();
-        for (UUID uuid : uuids) {
-            Boolean cached = deathStatusCache.get(uuid);
-            if (cached != null) {
-                result.put(uuid, cached);
-            } else {
-                toFetch.add(uuid);
-            }
-        }
-
-        if (toFetch.isEmpty()) {
-            return result;
-        }
-
-        // Default missing to true (fail-safe dead default)
-        for (UUID uuid : toFetch) {
-            result.put(uuid, true);
-        }
-
-        final int BATCH_SIZE = 500;
-        List<UUID> toFetchList = new ArrayList<>(toFetch);
-
-        try (Connection conn = dataSource.getConnection()) {
-            for (int start = 0; start < toFetchList.size(); start += BATCH_SIZE) {
-                int end = Math.min(start + BATCH_SIZE, toFetchList.size());
-                List<UUID> batch = toFetchList.subList(start, end);
-
-                String placeholders = String.join(",", java.util.Collections.nCopies(batch.size(), "?"));
-
-                String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders + ")";
-
-                try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-                    int i = 1;
-                    for (UUID uuid : batch) {
-                        ps.setString(i++, uuid.toString());
-                    }
-
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            UUID uuid = UUID.fromString(rs.getString("uuid"));
-                            boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                            result.put(uuid, isDead);
-                            deathStatusCache.put(uuid, isDead);
-                        }
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to bulk check death status");
-        }
-
-        return result;
-    }
-
-    public boolean isPlayerDead(UUID uuid) {
-        Boolean cached = deathStatusCache.get(uuid);
-        if (cached != null) {
-            return cached;
-        }
-
-        String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-
-            ps.setString(1, uuid.toString());
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    deathStatusCache.put(uuid, isDead);
-                    return isDead;
-                }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to check death status for " + uuid);
-        }
-        return true;
-    }
-
-
-
-    public boolean revivePlayer(UUID uuid, int livesToRestore) {
-        String sql = UPDATE + tableName
-                + " SET is_dead = FALSE, lives = ? WHERE uuid = ? AND is_dead = TRUE";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-
-            ps.setInt(1, livesToRestore);
-            ps.setString(2, uuid.toString());
-
-            int rows = ps.executeUpdate();
-
-            if (rows > 0) {
-                deathStatusCache.put(uuid, false);
-            }
-            if (plugin.isDebugMode()) {
-                plugin.debug("Revived player " + uuid + " (rows affected: " + rows + ")");
-            }
-            return rows > 0;
-
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to revive player " + uuid);
-            return false;
-        }
-    }
-
-    public void setLives(UUID uuid, int lives) {
-        String sql = UPDATE + tableName + " SET lives = ?, is_dead = ? WHERE uuid = ?";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-
-            boolean dead = lives <= 0;
-            ps.setInt(1, Math.max(0, lives));
-            ps.setBoolean(2, dead);
-            ps.setString(3, uuid.toString());
-
-            ps.executeUpdate();
-
-            deathStatusCache.put(uuid, dead);
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set lives for " + uuid);
-        }
-    }
-
-    public void setFirstJoin(UUID uuid, long firstJoin) {
-        String sql = UPDATE + tableName + " SET first_join = ? WHERE uuid = ?";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-
-            ps.setLong(1, firstJoin);
-            ps.setString(2, uuid.toString());
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set first_join for " + uuid);
-        }
-    }
-
-    public void setLastSeen(UUID uuid, long lastSeen) {
-        String sql = UPDATE + tableName + " SET last_seen = ? WHERE uuid = ?";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-
-            ps.setLong(1, lastSeen);
-            ps.setString(2, uuid.toString());
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set last_seen for " + uuid);
-        }
-    }
-
-    public void setGraceUntil(UUID uuid, long graceUntil) {
-        String sql = UPDATE + tableName + " SET grace_until = ? WHERE uuid = ?";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-
-            ps.setLong(1, graceUntil);
-            ps.setString(2, uuid.toString());
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set grace_until for " + uuid);
-        }
-    }
-
-    /**
-     * manually invalidates a player's death status cache entry.
-     * use this when external changes bypass savePlayer(), revivePlayer(), or
-     * setLives().
-     */
-    public void invalidateDeathStatusCache(UUID uuid) {
-        if (uuid != null) {
-            deathStatusCache.remove(uuid);
-        }
-    }
-
-    public List<PlayerData> getDeadPlayers() {
-        String sql = SELECT_ALL + tableName + " WHERE is_dead = TRUE ORDER BY username";
-
-        List<PlayerData> result = new ArrayList<>();
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql);
-                ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                result.add(mapResultSet(rs));
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get dead players");
-        }
-        return result;
-    }
-
-    // Gets plugin version from db, returns null if first time running.
-    // The key parameter allows tracking different versions per server role
-    // (main/limbo)
-    public String getPluginVersion(String key) {
-        String metaTable = "ssoggysouls_meta";
-        try (Connection conn = dataSource.getConnection()) {
-            createMetadataTableIfNeeded(conn, metaTable);
-
-            String sql = "SELECT version FROM " + metaTable + " WHERE key_ = ?";
-            try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-                ps.setString(1, key);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        return rs.getString("version");
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get plugin version from database for key: " + key);
-        }
-        return null;
-    }
-
+    // MySQL-specific upsert for plugin version
+    @Override
     public void savePluginVersion(String key, String version) {
         String metaTable = "ssoggysouls_meta";
         try (Connection conn = dataSource.getConnection()) {
             createMetadataTableIfNeeded(conn, metaTable);
-
             String sql = "INSERT INTO " + metaTable + " (key_, version) VALUES (?, ?) "
                     + "ON DUPLICATE KEY UPDATE version = ?";
             try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
@@ -509,14 +229,11 @@ public class MySQLManager implements DatabaseManager {
         }
     }
 
-    private void createMetadataTableIfNeeded(Connection conn, String metaTable) throws SQLException {
-        String safeTableName = SqlSafety.requireIdentifier(metaTable, "metadata table name");
-        String createTableSql = "CREATE TABLE IF NOT EXISTS " + safeTableName + " ("
+    @Override
+    protected String metadataTableDdl(String metaTable) {
+        return "CREATE TABLE IF NOT EXISTS " + metaTable + " ("
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
                 + ") DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-        try (PreparedStatement ps = SqlSafety.prepareStatement(conn, createTableSql)) {
-            ps.execute();
-        }
     }
 }
