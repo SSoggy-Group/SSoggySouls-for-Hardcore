@@ -1,5 +1,7 @@
 package org.ssoggy.ssoggysouls.listener;
 
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -33,7 +35,7 @@ public class LimboServerListener implements Listener {
     }
     
     /**
-     * refreshes the cached limbo spawn location (call on config reload or spawn change).
+     * Refreshes the cached limbo spawn location (call on config reload or spawn change).
      */
     public void refreshLimboSpawnCache() {
         this.cachedLimboSpawn = plugin.getLimboSpawn();
@@ -128,17 +130,33 @@ public class LimboServerListener implements Listener {
         if (player.hasPermission(PERM_BYPASS)) return;
         if (player.hasPermission("ssoggysouls.admin")) return;
 
-        // visitors (not dead in main) are unrestricted
-        if (!plugin.getDatabaseManager().isPlayerDead(player.getUniqueId())) return;
-
-        String command = event.getMessage().toLowerCase().split(" ")[0];
+        String rawMessage = event.getMessage();
+        String command = rawMessage.toLowerCase().split(" ")[0];
 
         if (isWhitelistedCommand(command)) {
             return;
         }
 
         event.setCancelled(true);
-        player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            boolean isDead = plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
+
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (!player.isOnline()) return;
+
+                // visitors (not dead in main) are unrestricted
+                if (!isDead) {
+                    String commandToRun = rawMessage.startsWith("/") ? rawMessage.substring(1) : rawMessage;
+                    if (!commandToRun.isBlank()) {
+                        player.performCommand(commandToRun);
+                    }
+                    return;
+                }
+
+                player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+            });
+        });
     }
 
     private static boolean isWhitelistedCommand(String command) {
@@ -152,8 +170,12 @@ public class LimboServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent event) {
-        if (event.getEntity() instanceof Player player
-                && plugin.getDatabaseManager().isPlayerDead(player.getUniqueId())) {
+        if (!(event.getEntity() instanceof Player player)) return;
+
+        Location limboSpawn = cachedLimboSpawn;
+        if (limboSpawn != null
+                && limboSpawn.getWorld() != null
+                && player.getWorld().equals(limboSpawn.getWorld())) {
             event.setCancelled(true);
         }
     }
@@ -161,11 +183,23 @@ public class LimboServerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPortal(PlayerPortalEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPermission(PERM_BYPASS)
-                && plugin.getDatabaseManager().isPlayerDead(player.getUniqueId())) {
-            event.setCancelled(true);
-            player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+        if (player.hasPermission(PERM_BYPASS)) {
+            return;
         }
+
+        Location from = event.getFrom().clone();
+        UUID uuid = player.getUniqueId();
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            boolean dead = plugin.getDatabaseManager().isPlayerDead(uuid);
+            if (!dead) return;
+
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (!player.isOnline()) return;
+                player.teleport(from);
+                player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+            });
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGH)
