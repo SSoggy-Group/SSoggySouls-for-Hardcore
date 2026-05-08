@@ -80,7 +80,7 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
             LimboServerListener.register(databaseManager);
         } else {
             LOGGER.info("Starting in MAIN server mode...");
-            new MainServerListener(databaseManager);
+            MainServerListener.register(databaseManager);
 
             // Phase 4: Init Built-in Hardcore Revive Features
             HeadDropListener.register(databaseManager);
@@ -94,7 +94,10 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
             GhostBlockEvents.register(databaseManager);
         }
 
-        new UpdateChecker().checkForUpdates();
+        if (ConfigManager.getConfig().isCheckForUpdates()) {
+            // Intentional fire-and-forget: run a one-time startup update check; no retained instance needed.
+            new UpdateChecker().checkForUpdates();
+        }
         LOGGER.info("SSoggySouls Fabric loaded successfully!");
     }
 

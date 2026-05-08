@@ -31,12 +31,16 @@ public class MainServerListener {
 
     private final DatabaseManager db;
 
-    public MainServerListener(DatabaseManager db) {
+    private MainServerListener(DatabaseManager db) {
         this.db = db;
         registerJoinEvent();
         registerQuitEvent();
         registerDeathEvent();
         registerRespawnEvent();
+    }
+
+    public static void register(DatabaseManager db) {
+        new MainServerListener(db);
     }
 
     private void registerJoinEvent() {
