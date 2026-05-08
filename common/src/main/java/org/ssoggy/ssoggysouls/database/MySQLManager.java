@@ -302,9 +302,9 @@ public class MySQLManager implements DatabaseManager {
             return result;
         }
 
-        // Default missing to true
+        // Default missing to false
         for (UUID uuid : toFetch) {
-            result.put(uuid, true);
+            result.put(uuid, false);
         }
 
         final int BATCH_SIZE = 500;
