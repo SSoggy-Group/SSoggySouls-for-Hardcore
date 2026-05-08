@@ -34,16 +34,16 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@f2beeb207b98357a7af01f68e0d99ef87b01d36d # v5.1.0
         with:
           java-version: "21"
           distribution: "temurin"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@cc9898031d2799c968f448108a734563a61d15c7 # v4
 
       - name: Build with Gradle Wrapper
         run: |
@@ -60,13 +60,13 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@f2beeb207b98357a7af01f68e0d99ef87b01d36d # v5.1.0
         with:
           java-version: "21"
           distribution: "temurin"
 
       - name: Generate and Submit Dependency Graph
-        uses: gradle/actions/dependency-submission@v4
+        uses: gradle/actions/dependency-submission@cc9898031d2799c968f448108a734563a61d15c7 # v4
