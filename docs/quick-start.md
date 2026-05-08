@@ -27,7 +27,7 @@ This guide will help you get SSoggySouls up and running in 8 simple steps. For m
 
 ### Step 1: Download
 
-Download the latest `SSoggySouls-4.3.32.jar` from:
+Download the latest `SSoggySouls-4.3.33.jar` from:
 
 - [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases)
 
@@ -35,12 +35,12 @@ Download the latest `SSoggySouls-4.3.32.jar` from:
 
 ### Step 2: Install Plugin
 
-Place `SSoggySouls-4.3.32.jar` in your server's `plugins/` folder.
+Place `SSoggySouls-4.3.33.jar` in your server's `plugins/` folder.
 
 If using a 2-server setup, install it on **both** backend servers:
 
-- Main server: `/plugins/SSoggySouls-4.3.32.jar`
-- Limbo server: `/plugins/SSoggySouls-4.3.32.jar`
+- Main server: `/plugins/SSoggySouls-4.3.33.jar`
+- Limbo server: `/plugins/SSoggySouls-4.3.33.jar`
 
 > **Important:** If using a proxy, install on backend servers only, NOT on Velocity!
 
