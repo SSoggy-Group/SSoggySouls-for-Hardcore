@@ -10,7 +10,7 @@ dependencies {
     implementation project(':common')
 
     // Paper API (provided by server at runtime)
-    compileOnly 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:26.1.2.build.60-stable'
 
     // Database dependencies
     implementation 'com.zaxxer:HikariCP:5.1.0'
@@ -18,7 +18,7 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.45.3.0'
 
     // Testing
-    testImplementation 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
+    testImplementation 'io.papermc.paper:paper-api:26.1.2.build.60-stable'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
     testImplementation 'org.mockito:mockito-core:5.14.2'
