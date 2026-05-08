@@ -112,9 +112,8 @@ public class GhostBlockEvents {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled()) return;
-
-        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer player)) {
+        ServerPlayer player = org.ssoggy.ssoggysouls.util.HrmUtil.getValidServerPlayer(event, db);
+        if (player == null) {
             return;
         }
 
