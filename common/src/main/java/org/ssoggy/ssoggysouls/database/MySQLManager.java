@@ -71,6 +71,7 @@ public class MySQLManager implements DatabaseManager {
             String pass = plugin.getConfigString("database.password", "changeme");
             int poolSize = plugin.getConfigInt("database.pool-size", 5);
             String configuredTableName = plugin.getConfigString("database.table-name", "hardcore_players");
+            String sslMode = plugin.getConfigString("database.ssl-mode", "PREFERRED");
             if (!SqlSafety.isIdentifier(configuredTableName)) {
                 plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", configuredTableName);
                 throw new DatabaseInitializationException("Invalid database.table-name: " + configuredTableName);
@@ -78,7 +79,7 @@ public class MySQLManager implements DatabaseManager {
             tableName = SqlSafety.requireIdentifier(configuredTableName, "database.table-name");
 
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + dbName
-                    + "?sslMode=VERIFY_IDENTITY"
+                    + "?sslMode=" + sslMode
                     + "&characterEncoding=UTF-8&useUnicode=true";
 
             HikariConfig config = new HikariConfig();
