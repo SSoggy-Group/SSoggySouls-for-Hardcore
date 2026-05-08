@@ -65,7 +65,7 @@ public class SSoggySoulsMod implements PluginContext {
             databaseManager.initialize();
         } catch (DatabaseInitializationException e) {
             LOGGER.error("Failed to initialize database. Disabling features. Error: {}", e.getMessage(), e);
-            return;
+            throw new IllegalStateException("Failed to initialize SSoggySouls database", e);
         }
         DlcServices.init(this);
 

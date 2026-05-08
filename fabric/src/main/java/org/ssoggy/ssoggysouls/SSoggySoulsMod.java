@@ -60,8 +60,8 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
         try {
             databaseManager.initialize();
         } catch (DatabaseInitializationException e) {
-            throw new ModInitializationException("Failed to initialize SSoggySouls database", e);
-            throw new ModInitializationException("Failed to initialize SSoggySouls database", e);
+            LOGGER.error("Failed to initialize database. Disabling features. Error: {}", e.getMessage(), e);
+            throw new IllegalStateException("Failed to initialize SSoggySouls database", e);
         }
         DlcServices.init(this);
 
