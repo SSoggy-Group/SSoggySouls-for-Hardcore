@@ -2,6 +2,9 @@ dependencies {
     // Database connection pooling
     implementation 'com.zaxxer:HikariCP:5.1.0'
     
+    // JetBrains Annotations for nullability checks
+    compileOnly 'org.jetbrains:annotations:24.1.0'
+    
     // MySQL Connector
     implementation 'com.mysql:mysql-connector-j:8.3.0'
     

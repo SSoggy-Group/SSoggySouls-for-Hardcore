@@ -3,6 +3,7 @@ package org.ssoggy.ssoggysouls.database;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Handles thread-safe in-memory caching of player death status with a
@@ -32,8 +33,8 @@ public class DeathStatusCache {
      * expired, or {@code null} otherwise.
      *
      * @param uuid player's UUID
-     * @return cached value, or {@code null} if absent or expired
      */
+    @Nullable
     public Boolean get(UUID uuid) {
         if (uuid == null) return null;
         CachedDeathStatus cached = cache.get(uuid);
