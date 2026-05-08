@@ -107,21 +107,22 @@ public class GhostModeEvents {
         UUID uuid = player.getUUID();
         GhostState state = GhostState.getServerState(player.server);
 
-        if (state.deathHolders.containsKey(uuid)) {
+        if (state.getDeathHolder(uuid) != null) {
             return;
         }
 
-        if (state.deathLocations.containsKey(uuid)) {
-            BlockPos deathPos = state.deathLocations.get(uuid);
-            BlockPos currentPos = player.blockPosition();
+        BlockPos deathPos = state.getDeathLocation(uuid);
+        if (deathPos == null) {
+            return;
+        }
 
-            double distanceSq = currentPos.distSqr(deathPos);
-            double maxDistance = ConfigManager.getConfig().getSpectatorHeadrestrictRadius();
+        BlockPos currentPos = player.blockPosition();
+        double distanceSq = currentPos.distSqr(deathPos);
+        double maxDistance = ConfigManager.getConfig().getSpectatorHeadrestrictRadius();
 
-            if (distanceSq > (maxDistance * maxDistance)) {
-                player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
-                player.sendSystemMessage(Component.literal("You may not travel that far away from your death location").withStyle(net.minecraft.ChatFormatting.GRAY));
-            }
+        if (distanceSq > (maxDistance * maxDistance)) {
+            player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
+            player.sendSystemMessage(Component.literal("You may not travel that far away from your death location").withStyle(net.minecraft.ChatFormatting.GRAY));
         }
     }
 

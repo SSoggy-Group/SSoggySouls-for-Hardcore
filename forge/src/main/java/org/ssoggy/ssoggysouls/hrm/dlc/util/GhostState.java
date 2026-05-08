@@ -6,17 +6,50 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GhostState extends SavedData {
 
     private static final String DEATH_LOCATIONS = "deathLocations";
     private static final String DEATH_HOLDERS = "deathHolders";
 
-    public final Map<UUID, BlockPos> deathLocations = new HashMap<>();
-    public final Map<UUID, UUID> deathHolders = new HashMap<>();
+    private final Map<UUID, BlockPos> deathLocations = new ConcurrentHashMap<>();
+    private final Map<UUID, UUID> deathHolders = new ConcurrentHashMap<>();
+
+    public BlockPos getDeathLocation(UUID ghostId) {
+        return deathLocations.get(ghostId);
+    }
+
+    public void setDeathLocation(UUID ghostId, BlockPos pos) {
+        deathLocations.put(ghostId, pos);
+    }
+
+    public void removeDeathLocation(UUID ghostId) {
+        deathLocations.remove(ghostId);
+    }
+
+    public Map<UUID, BlockPos> getDeathLocations() {
+        return Collections.unmodifiableMap(deathLocations);
+    }
+
+    public UUID getDeathHolder(UUID ghostId) {
+        return deathHolders.get(ghostId);
+    }
+
+    public void setDeathHolder(UUID ghostId, UUID holderId) {
+        deathHolders.put(ghostId, holderId);
+    }
+
+    public void removeDeathHolder(UUID ghostId) {
+        deathHolders.remove(ghostId);
+    }
+
+    public Map<UUID, UUID> getDeathHolders() {
+        return Collections.unmodifiableMap(deathHolders);
+    }
 
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {

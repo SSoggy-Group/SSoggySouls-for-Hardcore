@@ -5,9 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -18,6 +20,11 @@ import com.zaxxer.hikari.HikariDataSource;
 
 public class SQLiteManager implements DatabaseManager {
 
+    private static final int MAX_SQLITE_IN_PARAMS = 900;
+    private static final String BIGINT_NOT_NULL_DEFAULT_0 = "BIGINT NOT NULL DEFAULT 0";
+    private static final Set<String> ALLOWED_COLUMN_DEFINITIONS = Set.of(
+            BIGINT_NOT_NULL_DEFAULT_0
+    );
     private static final String COL_IS_DEAD = "is_dead";
     private static final String SELECT_ALL = "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
     private static final String UPDATE = "UPDATE ";
@@ -50,11 +57,12 @@ public class SQLiteManager implements DatabaseManager {
 
     public void initialize() throws DatabaseInitializationException {
         try {
-            tableName = plugin.getConfigString("database.table-name", "hardcore_players");
-            if (!isValidIdentifier(tableName)) {
-                plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", tableName);
-                throw new DatabaseInitializationException("Invalid database.table-name: " + tableName);
+            String configuredTableName = plugin.getConfigString("database.table-name", "hardcore_players");
+            if (!SqlSafety.isIdentifier(configuredTableName)) {
+                plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", configuredTableName);
+                throw new DatabaseInitializationException("Invalid database.table-name: " + configuredTableName);
             }
+            tableName = SqlSafety.requireIdentifier(configuredTableName, "database.table-name");
 
             java.io.File dataFolder = plugin.getDataFolder();
             if (!dataFolder.exists()) {
@@ -66,7 +74,10 @@ public class SQLiteManager implements DatabaseManager {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(jdbcUrl);
             config.setDriverClassName("org.sqlite.JDBC");
-            config.setMaximumPoolSize(1);
+            // Keep SQLite pool configurable: writes are serialized, but a larger pool can
+            // reduce read-side contention under concurrent access patterns.
+            int maxPoolSize = Math.max(1, plugin.getConfigInt("database.max-pool-size", 1));
+            config.setMaximumPoolSize(maxPoolSize);
             config.setConnectionTimeout(10_000);
             config.setPoolName("SSoggySouls-SQLite-Pool");
 
@@ -104,13 +115,13 @@ public class SQLiteManager implements DatabaseManager {
                 + "lives INT NOT NULL DEFAULT " + plugin.getDefaultLives() + ", "
                 + "is_dead BOOLEAN NOT NULL DEFAULT FALSE, "
                 + "first_join BIGINT NOT NULL, "
-                + "last_death BIGINT NOT NULL DEFAULT 0, "
-                + "last_seen BIGINT NOT NULL DEFAULT 0, "
-                + "grace_until BIGINT NOT NULL DEFAULT 0"
+                + "last_death " + BIGINT_NOT_NULL_DEFAULT_0 + ", "
+                + "last_seen " + BIGINT_NOT_NULL_DEFAULT_0 + ", "
+                + "grace_until " + BIGINT_NOT_NULL_DEFAULT_0
                 + ");";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.executeUpdate();
             ensureLastSeenColumn(conn);
             ensureGraceUntilColumn(conn);
@@ -119,15 +130,11 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     private void ensureLastSeenColumn(Connection conn) {
-        ensureColumn(conn, "last_seen", "BIGINT NOT NULL DEFAULT 0");
+        ensureColumn(conn, "last_seen", BIGINT_NOT_NULL_DEFAULT_0);
     }
 
     private void ensureGraceUntilColumn(Connection conn) {
-        ensureColumn(conn, "grace_until", "BIGINT NOT NULL DEFAULT 0");
-    }
-
-    private boolean isValidIdentifier(String identifier) {
-        return identifier != null && identifier.matches("^\\w+$");
+        ensureColumn(conn, "grace_until", BIGINT_NOT_NULL_DEFAULT_0);
     }
 
     /**
@@ -139,18 +146,19 @@ public class SQLiteManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
-        if (!isValidIdentifier(columnName)) {
+        if (!SqlSafety.isIdentifier(columnName)) {
             throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
         }
-        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),.\\-]+$")) {
-            throw new IllegalArgumentException("Invalid column definition characters: " + definition);
+        if (definition == null) {
+            throw new IllegalArgumentException("Column definition cannot be null");
         }
-        if (definition.contains("--")) {
-            throw new IllegalArgumentException("SQL comments are not allowed in column definition: " + definition);
+        String normalizedDefinition = definition.trim().replaceAll("\\s+", " ").toUpperCase();
+        if (!ALLOWED_COLUMN_DEFINITIONS.contains(normalizedDefinition)) {
+            throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + normalizedDefinition);
         }
 
-        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition;
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + normalizedDefinition;
+        try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.executeUpdate();
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
         } catch (SQLException e) {
@@ -178,7 +186,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = SELECT_ALL + tableName + " WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -196,7 +204,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = SELECT_ALL + tableName + " WHERE LOWER(username) = LOWER(?)";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -223,7 +231,7 @@ public class SQLiteManager implements DatabaseManager {
                 + "grace_until = excluded.grace_until";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, data.getUuid().toString());
             ps.setString(2, data.getUsername());
@@ -247,7 +255,6 @@ public class SQLiteManager implements DatabaseManager {
         }
     }
 
-
     public java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids) {
         java.util.Map<UUID, Boolean> result = new java.util.HashMap<>();
         if (uuids == null || uuids.isEmpty()) return result;
@@ -266,57 +273,72 @@ public class SQLiteManager implements DatabaseManager {
             return result;
         }
 
-        // Default missing to true
-        for (UUID uuid : toFetch) {
-            result.put(uuid, true);
-        }
+        List<UUID> toFetchList = new ArrayList<>(toFetch);
+        Set<UUID> found = fetchDeathStatusFromDatabase(toFetchList, result);
 
-        StringBuilder placeholders = new StringBuilder();
-        for (int i = 0; i < toFetch.size(); i++) {
-            placeholders.append("?");
-            if (i < toFetch.size() - 1) placeholders.append(",");
-        }
-
-        String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            int i = 1;
-            for (UUID uuid : toFetch) {
-                ps.setString(i++, uuid.toString());
+        for (UUID uuid : toFetchList) {
+            if (!found.contains(uuid)) {
+                // Missing records are treated as dead for safety to preserve current
+                // gameplay behavior, but only after queries complete successfully.
+                result.put(uuid, true);
             }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    result.put(uuid, isDead);
-                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
-                }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to bulk check death status");
         }
 
         return result;
     }
 
+    private Set<UUID> fetchDeathStatusFromDatabase(List<UUID> toFetchList, java.util.Map<UUID, Boolean> result) {
+        Set<UUID> found = new HashSet<>();
+        try (Connection conn = dataSource.getConnection()) {
+            for (int start = 0; start < toFetchList.size(); start += MAX_SQLITE_IN_PARAMS) {
+                int end = Math.min(start + MAX_SQLITE_IN_PARAMS, toFetchList.size());
+                List<UUID> batch = toFetchList.subList(start, end);
+
+                StringBuilder placeholders = new StringBuilder();
+                for (int i = 0; i < batch.size(); i++) {
+                    placeholders.append("?");
+                    if (i < batch.size() - 1) placeholders.append(",");
+                }
+
+                String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders + ")";
+                try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+                    int i = 1;
+                    for (UUID uuid : batch) {
+                        ps.setString(i++, uuid.toString());
+                    }
+
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            UUID uuid = UUID.fromString(rs.getString("uuid"));
+                            boolean isDead = rs.getBoolean(COL_IS_DEAD);
+                            result.put(uuid, isDead);
+                            found.add(uuid);
+                            deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to bulk check death status");
+        }
+        return found;
+    }
+
+    @Override
     public boolean isPlayerDead(UUID uuid) {
         CachedDeathStatus cached = deathStatusCache.get(uuid);
         if (cached != null && !cached.isExpired()) {
             return cached.isDead;
         }
-        String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
 
+        String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    // Update cache
                     deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
                     return isDead;
                 }
@@ -334,7 +356,7 @@ public class SQLiteManager implements DatabaseManager {
                 + " SET is_dead = FALSE, lives = ? WHERE uuid = ? AND is_dead = TRUE";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setInt(1, livesToRestore);
             ps.setString(2, uuid.toString());
@@ -360,7 +382,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET lives = ?, is_dead = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             boolean dead = lives <= 0;
             ps.setInt(1, Math.max(0, lives));
@@ -380,7 +402,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET first_join = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setLong(1, firstJoin);
             ps.setString(2, uuid.toString());
@@ -394,7 +416,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET last_seen = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setLong(1, lastSeen);
             ps.setString(2, uuid.toString());
@@ -408,7 +430,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET grace_until = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setLong(1, graceUntil);
             ps.setString(2, uuid.toString());
@@ -427,7 +449,7 @@ public class SQLiteManager implements DatabaseManager {
 
         List<PlayerData> result = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql);
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 result.add(mapResultSet(rs));
@@ -448,7 +470,7 @@ public class SQLiteManager implements DatabaseManager {
             createMetadataTableIfNeeded(conn, metaTable);
 
             String sql = "SELECT version FROM " + metaTable + " WHERE key_ = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
                 ps.setString(1, key);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
@@ -469,7 +491,7 @@ public class SQLiteManager implements DatabaseManager {
 
             String sql = "INSERT INTO " + metaTable + " (key_, version) VALUES (?, ?) "
                     + "ON CONFLICT (key_) DO UPDATE SET version = excluded.version";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
                 ps.setString(1, key);
                 ps.setString(2, version);
                 ps.executeUpdate();
@@ -480,14 +502,12 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     private void createMetadataTableIfNeeded(Connection conn, String metaTable) throws SQLException {
-        if (!isValidIdentifier(metaTable)) {
-            throw new IllegalArgumentException("Invalid metadata table name identifier: " + metaTable);
-        }
+        SqlSafety.requireIdentifier(metaTable, "metadata table name");
         String createTableSql = "CREATE TABLE IF NOT EXISTS " + metaTable + " ("
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
                 + ");";
-        try (PreparedStatement ps = conn.prepareStatement(createTableSql)) {
+        try (PreparedStatement ps = SqlSafety.prepareStatement(conn, createTableSql)) {
             ps.execute();
         }
     }

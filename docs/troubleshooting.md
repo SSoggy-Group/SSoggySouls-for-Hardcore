@@ -30,9 +30,7 @@ ______________________________________________________________________
 ### Symptoms
 
 - Players lose all lives but stay on Main server
-
 - No automatic transfer to Limbo occurs
-
 - Console shows no errors
 
 ### Solutions
@@ -383,7 +381,7 @@ Check console logs on both servers:
 
 ```text
 
-[SSoggySouls] Version 4.3.32 enabled
+[SSoggySouls] Version 4.3.35 enabled
 
 ```
 
@@ -872,8 +870,9 @@ If your issue isn't covered here:
 
    ```yaml
    debug: true
+   ```
 
-```text
+   ```text
 
 Restart both servers and reproduce the issue.
 
