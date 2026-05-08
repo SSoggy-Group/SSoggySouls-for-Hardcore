@@ -78,7 +78,7 @@ public class LimboServerListener implements Listener {
         player.setExp(0);
         player.setLevel(0);
 
-        var maxHealthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        var maxHealthAttr = player.getAttribute(Attribute.MAX_HEALTH);
         double maxHealth = maxHealthAttr != null ? maxHealthAttr.getBaseValue() : 20.0;
         player.setHealth(maxHealth);
         player.setFoodLevel(20);
