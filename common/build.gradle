@@ -1,15 +1,15 @@
 dependencies {
     // Database connection pooling
-    implementation 'com.zaxxer:HikariCP:5.1.0'
+    implementation 'com.zaxxer:HikariCP:7.0.2'
     
     // JetBrains Annotations for nullability checks
     compileOnly 'org.jetbrains:annotations:24.1.0'
     
     // MySQL Connector
-    implementation 'com.mysql:mysql-connector-j:8.3.0'
+    implementation 'com.mysql:mysql-connector-j:9.7.0'
     
     // SQLite JDBC
-    implementation 'org.xerial:sqlite-jdbc:3.45.3.0'
+    implementation 'org.xerial:sqlite-jdbc:3.53.1.0'
     
     // SLF4J API (provided by the server environments)
     compileOnly 'org.slf4j:slf4j-api:2.0.9'
