@@ -20,10 +20,11 @@ public class SQLiteManager implements DatabaseManager {
 
     private static final String COL_IS_DEAD = "is_dead";
     private static final String SELECT_ALL = "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
-    private static final String UPDATE = "UPDATE ";
-
-    // simple cache for death status with TTL to reduce DB queries
-    private static final long CACHE_TTL_MS = 2000; // 2 second cache
+    private static final int MAX_SQLITE_IN_PARAMS = 900;
+    private static final String BIGINT_NOT_NULL_DEFAULT_0 = "BIGINT NOT NULL DEFAULT 0";
+    private static final Set<String> ALLOWED_COLUMN_DEFINITIONS = Set.of(
+            BIGINT_NOT_NULL_DEFAULT_0
+    );
     private final Map<UUID, CachedDeathStatus> deathStatusCache = new ConcurrentHashMap<>();
 
     private final PluginContext plugin;
@@ -112,11 +113,11 @@ public class SQLiteManager implements DatabaseManager {
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.executeUpdate();
-            ensureLastSeenColumn(conn);
-            ensureGraceUntilColumn(conn);
-            plugin.debug("Table '" + tableName + "' verified/created.");
-        }
-    }
+                + "first_join BIGINT NOT NULL, "
+                + "last_death " + BIGINT_NOT_NULL_DEFAULT_0 + ", "
+                + "last_seen " + BIGINT_NOT_NULL_DEFAULT_0 + ", "
+                + "grace_until " + BIGINT_NOT_NULL_DEFAULT_0
+                + ");";
 
     private void ensureLastSeenColumn(Connection conn) {
         ensureColumn(conn, "last_seen", "BIGINT NOT NULL DEFAULT 0");
@@ -127,13 +128,13 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     private boolean isValidIdentifier(String identifier) {
-        return identifier != null && identifier.matches("^\\w+$");
+    private void ensureLastSeenColumn(Connection conn) {
+        ensureColumn(conn, "last_seen", BIGINT_NOT_NULL_DEFAULT_0);
     }
-
     /**
-     * Ensures a column exists in the table, ignoring duplicate-column errors.
-     *
-     * @param conn       database connection
+    private void ensureGraceUntilColumn(Connection conn) {
+        ensureColumn(conn, "grace_until", BIGINT_NOT_NULL_DEFAULT_0);
+    }
      * @param columnName name of the column to add
      * @param definition SQL definition of the column (for example, "BIGINT NOT NULL
      *                   DEFAULT 0")
@@ -257,6 +258,15 @@ public class SQLiteManager implements DatabaseManager {
             CachedDeathStatus cached = deathStatusCache.get(uuid);
             if (cached != null && !cached.isExpired()) {
                 result.put(uuid, cached.isDead);
+    public java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids) {
+        java.util.Map<UUID, Boolean> result = new java.util.HashMap<>();
+        if (uuids == null || uuids.isEmpty()) return result;
+
+        java.util.Set<UUID> toFetch = new java.util.HashSet<>();
+        for (UUID uuid : uuids) {
+            CachedDeathStatus cached = deathStatusCache.get(uuid);
+            if (cached != null && !cached.isExpired()) {
+                result.put(uuid, cached.isDead);
             } else {
                 toFetch.add(uuid);
             }
@@ -266,61 +276,56 @@ public class SQLiteManager implements DatabaseManager {
             return result;
         }
 
-        // Default missing to true
-        for (UUID uuid : toFetch) {
-            result.put(uuid, true);
-        }
+        List<UUID> toFetchList = new ArrayList<>(toFetch);
+        Set<UUID> found = fetchDeathStatusFromDatabase(toFetchList, result);
 
-        StringBuilder placeholders = new StringBuilder();
-        for (int i = 0; i < toFetch.size(); i++) {
-            placeholders.append("?");
-            if (i < toFetch.size() - 1) placeholders.append(",");
-        }
-
-        String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders.toString() + ")";
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            int i = 1;
-            for (UUID uuid : toFetch) {
-                ps.setString(i++, uuid.toString());
+        for (UUID uuid : toFetchList) {
+            if (!found.contains(uuid)) {
+                // Missing records are treated as dead for safety to preserve current
+                // gameplay behavior, but only after queries complete successfully.
+                result.put(uuid, true);
             }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    result.put(uuid, isDead);
-                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
-                }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to bulk check death status");
         }
 
         return result;
     }
 
-    public boolean isPlayerDead(UUID uuid) {
-        CachedDeathStatus cached = deathStatusCache.get(uuid);
-        if (cached != null && !cached.isExpired()) {
-            return cached.isDead;
-        }
-        String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
+    private Set<UUID> fetchDeathStatusFromDatabase(List<UUID> toFetchList, java.util.Map<UUID, Boolean> result) {
+        Set<UUID> found = new HashSet<>();
+        try (Connection conn = dataSource.getConnection()) {
+            for (int start = 0; start < toFetchList.size(); start += MAX_SQLITE_IN_PARAMS) {
+                int end = Math.min(start + MAX_SQLITE_IN_PARAMS, toFetchList.size());
+                List<UUID> batch = toFetchList.subList(start, end);
 
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                StringBuilder placeholders = new StringBuilder();
+                for (int i = 0; i < batch.size(); i++) {
+                    placeholders.append("?");
+                    if (i < batch.size() - 1) placeholders.append(",");
+                }
 
-            ps.setString(1, uuid.toString());
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    // Update cache
-                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
-                    return isDead;
+                String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders + ")";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    int i = 1;
+                    for (UUID uuid : batch) {
+                        ps.setString(i++, uuid.toString());
+                    }
+
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            UUID uuid = UUID.fromString(rs.getString("uuid"));
+                            boolean isDead = rs.getBoolean(COL_IS_DEAD);
+                            result.put(uuid, isDead);
+                            found.add(uuid);
+                            deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                        }
+                    }
                 }
             }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to bulk check death status");
+        }
+        return found;
+    }
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to check death status for " + uuid);
         }
