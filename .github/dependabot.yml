@@ -7,6 +7,10 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "ci"
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
 
   # 2. Keep Gradle dependencies (Minecraft APIs, Libs) up to date
   - package-ecosystem: "gradle"
@@ -18,19 +22,11 @@ updates:
     commit-message:
       prefix: "deps"
     
-    # Grouping is smart to prevent PR spam
+    # Group all dependencies together to prevent PR spam
     groups:
-      minecraft-dependencies:
+      gradle-dependencies:
         patterns:
-          - "com.terraformersmc*"
-          - "net.fabricmc*"
-          - "io.papermc*"
-          - "org.spigotmc*"
-      database-dependencies:
-        patterns:
-          - "org.xerial*"
-          - "com.mysql*"
-          - "com.zaxxer*"
+          - "*"
 
     # PROTECTION: Avoid the "Gradle 8.11 + Loom" disaster
     # You might want to ignore major Gradle updates until you know Loom is ready
