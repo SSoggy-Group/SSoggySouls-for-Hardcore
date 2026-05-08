@@ -37,33 +37,42 @@ public class LeaveLimboCommand implements CommandExecutor {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 boolean isDead = plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
-
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    if (!player.isOnline()) return;
-
-                    if (isDead || plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
-                        player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
-                        return;
-                    }
-
-                    player.sendMessage(MessageUtil.get("limbo-visit-leaving"));
-                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                        if (player.isOnline()) {
-                            ServerTransferUtil.sendToMain(player);
-                        }
-                    }, TRANSFER_DELAY_TICKS);
-                });
+                Bukkit.getScheduler().runTask(plugin, () -> processLeaveRequest(player, isDead));
             } catch (Exception e) {
-                plugin.getLogger().severe(
-                        "Failed to check limbo status for player "
-                                + player.getUniqueId()
-                                + ": "
-                                + e.getMessage());
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    if (player.isOnline()) {
-                        player.sendMessage(MessageUtil.get("command-error-database"));
-                    }
-                });
+                handleDatabaseError(player, e);
+            }
+        });
+    }
+
+    private void processLeaveRequest(Player player, boolean isDead) {
+        if (!player.isOnline()) return;
+
+        if (isDead || plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
+            player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+            return;
+        }
+
+        player.sendMessage(MessageUtil.get("limbo-visit-leaving"));
+        schedulePlayerTransfer(player);
+    }
+
+    private void schedulePlayerTransfer(Player player) {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (player.isOnline()) {
+                ServerTransferUtil.sendToMain(player);
+            }
+        }, TRANSFER_DELAY_TICKS);
+    }
+
+    private void handleDatabaseError(Player player, Exception e) {
+        plugin.getLogger().severe(
+                "Failed to check limbo status for player "
+                        + player.getUniqueId()
+                        + ": "
+                        + e.getMessage());
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (player.isOnline()) {
+                player.sendMessage(MessageUtil.get("command-error-database"));
             }
         });
     }
