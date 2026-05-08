@@ -224,8 +224,10 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
             ps.setInt(1, Math.max(0, lives));
             ps.setBoolean(2, dead);
             ps.setString(3, uuid.toString());
-            ps.executeUpdate();
-            deathStatusCache.put(uuid, dead);
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                deathStatusCache.put(uuid, dead);
+            }
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set lives for " + uuid);
         }
