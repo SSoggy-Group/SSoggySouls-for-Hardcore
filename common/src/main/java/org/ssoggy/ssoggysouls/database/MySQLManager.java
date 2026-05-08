@@ -161,7 +161,7 @@ public class MySQLManager implements DatabaseManager {
     }
 
     /**
-     * ensures a column exists in the table, ignoring duplicate-column errors.
+     * Ensures a column exists in the table, ignoring duplicate-column errors.
      *
      * @param conn       database connection
      * @param columnName name of the column to add
@@ -247,12 +247,12 @@ public class MySQLManager implements DatabaseManager {
                 + " (uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
                 + "ON DUPLICATE KEY UPDATE "
-                + "username = VALUES(username), "
-                + "lives = VALUES(lives), "
-                + "is_dead = VALUES(is_dead), "
-                + "last_death = VALUES(last_death), "
-                + "last_seen = VALUES(last_seen), "
-                + "grace_until = VALUES(grace_until)";
+                + "username = ?, "
+                + "lives = ?, "
+                + "is_dead = ?, "
+                + "last_death = ?, "
+                + "last_seen = ?, "
+                + "grace_until = ?";
 
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
@@ -265,6 +265,12 @@ public class MySQLManager implements DatabaseManager {
             ps.setLong(6, data.getLastDeath());
             ps.setLong(7, data.getLastSeen());
             ps.setLong(8, data.getGraceUntil());
+            ps.setString(9, data.getUsername());
+            ps.setInt(10, data.getLives());
+            ps.setBoolean(11, data.isDead());
+            ps.setLong(12, data.getLastDeath());
+            ps.setLong(13, data.getLastSeen());
+            ps.setLong(14, data.getGraceUntil());
 
             ps.executeUpdate();
             deathStatusCache.remove(data.getUuid());
@@ -473,7 +479,7 @@ public class MySQLManager implements DatabaseManager {
         return result;
     }
 
-    // gets plugin version from db, returns null if first time running
+    // Gets plugin version from db, returns null if first time running.
     // The key parameter allows tracking different versions per server role
     // (main/limbo)
     public String getPluginVersion(String key) {
@@ -502,10 +508,11 @@ public class MySQLManager implements DatabaseManager {
             createMetadataTableIfNeeded(conn, metaTable);
 
             String sql = "INSERT INTO " + metaTable + " (key_, version) VALUES (?, ?) "
-                    + "ON DUPLICATE KEY UPDATE version = VALUES(version)";
+                    + "ON DUPLICATE KEY UPDATE version = ?";
             try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
                 ps.setString(1, key);
                 ps.setString(2, version);
+                ps.setString(3, version);
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
