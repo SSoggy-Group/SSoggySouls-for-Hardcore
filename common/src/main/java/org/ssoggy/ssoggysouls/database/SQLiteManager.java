@@ -57,11 +57,12 @@ public class SQLiteManager implements DatabaseManager {
 
     public void initialize() throws DatabaseInitializationException {
         try {
-            tableName = plugin.getConfigString("database.table-name", "hardcore_players");
-            if (!isValidIdentifier(tableName)) {
-                plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", tableName);
-                throw new DatabaseInitializationException("Invalid database.table-name: " + tableName);
+            String configuredTableName = plugin.getConfigString("database.table-name", "hardcore_players");
+            if (!SqlSafety.isIdentifier(configuredTableName)) {
+                plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", configuredTableName);
+                throw new DatabaseInitializationException("Invalid database.table-name: " + configuredTableName);
             }
+            tableName = SqlSafety.requireIdentifier(configuredTableName, "database.table-name");
 
             java.io.File dataFolder = plugin.getDataFolder();
             if (!dataFolder.exists()) {
@@ -120,7 +121,7 @@ public class SQLiteManager implements DatabaseManager {
                 + ");";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.executeUpdate();
             ensureLastSeenColumn(conn);
             ensureGraceUntilColumn(conn);
@@ -136,10 +137,6 @@ public class SQLiteManager implements DatabaseManager {
         ensureColumn(conn, "grace_until", BIGINT_NOT_NULL_DEFAULT_0);
     }
 
-    private boolean isValidIdentifier(String identifier) {
-        return identifier != null && identifier.matches("^\\w+$");
-    }
-
     /**
      * Ensures a column exists in the table, ignoring duplicate-column errors.
      *
@@ -149,7 +146,7 @@ public class SQLiteManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
-        if (!isValidIdentifier(columnName)) {
+        if (!SqlSafety.isIdentifier(columnName)) {
             throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
         }
         if (definition == null) {
@@ -161,7 +158,7 @@ public class SQLiteManager implements DatabaseManager {
         }
 
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + normalizedDefinition;
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.executeUpdate();
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
         } catch (SQLException e) {
@@ -189,7 +186,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = SELECT_ALL + tableName + " WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -207,7 +204,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = SELECT_ALL + tableName + " WHERE LOWER(username) = LOWER(?)";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -234,7 +231,7 @@ public class SQLiteManager implements DatabaseManager {
                 + "grace_until = excluded.grace_until";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, data.getUuid().toString());
             ps.setString(2, data.getUsername());
@@ -304,7 +301,7 @@ public class SQLiteManager implements DatabaseManager {
                 }
 
                 String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders + ")";
-                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
                     int i = 1;
                     for (UUID uuid : batch) {
                         ps.setString(i++, uuid.toString());
@@ -336,7 +333,7 @@ public class SQLiteManager implements DatabaseManager {
 
         String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -359,7 +356,7 @@ public class SQLiteManager implements DatabaseManager {
                 + " SET is_dead = FALSE, lives = ? WHERE uuid = ? AND is_dead = TRUE";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setInt(1, livesToRestore);
             ps.setString(2, uuid.toString());
@@ -385,7 +382,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET lives = ?, is_dead = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             boolean dead = lives <= 0;
             ps.setInt(1, Math.max(0, lives));
@@ -405,7 +402,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET first_join = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setLong(1, firstJoin);
             ps.setString(2, uuid.toString());
@@ -419,7 +416,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET last_seen = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setLong(1, lastSeen);
             ps.setString(2, uuid.toString());
@@ -433,7 +430,7 @@ public class SQLiteManager implements DatabaseManager {
         String sql = UPDATE + tableName + " SET grace_until = ? WHERE uuid = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
 
             ps.setLong(1, graceUntil);
             ps.setString(2, uuid.toString());
@@ -452,7 +449,7 @@ public class SQLiteManager implements DatabaseManager {
 
         List<PlayerData> result = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql);
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 result.add(mapResultSet(rs));
@@ -473,7 +470,7 @@ public class SQLiteManager implements DatabaseManager {
             createMetadataTableIfNeeded(conn, metaTable);
 
             String sql = "SELECT version FROM " + metaTable + " WHERE key_ = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
                 ps.setString(1, key);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
@@ -494,7 +491,7 @@ public class SQLiteManager implements DatabaseManager {
 
             String sql = "INSERT INTO " + metaTable + " (key_, version) VALUES (?, ?) "
                     + "ON CONFLICT (key_) DO UPDATE SET version = excluded.version";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
                 ps.setString(1, key);
                 ps.setString(2, version);
                 ps.executeUpdate();
@@ -505,14 +502,12 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     private void createMetadataTableIfNeeded(Connection conn, String metaTable) throws SQLException {
-        if (!isValidIdentifier(metaTable)) {
-            throw new IllegalArgumentException("Invalid metadata table name identifier: " + metaTable);
-        }
+        SqlSafety.requireIdentifier(metaTable, "metadata table name");
         String createTableSql = "CREATE TABLE IF NOT EXISTS " + metaTable + " ("
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
                 + ");";
-        try (PreparedStatement ps = conn.prepareStatement(createTableSql)) {
+        try (PreparedStatement ps = SqlSafety.prepareStatement(conn, createTableSql)) {
             ps.execute();
         }
     }
