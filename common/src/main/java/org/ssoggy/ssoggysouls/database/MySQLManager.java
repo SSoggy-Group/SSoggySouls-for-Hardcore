@@ -161,7 +161,7 @@ public class MySQLManager implements DatabaseManager {
     }
 
     /**
-     * ensures a column exists in the table, ignoring duplicate-column errors.
+     * Ensures a column exists in the table, ignoring duplicate-column errors.
      *
      * @param conn       database connection
      * @param columnName name of the column to add
@@ -245,14 +245,14 @@ public class MySQLManager implements DatabaseManager {
     public void savePlayer(PlayerData data) {
         String sql = "INSERT INTO " + tableName
                 + " (uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) AS new "
                 + "ON DUPLICATE KEY UPDATE "
-                + "username = VALUES(username), "
-                + "lives = VALUES(lives), "
-                + "is_dead = VALUES(is_dead), "
-                + "last_death = VALUES(last_death), "
-                + "last_seen = VALUES(last_seen), "
-                + "grace_until = VALUES(grace_until)";
+                + "username = new.username, "
+                + "lives = new.lives, "
+                + "is_dead = new.is_dead, "
+                + "last_death = new.last_death, "
+                + "last_seen = new.last_seen, "
+                + "grace_until = new.grace_until";
 
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
@@ -473,7 +473,7 @@ public class MySQLManager implements DatabaseManager {
         return result;
     }
 
-    // gets plugin version from db, returns null if first time running
+    // Gets plugin version from db, returns null if first time running.
     // The key parameter allows tracking different versions per server role
     // (main/limbo)
     public String getPluginVersion(String key) {
@@ -501,8 +501,8 @@ public class MySQLManager implements DatabaseManager {
         try (Connection conn = dataSource.getConnection()) {
             createMetadataTableIfNeeded(conn, metaTable);
 
-            String sql = "INSERT INTO " + metaTable + " (key_, version) VALUES (?, ?) "
-                    + "ON DUPLICATE KEY UPDATE version = VALUES(version)";
+            String sql = "INSERT INTO " + metaTable + " (key_, version) VALUES (?, ?) AS new_vals "
+                    + "ON DUPLICATE KEY UPDATE version = new_vals.version";
             try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
                 ps.setString(1, key);
                 ps.setString(2, version);
