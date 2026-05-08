@@ -70,12 +70,7 @@ public class SQLiteManager implements DatabaseManager {
             config.setConnectionTimeout(10_000);
             config.setPoolName("SSoggySouls-SQLite-Pool");
 
-            try {
-                dataSource = new HikariDataSource(config);
-            } catch (RuntimeException ex) {
-                plugin.getLogger().log(Level.SEVERE, "SQLite connection pool error:", ex);
-                throw new DatabaseInitializationException("Could not create SQLite connection pool", ex);
-            }
+            createHikariDataSource(config);
             createTable();
 
             plugin.getLogger().log(Level.INFO, "SQLite connection established (database.db)");
@@ -83,6 +78,15 @@ public class SQLiteManager implements DatabaseManager {
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed!", e);
             throw new DatabaseInitializationException("SQLite initialization failed", e);
+        }
+    }
+
+    private void createHikariDataSource(HikariConfig config) throws DatabaseInitializationException {
+        try {
+            dataSource = new HikariDataSource(config);
+        } catch (RuntimeException ex) {
+            plugin.getLogger().log(Level.SEVERE, "SQLite connection pool error:", ex);
+            throw new DatabaseInitializationException("Could not create SQLite connection pool", ex);
         }
     }
 
@@ -127,7 +131,7 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     /**
-     * ensures a column exists in the table, ignoring duplicate-column errors.
+     * Ensures a column exists in the table, ignoring duplicate-column errors.
      *
      * @param conn       database connection
      * @param columnName name of the column to add
@@ -138,7 +142,7 @@ public class SQLiteManager implements DatabaseManager {
         if (!isValidIdentifier(columnName)) {
             throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
         }
-        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),'.\\-]+$")) {
+        if (definition == null || !definition.matches("^[a-zA-Z0-9_ \\(\\),.\\-]+$")) {
             throw new IllegalArgumentException("Invalid column definition characters: " + definition);
         }
         if (definition.contains("--")) {
@@ -434,7 +438,7 @@ public class SQLiteManager implements DatabaseManager {
         return result;
     }
 
-    // gets plugin version from db, returns null if first time running
+    // Gets plugin version from db, returns null if first time running
     // The key parameter allows tracking different versions per server role
     // (main/limbo)
     public String getPluginVersion(String key) {

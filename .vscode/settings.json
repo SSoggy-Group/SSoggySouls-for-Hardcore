@@ -1,0 +1,14 @@
+{
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "gradle.nestedProjects": true,
+  "sonarlint.connectedMode.project": {
+    "connectionId": "ssoggy-group",
+    "projectKey": "SSoggy-Group_SSoggySouls-for-Hardcore"
+  },
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "file": ".github/copilot-instructions.md"
+    }
+  ]
+}

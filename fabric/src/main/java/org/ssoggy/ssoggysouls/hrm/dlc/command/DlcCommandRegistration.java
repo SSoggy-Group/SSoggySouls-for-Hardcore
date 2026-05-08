@@ -248,6 +248,7 @@ public final class DlcCommandRegistration {
                 target.changeGameMode(GameMode.ADVENTURE);
                 MainServerListener.setGhostModeAttributes(target, true);
                 GhostModeEvents.updateGhostStatus(target.getUuid(), true);
+                org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(target.getUuid(), true);
                 GhostState ghostState = GhostState.getServerState(source.getServer());
                 ghostState.deathLocations.put(target.getUuid(), target.getBlockPos());
                 ghostState.deathHolders.remove(target.getUuid());
