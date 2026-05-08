@@ -872,11 +872,10 @@ If your issue isn't covered here:
    debug: true
    ```
 
-   ```text
 
 Restart both servers and reproduce the issue.
 
-1. **Collect Information**
+2. **Collect Information**
 
    - SSoggySouls version
 
@@ -890,10 +889,10 @@ Restart both servers and reproduce the issue.
 
    - Steps to reproduce
 
-1. **Search Existing Issues**
+3. **Search Existing Issues**
    Check [GitHub Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues) for similar problems.
 
-1. **Open a New Issue**
+4. **Open a New Issue**
    [Create an issue](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues/new) with all collected information.
 
 ## Related Resources
