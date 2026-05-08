@@ -300,8 +300,6 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
                     () -> "Failed to get plugin version from database for key: " + key);
         }
         return null;
-    }
-
     /**
      * Persists the plugin version for the given key. Subclasses override this to
      * use the correct upsert syntax for their dialect.
