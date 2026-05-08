@@ -33,13 +33,17 @@ public class LimboServerListener {
             "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
     );
 
-    public LimboServerListener(DatabaseManager db) {
+    private LimboServerListener(DatabaseManager db) {
         this.db = db;
         registerJoinEvent();
         registerDisconnectEvent();
         registerCommandRestrictionEvent();
         registerCancelDamageEvent();
         registerWorldChangeEvent();
+    }
+
+    public static void register(DatabaseManager db) {
+        new LimboServerListener(db);
     }
 
     public static void updateLimboStatus(UUID uuid, boolean isDead) {
