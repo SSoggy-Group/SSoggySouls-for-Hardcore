@@ -60,36 +60,28 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (!ConfigManager.getConfig().isHrmEnabled()) return;
-
-        if (isGhost(event.getEntity())) {
-            event.setCanceled(true);
-        }
+        handleCancelableEvent(event, event.getEntity());
     }
 
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (!ConfigManager.getConfig().isHrmEnabled()) return;
-
-        if (isGhost(event.getEntity())) {
-            event.setCanceled(true);
-        }
+        handleCancelableEvent(event, event.getEntity());
     }
 
     @SubscribeEvent
     public static void onAttackEntity(AttackEntityEvent event) {
-        if (!ConfigManager.getConfig().isHrmEnabled()) return;
-
-        if (isGhost(event.getEntity())) {
-            event.setCanceled(true);
-        }
+        handleCancelableEvent(event, event.getEntity());
     }
 
     @SubscribeEvent
     public static void onItemToss(ItemTossEvent event) {
+        handleCancelableEvent(event, event.getPlayer());
+    }
+
+    private static void handleCancelableEvent(net.minecraftforge.eventbus.api.Event event, Player player) {
         if (!ConfigManager.getConfig().isHrmEnabled()) return;
 
-        if (isGhost(event.getPlayer())) {
+        if (isGhost(player) && event.isCancelable()) {
             event.setCanceled(true);
         }
     }
@@ -108,9 +100,9 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-
         if (!ConfigManager.getConfig().isHrmEnabled()) return;
+
+        if (event.phase != TickEvent.Phase.END) return;
 
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
             if (isGhost(player)) {

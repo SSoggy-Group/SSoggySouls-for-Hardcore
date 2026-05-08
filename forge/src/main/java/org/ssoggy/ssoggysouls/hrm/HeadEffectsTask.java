@@ -27,9 +27,9 @@ public class HeadEffectsTask {
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-
         if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled() || !org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHeadWearingEffects()) return;
+
+        if (event.phase != TickEvent.Phase.END) return;
 
         MinecraftServer server = event.getServer();
         if (server.getTickCount() % 20 != 0) return; // Once per second
