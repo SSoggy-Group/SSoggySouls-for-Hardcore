@@ -19,11 +19,15 @@ You are an autonomous AI developer managing a cross-platform Minecraft project (
 
 1. THE PREFIX & SCOPE (Choose exactly one):
 
-- `feat(scope): ` -> Brand new mechanic. (Minor Release).
-- `fix(scope): ` -> Patching a bug. (Patch Release).
-- `refactor(scope): ` -> Internal code changes only.
-- `chore(scope): ` -> Build scripts, dependencies, or workflows.
-  _Valid Scopes:_ `(paper)`, `(fabric)`, `(forge)`, `(common)`, `(github)`. If the change breaks older versions, add an exclamation mark: `feat!(common): `.
+- `feat(scope): ` -> Brand new mechanic. (Triggers Minor Release).
+- `fix(scope): ` -> Patching a bug. (Triggers Patch Release).
+- `refactor(scope): ` -> Internal code changes only. (Triggers Patch Release).
+- `chore(scope): ` -> Gradle build scripts or dependency updates. (Triggers Patch Release).
+- `ci(github): ` -> Modifying GitHub Actions, workflows, or templates. (Builds and tests, but PREVENTS RELEASE).
+- `docs(scope): ` -> Readme or wiki updates. (PREVENTS RELEASE).
+
+_Valid Scopes:_ `(paper)`, `(fabric)`, `(forge)`, `(common)`, `(github)`.
+_Critical Rule:_ If a change does not affect the end-user's compiled `.jar` (like workflow YAMLs), you MUST use `ci:` or `docs:` so the automated pipeline builds it but skips publishing to Modrinth.
 
 2. THE TITLE:
    Under 50 characters, imperative mood, lowercase, no period at the end.
@@ -32,7 +36,7 @@ You are an autonomous AI developer managing a cross-platform Minecraft project (
    Leave one blank line after the title. Write a concise, bulleted list of the exact changes. Wrap text at 72 characters. No conversational filler.
 
 4. THE SILENT OVERRIDE ([skip ci]):
-   If modifying ONLY documentation (.md), logs, or comments, append ` [skip ci]` to the title (e.g., `docs: update readme [skip ci]`). NEVER use this if modifying Java, JSON, YAML, or build scripts.
+   If modifying ONLY documentation (.md) or text logs, append ` [skip ci]` to the title (e.g., `docs: update readme [skip ci]`) to bypass the workflow entirely to save runner minutes. NEVER use `[skip ci]` if modifying Java, JSON, YAML, or Gradle files, as they MUST be compiled and tested by the CI pipeline even if they aren't being released.
 
 --- PART 3: GRADLE & PIPELINE COMPLIANCE ---
 
