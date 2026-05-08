@@ -872,7 +872,6 @@ If your issue isn't covered here:
    debug: true
    ```
 
-   ```text
 
 Restart both servers and reproduce the issue.
 
