@@ -92,9 +92,7 @@
 }
 
 #skip-to-content:focus {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
+  position: static;
   width: auto;
   height: auto;
   overflow: visible;
