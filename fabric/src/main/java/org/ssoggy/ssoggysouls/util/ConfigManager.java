@@ -148,6 +148,7 @@ public class ConfigManager {
 
         // --- Debug ---
         private boolean debug = false;
+        private boolean checkForUpdates = true;
 
         public ModConfig() {
             // Default messages
@@ -171,6 +172,7 @@ public class ConfigManager {
             messages.put("death-now-ghost", "§cYou have died! You are now a ghost.");
             messages.put("limbo-welcome-visitor", "§eWelcome to Limbo as a visitor!");
             messages.put("limbo-welcome-dead", "§cWelcome to Limbo. You are dead!");
+            messages.put("limbo-cannot-leave", "§cYou cannot leave Limbo while dead.");
             messages.put("revival-structure-incomplete", "§cThe revival structure is incomplete!");
             messages.put("admin-setlives-success", "§aSet §e%player%§a's lives to §e%lives%§a.");
         }
@@ -227,6 +229,7 @@ public class ConfigManager {
         public java.util.List<String> getFenceBlocktag() { return fenceBlocktag; }
         public java.util.List<String> getStairBlocktag() { return stairBlocktag; }
         public boolean isDebug() { return debug; }
+        public boolean isCheckForUpdates() { return checkForUpdates; }
 
         public boolean isSingleServerDatabase() {
             return isSqliteDatabaseType(databaseType);
@@ -320,6 +323,7 @@ public class ConfigManager {
         public void setFenceBlocktag(java.util.Collection<String> blocks) { fenceBlocktag = normalizeBlockList(blocks); }
         public void setStairBlocktag(java.util.Collection<String> blocks) { stairBlocktag = normalizeBlockList(blocks); }
         public void setDebug(boolean d) { debug = d; }
+        public void setCheckForUpdates(boolean check) { checkForUpdates = check; }
 
         private static java.util.List<String> normalizeBlockList(java.util.Collection<String> blocks) {
             java.util.List<String> normalized = new java.util.ArrayList<>();

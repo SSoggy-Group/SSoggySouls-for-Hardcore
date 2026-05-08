@@ -66,8 +66,17 @@ public class RevivalStructureListener {
 
     private static ActionResult handleStructureInteraction(ServerPlayerEntity serverPlayer, World world, Hand hand,
             net.minecraft.util.hit.BlockHitResult hitResult, DatabaseManager db) {
+        if (serverPlayer.isSpectator()) {
+            return ActionResult.PASS;
+        }
+
         ItemStack stack = serverPlayer.getStackInHand(hand);
         if (!stack.isOf(Items.PLAYER_HEAD)) {
+            return ActionResult.PASS;
+        }
+
+        PlayerData actorData = db.getPlayer(serverPlayer.getUuid());
+        if (actorData == null || actorData.isDead()) {
             return ActionResult.PASS;
         }
 
@@ -160,6 +169,7 @@ public class RevivalStructureListener {
         breakStructure(world, placedPos);
         DlcDeaths.clearDeath(revivedUuid);
         GhostModeEvents.updateGhostStatus(revivedUuid, false);
+        org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(revivedUuid, false);
         GhostState ghostState = GhostState.getServerState(world.getServer());
         ghostState.deathLocations.remove(revivedUuid);
         ghostState.deathHolders.remove(revivedUuid);

@@ -1,23 +1,39 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
-  # Keep GitHub Actions and security hashes up to date
+  # 1. Keep GitHub Actions up to date
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: "ci"
 
-  # Keep Minecraft APIs and Java libraries up to date
+  # 2. Keep Gradle dependencies (Minecraft APIs, Libs) up to date
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
       interval: "weekly"
-    # Group all Gradle updates into a single PR to prevent spam
+    # IMPORTANT: This tells Dependabot to also check your gradlew / wrapper properties
+    # so you don't get stuck on old versions manually.
+    commit-message:
+      prefix: "deps"
+
+    # Grouping is smart to prevent PR spam
     groups:
       minecraft-dependencies:
         patterns:
-          - "*"
+          - "com.terraformersmc*"
+          - "net.fabricmc*"
+          - "io.papermc*"
+          - "org.spigotmc*"
+      database-dependencies:
+        patterns:
+          - "org.xerial*"
+          - "com.mysql*"
+          - "com.zaxxer*"
+
+    # PROTECTION: Avoid the "Gradle 8.11 + Loom" disaster
+    # You might want to ignore major Gradle updates until you know Loom is ready
+    ignore:
+      - dependency-name: "org.gradle:gradle"
+        update-types: ["version-update:semver-major"]
