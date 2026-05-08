@@ -129,7 +129,6 @@ public class LimboServerListener implements Listener {
         Player player = event.getPlayer();
         if (player.hasPermission(PERM_BYPASS)) return;
         if (player.hasPermission("ssoggysouls.admin")) return;
-        if (player.getGameMode() != GameMode.ADVENTURE) return;
 
         String rawMessage = event.getMessage();
         String command = rawMessage.toLowerCase().split(" ")[0];
@@ -188,7 +187,10 @@ public class LimboServerListener implements Listener {
         if (player.hasPermission(PERM_BYPASS)) {
             return;
         }
-        event.setCancelled(true);
+        boolean likelyLimboDead = player.getGameMode() == GameMode.ADVENTURE;
+        if (likelyLimboDead) {
+            event.setCancelled(true);
+        }
 
         Location from = event.getFrom().clone();
         Location to = event.getTo() != null ? event.getTo().clone() : null;
@@ -200,7 +202,7 @@ public class LimboServerListener implements Listener {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if (!player.isOnline()) return;
                 if (!dead) {
-                    if (to != null) {
+                    if (likelyLimboDead && to != null) {
                         player.teleport(to);
                     }
                     return;
