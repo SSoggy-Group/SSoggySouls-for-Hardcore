@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'org.ssoggy'
-version = '4.4.7'
+version = '4.4.8'
 
 dependencies {
     // Inject the common module
