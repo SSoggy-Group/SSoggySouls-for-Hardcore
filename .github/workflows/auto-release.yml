@@ -72,10 +72,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
-
 jobs:
   prepare-release:
     name: Prepare Release
@@ -152,17 +148,13 @@ jobs:
     name: Build Jars
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     needs: prepare-release
     if: needs.prepare-release.outputs.skip != 'true'
-    outputs:
-      tag_created: ${{ steps.commit_version.outputs.tag_created }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -183,13 +175,6 @@ jobs:
           sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
           sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
 
-      - name: Auto-Update Docs References
-        env:
-          OLD_VERSION: ${{ needs.prepare-release.outputs.old_version }}
-          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
-        run: |
-          find . -type f -name "*.md" -print0 | xargs -0 sed -i "s/$OLD_VERSION/$NEW_VERSION/g"
-
       - name: Build Minecraft Mods
         run: |
           chmod +x ./gradlew
@@ -206,6 +191,51 @@ jobs:
           mv "$RAW_PAPER" "SSoggySouls-Paper-${NEW_VERSION}.jar"
           mv "$RAW_FABRIC" "SSoggySouls-Fabric-${NEW_VERSION}.jar"
           mv "$RAW_FORGE" "SSoggySouls-Forge-${NEW_VERSION}.jar"
+
+      - name: Upload Release Jars
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-jars
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
+            SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
+            SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+
+  commit-version:
+    name: Commit Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs:
+      - prepare-release
+      - build
+    if: needs.prepare-release.outputs.skip != 'true'
+    outputs:
+      tag_created: ${{ steps.commit_version.outputs.tag_created }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Apply Version to Gradle files
+        env:
+          OLD_VERSION: ${{ needs.prepare-release.outputs.old_version }}
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          sed -i "s/version = '$OLD_VERSION'/version = '$NEW_VERSION'/g" paper/build.gradle || true
+          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
+          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
+
+      - name: Auto-Update Docs References
+        env:
+          OLD_VERSION: ${{ needs.prepare-release.outputs.old_version }}
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          find . -type f -name "*.md" -print0 | xargs -0 sed -i "s/$OLD_VERSION/$NEW_VERSION/g"
 
       - name: Commit version bump to Repository
         id: commit_version
@@ -249,17 +279,6 @@ jobs:
 
           echo "tag_created=${TAG_CREATED}" >> "${GITHUB_OUTPUT}"
 
-      - name: Upload Release Jars
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: release-jars
-          retention-days: 7
-          if-no-files-found: error
-          path: |
-            SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
-            SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
-            SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
-
   github-release:
     name: GitHub Release
     runs-on: ubuntu-latest
@@ -268,7 +287,8 @@ jobs:
     needs:
       - prepare-release
       - build
-    if: needs.build.outputs.tag_created == 'true'
+      - commit-version
+    if: needs.commit-version.outputs.tag_created == 'true'
 
     steps:
       - name: Download Release Jars
@@ -297,9 +317,9 @@ jobs:
       contents: read
     needs:
       - prepare-release
-      - build
+      - commit-version
       - github-release
-    if: needs.build.outputs.tag_created == 'true'
+    if: needs.commit-version.outputs.tag_created == 'true'
 
     steps:
       - name: Download Release Jars
@@ -343,9 +363,9 @@ jobs:
       contents: read
     needs:
       - prepare-release
-      - build
+      - commit-version
       - github-release
-    if: needs.build.outputs.tag_created == 'true'
+    if: needs.commit-version.outputs.tag_created == 'true'
 
     steps:
       - name: Download Release Jars
@@ -387,9 +407,9 @@ jobs:
       contents: read
     needs:
       - prepare-release
-      - build
+      - commit-version
       - github-release
-    if: needs.build.outputs.tag_created == 'true'
+    if: needs.commit-version.outputs.tag_created == 'true'
 
     steps:
       - name: Download Release Jars
