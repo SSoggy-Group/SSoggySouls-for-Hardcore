@@ -9,6 +9,7 @@ import java.io.File;
 
 import org.ssoggy.ssoggysouls.database.DatabaseInitializationException;
 import org.ssoggy.ssoggysouls.exception.ModInitializationException;
+import org.ssoggy.ssoggysouls.exception.ModInitializationException;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.database.MySQLManager;
 import org.ssoggy.ssoggysouls.database.SQLiteManager;
@@ -59,7 +60,7 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
         try {
             databaseManager.initialize();
         } catch (DatabaseInitializationException e) {
-            LOGGER.error("Failed to initialize database. Disabling features. Error: {}", e.getMessage(), e);
+            throw new ModInitializationException("Failed to initialize SSoggySouls database", e);
             throw new ModInitializationException("Failed to initialize SSoggySouls database", e);
         }
         DlcServices.init(this);
