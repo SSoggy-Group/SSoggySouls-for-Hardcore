@@ -94,6 +94,7 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
             GhostBlockEvents.register(databaseManager);
         }
 
+        // Intentional fire-and-forget: run a one-time startup update check; no retained instance needed.
         new UpdateChecker().checkForUpdates();
         LOGGER.info("SSoggySouls Fabric loaded successfully!");
     }
