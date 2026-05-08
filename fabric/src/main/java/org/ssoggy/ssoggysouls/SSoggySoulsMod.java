@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 import org.ssoggy.ssoggysouls.database.DatabaseInitializationException;
+import org.ssoggy.ssoggysouls.exception.ModInitializationException;
+import org.ssoggy.ssoggysouls.exception.ModInitializationException;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.database.MySQLManager;
 import org.ssoggy.ssoggysouls.database.SQLiteManager;
