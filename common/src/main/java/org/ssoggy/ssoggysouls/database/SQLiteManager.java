@@ -21,8 +21,9 @@ import com.zaxxer.hikari.HikariDataSource;
 public class SQLiteManager implements DatabaseManager {
 
     private static final int MAX_SQLITE_IN_PARAMS = 900;
+    private static final String BIGINT_NOT_NULL_DEFAULT_0 = "BIGINT NOT NULL DEFAULT 0";
     private static final Set<String> ALLOWED_COLUMN_DEFINITIONS = Set.of(
-            "BIGINT NOT NULL DEFAULT 0"
+            BIGINT_NOT_NULL_DEFAULT_0
     );
     private static final String COL_IS_DEAD = "is_dead";
     private static final String SELECT_ALL = "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
@@ -113,9 +114,9 @@ public class SQLiteManager implements DatabaseManager {
                 + "lives INT NOT NULL DEFAULT " + plugin.getDefaultLives() + ", "
                 + "is_dead BOOLEAN NOT NULL DEFAULT FALSE, "
                 + "first_join BIGINT NOT NULL, "
-                + "last_death BIGINT NOT NULL DEFAULT 0, "
-                + "last_seen BIGINT NOT NULL DEFAULT 0, "
-                + "grace_until BIGINT NOT NULL DEFAULT 0"
+                + "last_death " + BIGINT_NOT_NULL_DEFAULT_0 + ", "
+                + "last_seen " + BIGINT_NOT_NULL_DEFAULT_0 + ", "
+                + "grace_until " + BIGINT_NOT_NULL_DEFAULT_0
                 + ");";
 
         try (Connection conn = dataSource.getConnection();
@@ -128,11 +129,11 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     private void ensureLastSeenColumn(Connection conn) {
-        ensureColumn(conn, "last_seen", "BIGINT NOT NULL DEFAULT 0");
+        ensureColumn(conn, "last_seen", BIGINT_NOT_NULL_DEFAULT_0);
     }
 
     private void ensureGraceUntilColumn(Connection conn) {
-        ensureColumn(conn, "grace_until", "BIGINT NOT NULL DEFAULT 0");
+        ensureColumn(conn, "grace_until", BIGINT_NOT_NULL_DEFAULT_0);
     }
 
     private boolean isValidIdentifier(String identifier) {
@@ -277,6 +278,20 @@ public class SQLiteManager implements DatabaseManager {
         }
 
         List<UUID> toFetchList = new ArrayList<>(toFetch);
+        Set<UUID> found = fetchDeathStatusFromDatabase(toFetchList, result);
+
+        for (UUID uuid : toFetchList) {
+            if (!found.contains(uuid)) {
+                // Missing records are treated as dead for safety to preserve current
+                // gameplay behavior, but only after queries complete successfully.
+                result.put(uuid, true);
+            }
+        }
+
+        return result;
+    }
+
+    private Set<UUID> fetchDeathStatusFromDatabase(List<UUID> toFetchList, java.util.Map<UUID, Boolean> result) {
         Set<UUID> found = new HashSet<>();
         try (Connection conn = dataSource.getConnection()) {
             for (int start = 0; start < toFetchList.size(); start += MAX_SQLITE_IN_PARAMS) {
@@ -309,18 +324,8 @@ public class SQLiteManager implements DatabaseManager {
             }
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to bulk check death status");
-            return result;
         }
-
-        for (UUID uuid : toFetchList) {
-            if (!found.contains(uuid)) {
-                // Missing records are treated as dead for safety to preserve current
-                // gameplay behavior, but only after queries complete successfully.
-                result.put(uuid, true);
-            }
-        }
-
-        return result;
+        return found;
     }
 
     public boolean isPlayerDead(UUID uuid) {
