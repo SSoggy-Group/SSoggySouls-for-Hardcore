@@ -30,9 +30,7 @@ ______________________________________________________________________
 ### Symptoms
 
 - Players lose all lives but stay on Main server
-
 - No automatic transfer to Limbo occurs
-
 - Console shows no errors
 
 ### Solutions
@@ -872,8 +870,9 @@ If your issue isn't covered here:
 
    ```yaml
    debug: true
+   ```
 
-```text
+   ```text
 
 Restart both servers and reproduce the issue.
 
