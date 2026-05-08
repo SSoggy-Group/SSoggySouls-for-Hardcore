@@ -108,9 +108,9 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (!ConfigManager.getConfig().isHrmEnabled()) return;
-
         if (event.phase != TickEvent.Phase.END) return;
+
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
 
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
             if (isGhost(player)) {
