@@ -20,6 +20,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +37,8 @@ public class ReviveSkullManager {
 
     @SubscribeEvent
     public static void onItemRightClick(PlayerInteractEvent.RightClickItem event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return;
+
         if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer serverPlayer)) {
             return;
         }
