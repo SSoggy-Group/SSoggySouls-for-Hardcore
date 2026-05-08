@@ -12,6 +12,8 @@ import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
 public class LeaveLimboCommand implements CommandExecutor {
 
+    private static final long TRANSFER_DELAY_TICKS = 20L;
+
     private final SSoggySouls plugin;
 
     public LeaveLimboCommand(SSoggySouls plugin) {
@@ -23,8 +25,8 @@ public class LeaveLimboCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player player) {
             handleLeave(player);
-        } else if (sender != null) {
-            sender.sendMessage("Only players can use this command.");
+        } else {
+            sender.sendMessage(MessageUtil.get("command-only-players"));
         }
         return true;
     }
@@ -33,23 +35,36 @@ public class LeaveLimboCommand implements CommandExecutor {
         // Run asynchronously to catch players who might not yet be in limboDeadPlayers
         // during the initial join delay
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            boolean isDead = plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
+            try {
+                boolean isDead = plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
 
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                if (!player.isOnline()) return;
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (!player.isOnline()) return;
 
-                if (isDead || plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
-                    player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
-                    return;
-                }
-
-                player.sendMessage(MessageUtil.get("limbo-visit-leaving"));
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    if (player.isOnline()) {
-                        ServerTransferUtil.sendToMain(player);
+                    if (isDead || plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
+                        player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+                        return;
                     }
-                }, 20L);
-            });
+
+                    player.sendMessage(MessageUtil.get("limbo-visit-leaving"));
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        if (player.isOnline()) {
+                            ServerTransferUtil.sendToMain(player);
+                        }
+                    }, TRANSFER_DELAY_TICKS);
+                });
+            } catch (Exception e) {
+                plugin.getLogger().severe(
+                        "Failed to check limbo status for player "
+                                + player.getUniqueId()
+                                + ": "
+                                + e.getMessage());
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (player.isOnline()) {
+                        player.sendMessage("Unable to process your request right now. Please try again.");
+                    }
+                });
+            }
         });
     }
 }
