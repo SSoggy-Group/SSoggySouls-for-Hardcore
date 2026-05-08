@@ -336,11 +336,7 @@ public class MySQLManager implements DatabaseManager {
                 int end = Math.min(start + BATCH_SIZE, toFetchList.size());
                 List<UUID> batch = toFetchList.subList(start, end);
 
-                StringBuilder placeholders = new StringBuilder();
-                for (int i = 0; i < batch.size(); i++) {
-                    placeholders.append("?");
-                    if (i < batch.size() - 1) placeholders.append(",");
-                }
+                String placeholders = String.join(",", java.util.Collections.nCopies(batch.size(), "?"));
 
                 String sql = "SELECT uuid, is_dead FROM " + tableName + " WHERE uuid IN (" + placeholders + ")";
 
