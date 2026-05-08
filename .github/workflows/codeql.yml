@@ -42,15 +42,24 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       # Initialize CodeQL
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: java-kotlin
-          # Keep CodeQL buildless; regular CI remains responsible for Gradle compilation.
-          build-mode: none
+          # Run CodeQL in manual mode so we compile with Gradle.
+          # This resolves dependencies correctly for full analysis precision.
+          build-mode: manual
           # This points to our custom config to only scan our source directories.
           config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Build with Gradle Wrapper
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build -x test
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
