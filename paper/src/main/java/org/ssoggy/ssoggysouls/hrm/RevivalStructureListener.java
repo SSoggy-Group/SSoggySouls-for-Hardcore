@@ -74,15 +74,11 @@ public class RevivalStructureListener implements Listener {
 
         // db checkkkkk
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            PlayerData data = db.getPlayer(ownerUuid);
+            boolean isDead = db.isPlayerDead(ownerUuid);
 
-            if (data == null) {
-                sendError(placer, "Unknown player.");
-                return;
-            }
-
-            if (!data.isDead()) {
-                sendError(placer, data.getUsername() + " is not dead!");
+            if (!isDead) {
+                String name = skullOwner.getName() != null ? skullOwner.getName() : "Player";
+                sendError(placer, name + " is not dead!");
                 playErrorEffect(placed);
                 return;
             }
@@ -93,13 +89,14 @@ public class RevivalStructureListener implements Listener {
                 return;
             }
 
+            String name = skullOwner.getName() != null ? skullOwner.getName() : "Player";
             plugin.getLogger().log(Level.INFO,
                     "{0} revived {1} via ritual structure!",
-                    new Object[]{placer.getName(), data.getUsername()});
+                    new Object[]{placer.getName(), name});
 
             // visual effects on main thread
             Bukkit.getScheduler().runTask(plugin, () ->
-                    performRevival(placed, placer, ownerUuid, data.getUsername()));
+                    performRevival(placed, placer, ownerUuid, name));
         });
     }
 

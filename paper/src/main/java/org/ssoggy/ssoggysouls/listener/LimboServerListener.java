@@ -57,7 +57,6 @@ public class LimboServerListener implements Listener {
                 if (!player.isOnline()) return;
 
                 if (isDead) {
-                    plugin.getLimboDeadPlayers().add(player.getUniqueId());
                     applyLimboState(player);
                 } else {
                     if (plugin.isDebugMode()) {
@@ -68,11 +67,6 @@ public class LimboServerListener implements Listener {
                 }
             });
         });
-    }
-
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        plugin.getLimboDeadPlayers().remove(event.getPlayer().getUniqueId());
     }
 
     private void applyLimboState(Player player) {
@@ -135,7 +129,7 @@ public class LimboServerListener implements Listener {
         if (player.hasPermission("ssoggysouls.admin")) return;
 
         // visitors (not dead in main) are unrestricted
-        if (!plugin.getLimboDeadPlayers().contains(player.getUniqueId())) return;
+        if (!plugin.getDatabaseManager().isPlayerDead(player.getUniqueId())) return;
 
         String command = event.getMessage().toLowerCase().split(" ")[0];
 
@@ -159,7 +153,7 @@ public class LimboServerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player player
-                && plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
+                && plugin.getDatabaseManager().isPlayerDead(player.getUniqueId())) {
             event.setCancelled(true);
         }
     }
@@ -168,7 +162,7 @@ public class LimboServerListener implements Listener {
     public void onPortal(PlayerPortalEvent event) {
         Player player = event.getPlayer();
         if (!player.hasPermission(PERM_BYPASS)
-                && plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
+                && plugin.getDatabaseManager().isPlayerDead(player.getUniqueId())) {
             event.setCancelled(true);
             player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
         }

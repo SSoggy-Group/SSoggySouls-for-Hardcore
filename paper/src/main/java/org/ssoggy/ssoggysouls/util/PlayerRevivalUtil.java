@@ -43,7 +43,6 @@ public final class PlayerRevivalUtil {
                 && (target.getGameMode() != GameMode.SURVIVAL || GAMEMODESENUM.getPlayerGameMode(target) == GAMEMODESENUM.GHOSTMODE)) {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if (target.isOnline()) {
-                    plugin.getLimboDeadPlayers().remove(target.getUniqueId());
                     GAMEMODESENUM.setPlayerGameMode(target, GAMEMODESENUM.SURVIVAL);
                     target.sendMessage(MessageUtil.get("revive-success"));
 

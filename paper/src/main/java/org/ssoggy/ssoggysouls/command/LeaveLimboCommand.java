@@ -32,7 +32,7 @@ public class LeaveLimboCommand implements CommandExecutor {
     }
 
     private void handleLeave(Player player) {
-        // Run asynchronously to catch players who might not yet be in limboDeadPlayers
+        // Run asynchronously to check player death status from database
         // during the initial join delay
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
@@ -47,7 +47,7 @@ public class LeaveLimboCommand implements CommandExecutor {
     private void processLeaveRequest(Player player, boolean isDead) {
         if (!player.isOnline()) return;
 
-        if (isDead || plugin.getLimboDeadPlayers().contains(player.getUniqueId())) {
+        if (isDead) {
             player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
             return;
         }

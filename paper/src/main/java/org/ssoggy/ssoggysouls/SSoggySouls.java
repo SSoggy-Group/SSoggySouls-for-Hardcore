@@ -111,7 +111,6 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     private HeadDropListener headDropListener;
 
     private Location limboSpawn;
-    private final Set<UUID> limboDeadPlayers = ConcurrentHashMap.newKeySet();
 
     @Override
     public void onEnable() {
@@ -611,9 +610,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         return limboSpawn;
     }
 
-    public Set<UUID> getLimboDeadPlayers() {
-        return limboDeadPlayers;
-    }
+
 
     public boolean isHrmEnabled() {
         return hrmEnabled;
