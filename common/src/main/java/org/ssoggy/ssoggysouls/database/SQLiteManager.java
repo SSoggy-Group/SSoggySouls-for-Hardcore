@@ -146,9 +146,7 @@ public class SQLiteManager implements DatabaseManager {
      *                   DEFAULT 0")
      */
     private void ensureColumn(Connection conn, String columnName, String definition) {
-        if (!SqlSafety.isIdentifier(columnName)) {
-            throw new IllegalArgumentException("Invalid column name identifier: " + columnName);
-        }
+        String safeColumnName = SqlSafety.requireIdentifier(columnName, "column name");
         if (definition == null) {
             throw new IllegalArgumentException("Column definition cannot be null");
         }
@@ -157,7 +155,7 @@ public class SQLiteManager implements DatabaseManager {
             throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + normalizedDefinition);
         }
 
-        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + normalizedDefinition;
+        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + safeColumnName + " " + normalizedDefinition;
         try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.executeUpdate();
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
@@ -502,8 +500,8 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     private void createMetadataTableIfNeeded(Connection conn, String metaTable) throws SQLException {
-        SqlSafety.requireIdentifier(metaTable, "metadata table name");
-        String createTableSql = "CREATE TABLE IF NOT EXISTS " + metaTable + " ("
+        String safeTableName = SqlSafety.requireIdentifier(metaTable, "metadata table name");
+        String createTableSql = "CREATE TABLE IF NOT EXISTS " + safeTableName + " ("
                 + "key_ VARCHAR(50) PRIMARY KEY,"
                 + "version VARCHAR(50)"
                 + ");";
