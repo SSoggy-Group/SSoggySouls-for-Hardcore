@@ -22,23 +22,23 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // HikariCP for database connection pooling (nested into mod JAR via JiJ)
-    include implementation("com.zaxxer:HikariCP:5.1.0")
+    include implementation("com.zaxxer:HikariCP:7.0.2")
 
     // MySQL Connector (nested into mod JAR via JiJ)
-    include implementation("com.mysql:mysql-connector-j:8.3.0")
+    include implementation("com.mysql:mysql-connector-j:9.7.0")
 
     // SQLite JDBC (nested into mod JAR via JiJ)
-    include implementation("org.xerial:sqlite-jdbc:3.45.3.0")
+    include implementation("org.xerial:sqlite-jdbc:3.53.1.0")
 
     // Mod Menu API (compile only, provided by Mod Menu mod at runtime)
-    modCompileOnlyApi "com.terraformersmc:modmenu:11.0.1"
+    modCompileOnlyApi "com.terraformersmc:modmenu:11.0.4"
 
     // Testing
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.14.4'
     testImplementation 'org.mockito:mockito-core:5.23.0'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.23.0'
 }
 
 test {
