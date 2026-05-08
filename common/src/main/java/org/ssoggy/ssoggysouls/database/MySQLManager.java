@@ -28,38 +28,12 @@ public class MySQLManager implements DatabaseManager {
             BIGINT_NOT_NULL_DEFAULT_0
     );
 
-    // simple cache for death status with TTL to reduce DB queries
-    private static final long CACHE_TTL_MS = 2000; // 2 second cache
-    private final Map<UUID, CachedDeathStatus> deathStatusCache = new ConcurrentHashMap<>();
+    private final DeathStatusCache deathStatusCache = new DeathStatusCache();
 
     private final PluginContext plugin;
     private javax.sql.DataSource dataSource;
     private HikariDataSource hikariDataSource; // kept for shutdown()
     private String tableName;
-
-    private static class CachedDeathStatus {
-        final boolean isDead;
-        final long timestamp;
-
-        CachedDeathStatus(boolean isDead) {
-            this.isDead = isDead;
-            this.timestamp = System.currentTimeMillis();
-        }
-
-        boolean isExpired() {
-            return System.currentTimeMillis() - timestamp > CACHE_TTL_MS;
-        }
-    }
-
-    /**
-     * Updates a player's cached death status immediately after a successful write.
-     * This avoids stale reads during the TTL window.
-     */
-    private void updateDeathStatusCache(UUID uuid, boolean isDead) {
-        if (uuid != null) {
-            deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
-        }
-    }
 
     public MySQLManager(PluginContext plugin) {
         this.plugin = plugin;
@@ -282,7 +256,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setLong(14, data.getGraceUntil());
 
             ps.executeUpdate();
-            updateDeathStatusCache(data.getUuid(), data.isDead());
+            deathStatusCache.put(data.getUuid(), data.isDead());
 
             if (plugin.isDebugMode()) {
                 plugin.debug("Saved player data: " + data);
@@ -301,9 +275,9 @@ public class MySQLManager implements DatabaseManager {
 
         java.util.Set<UUID> toFetch = new java.util.HashSet<>();
         for (UUID uuid : uuids) {
-            CachedDeathStatus cached = deathStatusCache.get(uuid);
-            if (cached != null && !cached.isExpired()) {
-                result.put(uuid, cached.isDead);
+            Boolean cached = deathStatusCache.get(uuid);
+            if (cached != null) {
+                result.put(uuid, cached);
             } else {
                 toFetch.add(uuid);
             }
@@ -341,7 +315,7 @@ public class MySQLManager implements DatabaseManager {
                             UUID uuid = UUID.fromString(rs.getString("uuid"));
                             boolean isDead = rs.getBoolean(COL_IS_DEAD);
                             result.put(uuid, isDead);
-                            updateDeathStatusCache(uuid, isDead);
+                            deathStatusCache.put(uuid, isDead);
                         }
                     }
                 }
@@ -354,9 +328,9 @@ public class MySQLManager implements DatabaseManager {
     }
 
     public boolean isPlayerDead(UUID uuid) {
-        CachedDeathStatus cached = deathStatusCache.get(uuid);
-        if (cached != null && !cached.isExpired()) {
-            return cached.isDead;
+        Boolean cached = deathStatusCache.get(uuid);
+        if (cached != null) {
+            return cached;
         }
 
         String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
@@ -368,7 +342,7 @@ public class MySQLManager implements DatabaseManager {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    updateDeathStatusCache(uuid, isDead);
+                    deathStatusCache.put(uuid, isDead);
                     return isDead;
                 }
             }
@@ -393,7 +367,7 @@ public class MySQLManager implements DatabaseManager {
             int rows = ps.executeUpdate();
 
             if (rows > 0) {
-                updateDeathStatusCache(uuid, false);
+                deathStatusCache.put(uuid, false);
             }
             if (plugin.isDebugMode()) {
                 plugin.debug("Revived player " + uuid + " (rows affected: " + rows + ")");
@@ -419,7 +393,7 @@ public class MySQLManager implements DatabaseManager {
 
             ps.executeUpdate();
 
-            updateDeathStatusCache(uuid, dead);
+            deathStatusCache.put(uuid, dead);
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set lives for " + uuid);
         }

@@ -29,27 +29,11 @@ public class SQLiteManager implements DatabaseManager {
     private static final String SELECT_ALL = "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
     private static final String UPDATE = "UPDATE ";
 
-    // simple cache for death status with TTL to reduce DB queries
-    private static final long CACHE_TTL_MS = 2000; // 2 second cache
-    private final Map<UUID, CachedDeathStatus> deathStatusCache = new ConcurrentHashMap<>();
+    private final DeathStatusCache deathStatusCache = new DeathStatusCache();
 
     private final PluginContext plugin;
     private HikariDataSource dataSource;
     private String tableName;
-
-    private static class CachedDeathStatus {
-        final boolean isDead;
-        final long timestamp;
-
-        CachedDeathStatus(boolean isDead) {
-            this.isDead = isDead;
-            this.timestamp = System.currentTimeMillis();
-        }
-
-        boolean isExpired() {
-            return System.currentTimeMillis() - timestamp > CACHE_TTL_MS;
-        }
-    }
 
     public SQLiteManager(PluginContext plugin) {
         this.plugin = plugin;
@@ -242,7 +226,7 @@ public class SQLiteManager implements DatabaseManager {
 
             ps.executeUpdate();
 
-            deathStatusCache.remove(data.getUuid());
+            deathStatusCache.put(data.getUuid(), data.isDead());
             if (plugin.isDebugMode()) {
                 plugin.debug("Saved player data: " + data);
             }
@@ -259,9 +243,9 @@ public class SQLiteManager implements DatabaseManager {
 
         java.util.Set<UUID> toFetch = new java.util.HashSet<>();
         for (UUID uuid : uuids) {
-            CachedDeathStatus cached = deathStatusCache.get(uuid);
-            if (cached != null && !cached.isExpired()) {
-                result.put(uuid, cached.isDead);
+            Boolean cached = deathStatusCache.get(uuid);
+            if (cached != null) {
+                result.put(uuid, cached);
             } else {
                 toFetch.add(uuid);
             }
@@ -311,7 +295,7 @@ public class SQLiteManager implements DatabaseManager {
                             boolean isDead = rs.getBoolean(COL_IS_DEAD);
                             result.put(uuid, isDead);
                             found.add(uuid);
-                            deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                            deathStatusCache.put(uuid, isDead);
                         }
                     }
                 }
@@ -324,9 +308,9 @@ public class SQLiteManager implements DatabaseManager {
 
     @Override
     public boolean isPlayerDead(UUID uuid) {
-        CachedDeathStatus cached = deathStatusCache.get(uuid);
-        if (cached != null && !cached.isExpired()) {
-            return cached.isDead;
+        Boolean cached = deathStatusCache.get(uuid);
+        if (cached != null) {
+            return cached;
         }
 
         String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
@@ -337,7 +321,7 @@ public class SQLiteManager implements DatabaseManager {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                    deathStatusCache.put(uuid, isDead);
                     return isDead;
                 }
             }
@@ -363,7 +347,7 @@ public class SQLiteManager implements DatabaseManager {
 
             // invalidate cache on death status change
             if (rows > 0) {
-                deathStatusCache.remove(uuid);
+                deathStatusCache.put(uuid, false);
             }
             if (plugin.isDebugMode()) {
                 plugin.debug("Revived player " + uuid + " (rows affected: " + rows + ")");
@@ -390,7 +374,7 @@ public class SQLiteManager implements DatabaseManager {
             ps.executeUpdate();
 
             // invalidate cache on death status change again
-            deathStatusCache.remove(uuid);
+            deathStatusCache.put(uuid, dead);
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set lives for " + uuid);
         }
