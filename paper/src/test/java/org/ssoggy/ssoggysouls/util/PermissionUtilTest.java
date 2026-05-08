@@ -28,6 +28,10 @@ class PermissionUtilTest {
         sender = mock(CommandSender.class);
         player = mock(Player.class);
 
+        // Default player info to prevent NPEs
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(player.getName()).thenReturn("TestPlayer");
+
         // Default to enabled and on Limbo server for most tests
         when(plugin.isLimboOpSecurityEnabled()).thenReturn(true);
         when(plugin.isLimboServer()).thenReturn(true);
