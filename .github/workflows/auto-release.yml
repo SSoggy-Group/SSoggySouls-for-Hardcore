@@ -149,8 +149,6 @@ jobs:
     permissions:
       contents: read
     needs: prepare-release
-    permissions:
-      contents: read
     if: needs.prepare-release.outputs.skip != 'true'
 
     steps:
@@ -212,8 +210,6 @@ jobs:
     needs:
       - prepare-release
       - build
-    permissions:
-      contents: write
     if: needs.prepare-release.outputs.skip != 'true'
     outputs:
       tag_created: ${{ steps.commit_version.outputs.tag_created }}
@@ -291,8 +287,6 @@ jobs:
       - prepare-release
       - build
       - commit-version
-    permissions:
-      contents: write
     if: needs.commit-version.outputs.tag_created == 'true'
 
     steps:
