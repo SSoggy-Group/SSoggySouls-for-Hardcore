@@ -51,6 +51,26 @@ public class MySQLManager implements DatabaseManager {
         }
     }
 
+    /**
+     * Removes a player's death status from the cache.
+     * Call this after any successful write that may affect is_dead.
+     */
+    private void invalidateDeathStatusCache(UUID uuid) {
+        if (uuid != null) {
+            deathStatusCache.remove(uuid);
+        }
+    }
+
+    /**
+     * Updates a player's cached death status immediately after a successful write.
+     * This avoids stale reads during the TTL window.
+     */
+    private void updateDeathStatusCache(UUID uuid, boolean isDead) {
+        if (uuid != null) {
+            deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+        }
+    }
+
     public MySQLManager(PluginContext plugin) {
         this.plugin = plugin;
     }
