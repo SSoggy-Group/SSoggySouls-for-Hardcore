@@ -27,11 +27,10 @@ public class SQLiteManager implements DatabaseManager {
     );
     private static final String COL_IS_DEAD = "is_dead";
     private static final String SELECT_ALL = "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
-    private static final int MAX_SQLITE_IN_PARAMS = 900;
-    private static final String BIGINT_NOT_NULL_DEFAULT_0 = "BIGINT NOT NULL DEFAULT 0";
-    private static final Set<String> ALLOWED_COLUMN_DEFINITIONS = Set.of(
-            BIGINT_NOT_NULL_DEFAULT_0
-    );
+    private static final String UPDATE = "UPDATE ";
+
+    // simple cache for death status with TTL to reduce DB queries
+    private static final long CACHE_TTL_MS = 2000; // 2 second cache
     private final Map<UUID, CachedDeathStatus> deathStatusCache = new ConcurrentHashMap<>();
 
     private final PluginContext plugin;
@@ -123,11 +122,11 @@ public class SQLiteManager implements DatabaseManager {
         try (Connection conn = dataSource.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.executeUpdate();
-                + "first_join BIGINT NOT NULL, "
-                + "last_death " + BIGINT_NOT_NULL_DEFAULT_0 + ", "
-                + "last_seen " + BIGINT_NOT_NULL_DEFAULT_0 + ", "
-                + "grace_until " + BIGINT_NOT_NULL_DEFAULT_0
-                + ");";
+            ensureLastSeenColumn(conn);
+            ensureGraceUntilColumn(conn);
+            plugin.debug("Table '" + tableName + "' verified/created.");
+        }
+    }
 
     private void ensureLastSeenColumn(Connection conn) {
         ensureColumn(conn, "last_seen", BIGINT_NOT_NULL_DEFAULT_0);
@@ -138,13 +137,13 @@ public class SQLiteManager implements DatabaseManager {
     }
 
     private boolean isValidIdentifier(String identifier) {
-    private void ensureLastSeenColumn(Connection conn) {
-        ensureColumn(conn, "last_seen", BIGINT_NOT_NULL_DEFAULT_0);
+        return identifier != null && identifier.matches("^\\w+$");
     }
+
     /**
-    private void ensureGraceUntilColumn(Connection conn) {
-        ensureColumn(conn, "grace_until", BIGINT_NOT_NULL_DEFAULT_0);
-    }
+     * Ensures a column exists in the table, ignoring duplicate-column errors.
+     *
+     * @param conn       database connection
      * @param columnName name of the column to add
      * @param definition SQL definition of the column (for example, "BIGINT NOT NULL
      *                   DEFAULT 0")
@@ -259,16 +258,6 @@ public class SQLiteManager implements DatabaseManager {
         }
     }
 
-
-    public java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids) {
-        java.util.Map<UUID, Boolean> result = new java.util.HashMap<>();
-        if (uuids == null || uuids.isEmpty()) return result;
-
-        java.util.Set<UUID> toFetch = new java.util.HashSet<>();
-        for (UUID uuid : uuids) {
-            CachedDeathStatus cached = deathStatusCache.get(uuid);
-            if (cached != null && !cached.isExpired()) {
-                result.put(uuid, cached.isDead);
     public java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids) {
         java.util.Map<UUID, Boolean> result = new java.util.HashMap<>();
         if (uuids == null || uuids.isEmpty()) return result;
@@ -337,6 +326,25 @@ public class SQLiteManager implements DatabaseManager {
         }
         return found;
     }
+
+    public boolean isPlayerDead(UUID uuid) {
+        CachedDeathStatus cached = deathStatusCache.get(uuid);
+        if (cached != null && !cached.isExpired()) {
+            return cached.isDead;
+        }
+
+        String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    boolean isDead = rs.getBoolean(COL_IS_DEAD);
+                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                    return isDead;
+                }
+            }
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to check death status for " + uuid);
         }
