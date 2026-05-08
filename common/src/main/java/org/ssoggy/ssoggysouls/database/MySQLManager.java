@@ -52,16 +52,6 @@ public class MySQLManager implements DatabaseManager {
     }
 
     /**
-     * Removes a player's death status from the cache.
-     * Call this after any successful write that may affect is_dead.
-     */
-    private void invalidateDeathStatusCache(UUID uuid) {
-        if (uuid != null) {
-            deathStatusCache.remove(uuid);
-        }
-    }
-
-    /**
      * Updates a player's cached death status immediately after a successful write.
      * This avoids stale reads during the TTL window.
      */
@@ -292,7 +282,7 @@ public class MySQLManager implements DatabaseManager {
             ps.setLong(14, data.getGraceUntil());
 
             ps.executeUpdate();
-            deathStatusCache.remove(data.getUuid());
+            updateDeathStatusCache(data.getUuid(), data.isDead());
 
             if (plugin.isDebugMode()) {
                 plugin.debug("Saved player data: " + data);
@@ -300,7 +290,7 @@ public class MySQLManager implements DatabaseManager {
 
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to save player " + data.getUuid());
-            deathStatusCache.remove(data.getUuid());
+            invalidateDeathStatusCache(data.getUuid());
         }
     }
 
@@ -323,9 +313,9 @@ public class MySQLManager implements DatabaseManager {
             return result;
         }
 
-        // Default missing to false
+        // Default missing to true (fail-safe dead default)
         for (UUID uuid : toFetch) {
-            result.put(uuid, false);
+            result.put(uuid, true);
         }
 
         final int BATCH_SIZE = 500;
@@ -351,7 +341,7 @@ public class MySQLManager implements DatabaseManager {
                             UUID uuid = UUID.fromString(rs.getString("uuid"));
                             boolean isDead = rs.getBoolean(COL_IS_DEAD);
                             result.put(uuid, isDead);
-                            deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                            updateDeathStatusCache(uuid, isDead);
                         }
                     }
                 }
@@ -378,7 +368,7 @@ public class MySQLManager implements DatabaseManager {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     boolean isDead = rs.getBoolean(COL_IS_DEAD);
-                    deathStatusCache.put(uuid, new CachedDeathStatus(isDead));
+                    updateDeathStatusCache(uuid, isDead);
                     return isDead;
                 }
             }
@@ -403,7 +393,7 @@ public class MySQLManager implements DatabaseManager {
             int rows = ps.executeUpdate();
 
             if (rows > 0) {
-                deathStatusCache.remove(uuid);
+                updateDeathStatusCache(uuid, false);
             }
             if (plugin.isDebugMode()) {
                 plugin.debug("Revived player " + uuid + " (rows affected: " + rows + ")");
@@ -429,7 +419,7 @@ public class MySQLManager implements DatabaseManager {
 
             ps.executeUpdate();
 
-            deathStatusCache.remove(uuid);
+            updateDeathStatusCache(uuid, dead);
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set lives for " + uuid);
         }
@@ -483,7 +473,9 @@ public class MySQLManager implements DatabaseManager {
      * setLives().
      */
     public void invalidateDeathStatusCache(UUID uuid) {
-        deathStatusCache.remove(uuid);
+        if (uuid != null) {
+            deathStatusCache.remove(uuid);
+        }
     }
 
     public List<PlayerData> getDeadPlayers() {
