@@ -137,7 +137,7 @@ public class RevivalStructureListener implements Listener {
                 PotionEffectType.GLOWING, duration, 0, false, true));
 
         // attempt to do totem of undying animation (will prob only work if you are revived within the spectator time window but hey its worth a shot and its cool for that window anyway)
-        revived.playEffect(EntityEffect.TOTEM_RESURRECT);
+        revived.playEffect(EntityEffect.PROTECTED_FROM_DEATH);
     }
 
     private boolean isRitualStructure(Block headBlock) {
