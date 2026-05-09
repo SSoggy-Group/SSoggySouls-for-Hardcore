@@ -108,6 +108,8 @@ public class GhostModeEvents {
             ServerPlayer player = event.getServer().getPlayerList().getPlayer(uuid);
             if (player != null) {
                 enforceGhostRestrictions(player);
+            } else {
+                GHOST_CACHE.remove(uuid);
             }
         }
     }
