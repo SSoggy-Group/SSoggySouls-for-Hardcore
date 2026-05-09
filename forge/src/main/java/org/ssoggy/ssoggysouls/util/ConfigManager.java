@@ -161,6 +161,7 @@ public class ConfigManager {
             messages.put("revive-not-found", "§cPlayer §e%player% §cnot found.");
             messages.put("revive-already-alive", "§e%player% §cis already alive.");
             messages.put("admin-revive-success", "§aSuccessfully revived §e%player%§a.");
+            messages.put("revive-from-limbo", "§a%player% §7has been revived and will return from Limbo shortly.");
             messages.put("extra-life-dead", "§cYou cannot use an Extra Life while dead!");
             messages.put("extra-life-at-max", "§cYou are already at the maximum number of lives!");
             messages.put("extra-life-gained", "§aYou gained an extra life! You now have §e%lives% §alives.");
