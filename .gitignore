@@ -55,3 +55,6 @@ hs_err_pid*
 
 # SonarLint
 .sonarlint
+
+# Local Gradle
+.gradle-local/
