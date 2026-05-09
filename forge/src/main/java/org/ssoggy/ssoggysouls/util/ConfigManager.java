@@ -19,7 +19,6 @@ public class ConfigManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static ModConfig config;
     private static final File CONFIG_FILE = new File(FMLPaths.CONFIGDIR.get().toFile(), "ssoggysouls.json");
-    private static final java.util.regex.Pattern GRACE_PERIOD_PATTERN = java.util.regex.Pattern.compile("(\\d++)([hms])");
 
     public static void load() {
         if (CONFIG_FILE.exists()) {
@@ -62,18 +61,26 @@ public class ConfigManager {
     }
 
     public static long parseGracePeriod(String input) {
-        if (input == null || input.equals("0") || input.isEmpty() || input.length() > 50) return 0;
+        if (input == null || input.equals("0") || input.trim().isEmpty() || input.length() > 50) return 0;
         try {
             long totalMs = 0;
-            java.util.regex.Matcher matcher = GRACE_PERIOD_PATTERN.matcher(input.toLowerCase());
-            while (matcher.find()) {
-                long value = Long.parseLong(matcher.group(1));
-                char unit = matcher.group(2).charAt(0);
-                switch (unit) {
-                    case 'h' -> totalMs += value * 3600000;
-                    case 'm' -> totalMs += value * 60000;
-                    case 's' -> totalMs += value * 1000;
-                    default -> { /* ignore */ }
+            String normalized = input.trim().toLowerCase();
+            StringBuilder digits = new StringBuilder();
+            for (int i = 0; i < normalized.length(); i++) {
+                char c = normalized.charAt(i);
+                if (Character.isDigit(c)) {
+                    digits.append(c);
+                } else if (c == 'h' || c == 'm' || c == 's') {
+                    if (digits.length() > 0) {
+                        long value = Long.parseLong(digits.toString());
+                        switch (c) {
+                            case 'h' -> totalMs += value * 3600000;
+                            case 'm' -> totalMs += value * 60000;
+                            case 's' -> totalMs += value * 1000;
+                            default -> { /* ignore */ }
+                        }
+                        digits.setLength(0);
+                    }
                 }
             }
             return totalMs;
