@@ -126,8 +126,8 @@ public class LimboServerListener {
             return false;
         }
 
-        // Need to be async ideally? Let's check db instead directly, though paper does it async.
-        if (player.interactionManager.getGameMode() == GameMode.ADVENTURE && db.isPlayerDead(player.getUuid())) {
+        // Only intercept portal-triggered travel to avoid blocking server-driven transfers.
+        if (player.interactionManager.getGameMode() == GameMode.ADVENTURE && player.portalManager.isInPortal() && db.isPlayerDead(player.getUuid())) {
             player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
             return true;
         }

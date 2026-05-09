@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import net.minecraft.entity.Entity;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 
-import net.minecraft.server.world.ServerWorld;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin {

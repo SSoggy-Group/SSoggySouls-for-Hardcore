@@ -91,17 +91,15 @@ public class LimboServerListener {
         if (event.getEntity() instanceof ServerPlayer player) {
             // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            ResourceLocation limboId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
-            if (event.getDimension().location().equals(limboId)) return;
+            ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
+            if (limboId != null && event.getDimension().location().equals(limboId)) return;
 
             // Check for bypass permission (parity with Fabric)
             if (player.hasPermissions(2)) return;
 
-            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
-                if (db.isPlayerDead(player.getUUID())) {
-                    event.setCanceled(true);
-                    player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
-                }
+            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
+                event.setCanceled(true);
+                player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
             }
         }
     }
