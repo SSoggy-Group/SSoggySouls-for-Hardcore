@@ -87,6 +87,10 @@ public class ConfigManager {
         private float limboSpawnYaw = 0;
         private float limboSpawnPitch = 0;
 
+        // --- Security ---
+        private boolean limboOpSecurityCheck = true;
+        private java.util.List<String> limboTrustedAdmins = new java.util.ArrayList<>();
+
         // --- Database Connection ---
         private String databaseType = "sqlite"; // "sqlite" or "mysql"
         private String databaseHost = "localhost";
@@ -179,6 +183,8 @@ public class ConfigManager {
         public double getLimboSpawnZ() { return limboSpawnZ; }
         public float getLimboSpawnYaw() { return limboSpawnYaw; }
         public float getLimboSpawnPitch() { return limboSpawnPitch; }
+        public boolean isLimboOpSecurityCheck() { return limboOpSecurityCheck; }
+        public java.util.List<String> getLimboTrustedAdmins() { return limboTrustedAdmins; }
         public String getDatabaseType() { return databaseType; }
         public String getDatabaseHost() { return databaseHost; }
         public int getDatabasePort() { return databasePort; }
@@ -267,6 +273,8 @@ public class ConfigManager {
         public void setLimboSpawnZ(double z) { limboSpawnZ = z; }
         public void setLimboSpawnYaw(float yaw) { limboSpawnYaw = yaw; }
         public void setLimboSpawnPitch(float pitch) { limboSpawnPitch = pitch; }
+        public void setLimboOpSecurityCheck(boolean check) { limboOpSecurityCheck = check; }
+        public void setLimboTrustedAdmins(java.util.Collection<String> admins) { limboTrustedAdmins = normalizeStringList(admins); }
         public void setDatabaseType(String type) { databaseType = type; }
         public void setDatabaseHost(String host) { databaseHost = host; }
         public void setDatabasePort(int port) { databasePort = port; }
@@ -308,6 +316,16 @@ public class ConfigManager {
             for (String block : blocks) {
                 if (block != null && !block.isBlank()) {
                     normalized.add(block.trim().toUpperCase(java.util.Locale.ROOT));
+                }
+            }
+            return normalized;
+        }
+
+        private static java.util.List<String> normalizeStringList(java.util.Collection<String> items) {
+            java.util.List<String> normalized = new java.util.ArrayList<>();
+            for (String item : items) {
+                if (item != null && !item.isBlank()) {
+                    normalized.add(item.trim().toLowerCase(java.util.Locale.ROOT));
                 }
             }
             return normalized;
