@@ -2,6 +2,7 @@ package org.ssoggy.ssoggysouls.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.File;
@@ -60,18 +61,24 @@ public class ConfigManager {
     }
 
     public static long parseGracePeriod(String input) {
-        if (input == null || input.equals("0") || input.isEmpty()) return 0;
+        if (input == null || input.equals("0") || input.trim().isEmpty() || input.length() > 50) return 0;
         try {
             long totalMs = 0;
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+)([hms])").matcher(input.toLowerCase());
-            while (matcher.find()) {
-                long value = Long.parseLong(matcher.group(1));
-                char unit = matcher.group(2).charAt(0);
-                switch (unit) {
-                    case 'h' -> totalMs += value * 3600000;
-                    case 'm' -> totalMs += value * 60000;
-                    case 's' -> totalMs += value * 1000;
-                    default -> { /* ignore */ }
+            String normalized = input.trim().toLowerCase();
+            StringBuilder digits = new StringBuilder();
+            for (int i = 0; i < normalized.length(); i++) {
+                char c = normalized.charAt(i);
+                if (Character.isDigit(c)) {
+                    digits.append(c);
+                } else if ((c == 'h' || c == 'm' || c == 's') && digits.length() > 0) {
+                    long value = Long.parseLong(digits.toString());
+                    switch (c) {
+                        case 'h' -> totalMs += value * 3600000;
+                        case 'm' -> totalMs += value * 60000;
+                        case 's' -> totalMs += value * 1000;
+                        default -> { /* ignore */ }
+                    }
+                    digits.setLength(0);
                 }
             }
             return totalMs;
@@ -125,7 +132,8 @@ public class ConfigManager {
         // --- DLC / Ghost Mode ---
         private boolean loseInventory = false;
         private boolean ghostModeParticles = false;
-        private int spectatorHeadrestrictRadius = 16;
+        @SerializedName("spectatorHeadrestrictRadius")
+        private int spectatorHeadRestrictRadius = 16;
         private boolean restrictMenuAccess = true;
         private boolean creativePlayersDropHeads = false;
         private boolean headBurnsInLava = false;
@@ -140,11 +148,16 @@ public class ConfigManager {
         private java.util.Map<String, String> messages = new java.util.HashMap<>();
 
         // --- Structure Block Tags ---
-        private java.util.List<String> soulSandBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("CRYING_OBSIDIAN", "OBSIDIAN"));
-        private java.util.List<String> flowerBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("SOUL_TORCH", "REDSTONE_TORCH"));
-        private java.util.List<String> oreBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("ENCHANTING_TABLE"));
-        private java.util.List<String> fenceBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE", "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE", "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"));
-        private java.util.List<String> stairBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("MAGMA_BLOCK"));
+        @SerializedName("soulSandBlocktag")
+        private java.util.List<String> soulSandBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("CRYING_OBSIDIAN", "OBSIDIAN"));
+        @SerializedName("flowerBlocktag")
+        private java.util.List<String> flowerBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("SOUL_TORCH", "REDSTONE_TORCH"));
+        @SerializedName("oreBlocktag")
+        private java.util.List<String> oreBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("ENCHANTING_TABLE"));
+        @SerializedName("fenceBlocktag")
+        private java.util.List<String> fenceBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE", "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE", "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"));
+        @SerializedName("stairBlocktag")
+        private java.util.List<String> stairBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("MAGMA_BLOCK"));
 
         // --- Debug ---
         private boolean debug = false;
@@ -211,7 +224,7 @@ public class ConfigManager {
         public boolean isLeaveStructureBase() { return leaveStructureBase; }
         public boolean isLoseInventory() { return loseInventory; }
         public boolean isGhostModeParticles() { return ghostModeParticles; }
-        public int getSpectatorHeadrestrictRadius() { return spectatorHeadrestrictRadius; }
+        public int getSpectatorHeadRestrictRadius() { return spectatorHeadRestrictRadius; }
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
         public boolean isCreativePlayersDropHeads() { return creativePlayersDropHeads; }
         public boolean isHeadBurnsInLava() { return headBurnsInLava; }
@@ -222,11 +235,11 @@ public class ConfigManager {
         public int getReviveGlowingTicks() { return reviveGlowingTicks; }
         public String getMessagePrefix() { return messagePrefix; }
         public java.util.Map<String, String> getMessages() { return messages; }
-        public java.util.List<String> getSoulSandBlocktag() { return soulSandBlocktag; }
-        public java.util.List<String> getFlowerBlocktag() { return flowerBlocktag; }
-        public java.util.List<String> getOreBlocktag() { return oreBlocktag; }
-        public java.util.List<String> getFenceBlocktag() { return fenceBlocktag; }
-        public java.util.List<String> getStairBlocktag() { return stairBlocktag; }
+        public java.util.List<String> getSoulSandBlockTag() { return soulSandBlockTag; }
+        public java.util.List<String> getFlowerBlockTag() { return flowerBlockTag; }
+        public java.util.List<String> getOreBlockTag() { return oreBlockTag; }
+        public java.util.List<String> getFenceBlockTag() { return fenceBlockTag; }
+        public java.util.List<String> getStairBlockTag() { return stairBlockTag; }
         public boolean isDebug() { return debug; }
         public boolean isCheckForUpdates() { return checkForUpdates; }
 
@@ -299,7 +312,7 @@ public class ConfigManager {
         public void setLeaveStructureBase(boolean leave) { leaveStructureBase = leave; }
         public void setLoseInventory(boolean lose) { loseInventory = lose; }
         public void setGhostModeParticles(boolean particles) { ghostModeParticles = particles; }
-        public void setSpectatorHeadrestrictRadius(int radius) { spectatorHeadrestrictRadius = radius; }
+        public void setSpectatorHeadRestrictRadius(int radius) { spectatorHeadRestrictRadius = radius; }
         public void setRestrictMenuAccess(boolean restrict) { restrictMenuAccess = restrict; }
         public void setCreativePlayersDropHeads(boolean drop) { creativePlayersDropHeads = drop; }
         public void setHeadBurnsInLava(boolean burns) { headBurnsInLava = burns; }
@@ -308,11 +321,11 @@ public class ConfigManager {
         public void setPublicObituaryAfter(int seconds) { publicObituaryAfter = seconds; }
         public void setReviveResistanceTicks(int ticks) { reviveResistanceTicks = ticks; }
         public void setReviveGlowingTicks(int ticks) { reviveGlowingTicks = ticks; }
-        public void setSoulSandBlocktag(java.util.Collection<String> blocks) { soulSandBlocktag = normalizeBlockList(blocks); }
-        public void setFlowerBlocktag(java.util.Collection<String> blocks) { flowerBlocktag = normalizeBlockList(blocks); }
-        public void setOreBlocktag(java.util.Collection<String> blocks) { oreBlocktag = normalizeBlockList(blocks); }
-        public void setFenceBlocktag(java.util.Collection<String> blocks) { fenceBlocktag = normalizeBlockList(blocks); }
-        public void setStairBlocktag(java.util.Collection<String> blocks) { stairBlocktag = normalizeBlockList(blocks); }
+        public void setSoulSandBlockTag(java.util.Collection<String> blocks) { soulSandBlockTag = normalizeBlockList(blocks); }
+        public void setFlowerBlockTag(java.util.Collection<String> blocks) { flowerBlockTag = normalizeBlockList(blocks); }
+        public void setOreBlockTag(java.util.Collection<String> blocks) { oreBlockTag = normalizeBlockList(blocks); }
+        public void setFenceBlockTag(java.util.Collection<String> blocks) { fenceBlockTag = normalizeBlockList(blocks); }
+        public void setStairBlockTag(java.util.Collection<String> blocks) { stairBlockTag = normalizeBlockList(blocks); }
         public void setDebug(boolean d) { debug = d; }
         public void setCheckForUpdates(boolean check) { checkForUpdates = check; }
 

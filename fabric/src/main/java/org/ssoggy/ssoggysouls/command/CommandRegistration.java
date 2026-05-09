@@ -222,7 +222,7 @@ public class CommandRegistration {
         );
     }
 
-    private static java.util.Deque<String> readLastLines(java.io.File file, int maxLines) throws java.io.IOException {
+    static java.util.Deque<String> readLastLines(java.io.File file, int maxLines) throws java.io.IOException {
         if (maxLines <= 0) return new java.util.ArrayDeque<>();
         java.util.Deque<String> lastLines = new java.util.ArrayDeque<>(maxLines);
         try (java.util.stream.Stream<String> lines = java.nio.file.Files.lines(file.toPath())) {
