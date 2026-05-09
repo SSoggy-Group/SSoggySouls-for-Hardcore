@@ -91,6 +91,7 @@ class DlcStorageTest {
         File nestedFolder = new File(readOnlyFolder, "nested");
 
         DlcStorage failingStorage = new DlcStorage(nestedFolder, "test.properties", mockLogger);
+        assertNotNull(failingStorage);
 
         verify(mockLogger).warning("Could not create RevivalPlus data folder: " + nestedFolder.getPath());
 
