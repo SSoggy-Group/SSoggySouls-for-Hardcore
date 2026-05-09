@@ -7,7 +7,7 @@
 **Learning:** Defensive programming requires validating all dynamic identifiers used in non-parameterizable SQL statements (DDL).
 **Prevention:** Apply the existing `isValidIdentifier` (whitelisting regex `^\w+$`) check to table and column name parameters before they are concatenated into SQL queries.
 
-## 2025-02-28 - [JDBC Connection URL Injection]
-**Vulnerability:** The MySQLManager was dynamically building its JDBC url connection string directly from the unvalidated plugin configuration file inputs like database host and database name.
-**Learning:** This exposed the system to JDBC Connection URL injection. If a malicious attacker had the ability to edit the `config.yml` or the environment variables configuring the plugin, they could append arbitrary query parameters (like `?autoDeserialize=true` or `&allowLoadLocalInfile=true`) into the database configuration. Depending on the MySQL driver version, these can trigger severe RCE or Arbitrary File Read exploits when the database connection is initialized.
-**Prevention:** Always parse, validate, and sanitize connection properties using a whitelist of allowed characters (e.g., regex `^[a-zA-Z0-9_.\-]+$`) BEFORE concatenating them into a JDBC string. Alternatively, apply `addDataSourceProperty` methods explicitly for each configuration value via HikariCP instead of building the JDBC URL as a raw string where possible.
+## 2025-02-28 - [Network Payload Denial of Service]
+**Vulnerability:** The `BungeeConnectPayload.CODEC` in the Forge `ServerTransferUtil` was directly allocating a byte array using the unbounded `buf.readableBytes()` method.
+**Learning:** This is a classic Denial of Service (DoS) vulnerability. A malicious or compromised client could send a crafted packet advertising an enormous size, causing the server to attempt to allocate massive memory chunks, leading to `OutOfMemoryError` and server crashes.
+**Prevention:** Always enforce a strict maximum length (e.g., `1024` bytes) when reading variable-length data structures from network buffers before allocating memory or processing the data.
