@@ -99,7 +99,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         pendingGraceConfirmations.entrySet().removeIf(entry -> (now - entry.getValue().createdAt()) > fiveMinutes);
     }
 
-    @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
+    @SuppressWarnings({"java:S3516", "java:S138"}) // onCommand always returns true by design; S138 suppressed as it delegates via switch
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
@@ -114,13 +114,9 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
         if (args.length == 0) {
             sendHelp(sender);
-        } else {
-            dispatch(sender, args);
+            return true;
         }
-        return true;
-    }
 
-    private void dispatch(CommandSender sender, String[] args) {
         switch (args[0].toLowerCase()) {
             case SUB_LIVES  -> handleLives(sender, args);
             case SUB_GRACE  -> handleGrace(sender, args);
@@ -133,6 +129,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             default -> sender.sendMessage(MessageUtil.colorize(
                     "&cUsage: /psadmin <subcommand> [args]"));
         }
+        return true;
     }
 
     private void handleLives(CommandSender sender, String[] args) {
