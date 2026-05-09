@@ -88,13 +88,11 @@ public class LimboServerListener {
     @SubscribeEvent
     public static void onEntityTravel(EntityTravelToDimensionEvent event) {
         if (db == null) return;
-        if (event.getEntity() instanceof ServerPlayer player) {
-            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
-                if (db.isPlayerDead(player.getUUID())) {
-                    event.setCanceled(true);
-                    player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
-                }
-            }
+        if (event.getEntity() instanceof ServerPlayer player
+                && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE
+                && db.isPlayerDead(player.getUUID())) {
+            event.setCanceled(true);
+            player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
         }
     }
 
