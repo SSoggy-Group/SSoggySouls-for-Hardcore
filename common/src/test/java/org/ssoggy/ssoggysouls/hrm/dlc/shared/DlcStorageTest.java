@@ -42,7 +42,7 @@ class DlcStorageTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void testLoadIOException() throws IOException {
+    void testLoadIOException() {
         // Create a directory with the same name as the target file
         // This will cause a FileNotFoundException (which is an IOException) when FileInputStream tries to read it
         if (storageFile.exists()) {
@@ -63,7 +63,7 @@ class DlcStorageTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void testSaveIOException() throws IOException {
+    void testSaveIOException() {
         // Create a directory with the same name as the target file
         // This will cause a FileNotFoundException (which is an IOException) when FileOutputStream tries to open it
         if (storageFile.exists()) {
