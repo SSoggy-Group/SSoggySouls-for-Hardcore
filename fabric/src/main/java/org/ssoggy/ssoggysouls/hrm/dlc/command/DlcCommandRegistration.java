@@ -565,7 +565,7 @@ public final class DlcCommandRegistration {
             case C_TRUSTED_OBIT -> config.getTrustedObituaryAfter();
             case C_FRIENDS_OBIT -> config.getFriendsObituaryAfter();
             case C_PUBLIC_OBIT -> config.getPublicObituaryAfter();
-            case C_HEADRESTRICT -> config.getSpectatorHeadRestrictRadius();
+            case C_HEADRESTRICT -> config.getSpectatorHeadrestrictRadius();
             case C_REVIVE_RESIST -> config.getReviveResistanceTicks();
             case C_REVIVE_GLOW -> config.getReviveGlowingTicks();
             default -> 0;
@@ -578,7 +578,7 @@ public final class DlcCommandRegistration {
             case C_TRUSTED_OBIT -> config.setTrustedObituaryAfter(value);
             case C_FRIENDS_OBIT -> config.setFriendsObituaryAfter(value);
             case C_PUBLIC_OBIT -> config.setPublicObituaryAfter(value);
-            case C_HEADRESTRICT -> config.setSpectatorHeadRestrictRadius(value);
+            case C_HEADRESTRICT -> config.setSpectatorHeadrestrictRadius(value);
             case C_REVIVE_RESIST -> config.setReviveResistanceTicks(value);
             case C_REVIVE_GLOW -> config.setReviveGlowingTicks(value);
             default -> { /* ignored */ }
@@ -588,11 +588,11 @@ public final class DlcCommandRegistration {
     private static List<String> getStructureList(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
         return switch (key) {
-            case C_SOUL_SAND -> config.getSoulSandBlockTag();
-            case C_FLOWER -> config.getFlowerBlockTag();
-            case C_ORE -> config.getOreBlockTag();
-            case C_FENCE -> config.getFenceBlockTag();
-            case C_STAIR -> config.getStairBlockTag();
+            case C_SOUL_SAND -> config.getSoulSandBlocktag();
+            case C_FLOWER -> config.getFlowerBlocktag();
+            case C_ORE -> config.getOreBlocktag();
+            case C_FENCE -> config.getFenceBlocktag();
+            case C_STAIR -> config.getStairBlocktag();
             default -> List.of();
         };
     }

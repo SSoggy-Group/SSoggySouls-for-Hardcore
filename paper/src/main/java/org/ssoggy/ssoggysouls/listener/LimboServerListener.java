@@ -127,9 +127,7 @@ public class LimboServerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onCommandPreprocess(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
-        if (player.hasPermission(PERM_BYPASS) || player.hasPermission("ssoggysouls.admin")) {
-            return;
-        }
+        if (player.hasPermission(PERM_BYPASS) || player.hasPermission("ssoggysouls.admin")) return;
 
         String rawMessage = event.getMessage();
         String command = rawMessage.toLowerCase().split(" ")[0];
@@ -139,28 +137,28 @@ public class LimboServerListener implements Listener {
         }
 
         event.setCancelled(true);
-
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            boolean isDead = plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
-            Bukkit.getScheduler().runTask(plugin, () -> handleCommandPreprocessSync(player, isDead, rawMessage));
-        });
+        processLimboCommand(player, rawMessage);
     }
 
-    private void handleCommandPreprocessSync(Player player, boolean isDead, String rawMessage) {
-        if (!player.isOnline()) {
-            return;
-        }
+    private void processLimboCommand(Player player, String rawMessage) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            boolean isDead = plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
 
-        // visitors (not dead in main) are unrestricted
-        if (!isDead) {
-            String commandToRun = rawMessage.startsWith("/") ? rawMessage.substring(1) : rawMessage;
-            if (!commandToRun.isBlank()) {
-                player.performCommand(commandToRun);
-            }
-            return;
-        }
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (!player.isOnline()) return;
 
-        player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+                // visitors (not dead in main) are unrestricted
+                if (!isDead) {
+                    String commandToRun = rawMessage.startsWith("/") ? rawMessage.substring(1) : rawMessage;
+                    if (!commandToRun.isBlank()) {
+                        player.performCommand(commandToRun);
+                    }
+                    return;
+                }
+
+                player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+            });
+        });
     }
 
     private static boolean isWhitelistedCommand(String command) {
