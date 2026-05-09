@@ -97,8 +97,9 @@ public class GhostModeEvents {
     private static void registerTickEvents() {
         // Handle movement restriction via ticking (since Fabric lacks a PlayerMoveEvent)
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                if (isGhost(player)) {
+            for (UUID uuid : GHOST_CACHE) {
+                ServerPlayerEntity player = server.getPlayerManager().getPlayer(uuid);
+                if (player != null) {
                     enforceGhostRestrictions(player);
                 }
             }
