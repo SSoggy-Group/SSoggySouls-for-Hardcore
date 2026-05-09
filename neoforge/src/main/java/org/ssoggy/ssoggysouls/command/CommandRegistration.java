@@ -9,9 +9,8 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.command.DlcCommandRegistration;
@@ -29,7 +28,6 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class CommandRegistration {
     
     private CommandRegistration() {
@@ -232,7 +230,7 @@ public class CommandRegistration {
                 CommandSourceStack source = context.getSource();
 
                 CompletableFuture.runAsync(() -> {
-                    File logFile = net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve(SSoggySoulsMod.MODID).resolve(AdminLogger.LOG_FILE_NAME).toFile();
+                    File logFile = net.neoforged.fml.loading.FMLPaths.CONFIGDIR.get().resolve(SSoggySoulsMod.MODID).resolve(AdminLogger.LOG_FILE_NAME).toFile();
                     if (!logFile.exists()) {
                         source.sendFailure(Component.literal("No admin logs found."));
                         return;

@@ -1,8 +1,7 @@
 package org.ssoggy.ssoggysouls.util;
 
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import org.ssoggy.ssoggysouls.util.ConfigManager;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 
 /**

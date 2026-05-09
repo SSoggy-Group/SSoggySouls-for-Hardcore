@@ -4,14 +4,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.item.ItemTossEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.ICancellableEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.model.PlayerData;
@@ -78,10 +77,10 @@ public class GhostModeEvents {
         handleCancelableEvent(event, event.getPlayer());
     }
 
-    private static void handleCancelableEvent(net.minecraftforge.eventbus.api.Event event, Player player) {
+    private static void handleCancelableEvent(ICancellableEvent event, Player player) {
         if (!ConfigManager.getConfig().isHrmEnabled()) return;
 
-        if (isGhost(player) && event.isCancelable()) {
+        if (isGhost(player)) {
             event.setCanceled(true);
         }
     }
@@ -99,10 +98,8 @@ public class GhostModeEvents {
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
+    public static void onServerTick(ServerTickEvent.Post event) {
         if (!ConfigManager.getConfig().isHrmEnabled()) return;
-
-        if (event.phase != TickEvent.Phase.END) return;
 
         for (UUID uuid : GHOST_CACHE) {
             ServerPlayer player = event.getServer().getPlayerList().getPlayer(uuid);

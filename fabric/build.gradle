@@ -20,6 +20,7 @@ dependencies {
 
     // Fabric API modules
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "me.lucko:fabric-permissions-api:0.3.1"
 
     // HikariCP for database connection pooling (nested into mod JAR via JiJ)
     include implementation("com.zaxxer:HikariCP:7.0.2")

@@ -173,6 +173,7 @@ jobs:
           sed -i "s/version = '$OLD_VERSION'/version = '$NEW_VERSION'/g" paper/build.gradle || true
           sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
           sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
+          sed -i "s/mod_version=$OLD_VERSION-neoforge/mod_version=$NEW_VERSION-neoforge/g" neoforge/gradle.properties || true
 
       - name: Build Minecraft Mods
         run: |
@@ -183,6 +184,8 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
+          # NeoForge is built by Gradle, but intentionally not shipped yet.
+          # Add it to artifacts/publish steps only after parity testing is complete.
           RAW_PAPER="$(ls paper/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
           RAW_FABRIC="$(ls fabric/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
           RAW_FORGE="$(ls forge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
@@ -228,6 +231,7 @@ jobs:
           sed -i "s/version = '$OLD_VERSION'/version = '$NEW_VERSION'/g" paper/build.gradle || true
           sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
           sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
+          sed -i "s/mod_version=$OLD_VERSION-neoforge/mod_version=$NEW_VERSION-neoforge/g" neoforge/gradle.properties || true
 
       - name: Auto-Update Docs References
         env:

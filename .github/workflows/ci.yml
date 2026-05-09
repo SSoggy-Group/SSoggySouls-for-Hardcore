@@ -19,7 +19,7 @@ on:
       - "**/*.md"
       - "**/*.txt"
       - "**/*.log"
-      
+
   workflow_dispatch:
 
 permissions:

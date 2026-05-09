@@ -2,8 +2,7 @@ package org.ssoggy.ssoggysouls.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.SerializedName;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.File;
 import java.io.FileReader;
@@ -18,7 +17,7 @@ public class ConfigManager {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static ModConfig config;
-    private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "ssoggysouls.json");
+    private static final File CONFIG_FILE = new File(FMLPaths.CONFIGDIR.get().toFile(), "ssoggysouls.json");
 
     public static void load() {
         if (CONFIG_FILE.exists()) {
@@ -32,18 +31,20 @@ public class ConfigManager {
         } else {
             config = new ModConfig();
             save();
-            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("\n" +
-                    "===============================================================\n" +
-                    "                       SSOGGY SOULS\n" +
-                    "===============================================================\n" +
-                    " The mod is using SQLite (single-server mode) by default.\n" +
-                    " \n" +
-                    " If you are setting up a Dual-Server Network (Main + Limbo),\n" +
-                    " you MUST stop the server, open ssoggysouls.json, and change the\n" +
-                    " 'databaseType' to 'mysql', then fill in your DB details.\n" +
-                    " \n" +
-                    " If you are using a single server, you can ignore this message.\n" +
-                    "===============================================================\n");
+            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("""
+                    
+                    ===============================================================
+                                           SSOGGY SOULS
+                    ===============================================================
+                     The mod is using SQLite (single-server mode) by default.
+                     
+                     If you are setting up a Dual-Server Network (Main + Limbo),
+                     you MUST stop the server, open ssoggysouls.json, and change the
+                     'databaseType' to 'mysql', then fill in your DB details.
+                     
+                     If you are using a single server, you can ignore this message.
+                    ===============================================================
+                    """);
         }
     }
 
@@ -61,24 +62,11 @@ public class ConfigManager {
     }
 
     public static long parseGracePeriod(String input) {
-        if (input == null || input.equals("0") || input.isEmpty()) return 0;
-        try {
-            long totalMs = 0;
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d++)\\s*+([hms])").matcher(input.toLowerCase());
-            while (matcher.find()) {
-                long value = Long.parseLong(matcher.group(1));
-                char unit = matcher.group(2).charAt(0);
-                switch (unit) {
-                    case 'h' -> totalMs += value * 3600000;
-                    case 'm' -> totalMs += value * 60000;
-                    case 's' -> totalMs += value * 1000;
-                    default -> { /* ignore */ }
-                }
-            }
-            return totalMs;
-        } catch (Exception e) {
+        if (input == null || input.equals("0") || input.isEmpty() || input.length() > 64) {
             return 0;
         }
+        long millis = TimeUtil.parseTimeToMillis(input);
+        return millis < 0 ? 0 : millis;
     }
 
     public static class ModConfig {
@@ -130,6 +118,7 @@ public class ConfigManager {
         // --- DLC / Ghost Mode ---
         private boolean loseInventory = false;
         private boolean ghostModeParticles = false;
+        @com.google.gson.annotations.SerializedName("spectatorHeadrestrictRadius")
         private int spectatorHeadRestrictRadius = 16;
         private boolean restrictMenuAccess = true;
         private boolean creativePlayersDropHeads = false;
@@ -145,15 +134,15 @@ public class ConfigManager {
         private java.util.Map<String, String> messages = new java.util.HashMap<>();
 
         // --- Structure Block Tags ---
-        @SerializedName("soulSandBlocktag")
+        @com.google.gson.annotations.SerializedName("soulSandBlocktag")
         private java.util.List<String> soulSandBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("CRYING_OBSIDIAN", "OBSIDIAN"));
-        @SerializedName("flowerBlocktag")
+        @com.google.gson.annotations.SerializedName("flowerBlocktag")
         private java.util.List<String> flowerBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("SOUL_TORCH", "REDSTONE_TORCH"));
-        @SerializedName("oreBlocktag")
+        @com.google.gson.annotations.SerializedName("oreBlocktag")
         private java.util.List<String> oreBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("ENCHANTING_TABLE"));
-        @SerializedName("fenceBlocktag")
+        @com.google.gson.annotations.SerializedName("fenceBlocktag")
         private java.util.List<String> fenceBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE", "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE", "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"));
-        @SerializedName("stairBlocktag")
+        @com.google.gson.annotations.SerializedName("stairBlocktag")
         private java.util.List<String> stairBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("MAGMA_BLOCK"));
 
         // --- Debug ---
@@ -298,10 +287,6 @@ public class ConfigManager {
                     || "local".equalsIgnoreCase(normalized);
         }
 
-        /**
-         * Bridge method for PluginContext compatibility.
-         * Maps dot-path keys (e.g. "database.host") to Gson-deserialized fields.
-         */
         public String getConfigString(String path, String defaultValue) {
             return switch (path) {
                 case "database.host" -> databaseHost;
@@ -314,10 +299,6 @@ public class ConfigManager {
             };
         }
 
-        /**
-         * Bridge method for PluginContext compatibility.
-         * Maps dot-path keys (e.g. "database.port") to Gson-deserialized fields.
-         */
         public int getConfigInt(String path, int defaultValue) {
             return switch (path) {
                 case "database.port" -> databasePort;
