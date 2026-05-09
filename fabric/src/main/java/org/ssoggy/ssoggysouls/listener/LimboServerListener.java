@@ -26,6 +26,8 @@ public class LimboServerListener {
 
     private static DatabaseManager db;
 
+    private static final String LIMBO_CANNOT_LEAVE_MESSAGE = "limbo-cannot-leave";
+
     private static final Set<String> WHITELISTED_COMMANDS = Set.of(
             "/msg", "/tell", "/r", "/reply", "/help", "/list",
             "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
@@ -91,7 +93,7 @@ public class LimboServerListener {
             ServerWorld limboWorld = player.getServer().getWorld(limboWorldKey);
             if (limboWorld != null) {
                 player.teleport(limboWorld, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
-                player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
+                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
             }
         });
     }
@@ -107,7 +109,7 @@ public class LimboServerListener {
         
         String fullCmd = "/" + command;
         if (db.isPlayerDead(player.getUuid()) && !isWhitelistedCommand(fullCmd)) {
-            player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
+            player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
             return true;
         }
         return false;
@@ -126,7 +128,7 @@ public class LimboServerListener {
 
         // Need to be async ideally? Let's check db instead directly, though paper does it async.
         if (player.interactionManager.getGameMode() == GameMode.ADVENTURE && db.isPlayerDead(player.getUuid())) {
-            player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
+            player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
             return true;
         }
         return false;
