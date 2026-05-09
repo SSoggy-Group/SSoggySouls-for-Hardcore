@@ -28,7 +28,11 @@ public final class HrmUtil {
             return null;
         }
 
-        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer serverPlayer)) {
+        if (db == null
+                || event == null
+                || event.getLevel() == null
+                || event.getLevel().isClientSide()
+                || !(event.getEntity() instanceof ServerPlayer serverPlayer)) {
             return null;
         }
 
