@@ -100,7 +100,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to check death status for " + uuid);
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -120,11 +120,6 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
         if (toFetch.isEmpty()) {
             return result;
-        }
-
-        // Fail-safe dead default for missing records
-        for (UUID uuid : toFetch) {
-            result.put(uuid, true);
         }
 
         List<UUID> toFetchList = new ArrayList<>(toFetch);
@@ -149,9 +144,9 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
                         + " WHERE uuid IN (" + placeholders + ")";
 
                 try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-                    int i = 1;
+                    int parameterIndex = 1;
                     for (UUID uuid : batch) {
-                        ps.setString(i++, uuid.toString());
+                        ps.setString(parameterIndex++, uuid.toString());
                     }
                     try (ResultSet rs = ps.executeQuery()) {
                         while (rs.next()) {

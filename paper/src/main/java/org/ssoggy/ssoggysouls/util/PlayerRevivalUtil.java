@@ -14,8 +14,8 @@ public final class PlayerRevivalUtil {
     }
 
     /**
-     * restores an online spectator to survival and optionally transfers them from
-     * limbo.
+     * Restores an eligible online player to survival (including spectator/non-survival
+     * states and ghost mode) and optionally transfers them from limbo.
      *
      * @param plugin the SSoggySouls plugin instance
      * @param data   the player data
@@ -42,13 +42,13 @@ public final class PlayerRevivalUtil {
                     RPStatic.DEAD_STORAGE.saveConfig();
                 }
             } catch (Exception e) {
-                plugin.getLogger().warning("Failed to clear DLC death state for " + username);
+                plugin.getLogger().warning("Failed to clear DLC death state for " + username + ": " + e.getMessage());
             }
         });
     }
 
     private static boolean shouldRestore(Player target) {
-        return target.getGameMode() != GameMode.SURVIVAL || GAMEMODESENUM.getPlayerGameMode(target) == GAMEMODESENUM.GHOSTMODE;
+        return target.getGameMode() == GameMode.SPECTATOR || GAMEMODESENUM.getPlayerGameMode(target) == GAMEMODESENUM.GHOSTMODE;
     }
 
     private static void executeRevival(SSoggySouls plugin, Player target) {

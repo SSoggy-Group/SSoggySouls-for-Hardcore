@@ -2,6 +2,7 @@ package org.ssoggy.ssoggysouls.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.File;
@@ -116,8 +117,8 @@ public class ConfigManager {
         // --- DLC / Ghost Mode ---
         private boolean loseInventory = false;
         private boolean ghostModeParticles = false;
-        @com.google.gson.annotations.SerializedName("spectatorHeadrestrictRadius")
-        private int spectatorHeadRestrictRadius = 16;
+        @SerializedName(value = "spectatorHeadRestrictionRadius", alternate = {"spectatorHeadrestrictRadius"})
+        private int spectatorHeadRestrictionRadius = 16;
         private boolean restrictMenuAccess = true;
         private boolean creativePlayersDropHeads = false;
         private boolean headBurnsInLava = false;
@@ -132,15 +133,15 @@ public class ConfigManager {
         private java.util.Map<String, String> messages = new java.util.HashMap<>();
 
         // --- Structure Block Tags ---
-        @com.google.gson.annotations.SerializedName("soulSandBlocktag")
+        @SerializedName("soulSandBlocktag")
         private java.util.List<String> soulSandBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("CRYING_OBSIDIAN", "OBSIDIAN"));
-        @com.google.gson.annotations.SerializedName("flowerBlocktag")
+        @SerializedName("flowerBlocktag")
         private java.util.List<String> flowerBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("SOUL_TORCH", "REDSTONE_TORCH"));
-        @com.google.gson.annotations.SerializedName("oreBlocktag")
+        @SerializedName("oreBlocktag")
         private java.util.List<String> oreBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("ENCHANTING_TABLE"));
-        @com.google.gson.annotations.SerializedName("fenceBlocktag")
+        @SerializedName("fenceBlocktag")
         private java.util.List<String> fenceBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE", "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE", "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"));
-        @com.google.gson.annotations.SerializedName("stairBlocktag")
+        @SerializedName("stairBlocktag")
         private java.util.List<String> stairBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("MAGMA_BLOCK"));
 
         // --- Debug ---
@@ -212,13 +213,19 @@ public class ConfigManager {
         public boolean isLeaveStructureBase() { return leaveStructureBase; }
         public boolean isLoseInventory() { return loseInventory; }
         public boolean isGhostModeParticles() { return ghostModeParticles; }
-        public int getSpectatorHeadRestrictRadius() { return spectatorHeadRestrictRadius; }
+        public int getSpectatorHeadRestrictionRadius() { return spectatorHeadRestrictionRadius; }
         /**
-         * @deprecated Use {@link #getSpectatorHeadRestrictRadius()} instead.
+         * @deprecated Use {@link #getSpectatorHeadRestrictionRadius()} instead.
          */
         @Deprecated(since = "4.4.8")
         @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
-        public int getSpectatorHeadrestrictRadius() { return getSpectatorHeadRestrictRadius(); }
+        public int getSpectatorHeadRestrictRadius() { return getSpectatorHeadRestrictionRadius(); }
+        /**
+         * @deprecated Use {@link #getSpectatorHeadRestrictionRadius()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
+        public int getSpectatorHeadrestrictRadius() { return getSpectatorHeadRestrictionRadius(); }
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
         public boolean isCreativePlayersDropHeads() { return creativePlayersDropHeads; }
         public boolean isHeadBurnsInLava() { return headBurnsInLava; }
@@ -342,13 +349,19 @@ public class ConfigManager {
         public void setLeaveStructureBase(boolean leave) { leaveStructureBase = leave; }
         public void setLoseInventory(boolean lose) { loseInventory = lose; }
         public void setGhostModeParticles(boolean particles) { ghostModeParticles = particles; }
-        public void setSpectatorHeadRestrictRadius(int radius) { spectatorHeadRestrictRadius = radius; }
+        public void setSpectatorHeadRestrictionRadius(int radius) { spectatorHeadRestrictionRadius = radius; }
         /**
-         * @deprecated Use {@link #setSpectatorHeadRestrictRadius(int)} instead.
+         * @deprecated Use {@link #setSpectatorHeadRestrictionRadius(int)} instead.
          */
         @Deprecated(since = "4.4.8")
         @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
-        public void setSpectatorHeadrestrictRadius(int radius) { setSpectatorHeadRestrictRadius(radius); }
+        public void setSpectatorHeadRestrictRadius(int radius) { setSpectatorHeadRestrictionRadius(radius); }
+        /**
+         * @deprecated Use {@link #setSpectatorHeadRestrictionRadius(int)} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
+        public void setSpectatorHeadrestrictRadius(int radius) { setSpectatorHeadRestrictionRadius(radius); }
         public void setRestrictMenuAccess(boolean restrict) { restrictMenuAccess = restrict; }
         public void setCreativePlayersDropHeads(boolean drop) { creativePlayersDropHeads = drop; }
         public void setHeadBurnsInLava(boolean burns) { headBurnsInLava = burns; }
