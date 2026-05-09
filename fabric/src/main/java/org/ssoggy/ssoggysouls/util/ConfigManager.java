@@ -219,7 +219,11 @@ public class ConfigManager {
         public boolean isLoseInventory() { return loseInventory; }
         public boolean isGhostModeParticles() { return ghostModeParticles; }
         public int getSpectatorHeadRestrictRadius() { return spectatorHeadRestrictRadius; }
+        /**
+         * @deprecated Use {@link #getSpectatorHeadRestrictRadius()} instead.
+         */
         @Deprecated
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public int getSpectatorHeadrestrictRadius() { return getSpectatorHeadRestrictRadius(); }
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
         public boolean isCreativePlayersDropHeads() { return creativePlayersDropHeads; }
@@ -236,15 +240,39 @@ public class ConfigManager {
         public java.util.List<String> getOreBlockTag() { return oreBlockTag; }
         public java.util.List<String> getFenceBlockTag() { return fenceBlockTag; }
         public java.util.List<String> getStairBlockTag() { return stairBlockTag; }
+        /**
+         * @deprecated Use {@link #getSoulSandBlockTag()} instead.
+         */
         @Deprecated
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getSoulSandBlocktag() { return getSoulSandBlockTag(); }
+
+        /**
+         * @deprecated Use {@link #getFlowerBlockTag()} instead.
+         */
         @Deprecated
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getFlowerBlocktag() { return getFlowerBlockTag(); }
+
+        /**
+         * @deprecated Use {@link #getOreBlockTag()} instead.
+         */
         @Deprecated
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getOreBlocktag() { return getOreBlockTag(); }
+
+        /**
+         * @deprecated Use {@link #getFenceBlockTag()} instead.
+         */
         @Deprecated
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getFenceBlocktag() { return getFenceBlockTag(); }
+
+        /**
+         * @deprecated Use {@link #getStairBlockTag()} instead.
+         */
         @Deprecated
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getStairBlocktag() { return getStairBlockTag(); }
         public boolean isDebug() { return debug; }
         public boolean isCheckForUpdates() { return checkForUpdates; }
@@ -327,7 +355,11 @@ public class ConfigManager {
         public void setLoseInventory(boolean lose) { loseInventory = lose; }
         public void setGhostModeParticles(boolean particles) { ghostModeParticles = particles; }
         public void setSpectatorHeadRestrictRadius(int radius) { spectatorHeadRestrictRadius = radius; }
+        /**
+         * @deprecated Use {@link #setSpectatorHeadRestrictRadius(int)} instead.
+         */
         @Deprecated
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public void setSpectatorHeadrestrictRadius(int radius) { setSpectatorHeadRestrictRadius(radius); }
         public void setRestrictMenuAccess(boolean restrict) { restrictMenuAccess = restrict; }
         public void setCreativePlayersDropHeads(boolean drop) { creativePlayersDropHeads = drop; }
