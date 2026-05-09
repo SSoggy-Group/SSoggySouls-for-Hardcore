@@ -60,6 +60,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     private String mainServerName;
     private String limboServerName;
 
+    private static final String DATABASE_SQLITE = "sqlite";
     private static final String DEFAULT_WORLD = "world";
     private static final String CFG_SPAWN_X = "limbo.spawn.x";
     private static final String CFG_SPAWN_Y = "limbo.spawn.y";
@@ -333,9 +334,9 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         reloadConfig();
         FileConfiguration cfg = getConfig();
 
-        databaseType = normalizeConfigValue(cfg.getString("database.type", "sqlite"));
+        databaseType = normalizeConfigValue(cfg.getString("database.type", DATABASE_SQLITE));
         if (databaseType.isEmpty()) {
-            databaseType = "sqlite";
+            databaseType = DATABASE_SQLITE;
         }
         isLimboServer = cfg.getBoolean("is-limbo-server", false);
         if (isSingleServerMode() && isLimboServer) {
@@ -429,7 +430,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     }
 
     private static boolean isSqliteDatabaseType(String type) {
-        return "sqlite".equals(type) || "local".equals(type);
+        return DATABASE_SQLITE.equals(type) || "local".equals(type);
     }
 
     private long loadGracePeriod(FileConfiguration cfg) {
