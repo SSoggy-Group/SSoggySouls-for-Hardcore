@@ -85,12 +85,13 @@ public class LimboServerListener {
                 return;
             }
             RegistryKey<World> limboWorldKey = RegistryKey.of(RegistryKeys.WORLD, worldId);
-            if (!destination.getRegistryKey().equals(limboWorldKey)) {
-                ServerWorld limboWorld = player.getServer().getWorld(limboWorldKey);
-                if (limboWorld != null) {
-                    player.teleport(limboWorld, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
-                    player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
-                }
+            if (destination.getRegistryKey().equals(limboWorldKey)) {
+                return;
+            }
+            ServerWorld limboWorld = player.getServer().getWorld(limboWorldKey);
+            if (limboWorld != null) {
+                player.teleport(limboWorld, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+                player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
             }
         });
     }
