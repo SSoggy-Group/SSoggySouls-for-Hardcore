@@ -13,7 +13,7 @@ public final class TimeUtil {
     }
 
     public static long parseTimeToMillis(String timeStr) {
-        if (timeStr == null || timeStr.trim().isEmpty()) {
+        if (timeStr == null || timeStr.trim().isEmpty() || timeStr.length() > 50) {
             return -1;
         }
 
