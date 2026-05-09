@@ -1,6 +1,6 @@
 <aside class="docs-sidebar" aria-label="Documentation navigation">
-  <p class="docs-sidebar-title">Documentation</p>
-  <nav>
+  <p id="docs-sidebar-title" class="docs-sidebar-title">Documentation</p>
+  <nav aria-labelledby="docs-sidebar-title">
     <ul class="docs-sidebar-list">
       <li><a class="{% if page.url == '/' or page.url == '/index.html' %}is-active{% endif %}" {% if page.url == '/' or page.url == '/index.html' %}aria-current="page"{% endif %} href="{{ '/' | relative_url }}">Home</a></li>
       <li><a class="{% if page.url contains 'quick-start' %}is-active{% endif %}" {% if page.url contains 'quick-start' %}aria-current="page"{% endif %} href="{{ '/quick-start' | relative_url }}">Quick Start</a></li>
