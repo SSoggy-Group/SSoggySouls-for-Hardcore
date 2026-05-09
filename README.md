@@ -5,8 +5,8 @@
 
 
 **Version 4.4.15** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
-A hardcore lives system mod/plugin for Minecraft 1.21.X (Supports Spigot, Paper, Purpur, Fabric, and Forge). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
-> **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
+A hardcore lives system mod/plugin for Minecraft 1.21.X (Supports Spigot, Paper, Purpur, Fabric, Forge, and NeoForge). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
+> **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 >
 > **[Complete Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Installation guides, configuration reference, commands, troubleshooting, and more!
 
@@ -267,7 +267,7 @@ Living players can check out Limbo using `/limbo`.
 - Different welcome messages for visitors vs dead people
 
 ## Requirements
-- **Minecraft:** 1.21.X (Spigot, Paper, Purpur, Fabric, or Forge)
+- **Minecraft:** 1.21.X (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 
 - **Proxy:** Velocity (BungeeCord/Waterfall might work but not tested)
 
