@@ -108,8 +108,6 @@ public class GhostModeEvents {
             ServerPlayer player = event.getServer().getPlayerList().getPlayer(uuid);
             if (player != null) {
                 enforceGhostRestrictions(player);
-            } else {
-                GHOST_CACHE.remove(uuid);
             }
         }
     }
@@ -129,7 +127,7 @@ public class GhostModeEvents {
 
         BlockPos currentPos = player.blockPosition();
         double distanceSq = currentPos.distSqr(deathPos);
-        double maxDistance = ConfigManager.getConfig().getSpectatorHeadRestrictRadius();
+        double maxDistance = ConfigManager.getConfig().getSpectatorHeadrestrictRadius();
 
         if (distanceSq > (maxDistance * maxDistance)) {
             player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());

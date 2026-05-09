@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 final class SqlSafety {
 
-    private static final Pattern IDENTIFIER = Pattern.compile("\\A\\w+\\z");
+    private static final Pattern IDENTIFIER = Pattern.compile("\\A[A-Za-z0-9_]+\\z");
 
     private SqlSafety() {
     }

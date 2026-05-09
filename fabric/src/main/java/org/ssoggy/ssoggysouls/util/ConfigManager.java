@@ -61,24 +61,18 @@ public class ConfigManager {
     }
 
     public static long parseGracePeriod(String input) {
-        if (input == null || input.equals("0") || input.trim().isEmpty() || input.length() > 50) return 0;
+        if (input == null || input.equals("0") || input.isEmpty()) return 0;
         try {
             long totalMs = 0;
-            String normalized = input.trim().toLowerCase();
-            StringBuilder digits = new StringBuilder();
-            for (int i = 0; i < normalized.length(); i++) {
-                char c = normalized.charAt(i);
-                if (Character.isDigit(c)) {
-                    digits.append(c);
-                } else if ((c == 'h' || c == 'm' || c == 's') && digits.length() > 0) {
-                    long value = Long.parseLong(digits.toString());
-                    switch (c) {
-                        case 'h' -> totalMs += value * 3600000;
-                        case 'm' -> totalMs += value * 60000;
-                        case 's' -> totalMs += value * 1000;
-                        default -> { /* ignore */ }
-                    }
-                    digits.setLength(0);
+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+)([hms])").matcher(input.toLowerCase());
+            while (matcher.find()) {
+                long value = Long.parseLong(matcher.group(1));
+                char unit = matcher.group(2).charAt(0);
+                switch (unit) {
+                    case 'h' -> totalMs += value * 3600000;
+                    case 'm' -> totalMs += value * 60000;
+                    case 's' -> totalMs += value * 1000;
+                    default -> { /* ignore */ }
                 }
             }
             return totalMs;
@@ -225,6 +219,8 @@ public class ConfigManager {
         public boolean isLoseInventory() { return loseInventory; }
         public boolean isGhostModeParticles() { return ghostModeParticles; }
         public int getSpectatorHeadRestrictRadius() { return spectatorHeadRestrictRadius; }
+        @Deprecated
+        public int getSpectatorHeadrestrictRadius() { return getSpectatorHeadRestrictRadius(); }
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
         public boolean isCreativePlayersDropHeads() { return creativePlayersDropHeads; }
         public boolean isHeadBurnsInLava() { return headBurnsInLava; }
@@ -240,6 +236,16 @@ public class ConfigManager {
         public java.util.List<String> getOreBlockTag() { return oreBlockTag; }
         public java.util.List<String> getFenceBlockTag() { return fenceBlockTag; }
         public java.util.List<String> getStairBlockTag() { return stairBlockTag; }
+        @Deprecated
+        public java.util.List<String> getSoulSandBlocktag() { return getSoulSandBlockTag(); }
+        @Deprecated
+        public java.util.List<String> getFlowerBlocktag() { return getFlowerBlockTag(); }
+        @Deprecated
+        public java.util.List<String> getOreBlocktag() { return getOreBlockTag(); }
+        @Deprecated
+        public java.util.List<String> getFenceBlocktag() { return getFenceBlockTag(); }
+        @Deprecated
+        public java.util.List<String> getStairBlocktag() { return getStairBlockTag(); }
         public boolean isDebug() { return debug; }
         public boolean isCheckForUpdates() { return checkForUpdates; }
 
@@ -321,6 +327,8 @@ public class ConfigManager {
         public void setLoseInventory(boolean lose) { loseInventory = lose; }
         public void setGhostModeParticles(boolean particles) { ghostModeParticles = particles; }
         public void setSpectatorHeadRestrictRadius(int radius) { spectatorHeadRestrictRadius = radius; }
+        @Deprecated
+        public void setSpectatorHeadrestrictRadius(int radius) { setSpectatorHeadRestrictRadius(radius); }
         public void setRestrictMenuAccess(boolean restrict) { restrictMenuAccess = restrict; }
         public void setCreativePlayersDropHeads(boolean drop) { creativePlayersDropHeads = drop; }
         public void setHeadBurnsInLava(boolean burns) { headBurnsInLava = burns; }

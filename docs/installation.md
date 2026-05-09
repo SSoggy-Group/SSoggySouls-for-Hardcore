@@ -5,170 +5,395 @@ title: Installation Guide
 
 # Installation Guide
 
-This guide will walk you through installing and configuring SSoggySouls step-by-step. Whether you're running a single standalone server or a multi-server Velocity proxy network with a dedicated Limbo world, we'll cover everything you need to get things running smoothly.
+This comprehensive guide covers everything you need to know to properly install and configure SSoggySouls. Whether you're running a single server or a full Velocity proxy network with Main + Limbo, this guide has you covered.
+
+## Table of Contents
+
+1. [Prerequisites](#prerequisites)
+1. [Network Architecture](#network-architecture)
+1. [Database Setup](#database-setup)
+1. [Plugin Installation](#plugin-installation)
+1. [Proxy Configuration](#proxy-configuration)
+1. [Server Configuration](#server-configuration)
+1. [Testing Your Setup](#testing-your-setup)
+1. [Common Mistakes to Avoid](#common-mistakes-to-avoid)
 
 ## Prerequisites
 
-Before we start copying files, make sure your environment is ready:
-
 ### Server Requirements
+
 - **Minecraft Version:** 1.21.X
+
 - **Server Software:** Spigot, Paper, Purpur, Fabric, or Forge
-- **Java Version:** Java 21 or newer
-- **Database:** SQLite (built-in, local, zero setup) for standalone servers, OR MySQL 5.7+ / MariaDB 10.2+ for multi-server setups
-- **Proxy Software (Optional):** Velocity (only needed if you're linking two servers together; BungeeCord/Waterfall are untested but might work)
 
-### Choosing Your Setup Style
+- **Java Version:** 21 or higher
 
-#### 1. Single Server Setup (easiest)
-Everything runs on a single server. When players run out of lives, they are put into spectator mode. This is extremely simple to set up, requires no extra servers, and uses a local SQLite database that the plugin manages automatically.
+- **Database:** SQLite (built-in, zero setup) for single server OR MySQL 5.7+ / MariaDB 10.2+ for multi-server
 
-#### 2. Multi-Server Setup (advanced)
-We run two separate backend servers behind a Velocity proxy:
-- **Main Server:** The primary survival/gameplay server where players spend their time.
-- **Limbo Server:** A dedicated purgatory server where players are transferred when they lose all their lives.
-This setup uses a shared MySQL/MariaDB database to keep player data and revival requests in sync.
+- **Proxy Software:** Velocity (only needed for 2-server setup; BungeeCord/Waterfall untested but may work)
 
-> **Crucial Rule:** Make sure `hardcore=false` is set in your `server.properties` file on all servers. SSoggySouls manages the hardcore and spectator mechanics internally, and enabling vanilla hardcore will break the plugin.
+### Server Setup
 
----
+**Single Server:** Just one Minecraft server. Dead players enter spectator mode. No proxy, no Limbo server, no MySQL needed.
 
-## Network Architecture (Multi-Server Setup)
+**2-Server Setup:** Two backend servers behind a Velocity proxy:
 
-Here's a quick look at how the data and player connections flow when using a 2-server setup:
+- **Main Server** - Your primary survival/gameplay server
+
+- **Limbo Server** - Purgatory server for dead players
+
+> **Note:** If using `spectator` death mode on a single server, the Limbo server is not needed.
+
+### Important: Do NOT Use Hardcore Mode
+
+**CRITICAL:** Do **NOT** enable `hardcore=true` in `server.properties` on either server.
+
+Leave it as `false`. The plugin manages hardcore mechanics internally - enabling Minecraft's built-in hardcore mode will break the plugin.
+
+If you already have it enabled:
+
+- Delete your world and regenerate, OR
+
+- Use an NBT editor to change the hardcore flag in `level.dat`
+
+## Network Architecture
+
+### How SSoggySouls Works
 
 ```text
+
                     ┌─────────────────┐
                     │  Velocity Proxy │
                     └────────┬────────┘
-                             │ (Routes players)
+                             │
               ┌──────────────┴──────────────┐
               │                             │
         ┌─────▼─────┐                 ┌─────▼─────┐
         │   Main    │◄───────────────►│   Limbo   │
-        │  Server   │   MySQL Sync    │  Server   │
+        │  Server   │   MySQL/MariaDB │  Server   │
         └───────────┘                 └───────────┘
+
 ```
 
-- Both servers connect to the exact same MySQL database.
-- When players lose their lives on the Main server, the plugin tells the proxy to move them to Limbo.
-- While in Limbo, the server checks the database every few seconds for revival entries.
-- Once a player is revived (via a ritual or command on Main), the database updates and Limbo safely routes them back to Main.
+- Both servers connect to the same MySQL database (one database, shared by both)
 
----
+- Players automatically transfer between servers based on death state
+
+- Limbo server checks database periodically for revivals
+
+- Main server handles deaths and sends players to Limbo
 
 ## Database Setup
 
-Your choice of database determines whether you can link servers together or keep things standalone:
+The plugin supports two database types. Your choice here determines your entire setup:
 
-| Feature | SQLite (Local) | MySQL / MariaDB (Shared) |
-|---|---|---|
-| **Best For** | Standalone Single Servers | Linked Multi-Server Proxy Networks |
-| **Setup Effort** | Zero (Plug-and-play) | Advanced (Creating databases and user grants) |
-| **Sharing Data** | ❌ Standalone only | ✅ Shared between multiple backend servers |
-| **How to Edit Data** | Requires a local SQLite browser | PhpMyAdmin, Pterodactyl panel, or any DB client |
-| **How to Backup** | Just copy the `database.db` file | Run `mysqldump` or use host backup tools |
+| Feature                          | `sqlite` (Local)                 | `mysql` (External)                         |
+| -------------------------------- | -------------------------------- | ------------------------------------------ |
 
-### Option A: SQLite (Standalone)
-Ideal if you want to run a single server. The plugin handles everything automatically and generates a `database.db` file in the plugin data folder on startup. You don't need to install or run any external database software.
+| **Best For**                     | Single servers                   | 2-Server Proxy Networks                    |
 
-### Option B: MySQL (Linked Network)
-Required if you want the Main + Limbo server setup. You must set up **one** MySQL database that both backend servers can access.
+| **Performance**                  | High (Lightweight / Local I/O)   | Maximum (Multi-threaded Dedicated Service) |
 
-If you have shell access to your database server, you can set it up with these SQL commands:
+| **Network Latency**              | None (Zero Ping)                 | Varies (Dependent on Host)                 |
+
+| **Setup Required**               | None (Plug & Play)               | Advanced (User/Grants)                     |
+
+| **Lives & HRM Systems**          | ✅ Works Perfectly               | ✅ Works Perfectly                         |
+
+| **Main + Limbo Syncing**         | ❌ **NOT SUPPORTED**             | ✅ Supported                               |
+
+| **Plugin Sharing (CoreProtect)** | ❌ No                            | ✅ Yes (Same Database)                     |
+
+| **Data Editing / Viewing**       | Requires 3rd Party SQLite Editor | PhpMyAdmin / Pterodactyl Panels            |
+
+| **Backups**                      | Copy `database.db` file          | Requires `mysqldump`                       |
+
+| **Portability**                  | High (Single `.db` file)         | Low (External Server)                      |
+
+### Option A: SQLite (Zero Setup / Local)
+
+Ideal for a single server setup if you just want lives, HRM features, and extra-life items without worrying about setting up an external database.
+
+- **No external server required**
+
+- **Zero configuration needed**
+
+- The plugin handles the creation of `database.db` inside its data folder automatically.
+
+- *Note:* Does not support true cross-server exile functionality natively.
+
+### Option B: MySQL (Cross-server)
+
+REQUIRED if you are using the 2-server (Main + Limbo) functionality. You set up **one** MySQL database, then both servers connect to it using the same credentials.
+
+SSoggySouls will automatically create the necessary table, but you need to create the database first.
+
+**Using MySQL command line:**
+
 ```sql
 CREATE DATABASE ssoggysouls CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'ssoggysouls_user'@'%' IDENTIFIED BY 'your_secure_password';
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER ON ssoggysouls.* TO 'ssoggysouls_user'@'%';
+CREATE USER 'ssoggysouls_user'@'localhost' IDENTIFIED BY 'your_secure_password';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER ON ssoggysouls.* TO 'ssoggysouls_user'@'localhost';
+
 FLUSH PRIVILEGES;
+
 ```
-*(Tip: Replace `%` with your Minecraft servers' actual IP addresses to keep things secure!)*
 
-If you are using shared game hosting (like Pterodactyl):
-1. Head over to your hosting panel and click the **Databases** tab.
-2. Click **Create Database**.
-3. Note down the database name, host, port, username, and password. You will need to put these into the configuration files.
+**For shared hosting (Pterodactyl, etc.):**
 
----
+1. Go to your hosting panel
+1. Navigate to the Databases section
+1. Create a new database
+1. Note down the host, port, database name, username, and password
+
+### Database Configuration
+
+If using SQLite, simply set `type: "sqlite"` and ignore the MySQL fields — the plugin handles everything.
+
+If using MySQL, set up one database and then copy the **same** connection details into both server configs:
+
+```yaml
+database:
+  type: "mysql"                  # Database type: "mysql" or "sqlite"
+
+  host: "localhost"              # Database host (use panel host for Pterodactyl)
+
+  port: 3306                     # Database port
+
+  name: "ssoggysouls"             # Database name
+
+  username: "ssoggysouls_user"    # Database username
+
+  password: "your_secure_password" # Database password
+
+  pool-size: 5                   # Connection pool size (5 is recommended)
+
+  table-name: "hardcore_players" # Table name (default is fine)
+
+```
+
+> **Tip:** The database can be shared with other plugins like CoreProtect. SSoggySouls uses its own table.
+
+### Connection Pool Settings (MySQL only)
+
+The `pool-size` setting controls how many database connections are maintained:
+
+- **Small servers (1-20 players):** 5 connections
+
+- **Medium servers (20-50 players):** 10 connections
+
+- **Large servers (50+ players):** 15-20 connections
 
 ## Plugin Installation
 
-### Step 1: Download the JAR
-Grab the latest release file (`SSoggySouls-4.4.8.jar`) from the [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases) or [Modrinth](https://modrinth.com/project/Pb03qu6T).
+### Download
 
-### Step 2: Install the files
-Stop your Minecraft server(s) if they are currently running.
+Get the latest version:
 
-**For Standalone (Single Server):**
-Drop the JAR file into your server's `plugins/` (or `mods/`) folder:
+- [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases)
+
+- [Modrinth](https://modrinth.com/project/Pb03qu6T)
+
+Download `SSoggySouls-4.4.8.jar` (or latest version).
+
+### Installation Steps
+
+1. **Stop your server(s)** if they are running.
+
+1. **Place the JAR file** in the `plugins/` folder:
+
+**For Single Server Setups:**
+
 ```text
-/plugins/SSoggySouls-4.4.8.jar
+Server: /plugins/SSoggySouls-4.4.8.jar
 ```
 
-**For Linked (Multi-Server):**
-Drop the exact same JAR file into the `plugins/` folder of **both** backend servers:
+**For 2-Server Setups (Main + Limbo):**
+
 ```text
 Main Server: /plugins/SSoggySouls-4.4.8.jar
 Limbo Server: /plugins/SSoggySouls-4.4.8.jar
 ```
-> **Remember:** Do not put this JAR in your proxy (Velocity/BungeeCord) plugins folder. It will not work.
 
-### Step 3: Generate and edit the config
-1. Start your server(s) up once so the default configuration files can generate.
-2. Stop the server(s).
-3. Open `plugins/SSoggySouls/config.yml` in your favorite text editor.
+1. **Start your server(s)** to generate config files
 
----
+1. **Stop your server(s)** to edit configuration
 
-## Proxy & Backend Configuration
+1. **Edit `config.yml`** (see next section)
 
-### 1. Velocity Proxy Config
-Open your proxy's `velocity.toml` file and make sure player info forwarding is set to modern:
+### Critical Setup Rules
+
+**DO NOT install on proxy:**
+
+- SSoggySouls is NOT a proxy plugin
+
+- Install ONLY on backend servers (Main and Limbo)
+
+- Do NOT place in Velocity/BungeeCord plugins folder
+
+- Both servers must use the SAME version
+
+______________________________________________________________________
+
+> **Note:** For singleplayer, simply place the JAR in your client's `mods` folder. Limbo features are disabled in singleplayer automatically.
+
+______________________________________________________________________
+
+## Forge Mod Installation
+
+The Forge version is installed similarly to the Bukkit version, but uses the `mods/` folder.
+
+### Requirements
+
+- **Forge Loader** installed on your server (1.21.1).
+
+### Installation Steps
+
+1. Place `SSoggySouls-Forge-X.X.X.jar` into the `mods/` folder.
+2. Start the server to generate `config/ssoggysouls.toml` (or `ssoggysouls.json` depending on build).
+3. Stop the server and configure as needed.
+
+> **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
+
+______________________________________________________________________
+
+**DO install on both backend servers (if using Limbo):**
+
+- Must be installed on Main server
+- Must be installed on Limbo server
+- Both servers must use the SAME version
+
+## Proxy Configuration
+
+### For Velocity
+
+Edit `velocity.toml`:
+
 ```toml
+
+# Enable modern forwarding
+
 player-info-forwarding-mode = "modern"
 
 [servers]
-main = "127.0.0.1:25566"   # Port of your main gameplay server
-limbo = "127.0.0.1:25567"  # Port of your limbo server
+main = "localhost:25566"   # Your Main server
+
+limbo = "localhost:25567"  # Your Limbo server
 
 try = [
-  "main"                  # Connect new players to main by default
+"main"  # Players join Main by default
+
 ]
+
 ```
 
-### 2. Main Server Configuration
-Open `plugins/SSoggySouls/config.yml` on your **Main server**:
+### For BungeeCord/Waterfall
+
+> **Note:** BungeeCord/Waterfall support is untested. Please [report](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues) if you test it!
+
+**In BungeeCord `config.yml`:**
+
 ```yaml
-is-limbo-server: false            # Identifies this as the gameplay server
-main-server-name: "main"          # Must match the name used in velocity.toml
-limbo-server-name: "limbo"        # Must match the name used in velocity.toml
+ip_forward: true
+
+```
+
+**On both backend servers in `spigot.yml`:**
+
+```yaml
+settings:
+  bungeecord: true
+
+```
+
+**If using Paper, also configure `paper.yml`:**
+
+```yaml
+settings:
+  velocity-support:
+    enabled: false  # Disable for BungeeCord
+
+```
+
+## Server Configuration
+
+> **Note for Single Servers (SQLite):** If you are running a single server with SQLite, you can safely skip the "Server Role" sections below. Just leave `is-limbo-server` and the server names at their defaults — the plugin ignores them when using SQLite.
+
+### Main Server Configuration
+
+Edit `/plugins/SSoggySouls/config.yml` on the **Main server**:
+
+```yaml
+
+# SERVER IDENTIFICATION
+
+is-limbo-server: false           # This is the Main server
+
+# SERVER NAMES (must match velocity.toml)
+
+main-server-name: "main"         # Name of Main server in proxy config
+
+limbo-server-name: "limbo"       # Name of Limbo server in proxy config
+
+# DATABASE (set up one MySQL database, then use the same details here and on Limbo)
 
 database:
-  type: "mysql"                  # Set to "sqlite" if standalone
-  host: "127.0.0.1"              # Your MySQL server IP
+  type: "mysql"
+  host: "localhost"
   port: 3306
   name: "ssoggysouls"
   username: "ssoggysouls_user"
   password: "your_secure_password"
   pool-size: 5
   table-name: "hardcore_players"
+
+# LIVES SYSTEM
+
+lives:
+  default: 2                     # Starting lives for new players
+
+  max-lives: 5                   # Maximum lives cap
+
+  on-revive: 1                   # Lives restored on revival
+
+  grace-period: "24h"            # New player protection
+
+  revive-cooldown-seconds: 30    # Post-revival protection
+
+# DEATH HANDLING
 
 main:
-  death-mode: "spectator"         # Options: "spectator", "hybrid", or "limbo"
-  hybrid-timeout-seconds: 300     # Time in spectator before exile (for hybrid mode)
-  detect-hrm-revive: true         # Set to true to allow in-game ritual structures
+  death-mode: "spectator"        # SQLite uses spectator; MySQL can use hybrid | spectator | limbo
+
+  hybrid-timeout-seconds: 300    # 5 minutes for hybrid mode
+
+  spectator-on-death: false
+  detect-hrm-revive: true        # Enable ritual structure detection
+
+  send-to-limbo-delay-ticks: 20  # 1 second delay before transfer
+
 ```
 
-### 3. Limbo Server Configuration
-Open `plugins/SSoggySouls/config.yml` on your **Limbo server**:
+### Limbo Server Configuration
+
+Edit `/plugins/SSoggySouls/config.yml` on the **Limbo server**:
+
 ```yaml
-is-limbo-server: true             # Identifies this as the limbo server
-main-server-name: "main"          # Must match the name used in velocity.toml
-limbo-server-name: "limbo"        # Must match the name used in velocity.toml
+
+# SERVER IDENTIFICATION
+
+is-limbo-server: true            # This is the Limbo server
+
+# SERVER NAMES (must match velocity.toml and Main server config)
+
+main-server-name: "main"
+limbo-server-name: "limbo"
+
+# DATABASE (must be identical to Main server)
 
 database:
-  type: "mysql"                  # MUST be identical to the Main server's DB settings
-  host: "127.0.0.1"
+  type: "mysql"
+  host: "localhost"
   port: 3306
   name: "ssoggysouls"
   username: "ssoggysouls_user"
@@ -176,46 +401,199 @@ database:
   pool-size: 5
   table-name: "hardcore_players"
 
+# LIMBO SETTINGS
+
 limbo:
-  check-interval-seconds: 3       # How often the server queries DB for revivals
+  check-interval-seconds: 3      # How often to check for revivals
+
+  spawn:
+    world: "world"               # Set with /setlimbospawn command
+
+    x: 0.5
+    y: 65.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0
+
 ```
 
----
+### Setting Limbo Spawn
 
-## Setting the Limbo Spawn Point
-Once your Limbo server is running, you need to tell the plugin where dead players should spawn:
-1. Join your Limbo server.
-2. Stand at the exact location, facing the direction you want players to look.
-3. Run `/setlimbospawn` in chat.
-4. The plugin will save these coordinates directly into the config file.
+1. Start the Limbo server
+1. Join the server in-game
+1. Stand at the desired spawn location
+1. Run `/setlimbospawn`
+1. Confirm the coordinates were saved
 
----
+The spawn location is saved to config and will be used for all dead players.
 
 ## Testing Your Setup
 
-Once you've configured everything, start up your servers and run through this checklist to make sure things are solid:
+### Pre-Flight Checklist
 
-1. **Check the database connection:** Look at both server consoles on startup. You should see a message saying "Database connection established successfully".
-2. **Verify player status:** Join the Main server and type `/pstatus`. It should show you have 2 lives (by default) and are currently Alive.
-3. **Test the death cycle:**
-   - Turn off your active grace period if testing with a new account, or use `/psadmin lives <your_name> 0` to set your lives to zero.
-   - If you're in **limbo mode**, you should instantly be transferred to the Limbo server.
-   - If you're in **hybrid mode**, you will become a spectator on Main. Log out and log back in, or wait for the timer to expire, to verify you get transferred to Limbo.
-4. **Test the revival cycle:**
-   - From your Main server console (or as an admin on the Main server), run `/psadmin revive <your_name>`.
-   - Your Limbo server should notice the database update and safely transfer your character back to the Main server within a few seconds.
-   - Run `/pstatus` again to make sure your lives are restored (defaults to 1 life).
+Before testing, verify:
 
----
+- [ ] Both servers are running SSoggySouls (same version)
+
+- [ ] Both servers have identical database credentials
+
+- [ ] `is-limbo-server` is set correctly (false on Main, true on Limbo)
+
+- [ ] Server names match proxy configuration
+
+- [ ] Limbo spawn has been set
+
+- [ ] Console shows successful database connection on both servers
+
+### Test Procedure
+
+1. **Join Main Server**
+
+- Connect through the proxy
+
+- You should spawn on the Main server
+
+1. **Check Initial Status**
+
+```text
+
+/pstatus
+
+```
+
+Should show: "Lives: 2 - Status: Alive"
+
+1. **Test Death Mechanic**
+
+- Kill yourself (fall, lava, etc.)
+
+- Check lives with `/pstatus`
+
+- Should show: "Lives: 1 - Status: Alive"
+
+1. **Test Limbo Transfer**
+
+- Kill yourself again to lose all lives
+
+- Depending on death mode:
+
+  - **hybrid:** Enter spectator for 5 minutes, then transfer to Limbo (MySQL/proxy only)
+
+  - **spectator:** Enter spectator on Main indefinitely (SQLite default)
+
+  - **limbo:** Immediately transfer to Limbo
+
+- Verify you're on the Limbo server
+
+1. **Test Revival**
+
+- From Main server console, run:
+
+  ```text
+
+  /psadmin revive <your_username>
+  ```
+
+- Should automatically return to Main server
+
+- Check lives: Should have 1 life restored
+
+1. **Test Grace Period**
+
+- Create a new player account
+
+- Check status: `/pstatus`
+
+- Should show grace period remaining
+
+- Die several times
+
+- Lives should not decrease during grace period
+
+### Verification
+
+If all tests pass, your installation is complete!
+
+Check console logs for:
+
+- "Database connection established successfully"
+
+- "SSoggySouls version X.X.X enabled"
+
+- No error messages or warnings
 
 ## Common Mistakes to Avoid
 
-- **Putting the JAR on Velocity:** Always install the plugin on the backend servers (Main & Limbo) and *not* on the proxy itself.
-- **Enabling Vanilla Hardcore:** Make sure `hardcore` is set to `false` in `server.properties`. The plugin will not work if vanilla hardcore is enabled.
-- **Mismatched Server Names:** The `main-server-name` and `limbo-server-name` inside your `config.yml` must match the server names in your proxy's `velocity.toml` configuration exactly.
-- **Using localhost on Shared Hosting:** If you are using a server panel like Pterodactyl, your database host is usually an external IP or subdomain (e.g. `mysql.example.com`) rather than `localhost` or `127.0.0.1`.
-- **Mixing Jar Versions:** Both your Main and Limbo servers must run the exact same version of the SSoggySouls JAR file. If they mismatch, you'll see warnings in the console and player routing may fail.
+### Mistake 1: Installing on Proxy
 
----
+**Wrong:** Installing SSoggySouls on Velocity/BungeeCord
+
+**Right:** Install only on backend servers (Main and Limbo)
+
+### Mistake 2: Different Database Credentials
+
+**Wrong:** Using different database credentials on each server
+
+**Right:** Set up one MySQL database and copy the same credentials to both configs
+
+### Mistake 3: Server Names Don't Match
+
+**Wrong:** Config says "main" but velocity.toml says "survival"
+
+**Right:** Server names must exactly match proxy configuration
+
+### Mistake 4: Wrong is-limbo-server Setting
+
+**Wrong:** Both servers have `is-limbo-server: false`
+
+**Right:** Main = false, Limbo = true
+
+### Mistake 5: Enabling Hardcore Mode
+
+**Wrong:** Setting `hardcore=true` in `server.properties`
+
+**Right:** Keep `hardcore=false` - plugin manages hardcore mechanics
+
+### Mistake 6: Different Plugin Versions
+
+**Wrong:** Main server has v3.2.6, Limbo has v4.4.8
+
+**Right:** Both servers must use the exact same version
+
+### Mistake 7: Not Setting Limbo Spawn
+
+**Wrong:** Forgetting to run `/setlimbospawn`
+
+**Right:** Set spawn point before testing
+
+### Mistake 8: Firewall Blocking Database
+
+**Wrong:** Servers can't reach database due to firewall
+
+**Right:** Ensure firewall allows backend → database connections
+
+## Next Steps
+
+Now that SSoggySouls is installed:
+
+1. **Customize Settings** - Review the [Configuration Reference](configuration)
+
+1. **Learn Commands** - Check out the [Commands Guide](commands)
+
+1. **Understand Revival System** - Read the [Revival System Guide](revival-system)
+
+1. **Prepare for Issues** - Familiarize yourself with [Troubleshooting](troubleshooting)
+
+## Need Help?
+
+- [Configuration Reference](configuration)
+
+- [Troubleshooting Guide](troubleshooting)
+
+- [FAQ](faq)
+
+- [Report Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)
+
+______________________________________________________________________
 
 [← Quick Start](quick-start) | [Back to Home](index) | [Configuration →](configuration)
