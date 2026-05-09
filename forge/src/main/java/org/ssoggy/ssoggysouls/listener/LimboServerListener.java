@@ -88,11 +88,14 @@ public class LimboServerListener {
     @SubscribeEvent
     public static void onEntityTravel(EntityTravelToDimensionEvent event) {
         if (db == null) return;
-        if (event.getEntity() instanceof ServerPlayer player
-                && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE
-                && db.isPlayerDead(player.getUUID())) {
-            event.setCanceled(true);
-            player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
+        if (event.getEntity() instanceof ServerPlayer player) {
+            if (player.hasPermissions(2)) {
+                return;
+            }
+            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
+                event.setCanceled(true);
+                player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
+            }
         }
     }
 
@@ -105,7 +108,6 @@ public class LimboServerListener {
         player.getFoodData().setFoodLevel(20);
         player.getFoodData().setSaturation(20f);
 
-        // Teleport to specific limbo spawn location config
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
         ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
