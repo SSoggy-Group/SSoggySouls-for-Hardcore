@@ -29,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class MainServerListener {
 
+    @SuppressWarnings("unused")
     private final DatabaseManager db;
 
     private MainServerListener(DatabaseManager db) {
