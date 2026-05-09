@@ -321,11 +321,11 @@ public class ConfigManager {
         public void setPublicObituaryAfter(int seconds) { publicObituaryAfter = seconds; }
         public void setReviveResistanceTicks(int ticks) { reviveResistanceTicks = ticks; }
         public void setReviveGlowingTicks(int ticks) { reviveGlowingTicks = ticks; }
-        public void setSoulSandBlockTag(java.util.Collection<String> blocks) { soulSandBlockTag = normalizeBlockList(blocks); }
-        public void setFlowerBlockTag(java.util.Collection<String> blocks) { flowerBlockTag = normalizeBlockList(blocks); }
-        public void setOreBlockTag(java.util.Collection<String> blocks) { oreBlockTag = normalizeBlockList(blocks); }
-        public void setFenceBlockTag(java.util.Collection<String> blocks) { fenceBlockTag = normalizeBlockList(blocks); }
-        public void setStairBlockTag(java.util.Collection<String> blocks) { stairBlockTag = normalizeBlockList(blocks); }
+        public void setSoulSandBlocktag(java.util.Collection<String> blocks) { soulSandBlockTag = normalizeBlockList(blocks); }
+        public void setFlowerBlocktag(java.util.Collection<String> blocks) { flowerBlockTag = normalizeBlockList(blocks); }
+        public void setOreBlocktag(java.util.Collection<String> blocks) { oreBlockTag = normalizeBlockList(blocks); }
+        public void setFenceBlocktag(java.util.Collection<String> blocks) { fenceBlockTag = normalizeBlockList(blocks); }
+        public void setStairBlocktag(java.util.Collection<String> blocks) { stairBlockTag = normalizeBlockList(blocks); }
         public void setDebug(boolean d) { debug = d; }
         public void setCheckForUpdates(boolean check) { checkForUpdates = check; }
 
