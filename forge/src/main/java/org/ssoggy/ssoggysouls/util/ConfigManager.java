@@ -70,17 +70,15 @@ public class ConfigManager {
                 char c = normalized.charAt(i);
                 if (Character.isDigit(c)) {
                     digits.append(c);
-                } else if (c == 'h' || c == 'm' || c == 's') {
-                    if (digits.length() > 0) {
-                        long value = Long.parseLong(digits.toString());
-                        switch (c) {
-                            case 'h' -> totalMs += value * 3600000;
-                            case 'm' -> totalMs += value * 60000;
-                            case 's' -> totalMs += value * 1000;
-                            default -> { /* ignore */ }
-                        }
-                        digits.setLength(0);
+                } else if ((c == 'h' || c == 'm' || c == 's') && digits.length() > 0) {
+                    long value = Long.parseLong(digits.toString());
+                    switch (c) {
+                        case 'h' -> totalMs += value * 3600000;
+                        case 'm' -> totalMs += value * 60000;
+                        case 's' -> totalMs += value * 1000;
+                        default -> { /* ignore */ }
                     }
+                    digits.setLength(0);
                 }
             }
             return totalMs;
