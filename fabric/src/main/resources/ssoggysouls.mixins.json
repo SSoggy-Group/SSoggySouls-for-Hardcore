@@ -3,7 +3,8 @@
   "package": "org.ssoggy.ssoggysouls.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "CommandManagerMixin"
+    "CommandManagerMixin",
+    "ServerPlayerEntityMixin"
   ],
   "client": [],
   "server": [],
