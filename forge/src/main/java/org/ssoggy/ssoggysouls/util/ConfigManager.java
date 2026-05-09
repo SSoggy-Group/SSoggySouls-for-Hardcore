@@ -19,6 +19,7 @@ public class ConfigManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static ModConfig config;
     private static final File CONFIG_FILE = new File(FMLPaths.CONFIGDIR.get().toFile(), "ssoggysouls.json");
+    private static final java.util.regex.Pattern GRACE_PERIOD_PATTERN = java.util.regex.Pattern.compile("(\\d+)([hms])");
 
     public static void load() {
         if (CONFIG_FILE.exists()) {
@@ -61,10 +62,10 @@ public class ConfigManager {
     }
 
     public static long parseGracePeriod(String input) {
-        if (input == null || input.equals("0") || input.isEmpty()) return 0;
+        if (input == null || input.equals("0") || input.isEmpty() || input.length() > 50) return 0;
         try {
             long totalMs = 0;
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+)([hms])").matcher(input.toLowerCase());
+            java.util.regex.Matcher matcher = GRACE_PERIOD_PATTERN.matcher(input.toLowerCase());
             while (matcher.find()) {
                 long value = Long.parseLong(matcher.group(1));
                 char unit = matcher.group(2).charAt(0);
