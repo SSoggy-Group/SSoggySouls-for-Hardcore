@@ -63,12 +63,6 @@ public class GhostModeEvents implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOW)
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        cancelEventIfGhostMode(player, event);
-    }
-
-    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         if (event.getHand() != EquipmentSlot.HAND) return;
 
@@ -77,8 +71,6 @@ public class GhostModeEvents implements Listener {
         if (GAMEMODESENUM.getPlayerGameMode(player) == GAMEMODESENUM.GHOSTMODE) {
             player.setGameMode(GameMode.SPECTATOR);
             player.setSpectatorTarget(target);
-            RPCommandOutput message = new RPCommandOutput();
-            message.success = COMMANDOUTPUTENUM.INFO;
         }
     }
 
@@ -90,7 +82,7 @@ public class GhostModeEvents implements Listener {
             if (target instanceof Player) {
                 Player targetPlayer = (Player) target;
                 if (!targetPlayer.isOnline()) {
-                    return;
+                    player.setSpectatorTarget(null);
                 }
             }
         }
