@@ -51,6 +51,11 @@ public class MySQLManager extends AbstractDatabaseManager {
             int poolSize = plugin.getConfigInt("database.pool-size", 5);
             String configuredTableName = plugin.getConfigString("database.table-name", "hardcore_players");
             String sslMode = plugin.getConfigString("database.ssl-mode", "VERIFY_IDENTITY");
+
+            host = SqlSafety.requireValidJdbcParam(host, "database.host");
+            dbName = SqlSafety.requireValidJdbcParam(dbName, "database.name");
+            sslMode = SqlSafety.requireValidJdbcParam(sslMode, "database.ssl-mode");
+
             if (!SqlSafety.isIdentifier(configuredTableName)) {
                 plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", configuredTableName);
                 throw new DatabaseInitializationException("Invalid database.table-name: " + configuredTableName);
