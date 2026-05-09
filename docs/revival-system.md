@@ -7,7 +7,7 @@ title: Revival System Guide
 
 This guide covers all the ways you can bring dead players back to life on your server. We support everything from immersive in-game ritual structures to craftable items and administrative commands.
 
-> **Credits:** The core revival mechanics—including player head drops, ritual structures, and the Revive Skull—are adapted from JakeCCz's excellent [Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod). Advanced features like ghost tracking, customizable block tags, and robust database cleanups were ported from the **RevivalPlus DLC by Cera and JakeCCz**.
+> **Credits:** Core revival mechanics (like player head drops, ritual structures, and the Revive Skull) are based on JakeCCz's excellent [Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod). Advanced features like ghost tracking, customizable block tags, and database cleanups were ported from the **RevivalPlus DLC by Cera and JakeCCz**.
 
 ---
 

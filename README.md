@@ -29,8 +29,8 @@ SSoggySouls brings a highly customizable hardcore lives system to Minecraft 1.21
 
 SSoggySouls supports two main setups depending on your server's style:
 
-1. **Standalone (SQLite):** Everything runs on one server. Dead players are put into spectator mode. No proxy, no complex databases, and no extra servers needed—just drop the plugin in and play.
-2. **Proxy Network (MySQL):** Runs on two backend servers behind a Velocity proxy—a **Main** server (where active play happens) and a **Limbo** server (where dead players are exiled). Both servers connect to the same MySQL database to keep player records in sync.
+1. **Standalone (SQLite):** Everything runs on one server. Dead players are put into spectator mode. No proxy, no complex databases, and no extra servers are needed. Just drop the plugin in and play.
+2. **Proxy Network (MySQL):** Runs on two backend servers behind a Velocity proxy: a **Main** server (where active play happens) and a **Limbo** server (where dead players are exiled). Both servers connect to the same MySQL database to keep player records in sync.
 
 ### Basic Gameplay Loop:
 - Players start with 2 lives (configurable).

@@ -25,7 +25,7 @@ SSoggySouls is a hardcore lives plugin and mod. If you die enough times, you get
 
 ## Built-in Revival System
 
-> **Credits:** Core revival mechanics—including player head drops, ritual structures, and the Revive Skull—are adapted from JakeCCz's [Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod).
+> **Credits:** Core revival mechanics (like player head drops, ritual structures, and the Revive Skull) are adapted from JakeCCz's [Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod).
 
 - **Player Head Drops:** When you lose all your lives, your head drops where you died and your coordinates are sent to you in chat so your teammates can find it.
 - **Revival Ritual:** Build a 3x3x3 beacon-like structure:
