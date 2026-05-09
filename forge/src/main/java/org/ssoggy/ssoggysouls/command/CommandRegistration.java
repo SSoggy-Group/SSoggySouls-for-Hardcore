@@ -22,6 +22,7 @@ import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.AdminLogger;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.PermissionUtil;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -118,6 +119,11 @@ public class CommandRegistration {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     CommandSourceStack source = context.getSource();
 
+                    if (PermissionUtil.isBlockedByLimboOpSecurity(source)) {
+                        PermissionUtil.sendSecurityBlockMessage(source);
+                        return 0;
+                    }
+
                     CompletableFuture.runAsync(() -> {
                         PlayerData targetData = db.getPlayerByName(targetName);
                         if (targetData == null) {
@@ -171,6 +177,11 @@ public class CommandRegistration {
                         String targetName = StringArgumentType.getString(context, PLAYER);
                         int lives = IntegerArgumentType.getInteger(context, LIVES);
                         CommandSourceStack source = context.getSource();
+
+                        if (PermissionUtil.isBlockedByLimboOpSecurity(source)) {
+                            PermissionUtil.sendSecurityBlockMessage(source);
+                            return 0;
+                        }
 
                         CompletableFuture.runAsync(() -> {
                             PlayerData data = db.getPlayerByName(targetName);

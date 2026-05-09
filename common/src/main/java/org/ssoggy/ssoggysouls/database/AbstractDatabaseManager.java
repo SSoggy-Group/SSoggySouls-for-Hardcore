@@ -303,13 +303,6 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
     }
 
     /**
-     * Persists the plugin version for the given key. Subclasses override this to
-     * use the correct upsert syntax for their dialect.
-     */
-    @Override
-    public abstract void savePluginVersion(String key, String version);
-
-    /**
      * Creates the metadata table if it does not already exist.
      * Subclasses provide the CREATE TABLE body via
      * {@link #metadataTableDdl(String)}.

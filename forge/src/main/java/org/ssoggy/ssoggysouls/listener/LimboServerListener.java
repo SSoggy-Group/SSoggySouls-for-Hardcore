@@ -9,6 +9,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
@@ -84,6 +85,25 @@ public class LimboServerListener {
         }
     }
 
+    @SubscribeEvent
+    public static void onEntityTravel(EntityTravelToDimensionEvent event) {
+        if (db == null) return;
+        if (event.getEntity() instanceof ServerPlayer player) {
+            // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
+            ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+            ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
+            if (limboId != null && event.getDimension().location().equals(limboId)) return;
+
+            // Check for bypass permission (parity with Fabric)
+            if (player.hasPermissions(2)) return;
+
+            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
+                event.setCanceled(true);
+                player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
+            }
+        }
+    }
+
     private static void applyLimboState(ServerPlayer player) {
         player.setGameMode(GameType.ADVENTURE);
         player.getInventory().clearContent();
@@ -93,7 +113,6 @@ public class LimboServerListener {
         player.getFoodData().setFoodLevel(20);
         player.getFoodData().setSaturation(20f);
 
-        // Teleport to specific limbo spawn location config
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
         ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));

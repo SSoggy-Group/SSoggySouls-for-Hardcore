@@ -61,8 +61,9 @@ public class PlayerStateEvents implements Listener {
         Location deathPos = new Location(world, location.getBlockX(), Math.clamp(location.getY(), minHeight, maxHeight),
                 location.getZ());
         String[] dimensionName = world.getKey().asString().split(":");
-        if (dimensionName.length < 2)
-            dimensionName = new String[] { "minecraft" + dimensionName[0] };
+        if (dimensionName.length < 2) {
+            dimensionName = new String[] { "minecraft", dimensionName[0] };
+        }
         RPCommandOutput deathMessage = new RPCommandOutput();
         deathMessage.success = COMMANDOUTPUTENUM.INFO;
         deathMessage.message = "<red>--- <bold>You have died!</bold> ---</red>\n<gray>Reclaim your loot at</gray> <gold><bold>X"
