@@ -222,7 +222,7 @@ public class ConfigManager {
         /**
          * @deprecated Use {@link #getSpectatorHeadRestrictRadius()} instead.
          */
-        @Deprecated
+        @Deprecated(since = "4.4.8")
         @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public int getSpectatorHeadrestrictRadius() { return getSpectatorHeadRestrictRadius(); }
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
@@ -243,35 +243,35 @@ public class ConfigManager {
         /**
          * @deprecated Use {@link #getSoulSandBlockTag()} instead.
          */
-        @Deprecated
+        @Deprecated(since = "4.4.8")
         @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getSoulSandBlocktag() { return getSoulSandBlockTag(); }
 
         /**
          * @deprecated Use {@link #getFlowerBlockTag()} instead.
          */
-        @Deprecated
+        @Deprecated(since = "4.4.8")
         @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getFlowerBlocktag() { return getFlowerBlockTag(); }
 
         /**
          * @deprecated Use {@link #getOreBlockTag()} instead.
          */
-        @Deprecated
+        @Deprecated(since = "4.4.8")
         @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getOreBlocktag() { return getOreBlockTag(); }
 
         /**
          * @deprecated Use {@link #getFenceBlockTag()} instead.
          */
-        @Deprecated
+        @Deprecated(since = "4.4.8")
         @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getFenceBlocktag() { return getFenceBlockTag(); }
 
         /**
          * @deprecated Use {@link #getStairBlockTag()} instead.
          */
-        @Deprecated
+        @Deprecated(since = "4.4.8")
         @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getStairBlocktag() { return getStairBlockTag(); }
         public boolean isDebug() { return debug; }
@@ -358,7 +358,7 @@ public class ConfigManager {
         /**
          * @deprecated Use {@link #setSpectatorHeadRestrictRadius(int)} instead.
          */
-        @Deprecated
+        @Deprecated(since = "4.4.8")
         @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public void setSpectatorHeadrestrictRadius(int radius) { setSpectatorHeadRestrictRadius(radius); }
         public void setRestrictMenuAccess(boolean restrict) { restrictMenuAccess = restrict; }
