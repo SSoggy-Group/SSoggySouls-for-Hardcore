@@ -63,7 +63,7 @@ class PermissionUtilTest {
     }
 
     @Test
-    void testIsBlockedByLimboOpSecurityTrustedUuid() {
+    void testIsBlockedByLimboOpSecurityWhitelistedUuid() {
         when(player.isOp()).thenReturn(true);
         UUID uuid = player.getUniqueId();
         when(plugin.getLimboTrustedAdmins()).thenReturn(Set.of(uuid.toString()));
@@ -73,7 +73,7 @@ class PermissionUtilTest {
 
     @Test
     void testIsBlockedByLimboOpSecurityWhitelistedName() {
-        String name = player.getName();
+        String name = "TestPlayer";
         when(player.isOp()).thenReturn(true);
         when(plugin.getLimboTrustedAdmins()).thenReturn(Set.of(name.toLowerCase()));
 

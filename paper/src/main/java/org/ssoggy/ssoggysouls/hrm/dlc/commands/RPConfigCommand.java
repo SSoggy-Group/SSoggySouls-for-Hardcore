@@ -211,7 +211,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + args[0] + ERR_MARKER_EMPTY;
+                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
                 break;
             case 2:
                 if (!RPStatic.BLOCK_TAGS.containsKey(args[1])) {
@@ -241,7 +241,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + args[0] + ERR_MARKER_EMPTY;
+                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:
@@ -263,7 +263,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + args[0] + ERR_MARKER_EMPTY;
+                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:

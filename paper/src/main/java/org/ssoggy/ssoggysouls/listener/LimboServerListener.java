@@ -127,8 +127,7 @@ public class LimboServerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onCommandPreprocess(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
-        if (player.hasPermission(PERM_BYPASS)) return;
-        if (player.hasPermission("ssoggysouls.admin")) return;
+        if (player.hasPermission(PERM_BYPASS) || player.hasPermission("ssoggysouls.admin")) return;
 
         String rawMessage = event.getMessage();
         String command = rawMessage.toLowerCase().split(" ")[0];
@@ -138,7 +137,10 @@ public class LimboServerListener implements Listener {
         }
 
         event.setCancelled(true);
+        processLimboCommand(player, rawMessage);
+    }
 
+    private void processLimboCommand(Player player, String rawMessage) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             boolean isDead = plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
 

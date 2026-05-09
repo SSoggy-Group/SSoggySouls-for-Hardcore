@@ -104,8 +104,9 @@ public class GhostModeEvents {
 
         if (event.phase != TickEvent.Phase.END) return;
 
-        for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
-            if (isGhost(player)) {
+        for (UUID uuid : GHOST_CACHE) {
+            ServerPlayer player = event.getServer().getPlayerList().getPlayer(uuid);
+            if (player != null) {
                 enforceGhostRestrictions(player);
             }
         }

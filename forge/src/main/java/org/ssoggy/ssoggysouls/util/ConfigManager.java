@@ -60,24 +60,11 @@ public class ConfigManager {
     }
 
     public static long parseGracePeriod(String input) {
-        if (input == null || input.equals("0") || input.isEmpty()) return 0;
-        try {
-            long totalMs = 0;
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+)([hms])").matcher(input.toLowerCase());
-            while (matcher.find()) {
-                long value = Long.parseLong(matcher.group(1));
-                char unit = matcher.group(2).charAt(0);
-                switch (unit) {
-                    case 'h' -> totalMs += value * 3600000;
-                    case 'm' -> totalMs += value * 60000;
-                    case 's' -> totalMs += value * 1000;
-                    default -> { /* ignore */ }
-                }
-            }
-            return totalMs;
-        } catch (Exception e) {
+        if (input == null || input.equals("0") || input.isEmpty() || input.length() > 64) {
             return 0;
         }
+        long millis = TimeUtil.parseTimeToMillis(input);
+        return millis < 0 ? 0 : millis;
     }
 
     public static class ModConfig {

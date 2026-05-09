@@ -5,157 +5,223 @@ title: Quick Start Guide
 
 ## Quick Start Guide
 
-This guide will get SSoggySouls up and running on your server as quickly as possible. For a more detailed walkthrough, see our full [Installation Guide](installation).
+This guide will help you get SSoggySouls up and running in 8 simple steps. For more detailed instructions, see the [Installation Guide](installation).
 
-> **Note:** Fabric and Forge versions are still in early testing. Expect frequent updates, and please report any bugs you find on GitHub!
+> **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
 ## Prerequisites
 
-Before getting started, make sure you meet the requirements for your chosen setup:
+**For a Single Server Setup (Easy):**
 
-### Single Server Setup (Standalone)
 - One Minecraft 1.21.X server (Spigot, Paper, Purpur, Fabric, or Forge)
-- Java 21 or newer
+- Java 21+
 
-### 2-Server Setup (Main + Limbo Network)
-- Two Minecraft 1.21.X servers (one for active play, one for Limbo)
-- A Velocity proxy to connect them
-- A MySQL 5.7+ or MariaDB 10.2+ database
-- Java 21 or newer
+**For a 2-Server Setup (Advanced):**
 
----
+- Two Minecraft 1.21.X servers (Spigot, Paper, Purpur, Fabric, or Forge)
+- A Velocity Proxy connecting them
+- MySQL 5.7+ / MariaDB 10.2+ database
+- Java 21+
 
 ## Installation Steps
 
-### Step 1: Download the plugin
-Grab the latest `SSoggySouls-4.4.8.jar` from:
+### Step 1: Download
+
+Download the latest `SSoggySouls-4.4.12.jar` from:
+
 - [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases)
+
 - [Modrinth](https://modrinth.com/project/Pb03qu6T)
 
-### Step 2: Drop it in your plugins folder
-Put the JAR in your server's `plugins/` (or `mods/`) folder.
+### Step 2: Install Plugin
 
-If you are running a 2-server setup, you must install the JAR on **both** backend servers:
-- Main server: `/plugins/SSoggySouls-4.4.8.jar`
-- Limbo server: `/plugins/SSoggySouls-4.4.8.jar`
+Place `SSoggySouls-4.4.12.jar` in your server's `plugins/` folder.
 
-> **Important:** Do NOT install the plugin on your proxy (Velocity/BungeeCord). It only goes on the backend servers.
+If using a 2-server setup, install it on **both** backend servers:
 
-### Step 3: Generate the default config
-1. Start up your server(s) so the default configuration can generate.
-2. Once the server finishes starting up, stop it.
-3. You will now find a `plugins/SSoggySouls/config.yml` file on each server.
+- Main server: `/plugins/SSoggySouls-4.4.12.jar`
+- Limbo server: `/plugins/SSoggySouls-4.4.12.jar`
 
-### Step 4: Configure your database
+> **Important:** If using a proxy, install on backend servers only, NOT on Velocity!
 
-#### Option A: Standalone Single Server (SQLite)
-If you're running just one server, make sure the database type is set to `sqlite` in your `config.yml`. No other database settings are needed:
+### Step 3: Generate Config
+
+1. Start both servers to generate default `config.yml` files
+1. Stop both servers after generation
+
+You should see a `plugins/SSoggySouls/config.yml` file on each server.
+
+### Step 4: Configure Database
+
+**Option A: Single Server (SQLite)**
+If you only run one server, just verify your `config.yml` is set to `sqlite`:
+
 ```yaml
 database:
   type: "sqlite"
 ```
 
-#### Option B: 2-Server Network Setup (MySQL)
-If you are running a Main + Limbo proxy setup, you need a shared MySQL database. Set up your database, then put these identical connection details into `config.yml` on **both servers**:
+**Option B: 2-Server Setup (MySQL)**
+If you run Main + Limbo, you need one MySQL database. Set it up once, then put the same connection details in `config.yml` on **both servers**:
+
 ```yaml
 database:
   type: "mysql"
-  host: "localhost"        # Change this to your DB host
-  port: 3306
-  name: "ssoggysouls"
-  username: "root"
-  password: "your_password" # Change this to your actual password
+  host: "localhost"        # Your database host
+  port: 3306               # Your database port
+  name: "ssoggysouls"       # Your database name
+  username: "root"         # Your MySQL username
+  password: "your_password" # Your MySQL password
   pool-size: 5
   table-name: "hardcore_players"
 ```
-*(If you are hosting through a panel like Pterodactyl, copy the database connection details from your panel's Databases tab.)*
 
-### Step 5: Configure server roles (Only for 2-Server networks)
-If you're on a single standalone server with SQLite, skip this step.
+**For Pterodactyl users:**
 
-**On your Main server (`config.yml`):**
+1. Go to your panel → Databases tab
+1. Create a new database
+1. Use the provided host, port, username, and password in config
+
+### Step 5: Configure Server Roles (2-Server Setup Only)
+
+If you are only running a single server with SQLite, skip this step — leave the defaults.
+
+**On Main server (`config.yml`):**
+
 ```yaml
-is-limbo-server: false
-main-server-name: "main"      # Must match your velocity.toml server name
-limbo-server-name: "limbo"    # Must match your velocity.toml server name
+is-limbo-server: false        # This is the Main server
+
+main-server-name: "main"      # Must match your Velocity config
+
+limbo-server-name: "limbo"    # Must match your Velocity config
+
 ```
 
-**On your Limbo server (`config.yml`):**
+**On Limbo server (`config.yml`):**
+
 ```yaml
-is-limbo-server: true
-main-server-name: "main"      # Must match your velocity.toml server name
-limbo-server-name: "limbo"    # Must match your velocity.toml server name
+is-limbo-server: true         # This is the Limbo server
+
+main-server-name: "main"      # Must match your Velocity config
+
+limbo-server-name: "limbo"    # Must match your Velocity config
+
 ```
-*Tip: Ensure these names match the server names in your `velocity.toml` configuration exactly.*
 
-### Step 6: Set the Limbo spawn point (Only for Limbo servers)
-1. Start your Limbo server.
-2. Join the Limbo server in-game.
-3. Stand exactly where you want dead players to spawn.
-4. Type `/setlimbospawn`.
-5. The coordinates will save directly to your configuration.
+> **Tip:** The server names must exactly match the server names in your `velocity.toml` file.
 
-### Step 7: Configure proxy forwarding
-Make sure player info forwarding is set up correctly so UUIDs are shared properly.
+### Step 6: Set Limbo Spawn
+
+1. Start the Limbo server
+1. Join the Limbo server in-game
+1. Stand where you want dead players to spawn
+1. Run `/setlimbospawn`
+1. Verify the spawn location is saved in config
+
+### Step 7: Configure Proxy Forwarding
 
 **For Velocity:**
-Open `velocity.toml` and verify this line:
+
+Edit `velocity.toml`:
+
 ```toml
 player-info-forwarding-mode = "modern"
+
 ```
 
 **For BungeeCord/Waterfall:**
-- Set `ip_forward: true` in your BungeeCord `config.yml`.
-- Set `bungeecord: true` in `spigot.yml` on both backend servers.
-- If using Paper, disable Velocity support in `paper.yml` to prevent conflicts.
 
-### Step 8: Restart and test it out!
-1. Start both servers up.
-2. Check your console logs to make sure the database connected successfully.
-3. Join your Main server and test the flow:
-   - Join the Main server.
-   - Run `/pstatus` to view your current lives.
-   - Kill your character until you run out of lives.
-   - Verify you are sent to the spectator mode or exiled to Limbo (depending on your setup).
-   - From your console, type `psadmin revive <your_name>` to bring yourself back.
-   - Check that you are sent back to the Main server with 1 life.
+- Enable IP forwarding in BungeeCord's `config.yml`
 
----
+- Set `bungeecord: true` in `spigot.yml` on both backend servers
+
+- Configure Paper forwarding if using Paper
+
+### Step 8: Restart & Test
+
+1. Restart both servers
+1. Check console for successful database connection messages
+1. Test the complete flow:
+   - Join the Main server
+
+   - Use `/pstatus` to check your lives
+
+   - Kill yourself enough times to lose all lives
+
+   - Verify you're transferred to Limbo
+
+   - Use `/psadmin revive <player>` to revive yourself
+
+   - Verify you're returned to Main
 
 ## What's Next?
 
-Now that the basics are working, you can customize the gameplay settings in `config.yml`:
-- **Lives & Cap:** Set the starting lives, maximum lives, and lives restored on revival.
-- **Death Modes:** Choose between `limbo` (immediate transfer), `spectator` (stay on Main in spectator mode), or `hybrid` (spectate on Main for a few minutes before transferring).
-- **Grace Period:** Give new players some breathing room before deaths start counting.
-- **Recipes:** Customize the crafting ingredients for Extra Lives.
+### Customize Your Settings
 
-For full configuration options, head over to the [Configuration Reference](configuration).
+Review and customize these important settings in `config.yml`:
 
----
+- **Lives settings** (`default`, `max-lives`, `on-revive`)
+
+- **Death mode** (`limbo`, `spectator`, or `hybrid`)
+
+- **Grace period** duration for new players
+
+- **Extra Life recipe** materials
+
+- **Messages** and colors
+
+See the [Configuration Reference](configuration) for details on all options.
+
+### Learn About Features
+
+- [Revival System](revival-system) - Learn how to revive players using ritual structures and items
+
+- [Commands](commands) - Full list of available commands
+
+- [Death Modes](configuration.md#death-modes) - Understand the three death mode options
+
+### Troubleshooting
+
+Having issues? Check the [Troubleshooting Guide](troubleshooting) for solutions to common problems.
 
 ## Quick Reference
 
 ### Death Modes
 
-| Mode | Behavior |
-|---|---|
-| **`hybrid`** | Dead players get 5 minutes in spectator mode to be revived, then transferred to Limbo. |
-| **`spectator`** | Dead players stay on Main in spectator mode indefinitely until revived (SQLite default). |
-| **`limbo`** | Dead players are immediately transferred to Limbo upon losing all lives. |
+| Mode                 | Behavior                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------- |
+
+| **hybrid**           | Dead players get 5 minutes in spectator mode to be revived, then transferred to Limbo |
+
+| **spectator**        | Dead players stay on Main in spectator mode indefinitely until revived (SQLite default) |
+
+| **limbo**            | Dead players immediately transferred to Limbo upon losing all lives                   |
 
 ### Essential Commands
 
-| Command | Description |
-|---|---|
-| `/pstatus [player]` | Check lives and status |
-| `/revive <player>` | Revive a dead player |
-| `/psadmin lives <player> <amount>` | Set player's lives |
-| `/psadmin grace <player> <hours>` | Set grace period |
-| `/setlimbospawn` | Set Limbo spawn point |
+| Command                            | Description            |
+| ---------------------------------- | ---------------------- |
+
+| `/pstatus [player]`                | Check lives and status |
+| `/revive <player>`                 | Revive a dead player   |
+| `/psadmin lives <player> <amount>` | Set player's lives     |
+| `/psadmin grace <player> <hours>`  | Set grace period       |
+| `/setlimbospawn`                   | Set Limbo spawn point  |
 
 For the complete command list, see [Commands](commands).
 
----
+## Need Help?
+
+- [Full Installation Guide](installation)
+
+- [Configuration Reference](configuration)
+
+- [Troubleshooting](troubleshooting)
+
+- [FAQ](faq)
+
+- [Report Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)
+
+______________________________________________________________________
 
 [← Back to Home](index) | [Installation Guide →](installation)

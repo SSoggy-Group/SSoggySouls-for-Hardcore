@@ -64,7 +64,7 @@ public class ConfigManager {
         if (input == null || input.equals("0") || input.isEmpty()) return 0;
         try {
             long totalMs = 0;
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+)([hms])").matcher(input.toLowerCase());
+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d++)\\s*+([hms])").matcher(input.toLowerCase());
             while (matcher.find()) {
                 long value = Long.parseLong(matcher.group(1));
                 char unit = matcher.group(2).charAt(0);
@@ -219,7 +219,11 @@ public class ConfigManager {
         public boolean isLoseInventory() { return loseInventory; }
         public boolean isGhostModeParticles() { return ghostModeParticles; }
         public int getSpectatorHeadRestrictRadius() { return spectatorHeadRestrictRadius; }
-        @Deprecated
+        /**
+         * @deprecated Use {@link #getSpectatorHeadRestrictRadius()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public int getSpectatorHeadrestrictRadius() { return getSpectatorHeadRestrictRadius(); }
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
         public boolean isCreativePlayersDropHeads() { return creativePlayersDropHeads; }
@@ -236,15 +240,39 @@ public class ConfigManager {
         public java.util.List<String> getOreBlockTag() { return oreBlockTag; }
         public java.util.List<String> getFenceBlockTag() { return fenceBlockTag; }
         public java.util.List<String> getStairBlockTag() { return stairBlockTag; }
-        @Deprecated
+        /**
+         * @deprecated Use {@link #getSoulSandBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getSoulSandBlocktag() { return getSoulSandBlockTag(); }
-        @Deprecated
+
+        /**
+         * @deprecated Use {@link #getFlowerBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getFlowerBlocktag() { return getFlowerBlockTag(); }
-        @Deprecated
+
+        /**
+         * @deprecated Use {@link #getOreBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getOreBlocktag() { return getOreBlockTag(); }
-        @Deprecated
+
+        /**
+         * @deprecated Use {@link #getFenceBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getFenceBlocktag() { return getFenceBlockTag(); }
-        @Deprecated
+
+        /**
+         * @deprecated Use {@link #getStairBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getStairBlocktag() { return getStairBlockTag(); }
         public boolean isDebug() { return debug; }
         public boolean isCheckForUpdates() { return checkForUpdates; }
@@ -327,7 +355,11 @@ public class ConfigManager {
         public void setLoseInventory(boolean lose) { loseInventory = lose; }
         public void setGhostModeParticles(boolean particles) { ghostModeParticles = particles; }
         public void setSpectatorHeadRestrictRadius(int radius) { spectatorHeadRestrictRadius = radius; }
-        @Deprecated
+        /**
+         * @deprecated Use {@link #setSpectatorHeadRestrictRadius(int)} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public void setSpectatorHeadrestrictRadius(int radius) { setSpectatorHeadRestrictRadius(radius); }
         public void setRestrictMenuAccess(boolean restrict) { restrictMenuAccess = restrict; }
         public void setCreativePlayersDropHeads(boolean drop) { creativePlayersDropHeads = drop; }
