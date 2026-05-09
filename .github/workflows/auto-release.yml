@@ -1,4 +1,4 @@
-name: Auto Bump, Build, and Release
+name: Version Bump and Release
 
 on:
   push:
