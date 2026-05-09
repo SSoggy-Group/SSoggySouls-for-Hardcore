@@ -117,7 +117,7 @@ public class ConfigManager {
         // --- DLC / Ghost Mode ---
         private boolean loseInventory = false;
         private boolean ghostModeParticles = false;
-        @SerializedName(value = "spectatorHeadRestrictionRadius", alternate = {"spectatorHeadrestrictRadius"})
+        @SerializedName(value = "spectatorHeadRestrictionRadius", alternate = {"spectatorHeadrestrictRadius", "spectatorHeadRestrictRadius"})
         private int spectatorHeadRestrictionRadius = 16;
         private boolean restrictMenuAccess = true;
         private boolean creativePlayersDropHeads = false;
