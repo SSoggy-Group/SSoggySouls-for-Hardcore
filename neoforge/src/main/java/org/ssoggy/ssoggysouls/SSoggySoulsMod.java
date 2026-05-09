@@ -103,7 +103,7 @@ public class SSoggySoulsMod implements PluginContext {
         }
     }
 
-    private void commonSetup() {
+    private void commonSetup(final FMLCommonSetupEvent event) {
         ServerTransferUtil.register();
     }
 
