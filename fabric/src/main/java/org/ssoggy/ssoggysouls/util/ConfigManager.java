@@ -19,7 +19,7 @@ public class ConfigManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static ModConfig config;
     private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "ssoggysouls.json");
-    private static final java.util.regex.Pattern GRACE_PERIOD_PATTERN = java.util.regex.Pattern.compile("(\\d+)([hms])");
+    private static final java.util.regex.Pattern GRACE_PERIOD_PATTERN = java.util.regex.Pattern.compile("(\\d++)([hms])");
 
     public static void load() {
         if (CONFIG_FILE.exists()) {
