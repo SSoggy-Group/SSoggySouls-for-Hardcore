@@ -93,60 +93,61 @@ public class CommandRegistration {
 
     private static void registerReviveCommand(CommandDispatcher<ServerCommandSource> dispatcher, SSoggySoulsMod plugin, DatabaseManager db) {
         dispatcher.register(CommandManager.literal("revive")
+            // Require op level 2 or higher for now (since no permissions api is installed yet)
             .requires(source -> source.hasPermissionLevel(2))
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> CommandSource.suggestMatching(
                         context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString()), builder))
-                .executes(context -> executeRevive(context, plugin, db))
+                .executes(context -> {
+                    String targetName = StringArgumentType.getString(context, PLAYER);
+                    ServerCommandSource source = context.getSource();
+
+                    if (PermissionUtil.isBlockedByLimboOpSecurity(source)) {
+                        PermissionUtil.sendSecurityBlockMessage(source);
+                        return 0;
+                    }
+
+                    CompletableFuture.runAsync(() -> executeRevive(targetName, source, plugin, db));
+                    return 1;
+                })
             )
         );
     }
 
-    private static int executeRevive(com.mojang.brigadier.context.CommandContext<ServerCommandSource> context, SSoggySoulsMod plugin, DatabaseManager db) {
-        String targetName = StringArgumentType.getString(context, PLAYER);
-        ServerCommandSource source = context.getSource();
-
-        if (PermissionUtil.isBlockedByLimboOpSecurity(source)) {
-            PermissionUtil.sendSecurityBlockMessage(source);
-            return 0;
+    private static void executeRevive(String targetName, ServerCommandSource source, SSoggySoulsMod plugin, DatabaseManager db) {
+        PlayerData targetData = db.getPlayerByName(targetName);
+        if (targetData == null) {
+            source.getServer().execute(() ->
+                source.sendError(MessageUtil.get("revive-not-found", PLAYER, targetName)));
+            return;
         }
 
-        CompletableFuture.runAsync(() -> {
-            PlayerData targetData = db.getPlayerByName(targetName);
-            if (targetData == null) {
-                source.getServer().execute(() ->
-                    source.sendError(MessageUtil.get("revive-not-found", PLAYER, targetName)));
-                return;
-            }
+        if (!targetData.isDead()) {
+            source.getServer().execute(() ->
+                source.sendError(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
+            return;
+        }
 
-            if (!targetData.isDead()) {
-                source.getServer().execute(() ->
-                    source.sendError(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
-                return;
-            }
+        boolean success = db.revivePlayer(targetData.getUuid(), plugin.getDefaultLives());
+        if (success) {
+            source.getServer().execute(() -> {
+                DlcDeaths.clearDeath(targetData.getUuid());
+                GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
+                GhostState ghostState = GhostState.getServerState(source.getServer());
+                ghostState.deathLocations.remove(targetData.getUuid());
+                ghostState.deathHolders.remove(targetData.getUuid());
+                ghostState.markDirty();
+                source.sendFeedback(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
+                AdminLogger.log(source.getName(), "Revived " + targetData.getUsername());
 
-            if (db.revivePlayer(targetData.getUuid(), plugin.getDefaultLives())) {
-                source.getServer().execute(() -> handleReviveSuccess(source, targetData));
-            }
-        });
-        return 1;
-    }
-
-    private static void handleReviveSuccess(ServerCommandSource source, PlayerData targetData) {
-        DlcDeaths.clearDeath(targetData.getUuid());
-        GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
-        GhostState ghostState = GhostState.getServerState(source.getServer());
-        ghostState.deathLocations.remove(targetData.getUuid());
-        ghostState.deathHolders.remove(targetData.getUuid());
-        ghostState.markDirty();
-        source.sendFeedback(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
-        AdminLogger.log(source.getName(), "Revived " + targetData.getUsername());
-
-        ServerPlayerEntity targetPlayer = source.getServer().getPlayerManager().getPlayer(targetData.getUuid());
-        if (targetPlayer != null) {
-            targetPlayer.changeGameMode(net.minecraft.world.GameMode.SURVIVAL);
-            org.ssoggy.ssoggysouls.listener.MainServerListener.setGhostModeAttributes(targetPlayer, false);
-            targetPlayer.sendMessage(MessageUtil.get("revive-success"), false);
+                // Restore game mode if player is online
+                ServerPlayerEntity targetPlayer = source.getServer().getPlayerManager().getPlayer(targetData.getUuid());
+                if (targetPlayer != null) {
+                    targetPlayer.changeGameMode(net.minecraft.world.GameMode.SURVIVAL);
+                    MainServerListener.setGhostModeAttributes(targetPlayer, false);
+                    targetPlayer.sendMessage(MessageUtil.get("revive-success"), false);
+                }
+            });
         }
     }
 

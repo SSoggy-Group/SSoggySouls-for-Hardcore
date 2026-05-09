@@ -115,58 +115,61 @@ public class CommandRegistration {
             .then(Commands.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                         context.getSource().getServer().getPlayerList().getPlayers().stream().map(p -> p.getScoreboardName()), builder))
-                .executes(CommandRegistration::executeRevive)
+                .executes(context -> {
+                    String targetName = StringArgumentType.getString(context, PLAYER);
+                    CommandSourceStack source = context.getSource();
+
+                    if (PermissionUtil.isBlockedByLimboOpSecurity(source)) {
+                        PermissionUtil.sendSecurityBlockMessage(source);
+                        return 0;
+                    }
+
+                    CompletableFuture.runAsync(() -> executeRevive(targetName, source));
+                    return 1;
+                })
             )
         );
     }
 
-    private static int executeRevive(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
-        String targetName = StringArgumentType.getString(context, PLAYER);
-        CommandSourceStack source = context.getSource();
-
-        if (PermissionUtil.isBlockedByLimboOpSecurity(source)) {
-            PermissionUtil.sendSecurityBlockMessage(source);
-            return 0;
+    private static void executeRevive(String targetName, CommandSourceStack source) {
+        PlayerData targetData = db.getPlayerByName(targetName);
+        if (targetData == null) {
+            source.getServer().execute(() ->
+                source.sendFailure(MessageUtil.get("revive-not-found", PLAYER, targetName)));
+            return;
         }
 
-        CompletableFuture.runAsync(() -> {
-            PlayerData targetData = db.getPlayerByName(targetName);
-            if (targetData == null) {
-                source.getServer().execute(() ->
-                    source.sendFailure(MessageUtil.get("revive-not-found", PLAYER, targetName)));
-                return;
-            }
+        if (!targetData.isDead()) {
+            source.getServer().execute(() ->
+                source.sendFailure(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
+            return;
+        }
 
-            if (!targetData.isDead()) {
-                source.getServer().execute(() ->
-                    source.sendFailure(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
-                return;
-            }
-
-            int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives();
-            if (db.revivePlayer(targetData.getUuid(), defaultLives)) {
-                source.getServer().execute(() -> handleReviveSuccess(source, targetData));
-            }
-        });
-        return 1;
+        int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives();
+        boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
+        if (success) {
+            handleReviveSuccess(targetData, source);
+        }
     }
 
-    private static void handleReviveSuccess(CommandSourceStack source, PlayerData targetData) {
-        DlcDeaths.clearDeath(targetData.getUuid());
-        GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
-        GhostState ghostState = GhostState.getServerState(source.getServer());
-        ghostState.removeDeathLocation(targetData.getUuid());
-        ghostState.removeDeathHolder(targetData.getUuid());
-        ghostState.setDirty();
-        source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
-        AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
+    private static void handleReviveSuccess(PlayerData targetData, CommandSourceStack source) {
+        source.getServer().execute(() -> {
+            DlcDeaths.clearDeath(targetData.getUuid());
+            GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
+            GhostState ghostState = GhostState.getServerState(source.getServer());
+            ghostState.removeDeathLocation(targetData.getUuid());
+            ghostState.removeDeathHolder(targetData.getUuid());
+            ghostState.setDirty();
+            source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
+            AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
 
-        ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetData.getUuid());
-        if (targetPlayer != null) {
-            targetPlayer.setGameMode(GameType.SURVIVAL);
-            ServerLifecycleListener.setGhostModeAttributes(targetPlayer, false);
-            targetPlayer.sendSystemMessage(MessageUtil.get("revive-success"));
-        }
+            ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetData.getUuid());
+            if (targetPlayer != null) {
+                targetPlayer.setGameMode(GameType.SURVIVAL);
+                ServerLifecycleListener.setGhostModeAttributes(targetPlayer, false);
+                targetPlayer.sendSystemMessage(MessageUtil.get("revive-success"));
+            }
+        });
     }
 
     private static void registerSetLivesCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
