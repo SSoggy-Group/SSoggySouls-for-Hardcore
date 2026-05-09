@@ -104,7 +104,9 @@ public class SSoggySoulsMod implements PluginContext {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        ServerTransferUtil.register();
+        event.enqueueWork(() -> {
+            ServerTransferUtil.register();
+        });
     }
 
     @SubscribeEvent
