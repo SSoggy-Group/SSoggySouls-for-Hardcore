@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -80,7 +81,7 @@ public class LimboServerListener implements Listener {
         player.setExp(0);
         player.setLevel(0);
 
-        var maxHealthAttr = player.getAttribute(Attribute.MAX_HEALTH);
+        AttributeInstance maxHealthAttr = player.getAttribute(Attribute.MAX_HEALTH);
         double maxHealth = maxHealthAttr != null ? maxHealthAttr.getBaseValue() : 20.0;
         player.setHealth(maxHealth);
         player.setFoodLevel(20);
@@ -222,7 +223,12 @@ public class LimboServerListener implements Listener {
         Player player = event.getPlayer();
 
         Location to = event.getTo();
-        if (to.getY() < -64) {
+        if (to == null) {
+            return;
+        }
+
+        int minHeight = (to.getWorld() != null ? to.getWorld() : player.getWorld()).getMinHeight();
+        if (to.getY() < minHeight) {
             Location spawn = cachedLimboSpawn; // Use cached value
             if (spawn != null && spawn.getWorld() != null) {
                 player.teleport(spawn);
