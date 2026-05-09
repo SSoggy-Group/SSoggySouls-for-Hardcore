@@ -127,8 +127,7 @@ public class LimboServerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onCommandPreprocess(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
-        if (player.hasPermission(PERM_BYPASS)) return;
-        if (player.hasPermission("ssoggysouls.admin")) return;
+        if (player.hasPermission(PERM_BYPASS) || player.hasPermission("ssoggysouls.admin")) return;
 
         String rawMessage = event.getMessage();
         String command = rawMessage.toLowerCase().split(" ")[0];
