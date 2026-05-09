@@ -9,12 +9,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import net.minecraft.entity.Entity;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 
+import net.minecraft.server.world.ServerWorld;
+
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin {
     @Inject(method = "teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/entity/Entity;", at = @At("HEAD"), cancellable = true)
     private void onTeleportTo(TeleportTarget target, CallbackInfoReturnable<Entity> cir) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-        if (LimboServerListener.shouldBlockPortal(player)) {
+        if (LimboServerListener.shouldBlockPortal(player, target.world())) {
             cir.setReturnValue(player);
         }
     }

@@ -113,11 +113,18 @@ public class LimboServerListener {
         return false;
     }
 
-    public static boolean shouldBlockPortal(ServerPlayerEntity player) {
-        if (db == null || player.hasPermissionLevel(2)) {
+    public static boolean shouldBlockPortal(ServerPlayerEntity player, ServerWorld destination) {
+        if (db == null) return false;
+        if (player.hasPermissionLevel(2)) return false; // Basic bypass logic placeholder
+
+        // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
+        ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        if (worldId != null && destination.getRegistryKey().getValue().equals(worldId)) {
             return false;
         }
 
+        // Need to be async ideally? Let's check db instead directly, though paper does it async.
         if (player.interactionManager.getGameMode() == GameMode.ADVENTURE && db.isPlayerDead(player.getUuid())) {
             player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
             return true;
