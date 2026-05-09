@@ -117,6 +117,20 @@ public class LimboServerListener {
         return false;
     }
 
+    public static boolean shouldBlockPortal(ServerPlayerEntity player) {
+        if (db == null) return false;
+        if (player.hasPermissionLevel(2)) return false; // Basic bypass logic placeholder
+
+        if (player.interactionManager.getGameMode() == GameMode.ADVENTURE) {
+            // Need to be async ideally? Let's check db instead directly, though paper does it async.
+            if (db.isPlayerDead(player.getUuid())) {
+                player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void applyLimboState(ServerPlayerEntity player) {
         player.changeGameMode(GameMode.ADVENTURE);
         player.getInventory().clear();

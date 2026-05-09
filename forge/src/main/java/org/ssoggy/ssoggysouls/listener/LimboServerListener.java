@@ -9,6 +9,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
@@ -81,6 +82,19 @@ public class LimboServerListener {
     public static void onLivingDamage(LivingDamageEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
             event.setCanceled(true); // Cancel damage for ghosts/dead players
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEntityTravel(EntityTravelToDimensionEvent event) {
+        if (db == null) return;
+        if (event.getEntity() instanceof ServerPlayer player) {
+            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
+                if (db.isPlayerDead(player.getUUID())) {
+                    event.setCanceled(true);
+                    player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
+                }
+            }
         }
     }
 
