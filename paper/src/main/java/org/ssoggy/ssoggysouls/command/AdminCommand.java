@@ -99,7 +99,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         pendingGraceConfirmations.entrySet().removeIf(entry -> (now - entry.getValue().createdAt()) > fiveMinutes);
     }
 
-    @SuppressWarnings({"java:S3516", "java:S138"}) // onCommand always returns true by design; S138 suppressed as it delegates via switch
+    @SuppressWarnings({"java:S3516", "java:S138", "java:S1479"}) // onCommand always returns true by design; S138/S1479 suppressed as it delegates via switch
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
