@@ -63,7 +63,7 @@ public class ConfigManager {
         if (input == null || input.equals("0") || input.isEmpty()) return 0;
         try {
             long totalMs = 0;
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+)\\s*([hms])").matcher(input.toLowerCase());
+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d++)\\s*+([hms])").matcher(input.toLowerCase());
             while (matcher.find()) {
                 long value = Long.parseLong(matcher.group(1));
                 char unit = matcher.group(2).charAt(0);
