@@ -73,7 +73,7 @@ class PermissionUtilTest {
 
     @Test
     void testIsBlockedByLimboOpSecurityWhitelistedName() {
-        String name = "TestPlayer";
+        String name = player.getName();
         when(player.isOp()).thenReturn(true);
         when(plugin.getLimboTrustedAdmins()).thenReturn(Set.of(name.toLowerCase()));
 
