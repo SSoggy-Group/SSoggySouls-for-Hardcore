@@ -67,6 +67,8 @@ public class GhostModeEvents implements Listener {
         Player player = event.getPlayer();
         cancelEventIfGhostMode(player, event);
     }
+
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         if (event.getHand() != EquipmentSlot.HAND) return;
 
