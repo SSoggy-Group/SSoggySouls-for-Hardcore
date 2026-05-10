@@ -10,9 +10,11 @@ base {
 }
 
 dependencies {
-    // Inject the common module
+    // Inject the common module — classes merged directly (same as Forge).
+    // Do NOT use 'include project(:common)' with JiJ: the common module has
+    // no semver version, which causes Loom's processIncludeJars to silently
+    // drop it and produce a 308-byte empty remapJar output.
     implementation project(':common')
-    include project(':common')
 
     // Minecraft + Fabric
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -57,6 +59,8 @@ processResources {
 }
 
 jar {
+    // Merge common module classes directly into the Fabric JAR.
+    from(project(':common').sourceSets.main.output)
     from("../LICENSE") {
         rename { "${it}_${project.base.archivesName.get()}" }
     }

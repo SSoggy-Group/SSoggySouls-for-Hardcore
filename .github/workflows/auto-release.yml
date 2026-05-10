@@ -187,7 +187,7 @@ jobs:
       - name: Build Minecraft Mods
         run: |
           chmod +x ./gradlew
-          ./gradlew clean build
+          ./gradlew clean build --no-build-cache
 
       - name: Locate and Rename Jars
         env:
