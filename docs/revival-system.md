@@ -292,7 +292,7 @@ A craftable item that grants players +1 life when used.
 
 - 1× Nether Star
 
-- 1× Gold Block
+- 2× Gold Block
 
 **Result:** 1 Extra Life item (displays as Nether Star)
 
