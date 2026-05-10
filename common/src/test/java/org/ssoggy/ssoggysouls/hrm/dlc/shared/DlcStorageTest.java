@@ -76,7 +76,7 @@ class DlcStorageTest {
     }
 
     @Test
-    void testLoadKeepsExistingValuesWhenReloadFails() throws IOException {
+    void testLoadClearsExistingValuesWhenReloadFails() throws IOException {
         Logger logger = mock(Logger.class);
         Path folder = tempDir.resolve("data");
         String fileName = "revivalplus.properties";
