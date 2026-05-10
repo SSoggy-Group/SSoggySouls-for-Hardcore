@@ -29,6 +29,7 @@ fabric/out/
 .classpath
 .project
 .settings/
+.eclipse/
 .nbworkspace
 .nbrescan
 .nbcache
@@ -36,6 +37,13 @@ fabric/out/
 nbproject/
 .agents
 .sonarlint
+
+# Run directories (platform specific)
+run/
+**/run/
+fabric/run/
+forge/run/
+neoforge/run/
 
 # OS specific
 .DS_Store
