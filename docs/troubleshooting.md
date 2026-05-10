@@ -381,7 +381,7 @@ Check console logs on both servers:
 
 ```text
 
-[SSoggySouls] Version 4.4.25 enabled
+[SSoggySouls] Version 4.5.0 enabled
 
 ```
 
