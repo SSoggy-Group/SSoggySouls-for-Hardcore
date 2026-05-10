@@ -132,7 +132,7 @@ dependencies {
 
     // Database dependencies
     implementation 'com.zaxxer:HikariCP:7.0.2'
-    implementation 'org.xerial:sqlite-jdbc:3.45.3'
+    implementation 'org.xerial:sqlite-jdbc:3.53.1.0'
     implementation 'com.mysql:mysql-connector-j:9.7.0'
 }
 
