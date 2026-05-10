@@ -63,7 +63,10 @@ public class GhostModeEvents implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        cancelEventIfGhostMode(event.getPlayer(), event);
+        Player player = event.getPlayer();
+        if (player != null) {
+            cancelEventIfGhostMode(player, event);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOW)
