@@ -52,7 +52,12 @@ jobs:
       - name: Build and Test
         run: |
           chmod +x ./gradlew
-          ./gradlew build
+          # Build platforms sequentially to avoid plugin classpath conflicts (e.g. fastcsv)
+          ./gradlew :common:build
+          ./gradlew :fabric:build
+          ./gradlew :paper:build
+          ./gradlew :neoforge:build
+          ./gradlew :forge:build --no-daemon
 
   sonar:
     name: SonarQube Analysis

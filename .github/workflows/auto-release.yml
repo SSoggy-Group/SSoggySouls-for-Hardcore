@@ -187,7 +187,12 @@ jobs:
       - name: Build Minecraft Mods
         run: |
           chmod +x ./gradlew
-          ./gradlew clean build
+          # Build platforms sequentially to avoid plugin classpath conflicts (e.g. fastcsv)
+          ./gradlew :common:build
+          ./gradlew :fabric:build
+          ./gradlew :paper:build
+          ./gradlew :neoforge:build
+          ./gradlew :forge:build --no-daemon
 
       - name: Locate and Rename Jars
         env:
