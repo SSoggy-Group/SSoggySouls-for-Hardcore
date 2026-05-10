@@ -493,7 +493,7 @@ Two extra options control its survival:
 | Option                  | What it does                                                                 |
 | ----------------------- | ---------------------------------------------------------------------------- |
 
-| `head-no-despawn: true` | Cancels the natural 5-minute despawn timer. The item stays until picked up.  |
+| `head-no-despawn: true` | Cancels the natural 5-minute despawn timer. The item stays until picked up. |
 | `head-fireproof: true`  | Marks the item as invulnerable. Fire, lava, and explosions can't destroy it. |
 
 **Configuration:**
