@@ -179,10 +179,10 @@ jobs:
           OLD_VERSION: ${{ needs.prepare-release.outputs.old_version }}
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          sed -i "s/version = '$OLD_VERSION'/version = '$NEW_VERSION'/g" paper/build.gradle || true
-          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
-          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
-          sed -i "s/mod_version=$OLD_VERSION-neoforge/mod_version=$NEW_VERSION-neoforge/g" neoforge/gradle.properties || true
+          sed -i "s/^version = .*/version = '$NEW_VERSION'/g" paper/build.gradle || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-fabric/g" fabric/gradle.properties || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-forge/g" forge/gradle.properties || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-neoforge/g" neoforge/gradle.properties || true
 
       - name: Build Minecraft Mods
         run: |
@@ -238,10 +238,10 @@ jobs:
           OLD_VERSION: ${{ needs.prepare-release.outputs.old_version }}
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          sed -i "s/version = '$OLD_VERSION'/version = '$NEW_VERSION'/g" paper/build.gradle || true
-          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
-          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
-          sed -i "s/mod_version=$OLD_VERSION-neoforge/mod_version=$NEW_VERSION-neoforge/g" neoforge/gradle.properties || true
+          sed -i "s/^version = .*/version = '$NEW_VERSION'/g" paper/build.gradle || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-fabric/g" fabric/gradle.properties || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-forge/g" forge/gradle.properties || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-neoforge/g" neoforge/gradle.properties || true
 
       - name: Auto-Update Docs References
         env:
@@ -347,9 +347,7 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://api.modrinth.com/v2/version/Pb03qu6T/${NEW_VERSION}+paper" || true)
-          if [ "$HTTP_STATUS" = "200" ]; then
+          if curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version" | grep -Fq "\"version_number\":\"${NEW_VERSION}+paper\""; then
             echo "Version ${NEW_VERSION}+paper already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
@@ -408,9 +406,7 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://api.modrinth.com/v2/version/Pb03qu6T/${NEW_VERSION}+fabric" || true)
-          if [ "$HTTP_STATUS" = "200" ]; then
+          if curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version" | grep -Fq "\"version_number\":\"${NEW_VERSION}+fabric\""; then
             echo "Version ${NEW_VERSION}+fabric already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
@@ -467,9 +463,7 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://api.modrinth.com/v2/version/Pb03qu6T/${NEW_VERSION}+forge" || true)
-          if [ "$HTTP_STATUS" = "200" ]; then
+          if curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version" | grep -Fq "\"version_number\":\"${NEW_VERSION}+forge\""; then
             echo "Version ${NEW_VERSION}+forge already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
@@ -524,9 +518,7 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://api.modrinth.com/v2/version/Pb03qu6T/${NEW_VERSION}+neoforge" || true)
-          if [ "$HTTP_STATUS" = "200" ]; then
+          if curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version" | grep -Fq "\"version_number\":\"${NEW_VERSION}+neoforge\""; then
             echo "Version ${NEW_VERSION}+neoforge already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
