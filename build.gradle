@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    configurations.all {
+        resolutionStrategy {
+            force 'de.siegmar:fastcsv:1.0.3'
+        }
+    }
+}
+
 plugins {
     id "org.sonarqube" version "7.3.0.8198"
 }
