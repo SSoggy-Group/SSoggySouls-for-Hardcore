@@ -84,7 +84,7 @@ public class MySQLManager extends AbstractDatabaseManager {
             plugin.getLogger().log(Level.INFO, "MySQL connection established ({0}:{1}/{2})",
                     new Object[] { host, port, dbName });
 
-        } catch (SQLException e) {
+        } catch (SQLException | IllegalArgumentException e) {
             plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed!", e);
             throw new DatabaseInitializationException("MySQL initialization failed", e);
         }
