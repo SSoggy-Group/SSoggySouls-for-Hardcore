@@ -104,22 +104,35 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
+        if (!hasCommandAccess(sender)) {
             return true;
+        }
+
+        handleRootCommand(sender, args);
+        return true;
+    }
+
+    private boolean hasCommandAccess(CommandSender sender) {
+        if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
+            return false;
         }
 
         // Security check: Prevent Limbo-only OP from using this command
         if (PermissionUtil.isBlockedByLimboOpSecurity(sender, plugin)) {
             PermissionUtil.sendSecurityBlockMessage(sender);
-            return true;
+            return false;
         }
 
+        return true;
+    }
+
+    private void handleRootCommand(CommandSender sender, String[] args) {
         if (args.length == 0) {
             sendHelp(sender);
-        } else {
-            dispatch(sender, args);
+            return;
         }
-        return true;
+
+        dispatch(sender, args);
     }
 
     private void dispatch(CommandSender sender, String[] args) {
