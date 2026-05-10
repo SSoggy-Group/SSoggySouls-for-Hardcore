@@ -832,7 +832,7 @@ java -version
 
 #### - Verify Minecraft Version
 
-Plugin supports 1.21.X only. Check server version:
+Plugin supports the Minecraft 1.21.x version family. Check server version:
 
 ```text
 
