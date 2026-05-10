@@ -452,41 +452,57 @@ public class HeadDropListener implements Listener {
         }
 
         private static int removeFromInventory(Inventory inv, UUID targetUuid) {
+            ItemStack[] contents = inv.getContents();
             int count = 0;
-            for (int i = 0; i < inv.getSize(); i++) {
-                ItemStack item = inv.getItem(i);
+            boolean changed = false;
+            for (int i = 0; i < contents.length; i++) {
+                ItemStack item = contents[i];
                 if (item == null) continue;
 
                 if (isOwnedHead(item, targetUuid)) {
-                    inv.setItem(i, null);
+                    contents[i] = null;
+                    changed = true;
                     count++;
                 } else if (isShulkerBox(item.getType())) {
-                    count += removeFromShulkerItem(inv, i, item, targetUuid);
+                    int removed = removeFromShulkerItem(item, targetUuid);
+                    if (removed > 0) {
+                        contents[i] = item;
+                        changed = true;
+                        count += removed;
+                    }
                 }
+            }
+            if (changed) {
+                inv.setContents(contents);
             }
             return count;
         }
 
-        private static int removeFromShulkerItem(Inventory inv, int slot, ItemStack item, UUID targetUuid) {
+        private static int removeFromShulkerItem(ItemStack item, UUID targetUuid) {
             if (!item.hasItemMeta()) return 0;
             if (!(item.getItemMeta() instanceof BlockStateMeta bsm)) return 0;
+            if (!bsm.hasBlockState()) return 0; // fast fail before expensive deserialization
+            
             BlockState blockState = bsm.getBlockState();
             if (!(blockState instanceof InventoryHolder shulkerHolder)) return 0;
 
             Inventory shulkerInv = shulkerHolder.getInventory();
+            if (!shulkerInv.contains(Material.PLAYER_HEAD)) return 0; // fast fail before iteration
+
+            ItemStack[] contents = shulkerInv.getContents();
             int count = 0;
             boolean changed = false;
-            for (int j = 0; j < shulkerInv.getSize(); j++) {
-                if (isOwnedHead(shulkerInv.getItem(j), targetUuid)) {
-                    shulkerInv.setItem(j, null);
+            for (int j = 0; j < contents.length; j++) {
+                if (isOwnedHead(contents[j], targetUuid)) {
+                    contents[j] = null;
                     changed = true;
                     count++;
                 }
             }
             if (changed) {
+                shulkerInv.setContents(contents);
                 bsm.setBlockState(blockState);
                 item.setItemMeta(bsm);
-                inv.setItem(slot, item);
             }
             return count;
         }
