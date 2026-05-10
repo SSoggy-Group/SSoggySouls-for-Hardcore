@@ -7,7 +7,10 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
@@ -129,7 +132,15 @@ public class GhostModeEvents {
             double maxDistance = ConfigManager.getConfig().getSpectatorHeadRestrictRadius();
 
             if (distanceSq > (maxDistance * maxDistance)) {
+                // Port of Paper's onPlayerMove teleport feedback (sound + particles).
+                // Origin: paper/GhostModeEvents.java#onPlayerMove
                 player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());
+                player.getServerWorld().playSound(null, deathPos, SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f);
+                if (ConfigManager.getConfig().isGhostModeParticles()) {
+                    player.getServerWorld().spawnParticles(ParticleTypes.DRAGON_BREATH,
+                            deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5,
+                            50, 0.0, 1.0, 0.0, 0.2);
+                }
                 player.sendMessage(net.minecraft.text.Text.literal("You may not travel that far away from your death location").styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)), true);
             }
         }
