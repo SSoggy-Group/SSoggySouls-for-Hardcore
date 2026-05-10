@@ -306,13 +306,13 @@ A craftable item that grants players +1 life when used.
 
 ### Features
 
-- - Works for any player (not just newly revived)
+- Works for any player (not just newly revived)
 
-- - Respects maximum lives cap (can't exceed max-lives setting)
+- Respects maximum lives cap (can't exceed max-lives setting)
 
-- - Cannot be used while dead
+- Cannot be used while dead
 
-- - Shows clear success/failure message
+- Shows clear success/failure message
 
 ### Customizing the Recipe
 
