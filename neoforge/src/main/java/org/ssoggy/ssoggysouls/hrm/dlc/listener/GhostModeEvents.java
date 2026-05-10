@@ -132,14 +132,14 @@ public class GhostModeEvents {
         if (distanceSq > (maxDistance * maxDistance)) {
             // Port of Paper's onPlayerMove teleport feedback (sound + particles).
             // Origin: paper/GhostModeEvents.java#onPlayerMove
-            player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
-            player.serverLevel().playSound(null, deathPos, SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
+            player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY() + 0.5, deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
+            player.playSound(SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
             if (ConfigManager.getConfig().isGhostModeParticles()) {
                 player.serverLevel().sendParticles(ParticleTypes.DRAGON_BREATH,
-                        deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5,
+                        deathPos.getX() + 0.5, deathPos.getY() + 0.5, deathPos.getZ() + 0.5,
                         50, 0.0, 1.0, 0.0, 0.2);
             }
-            player.sendSystemMessage(Component.literal("You may not travel that far away from your death location").withStyle(net.minecraft.ChatFormatting.GRAY));
+            player.displayClientMessage(Component.literal("You may not travel that far away from your death location").withStyle(net.minecraft.ChatFormatting.GRAY), true);
         }
     }
 
