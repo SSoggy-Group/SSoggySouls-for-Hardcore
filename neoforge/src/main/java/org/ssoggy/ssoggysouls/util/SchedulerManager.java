@@ -18,6 +18,7 @@ public class SchedulerManager {
     private static int taskIdCounter = 0;
 
     @SubscribeEvent
+    @SuppressWarnings("unused")
     public static void onServerTick(ServerTickEvent.Post event) {
         Iterator<ScheduledTask> iterator = tasks.iterator();
         while (iterator.hasNext()) {

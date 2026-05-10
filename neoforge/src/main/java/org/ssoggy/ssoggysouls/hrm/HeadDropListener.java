@@ -22,7 +22,7 @@ public class HeadDropListener {
         // Utility class
     }
 
-    public static void register(DatabaseManager db) {
+    public static void register() {
         // Head drop is triggered from ServerLifecycleListener
     }
 

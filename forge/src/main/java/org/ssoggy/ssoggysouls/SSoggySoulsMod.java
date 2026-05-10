@@ -108,6 +108,7 @@ public class SSoggySoulsMod implements PluginContext {
     }
 
     @SubscribeEvent
+    @SuppressWarnings("unused")
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
     }
