@@ -117,7 +117,7 @@ public class GhostModeEvents implements Listener {
             player.teleportAsync(deadLocation); // Note: radius could gradually increase over time in a future iteration
 
             if (Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("ghost-mode-particles", false))) {
-                player.getWorld().spawnParticle(org.bukkit.Particle.DRAGON_BREATH, deadLocation, 50, 0, 1, 0, 0.2);
+                player.spawnParticle(org.bukkit.Particle.DRAGON_BREATH, deadLocation, 50, 0, 1, 0, 0.2);
             }
             
             player.playSound(player, Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 0);

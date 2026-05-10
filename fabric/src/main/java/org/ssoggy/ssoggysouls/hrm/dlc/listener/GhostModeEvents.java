@@ -141,11 +141,13 @@ public class GhostModeEvents {
     private static void applyTeleportFeedback(ServerPlayerEntity player, BlockPos deathPos) {
         // Port of Paper's onPlayerMove teleport feedback (sound + particles).
         player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());
-        player.getServerWorld().playSound(null, deathPos, SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f);
+        
+        // Scope sound and particles to the ghost only to prevent location leaking
+        player.playSound(SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f);
         
         if (ConfigManager.getConfig().isGhostModeParticles()) {
-            player.getServerWorld().spawnParticles(ParticleTypes.DRAGON_BREATH,
-                    deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5,
+            player.getServerWorld().spawnParticles(player, ParticleTypes.DRAGON_BREATH,
+                    true, deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5,
                     50, 0.0, 1.0, 0.0, 0.2);
         }
         
