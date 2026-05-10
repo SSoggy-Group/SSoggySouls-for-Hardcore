@@ -138,7 +138,7 @@ Soul Sand    Stair       Soul Sand
 1. Look up at the fence in the center of layer 2
 1. Place the head on top of the fence
 
-### Automatic Revision
+### Automatic Revival
 
 Once the head is placed on the fence, the plugin **automatically detects** the completed structure and:
 
