@@ -53,18 +53,18 @@ public class GhostModeEvents implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerDropItem(PlayerDropItemEvent event) {
-        Player player = event.getPlayer();
-        cancelEventIfGhostMode(player, event);
-    }
-    @EventHandler(priority = EventPriority.LOW)
-    public void onPlayerAttack(PrePlayerAttackEntityEvent event) {
         cancelEventIfGhostMode(event.getPlayer(), event);
     }
     @EventHandler(priority = EventPriority.LOW)
-    @SuppressWarnings("java:S4144") // Identical implementation is intended for event handling
+    public void onPlayerAttack(PrePlayerAttackEntityEvent event) {
+        if (GAMEMODESENUM.getPlayerGameMode(event.getPlayer()) == GAMEMODESENUM.GHOSTMODE) {
+            event.setCancelled(true);
+        }
+    }
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        cancelEventIfGhostMode(player, event);
+        if (event.getHand() == EquipmentSlot.OFF_HAND) return;
+        cancelEventIfGhostMode(event.getPlayer(), event);
     }
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
