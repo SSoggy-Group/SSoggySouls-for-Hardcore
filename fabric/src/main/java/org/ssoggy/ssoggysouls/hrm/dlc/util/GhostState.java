@@ -32,11 +32,6 @@ public class GhostState extends PersistentState {
         return nbt;
     }
 
-    @SuppressWarnings("java:S1172") // Unused method parameter 'registries' is required for method signature compatibility
-    public static GhostState fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
-        // Overloaded wrapper to fix compilation if registry is missing in older APIs
-        return fromNbt(nbt);
-    }
 
     public static GhostState fromNbt(NbtCompound nbt) {
         GhostState state = new GhostState();
@@ -63,7 +58,7 @@ public class GhostState extends PersistentState {
 
         Type<GhostState> type = new Type<>(
                 GhostState::new,
-                (nbt, registries) -> GhostState.fromNbt(nbt, registries),
+                (nbt, registries) -> GhostState.fromNbt(nbt),
                 null
         );
 
