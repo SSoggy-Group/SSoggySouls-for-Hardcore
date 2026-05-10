@@ -394,8 +394,23 @@ jobs:
           version: "${{ needs.prepare-release.outputs.new_version }}+paper"
           version-type: ${{ github.event.inputs.paper_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
-          loaders: paper, purpur, spigot, bukkit
-          game-versions: 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7, 1.21.8, 1.21.9, 1.21.10, 1.21.11
+          loaders: |
+            paper
+            purpur
+            spigot
+            bukkit
+          game-versions: |
+            1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
           modrinth-files: SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
 
   publish-fabric:
@@ -442,8 +457,21 @@ jobs:
           version: "${{ needs.prepare-release.outputs.new_version }}+fabric"
           version-type: ${{ github.event.inputs.fabric_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
-          loaders: fabric, quilt
-          game-versions: 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7, 1.21.8, 1.21.9, 1.21.10, 1.21.11
+          loaders: |
+            fabric
+            quilt
+          game-versions: |
+            1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
           modrinth-files: SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
 
   publish-forge:
@@ -491,7 +519,18 @@ jobs:
           version-type: ${{ github.event.inputs.forge_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: forge
-          game-versions: 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7, 1.21.8, 1.21.9, 1.21.10, 1.21.11
+          game-versions: |
+            1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
           modrinth-files: SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
 
   publish-neoforge:
@@ -539,5 +578,16 @@ jobs:
           version-type: ${{ github.event.inputs.neoforge_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: neoforge
-          game-versions: 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7, 1.21.8, 1.21.9, 1.21.10, 1.21.11
+          game-versions: |
+            1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
           modrinth-files: SSoggySouls-NeoForge-${{ needs.prepare-release.outputs.new_version }}.jar
