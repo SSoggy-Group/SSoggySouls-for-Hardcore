@@ -193,10 +193,10 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          RAW_PAPER="$(ls paper/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
-          RAW_FABRIC="$(ls fabric/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
-          RAW_FORGE="$(ls forge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
-          RAW_NEOFORGE="$(ls neoforge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
+          RAW_PAPER="$(ls paper/build/libs/*.jar | grep -Ev 'sources|dev|slim|all|original|shadow' | head -n 1)"
+          RAW_FABRIC="$(ls fabric/build/libs/*.jar | grep -Ev 'sources|dev|slim|all|original|shadow' | head -n 1)"
+          RAW_FORGE="$(ls forge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all|original|shadow' | head -n 1)"
+          RAW_NEOFORGE="$(ls neoforge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all|original|shadow' | head -n 1)"
 
           mv "$RAW_PAPER" "SSoggySouls-Paper-${NEW_VERSION}.jar"
           mv "$RAW_FABRIC" "SSoggySouls-Fabric-${NEW_VERSION}.jar"
