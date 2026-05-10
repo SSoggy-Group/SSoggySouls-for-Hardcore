@@ -32,7 +32,7 @@ public class GhostState extends PersistentState {
         return nbt;
     }
 
-    public static GhostState fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
+    public static GhostState fromNbt(NbtCompound nbt) {
         GhostState state = new GhostState();
 
         if (nbt.contains(DEATH_LOCATIONS)) {
