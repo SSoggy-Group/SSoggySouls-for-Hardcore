@@ -681,14 +681,6 @@ ______________________________________________________________________
 
 ## Tips & Tricks
 
-### Efficient Revival Teams
-
-- 👷 **Designate a gatherer** - Collects heads and materials
-
-- 👷 **Designate a builder** - Constructs revival structures
-
-- 👷 **Designate a guard** - Protects team while reviving
-
 ### Ritual Structure Locations
 
 - Build near your base for quick revivals
