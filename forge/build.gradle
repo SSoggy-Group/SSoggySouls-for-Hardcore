@@ -123,6 +123,12 @@ configurations {
     bundled
 }
 
+// Global exclusion for the forge project to prevent any transitive fastcsv
+// from reaching the classpath during ForgeGradle's mapping phase.
+configurations.all {
+    exclude group: 'de.siegmar', module: 'fastcsv'
+}
+
 dependencies {
     // Inject the common module (provides all DB manager classes)
     implementation project(':common')
@@ -134,7 +140,9 @@ dependencies {
     // never during compileClasspath resolution.
     bundled 'com.zaxxer:HikariCP:7.0.2'
     bundled 'org.xerial:sqlite-jdbc:3.53.1.0'
-    bundled 'com.mysql:mysql-connector-j:9.7.0'
+    bundled('com.mysql:mysql-connector-j:9.7.0') {
+        exclude group: 'de.siegmar', module: 'fastcsv'
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
