@@ -21,6 +21,7 @@ import net.minecraft.util.TypedActionResult;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,10 +30,21 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ReviveSkullManager {
-    private static final Map<UUID, PlayerData> PLAYER_DATA_CACHE = new ConcurrentHashMap<>();
+    private static final long PLAYER_CACHE_TTL_MILLIS = 10 * 60 * 1000L;
+    private static final Map<UUID, CachedPlayerData> PLAYER_DATA_CACHE = new ConcurrentHashMap<>();
 
     private ReviveSkullManager() {
         // Utility class
+    }
+
+    private static final class CachedPlayerData {
+        private final PlayerData data;
+        private final long cachedAtMillis;
+
+        private CachedPlayerData(PlayerData data, long cachedAtMillis) {
+            this.data = data;
+            this.cachedAtMillis = cachedAtMillis;
+        }
     }
 
     public static void register(DatabaseManager db) {
@@ -202,5 +214,47 @@ public class ReviveSkullManager {
         if (stack.isEmpty() || !stack.contains(DataComponentTypes.CUSTOM_DATA)) return false;
         NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
         return nbtComponent != null && nbtComponent.contains("ReviveSkull");
+    }
+    private static void cachePlayerData(UUID playerUuid, PlayerData data) {
+        if (playerUuid == null || data == null) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        PLAYER_DATA_CACHE.put(playerUuid, new CachedPlayerData(data, now));
+        evictExpiredCacheEntries(now);
+    }
+
+    private static Optional<PlayerData> getCachedPlayerData(UUID playerUuid) {
+        if (playerUuid == null) {
+            return Optional.empty();
+        }
+
+        CachedPlayerData cached = PLAYER_DATA_CACHE.get(playerUuid);
+        if (cached == null) {
+            return Optional.empty();
+        }
+
+        long now = System.currentTimeMillis();
+        if (isExpired(cached, now)) {
+            PLAYER_DATA_CACHE.remove(playerUuid, cached);
+            return Optional.empty();
+        }
+
+        return Optional.of(cached.data);
+    }
+
+    private static void evictExpiredCacheEntries(long now) {
+        Iterator<Map.Entry<UUID, CachedPlayerData>> iterator = PLAYER_DATA_CACHE.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, CachedPlayerData> entry = iterator.next();
+            if (isExpired(entry.getValue(), now)) {
+                iterator.remove();
+            }
+        }
+    }
+
+    private static boolean isExpired(CachedPlayerData cached, long now) {
+        return now - cached.cachedAtMillis > PLAYER_CACHE_TTL_MILLIS;
     }
 }
