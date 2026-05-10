@@ -11,7 +11,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,7 +51,7 @@ class MySQLManagerTest {
 
         // Use a real anonymous logger
         Logger logger = Logger.getAnonymousLogger();
-        logger.setLevel(java.util.logging.Level.OFF);
+        logger.setLevel(Level.OFF);
         when(plugin.getLogger()).thenReturn(logger);
 
         // Use Mockito for JDBC interfaces via mock() calls instead of @Mock annotations
@@ -310,7 +315,7 @@ class MySQLManagerTest {
         when(resultSet.getInt(COL_LIVES)).thenReturn(0);
         when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(true);
 
-        java.util.List<PlayerData> deadPlayers = mySQLManager.getDeadPlayers();
+        List<PlayerData> deadPlayers = mySQLManager.getDeadPlayers();
 
         assertEquals(2, deadPlayers.size());
         assertEquals("Dead1", deadPlayers.get(0).getUsername());
@@ -391,10 +396,10 @@ class MySQLManagerTest {
 
     @Test
     void testArePlayersDeadEmptyOrNull() {
-        java.util.Map<UUID, Boolean> resultNull = mySQLManager.arePlayersDead(null);
+        Map<UUID, Boolean> resultNull = mySQLManager.arePlayersDead(null);
         assertTrue(resultNull.isEmpty());
 
-        java.util.Map<UUID, Boolean> resultEmpty = mySQLManager.arePlayersDead(java.util.Collections.emptySet());
+        Map<UUID, Boolean> resultEmpty = mySQLManager.arePlayersDead(Collections.emptySet());
         assertTrue(resultEmpty.isEmpty());
     }
 
@@ -414,7 +419,7 @@ class MySQLManagerTest {
 
         reset(preparedStatement); // Reset mock so we can verify it's not called
 
-        java.util.Map<UUID, Boolean> results = mySQLManager.arePlayersDead(java.util.Set.of(uuid1, uuid2));
+        Map<UUID, Boolean> results = mySQLManager.arePlayersDead(Set.of(uuid1, uuid2));
 
         assertEquals(2, results.size());
         assertFalse(results.get(uuid1));
@@ -446,7 +451,7 @@ class MySQLManagerTest {
         when(resultSet.getString("uuid")).thenReturn(uuidDb1.toString());
         when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(false);
 
-        java.util.Map<UUID, Boolean> results = mySQLManager.arePlayersDead(java.util.Set.of(uuidCached, uuidDb1, uuidDb2));
+        Map<UUID, Boolean> results = mySQLManager.arePlayersDead(Set.of(uuidCached, uuidDb1, uuidDb2));
 
         assertEquals(3, results.size());
         assertFalse(results.get(uuidCached)); // From cache
@@ -466,7 +471,7 @@ class MySQLManagerTest {
 
         when(preparedStatement.executeQuery()).thenThrow(new SQLException(MOCK_DB_ERROR));
 
-        java.util.Map<UUID, Boolean> results = mySQLManager.arePlayersDead(java.util.Set.of(uuid1, uuid2));
+        Map<UUID, Boolean> results = mySQLManager.arePlayersDead(Set.of(uuid1, uuid2));
 
         assertEquals(2, results.size());
         // Should default to true on error (fail-safe) for all missing/failed items
