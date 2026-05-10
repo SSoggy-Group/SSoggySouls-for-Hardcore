@@ -143,7 +143,7 @@ public class GhostModeEvents {
         player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());
         
         // Scope sound and particles to the ghost only to prevent location leaking
-        player.playSound(SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f);
+        player.playSound(SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT, 1.0f, 1.0f);
         
         if (ConfigManager.getConfig().isGhostModeParticles()) {
             player.getServerWorld().spawnParticles(player, ParticleTypes.DRAGON_BREATH,
