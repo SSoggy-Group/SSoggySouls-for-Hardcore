@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
@@ -31,6 +33,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStat;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStats;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
+import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
@@ -307,22 +310,22 @@ public class RevivalStructureListener {
     }
 
     private static boolean isOre(Level world, int x, int y, int z) {
-        return isBlockInTagList(world.getBlockState(new BlockPos(x, y, z)), ConfigManager.getConfig().getOreBlockTag());
+        return isBlockInTagList(world.getBlockState(new BlockPos(x, y, z)), ConfigManager.getConfig().getOreBlocktag());
     }
 
     private static boolean isFlower(Level world, int x, int y, int z) {
-        return isBlockInTagList(world.getBlockState(new BlockPos(x, y, z)), ConfigManager.getConfig().getFlowerBlockTag());
+        return isBlockInTagList(world.getBlockState(new BlockPos(x, y, z)), ConfigManager.getConfig().getFlowerBlocktag());
     }
 
     private static boolean isFence(Level world, int x, int y, int z) {
-        return isBlockInTagList(world.getBlockState(new BlockPos(x, y, z)), ConfigManager.getConfig().getFenceBlockTag());
+        return isBlockInTagList(world.getBlockState(new BlockPos(x, y, z)), ConfigManager.getConfig().getFenceBlocktag());
     }
 
     private static boolean isSoulSand(Level world, int x, int y, int z) {
-        return isBlockInTagList(world.getBlockState(new BlockPos(x, y, z)), ConfigManager.getConfig().getSoulSandBlockTag());
+        return isBlockInTagList(world.getBlockState(new BlockPos(x, y, z)), ConfigManager.getConfig().getSoulSandBlocktag());
     }
 
     private static boolean isStair(Level world, int x, int y, int z) {
-        return isBlockInTagList(world.getBlockState(new BlockPos(x, y, z)), ConfigManager.getConfig().getStairBlockTag());
+        return isBlockInTagList(world.getBlockState(new BlockPos(x, y, z)), ConfigManager.getConfig().getStairBlocktag());
     }
 }

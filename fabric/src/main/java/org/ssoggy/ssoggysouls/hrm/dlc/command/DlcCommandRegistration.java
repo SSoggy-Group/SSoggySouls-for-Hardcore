@@ -600,11 +600,11 @@ public final class DlcCommandRegistration {
     private static void setStructureList(String key, Collection<String> values) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
         switch (key) {
-            case C_SOUL_SAND -> config.setSoulSandBlockTag(values);
-            case C_FLOWER -> config.setFlowerBlockTag(values);
-            case C_ORE -> config.setOreBlockTag(values);
-            case C_FENCE -> config.setFenceBlockTag(values);
-            case C_STAIR -> config.setStairBlockTag(values);
+            case C_SOUL_SAND -> config.setSoulSandBlocktag(values);
+            case C_FLOWER -> config.setFlowerBlocktag(values);
+            case C_ORE -> config.setOreBlocktag(values);
+            case C_FENCE -> config.setFenceBlocktag(values);
+            case C_STAIR -> config.setStairBlocktag(values);
             default -> { /* ignored */ }
         }
     }

@@ -61,6 +61,7 @@ public class GhostModeEvents implements Listener {
         cancelEventIfGhostMode(event.getPlayer(), event);
     }
     @EventHandler(priority = EventPriority.LOW)
+    @SuppressWarnings("java:S4144") // Identical implementation is intended for event handling
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         cancelEventIfGhostMode(player, event);
