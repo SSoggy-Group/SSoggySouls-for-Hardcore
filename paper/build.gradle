@@ -21,7 +21,7 @@ dependencies {
     // the fat JAR without resolving runtimeClasspath during configuration.
     bundled 'com.zaxxer:HikariCP:7.0.2'
     bundled 'com.mysql:mysql-connector-j:8.0.33'
-    bundled 'org.xerial:sqlite-jdbc:3.53.1.0'
+    bundled 'org.xerial:sqlite-jdbc:3.45.3'
 
     // Testing
     testImplementation 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'

@@ -76,7 +76,7 @@ dependencies {
             prefer '8.0.33'
         }
     }
-    jarJar(implementation('org.xerial:sqlite-jdbc:3.53.1.0')) {
+    jarJar(implementation('org.xerial:sqlite-jdbc:3.45.3')) {
         version {
             strictly '[3.53.1,4.0)'
             prefer '3.53.1.0'
