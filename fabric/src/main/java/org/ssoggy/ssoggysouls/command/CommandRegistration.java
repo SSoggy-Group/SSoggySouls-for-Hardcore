@@ -237,15 +237,52 @@ public class CommandRegistration {
 
     private static java.util.Deque<String> readLastLines(java.io.File file, int maxLines) throws java.io.IOException {
         if (maxLines <= 0) return new java.util.ArrayDeque<>();
-        java.util.Deque<String> lastLines = new java.util.ArrayDeque<>(maxLines);
-        try (java.util.stream.Stream<String> lines = java.nio.file.Files.lines(file.toPath())) {
-            lines.forEach(line -> {
-                if (lastLines.size() >= maxLines) {
-                    lastLines.pollFirst();
+
+        java.util.ArrayDeque<String> lastLines = new java.util.ArrayDeque<>(maxLines);
+        try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(file, "r")) {
+            long fileLength = raf.length();
+            if (fileLength == 0) {
+                return lastLines;
+            }
+
+            java.io.ByteArrayOutputStream currentLine = new java.io.ByteArrayOutputStream();
+            int linesFound = 0;
+            long pointer = fileLength - 1;
+
+            while (pointer >= 0 && linesFound < maxLines) {
+                raf.seek(pointer);
+                int b = raf.read();
+
+                if (b == '\n') {
+                    if (currentLine.size() > 0) {
+                        byte[] bytes = currentLine.toByteArray();
+                        for (int i = 0, j = bytes.length - 1; i < j; i++, j--) {
+                            byte tmp = bytes[i];
+                            bytes[i] = bytes[j];
+                            bytes[j] = tmp;
+                        }
+                        lastLines.addFirst(new String(bytes, java.nio.charset.StandardCharsets.UTF_8));
+                        currentLine.reset();
+                        linesFound++;
+                    }
+                } else if (b != '\r') {
+                    currentLine.write(b);
                 }
-                lastLines.addLast(line);
-            });
+
+                pointer--;
+            }
+
+            if (linesFound < maxLines && currentLine.size() > 0) {
+                byte[] bytes = currentLine.toByteArray();
+                for (int i = 0, j = bytes.length - 1; i < j; i++, j--) {
+                    byte tmp = bytes[i];
+                    bytes[i] = bytes[j];
+                    bytes[j] = tmp;
+                }
+                lastLines.addFirst(new String(bytes, java.nio.charset.StandardCharsets.UTF_8));
+            }
         }
+
         return lastLines;
     }
 }
