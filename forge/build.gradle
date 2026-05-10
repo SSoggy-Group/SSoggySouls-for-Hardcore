@@ -155,14 +155,22 @@ tasks.named('processResources', ProcessResources).configure {
     }
 }
 
-// Example for how to get properties into the manifest for reading at runtime.
+// Merge dependencies into the Forge JAR for plug-and-play.
 tasks.named('jar', Jar).configure {
     from project(':common').sourceSets.main.output
+    
+    // Include database dependencies in the fat jar
+    from {
+        configurations.runtimeClasspath
+            .filter { it.name.contains("HikariCP") || it.name.contains("mysql-connector-j") || it.name.contains("sqlite-jdbc") }
+            .map { it.isDirectory() ? it : zipTree(it) }
+    }
+
     manifest {
         attributes([
             'Specification-Title'     : mod_id,
             'Specification-Vendor'    : mod_authors,
-            'Specification-Version'   : '1', // We are version 1 of ourselves
+            'Specification-Version'   : '1',
             'Implementation-Title'    : project.name,
             'Implementation-Version'  : project.jar.archiveVersion,
             'Implementation-Vendor'   : mod_authors

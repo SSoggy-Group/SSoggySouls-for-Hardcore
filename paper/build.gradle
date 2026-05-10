@@ -30,6 +30,21 @@ test {
     useJUnitPlatform()
 }
 
+// Bundle everything into a fat JAR for plug-and-play
+jar {
+    // Merge common module classes
+    from(project(':common').sourceSets.main.output)
+
+    // Include database dependencies
+    from {
+        configurations.runtimeClasspath
+            .filter { it.name.contains("HikariCP") || it.name.contains("mysql-connector-j") || it.name.contains("sqlite-jdbc") }
+            .map { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 processResources {
     def props = [version: project.version]
     inputs.properties props
