@@ -454,7 +454,8 @@ class MySQLManagerTest {
         assertTrue(results.get(uuidDb2)); // Default to true (missing from DB result)
 
         // Verify that parameters were set for the 2 UUIDs that were fetched
-        verify(preparedStatement, times(2)).setString(anyInt(), anyString());
+        verify(preparedStatement).setString(anyInt(), eq(uuidDb1.toString()));
+        verify(preparedStatement).setString(anyInt(), eq(uuidDb2.toString()));
         verify(preparedStatement, times(1)).executeQuery();
     }
 
