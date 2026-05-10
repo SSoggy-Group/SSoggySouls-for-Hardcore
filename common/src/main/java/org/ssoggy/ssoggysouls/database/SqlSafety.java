@@ -8,8 +8,16 @@ import java.util.regex.Pattern;
 final class SqlSafety {
 
     private static final Pattern IDENTIFIER = Pattern.compile("\\A\\w+\\z");
+    private static final Pattern JDBC_PARAM = Pattern.compile("\\A[a-zA-Z0-9_.\\-]+\\z");
 
     private SqlSafety() {
+    }
+
+    static String requireValidJdbcParam(String param, String label) {
+        if (param == null || !JDBC_PARAM.matcher(param).matches()) {
+            throw new IllegalArgumentException(label + " must contain only alphanumeric characters, periods, hyphens, and underscores");
+        }
+        return param;
     }
 
     static String requireIdentifier(String identifier, String label) {

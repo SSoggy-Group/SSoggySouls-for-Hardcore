@@ -36,6 +36,7 @@ class MySQLManagerTest {
     private PreparedStatement preparedStatement;
     private ResultSet resultSet;
     private MySQLManager mySQLManager;
+    private PluginContext mockPluginContext;
     private final UUID testUuid = UUID.randomUUID();
 
     private static final String TEST_USER = "TestUser";
@@ -47,12 +48,12 @@ class MySQLManagerTest {
     @BeforeEach
     void setup() throws Exception {
         // Use Mockito only for our own interfaces (PluginContext)
-        PluginContext plugin = mock(PluginContext.class);
+        mockPluginContext = mock(PluginContext.class);
 
         // Use a real anonymous logger
         Logger logger = Logger.getAnonymousLogger();
         logger.setLevel(Level.OFF);
-        when(plugin.getLogger()).thenReturn(logger);
+        when(mockPluginContext.getLogger()).thenReturn(logger);
 
         // Use Mockito for JDBC interfaces via mock() calls instead of @Mock annotations
         // This avoids the MockitoExtension's field injection which triggers module checks
@@ -67,7 +68,7 @@ class MySQLManagerTest {
         // Create a simple DataSource wrapper that returns our mocked connection
         javax.sql.DataSource dataSource = new SimpleTestDataSource(connection);
 
-        mySQLManager = new MySQLManager(plugin, dataSource, "hardcore_players");
+        mySQLManager = new MySQLManager(mockPluginContext, dataSource, "hardcore_players");
     }
 
     /**
@@ -90,6 +91,23 @@ class MySQLManagerTest {
         @Override public Logger getParentLogger() { return Logger.getAnonymousLogger(); }
         @Override public <T> T unwrap(Class<T> iface) { return null; }
         @Override public boolean isWrapperFor(Class<?> iface) { return false; }
+    }
+
+    @Test
+    void testInitializeThrowsIllegalArgumentExceptionOnInvalidJdbcParams() {
+        MySQLManager manager = new MySQLManager(mockPluginContext);
+
+        when(mockPluginContext.getConfigString(eq("database.host"), anyString())).thenReturn("localhost?autoDeserialize=true");
+        when(mockPluginContext.getConfigInt(eq("database.port"), anyInt())).thenReturn(3306);
+        when(mockPluginContext.getConfigString(eq("database.name"), anyString())).thenReturn("minecraft");
+        when(mockPluginContext.getConfigString(eq("database.username"), anyString())).thenReturn("minecraft");
+        when(mockPluginContext.getConfigString(eq("database.password"), anyString())).thenReturn("changeme");
+        when(mockPluginContext.getConfigInt(eq("database.pool-size"), anyInt())).thenReturn(5);
+        when(mockPluginContext.getConfigString(eq("database.table-name"), anyString())).thenReturn("hardcore_players");
+        when(mockPluginContext.getConfigString(eq("database.ssl-mode"), anyString())).thenReturn("VERIFY_IDENTITY");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, manager::initialize);
+        assertTrue(exception.getMessage().contains("must contain only alphanumeric characters"));
     }
 
     @Test
