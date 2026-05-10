@@ -140,7 +140,7 @@ dependencies {
     // never during compileClasspath resolution.
     bundled 'com.zaxxer:HikariCP:7.0.2'
     bundled 'org.xerial:sqlite-jdbc:3.45.3.0'
-    bundled("com.mysql:mysql-connector-j:8.0.33")
+    bundled("com.mysql:mysql-connector-j:8.2.0")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
