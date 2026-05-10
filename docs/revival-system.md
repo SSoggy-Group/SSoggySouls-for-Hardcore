@@ -466,7 +466,7 @@ ______________________________________________________________________
 
 The head is placed as a **permanent skull block** in the world.
 
-- The plugin scans **upward** from the death Y coordinate to find the first open air block sitting on solid ground. If you die inside lava it emerges above the lava surface — always accessible.
+- The plugin scans **upward** from the death Y coordinate to find the first open air block sitting on solid ground. If you die inside lava, it emerges above the lava surface and remains accessible.
 
 - The block persists forever. It can't burn, can't despawn, and can't be washed away by water.
 
