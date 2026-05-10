@@ -23,7 +23,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
@@ -32,7 +31,6 @@ import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStat;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStats;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
-import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
