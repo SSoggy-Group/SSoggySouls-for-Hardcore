@@ -41,7 +41,7 @@ public class GhostModeEvents {
 
     private static void registerLifecycleEvents(DatabaseManager db) {
         // Populate cache on join
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+        ServerPlayConnectionEvents.JOIN.register((handler, ignoredSender, server) -> {
             UUID uuid = handler.getPlayer().getUuid();
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
@@ -57,12 +57,12 @@ public class GhostModeEvents {
         });
 
         // Clean up cache on disconnect
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> GHOST_CACHE.remove(handler.getPlayer().getUuid()));
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, ignoredServer) -> GHOST_CACHE.remove(handler.getPlayer().getUuid()));
     }
 
     private static void registerInteractionEvents() {
         // Prevent block interaction
-        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+        UseBlockCallback.EVENT.register((player, ignoredWorld, ignoredHand, ignoredHitResult) -> {
             if (isGhost(player)) {
                 return ActionResult.FAIL;
             }
@@ -70,7 +70,7 @@ public class GhostModeEvents {
         });
 
         // Prevent item usage
-        UseItemCallback.EVENT.register((player, world, hand) -> {
+        UseItemCallback.EVENT.register((player, ignoredWorld, hand) -> {
             if (isGhost(player)) {
                 return TypedActionResult.fail(player.getStackInHand(hand));
             }
@@ -78,7 +78,7 @@ public class GhostModeEvents {
         });
 
         // Prevent attacking entities
-        AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+        AttackEntityCallback.EVENT.register((player, ignoredWorld, ignoredHand, ignoredEntity, ignoredHitResult) -> {
             if (isGhost(player)) {
                 return ActionResult.FAIL;
             }
@@ -86,7 +86,7 @@ public class GhostModeEvents {
         });
 
         // Prevent interacting with entities
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+        UseEntityCallback.EVENT.register((player, ignoredWorld, ignoredHand, entity, ignoredHitResult) -> {
             if (isGhost(player)) {
                 // DLC logic: start spectating the entity if right clicked
                 if (player instanceof ServerPlayerEntity serverPlayer) {

@@ -70,13 +70,13 @@ public class LimboServerListener {
     }
 
     private void registerCancelDamageEvent() {
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) ->
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, ignoredSource, ignoredAmount) ->
             !(entity instanceof ServerPlayerEntity player && player.interactionManager.getGameMode() == GameMode.ADVENTURE)
         );
     }
 
     private void registerWorldChangeEvent() {
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, ignoredOrigin, destination) -> {
             if (db == null || !db.isPlayerDead(player.getUuid())) {
                 return;
             }

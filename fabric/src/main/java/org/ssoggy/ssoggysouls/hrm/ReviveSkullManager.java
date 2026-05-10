@@ -83,7 +83,7 @@ public class ReviveSkullManager {
         SimpleInventory inventory = populateInventory(deadPlayers, slots);
 
         SimpleNamedScreenHandlerFactory factory = new SimpleNamedScreenHandlerFactory(
-            (syncId, playerInventory, p) -> createScreenHandler(syncId, playerInventory, inventory, rows, db),
+            (syncId, playerInventory, ignoredPlayer) -> createScreenHandler(syncId, playerInventory, inventory, rows, db),
             Text.literal("Revive - Select Player").styled(s -> s.withColor(Formatting.DARK_PURPLE).withBold(true))
         );
 
@@ -143,7 +143,7 @@ public class ReviveSkullManager {
 
             ProfileComponent profile = clicked.get(DataComponentTypes.PROFILE);
             if (profile != null) {
-                profile.id().ifPresent(id -> {
+                profile.id().ifPresent(ignoredId -> {
                     String name = profile.name().orElse("Unknown");
 
                     // Give the real head

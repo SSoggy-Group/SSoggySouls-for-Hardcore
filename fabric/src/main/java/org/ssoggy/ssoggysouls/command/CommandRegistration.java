@@ -32,7 +32,7 @@ public class CommandRegistration {
     }
 
     public static void register(SSoggySoulsMod plugin, DatabaseManager db) {
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, ignoredRegistryAccess, ignoredEnvironment) -> {
             registerStatusCommand(dispatcher, db);
             registerReviveCommand(dispatcher, plugin, db);
             registerSetLivesCommand(dispatcher, db);

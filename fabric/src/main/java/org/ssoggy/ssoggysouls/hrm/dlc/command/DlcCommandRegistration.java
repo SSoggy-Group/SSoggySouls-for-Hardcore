@@ -128,7 +128,7 @@ public final class DlcCommandRegistration {
                     return 0;
                 })
                 .then(CommandManager.argument(ACTION, StringArgumentType.word())
-                        .suggests((context, builder) -> CommandSource.suggestMatching(TRUST_ACTIONS, builder))
+                        .suggests((ignoredContext, builder) -> CommandSource.suggestMatching(TRUST_ACTIONS, builder))
                         .executes(context -> executeTrust(context.getSource(), db, StringArgumentType.getString(context, ACTION), null))
                         .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                                 .suggests((context, builder) -> CommandSource.suggestMatching(
@@ -294,7 +294,7 @@ public final class DlcCommandRegistration {
                                                 StringArgumentType.getString(context, EDIT),
                                                 null))
                                         .then(CommandManager.argument(BLOCK, StringArgumentType.greedyString())
-                                                .suggests((context, builder) -> CommandSource.suggestMatching(blockSuggestions(), builder))
+                                                .suggests((ignoredContext, builder) -> CommandSource.suggestMatching(blockSuggestions(), builder))
                                                 .executes(context -> executeConfig(context.getSource(),
                                                         StringArgumentType.getString(context, GROUP),
                                                         StringArgumentType.getString(context, KEY),

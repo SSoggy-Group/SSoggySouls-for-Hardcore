@@ -58,7 +58,7 @@ public class GhostState extends PersistentState {
 
         Type<GhostState> type = new Type<>(
                 GhostState::new,
-                (nbt, registries) -> GhostState.fromNbt(nbt),
+                (nbt, ignoredRegistries) -> GhostState.fromNbt(nbt),
                 null
         );
 
