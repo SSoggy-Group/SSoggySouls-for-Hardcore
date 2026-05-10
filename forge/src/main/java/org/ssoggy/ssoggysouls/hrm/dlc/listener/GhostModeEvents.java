@@ -1,8 +1,11 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
@@ -14,6 +17,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.GhostRestrictionLogic;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
@@ -126,13 +130,29 @@ public class GhostModeEvents {
         }
 
         BlockPos currentPos = player.blockPosition();
-        double distanceSq = currentPos.distSqr(deathPos);
         double maxDistance = ConfigManager.getConfig().getSpectatorHeadRestrictRadius();
 
-        if (distanceSq > (maxDistance * maxDistance)) {
-            player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
-            player.sendSystemMessage(Component.literal("You may not travel that far away from your death location").withStyle(net.minecraft.ChatFormatting.GRAY));
+        if (GhostRestrictionLogic.isOutOfBounds(deathPos.getX(), deathPos.getY(), deathPos.getZ(),
+                currentPos.getX(), currentPos.getY(), currentPos.getZ(), maxDistance)) {
+            applyTeleportFeedback(player, deathPos);
         }
+    }
+
+    private static void applyTeleportFeedback(ServerPlayer player, BlockPos deathPos) {
+        // Port of Paper's onPlayerMove teleport feedback (sound + particles).
+        player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
+        
+        // Scope sound and particles to the ghost only to prevent location leaking
+        player.playNotifySound(SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
+        
+        if (ConfigManager.getConfig().isGhostModeParticles()) {
+            player.serverLevel().sendParticles(player, ParticleTypes.DRAGON_BREATH, true,
+                    deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5,
+                    50, 0.0, 1.0, 0.0, 0.2);
+        }
+        
+        player.sendSystemMessage(Component.literal(GhostRestrictionLogic.RESTRICTION_MESSAGE)
+                .withStyle(net.minecraft.ChatFormatting.GRAY));
     }
 
     public static void updateGhostStatus(UUID uuid, boolean isDead) {
