@@ -228,8 +228,8 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     result.message = CMD_PREFIX + args[0] + " " + args[1] + ERR_MARKER_OPEN + args[2] + ERR_MARKER_CLOSE;
                     break;
                 }
-                // fall through to default intentionally for reset action
-                executeStructureCMD(args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result);
+                // reset action has exactly 3 args, so no material argument is available
+                executeStructureCMD("", args[2], args[1], result);
                 break;
             default:
                 executeStructureCMD(args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result); // All params are successfully entered
