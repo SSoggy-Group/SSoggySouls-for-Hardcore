@@ -52,7 +52,11 @@ public class ServerTransferUtil {
                 },
                 buf -> {
                     try {
-                        byte[] bytes = new byte[buf.readableBytes()];
+                        int length = buf.readableBytes();
+                        if (length > 1024) {
+                            throw new IllegalArgumentException("Payload too large: " + length);
+                        }
+                        byte[] bytes = new byte[length];
                         buf.readBytes(bytes);
                         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
                         dis.readUTF(); // Skip sub-channel name ("Connect")
