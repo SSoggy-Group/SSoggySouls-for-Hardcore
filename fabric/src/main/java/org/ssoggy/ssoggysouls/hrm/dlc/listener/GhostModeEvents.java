@@ -16,6 +16,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.GhostRestrictionLogic;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
@@ -128,22 +129,28 @@ public class GhostModeEvents {
             BlockPos deathPos = state.deathLocations.get(uuid);
             BlockPos currentPos = player.getBlockPos();
 
-            double distanceSq = currentPos.getSquaredDistance(deathPos);
             double maxDistance = ConfigManager.getConfig().getSpectatorHeadRestrictRadius();
 
-            if (distanceSq > (maxDistance * maxDistance)) {
-                // Port of Paper's onPlayerMove teleport feedback (sound + particles).
-                // Origin: paper/GhostModeEvents.java#onPlayerMove
-                player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY() + 0.5, deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());
-                player.playSound(SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f);
-                if (ConfigManager.getConfig().isGhostModeParticles()) {
-                    player.getServerWorld().spawnParticles(ParticleTypes.DRAGON_BREATH,
-                            deathPos.getX() + 0.5, deathPos.getY() + 0.5, deathPos.getZ() + 0.5,
-                            50, 0.0, 1.0, 0.0, 0.2);
-                }
-                player.sendMessage(net.minecraft.text.Text.literal("You may not travel that far away from your death location").styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)), true);
+            if (GhostRestrictionLogic.isOutOfBounds(deathPos.getX(), deathPos.getY(), deathPos.getZ(),
+                    currentPos.getX(), currentPos.getY(), currentPos.getZ(), maxDistance)) {
+                applyTeleportFeedback(player, deathPos);
             }
         }
+    }
+
+    private static void applyTeleportFeedback(ServerPlayerEntity player, BlockPos deathPos) {
+        // Port of Paper's onPlayerMove teleport feedback (sound + particles).
+        player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());
+        player.getServerWorld().playSound(null, deathPos, SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT, SoundCategory.PLAYERS, 1.0f, 1.0f);
+        
+        if (ConfigManager.getConfig().isGhostModeParticles()) {
+            player.getServerWorld().spawnParticles(ParticleTypes.DRAGON_BREATH,
+                    deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5,
+                    50, 0.0, 1.0, 0.0, 0.2);
+        }
+        
+        player.sendMessage(net.minecraft.text.Text.literal(GhostRestrictionLogic.RESTRICTION_MESSAGE)
+                .styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)), true);
     }
 
     public static void updateGhostStatus(UUID uuid, boolean isDead) {
