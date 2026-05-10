@@ -249,15 +249,15 @@ Click on any player to get their head.
 
 ### Features
 
-- - Can be used multiple times (doesn't break)
+- Can be used multiple times (doesn't break)
 
-- - Opens a clean GUI
+- Opens a clean GUI
 
-- - No confusing items lying around
+- No confusing items lying around
 
-- - Can only be used by living players
+- Can only be used by living players
 
-- - Shows all currently dead players
+- Shows all currently dead players
 
 ### Configuration
 
