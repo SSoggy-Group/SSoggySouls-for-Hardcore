@@ -109,31 +109,31 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
-
-    // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
-    // flatDir {
-    //     dir 'libs'
-    // }
 }
+
+// Dedicated configuration for libs to bundle into the fat JAR.
+// Extends 'implementation' so classes are available at compile/runtime too.
+configurations {
+    bundled
+    implementation.extendsFrom bundled
+}
+
 
 dependencies {
     // Inject the common module
     implementation project(':common')
 
     // Specify the version of Minecraft to use.
-    // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
-    // The "userdev" classifier will be requested and setup by ForgeGradle.
-    // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
-    // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // Database dependencies
-    implementation 'com.zaxxer:HikariCP:7.0.2'
-    implementation 'org.xerial:sqlite-jdbc:3.53.1.0'
-    implementation 'com.mysql:mysql-connector-j:9.7.0'
+    // Database dependencies — declared in 'bundled' so they can be
+    // merged into the fat JAR without touching runtimeClasspath during
+    // task configuration (which would trigger ForgeGradle's mapping
+    // pipeline too early and cause a fastcsv NoSuchMethodError).
+    bundled 'com.zaxxer:HikariCP:7.0.2'
+    bundled 'org.xerial:sqlite-jdbc:3.53.1.0'
+    bundled 'com.mysql:mysql-connector-j:9.7.0'
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -158,12 +158,10 @@ tasks.named('processResources', ProcessResources).configure {
 // Merge dependencies into the Forge JAR for plug-and-play.
 tasks.named('jar', Jar).configure {
     from project(':common').sourceSets.main.output
-    
-    // Include database dependencies in the fat jar
+
+    // Use the isolated 'bundled' config — never touches runtimeClasspath.
     from {
-        configurations.runtimeClasspath
-            .filter { it.name.contains("HikariCP") || it.name.contains("mysql-connector-j") || it.name.contains("sqlite-jdbc") }
-            .collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.bundled.collect { it.isDirectory() ? it : zipTree(it) }
     }
 
     manifest {

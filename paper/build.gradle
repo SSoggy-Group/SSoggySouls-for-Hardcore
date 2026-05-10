@@ -3,7 +3,14 @@ plugins {
 }
 
 group = 'org.ssoggy'
-version = '4.5.7'
+version = '4.5.5'
+
+// Dedicated configuration for libs to bundle into the fat JAR.
+// Extends 'implementation' so classes are available at compile/runtime too.
+configurations {
+    bundled
+    implementation.extendsFrom bundled
+}
 
 dependencies {
     // Inject the common module
@@ -12,15 +19,17 @@ dependencies {
     // Paper API (provided by server at runtime)
     compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
 
-    // Database dependencies
-    implementation 'com.zaxxer:HikariCP:7.0.2'
-    implementation 'com.mysql:mysql-connector-j:9.7.0'
-    implementation 'org.xerial:sqlite-jdbc:3.53.1.0'
+    // Database dependencies — in 'bundled' so they can be merged into
+    // the fat JAR without resolving runtimeClasspath during configuration.
+    bundled 'com.zaxxer:HikariCP:7.0.2'
+    bundled 'com.mysql:mysql-connector-j:9.7.0'
+    bundled 'org.xerial:sqlite-jdbc:3.53.1.0'
 
     // Testing
     testImplementation 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.4'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.14.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
     testImplementation 'org.mockito:mockito-core:5.23.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.23.0'
@@ -32,14 +41,11 @@ test {
 
 // Bundle everything into a fat JAR for plug-and-play
 jar {
-    // Merge common module classes
     from(project(':common').sourceSets.main.output)
 
-    // Include database dependencies
+    // Use the isolated 'bundled' config — never touches runtimeClasspath.
     from {
-        configurations.runtimeClasspath
-            .filter { it.name.contains("HikariCP") || it.name.contains("mysql-connector-j") || it.name.contains("sqlite-jdbc") }
-            .collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.bundled.collect { it.isDirectory() ? it : zipTree(it) }
     }
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
