@@ -18,7 +18,6 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
-import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 import java.util.List;
 import java.util.Optional;
