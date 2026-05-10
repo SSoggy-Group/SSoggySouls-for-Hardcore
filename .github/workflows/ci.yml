@@ -85,7 +85,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           chmod +x ./gradlew
-          ./gradlew sonar --info
+          ./gradlew classes sonar --info
 
   dependency-submission:
     name: Submit Dependency Graph
