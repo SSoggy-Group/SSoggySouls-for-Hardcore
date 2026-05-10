@@ -429,7 +429,7 @@ Admin command for reviving. Same result as `/revive` but requires admin permissi
 
 - Works even if player is offline
 
-- - Works from console
+- Works from console
 
 ### Example Usage
 
