@@ -187,25 +187,44 @@ jobs:
       - name: Build Minecraft Mods
         run: |
           chmod +x ./gradlew
-          ./gradlew build
+          ./gradlew clean build
 
       - name: Locate and Rename Jars
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          # Sort by size (largest first) to avoid picking up empty metadata jars
-          RAW_PAPER="$(ls -S paper/build/libs/*.jar | grep -Ev 'sources|dev|slim|all|original|shadow' | head -n 1)"
-          RAW_FABRIC="$(ls -S fabric/build/libs/*.jar | grep -Ev 'sources|dev|slim|all|original|shadow' | head -n 1)"
-          RAW_FORGE="$(ls -S forge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all|original|shadow' | head -n 1)"
-          RAW_NEOFORGE="$(ls -S neoforge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all|original|shadow' | head -n 1)"
+          echo "DEBUG: All jars produced by build:"
+          ls -lh paper/build/libs/ fabric/build/libs/ forge/build/libs/ neoforge/build/libs/ || true
 
-          echo "DEBUG: Detected jars:"
-          ls -lh paper/build/libs/*.jar fabric/build/libs/*.jar forge/build/libs/*.jar neoforge/build/libs/*.jar || true
-          
+          # Paper: standard shadow jar — exclude sources, pick the largest remaining
+          RAW_PAPER="$(find paper/build/libs -maxdepth 1 -name '*.jar' \
+            ! -name '*sources*' ! -name '*dev*' ! -name '*slim*' \
+            ! -name '*all*' ! -name '*original*' ! -name '*shadow*' \
+            -printf '%s %p\n' | sort -rn | head -n 1 | awk '{print $2}')"
+
+          # Fabric Loom: remapJar output has NO -dev suffix; the pre-remap dev jar
+          # gets a -dev suffix added by Loom. Explicitly exclude -dev and -sources.
+          RAW_FABRIC="$(find fabric/build/libs -maxdepth 1 -name '*.jar' \
+            ! -name '*-dev.jar' ! -name '*sources*' \
+            -printf '%s %p\n' | sort -rn | head -n 1 | awk '{print $2}')"
+
+          # Forge: single jar produced by the jar task (no reobf since reobf=false)
+          RAW_FORGE="$(find forge/build/libs -maxdepth 1 -name '*.jar' \
+            ! -name '*sources*' ! -name '*dev*' ! -name '*slim*' \
+            ! -name '*all*' ! -name '*original*' ! -name '*shadow*' \
+            -printf '%s %p\n' | sort -rn | head -n 1 | awk '{print $2}')"
+
+          # NeoForge: jarJar produces a single fat jar; the plain jar is also emitted
+          # — pick the largest to get the jarJar (fat) artifact.
+          RAW_NEOFORGE="$(find neoforge/build/libs -maxdepth 1 -name '*.jar' \
+            ! -name '*sources*' ! -name '*dev*' ! -name '*slim*' \
+            ! -name '*all*' ! -name '*original*' ! -name '*shadow*' \
+            -printf '%s %p\n' | sort -rn | head -n 1 | awk '{print $2}')"
+
           echo "Selected: Paper=$RAW_PAPER, Fabric=$RAW_FABRIC, Forge=$RAW_FORGE, NeoForge=$RAW_NEOFORGE"
 
           if [ -z "$RAW_PAPER" ] || [ -z "$RAW_FABRIC" ] || [ -z "$RAW_FORGE" ] || [ -z "$RAW_NEOFORGE" ]; then
-            echo "Error: One or more jars not found!"
+            echo "Error: One or more jars not found! Check the DEBUG listing above."
             exit 1
           fi
 
