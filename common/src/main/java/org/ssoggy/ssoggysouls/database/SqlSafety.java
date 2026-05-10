@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 final class SqlSafety {
 
     private static final Pattern IDENTIFIER = Pattern.compile("\\A\\w+\\z");
-    private static final Pattern JDBC_PARAM = Pattern.compile("\\A[a-zA-Z0-9_.\\-]+\\z");
+    private static final Pattern JDBC_PARAM = Pattern.compile("\\A[a-zA-Z0-9_.\\-:\\[\\]]+\\z");
 
     private SqlSafety() {
     }
