@@ -60,7 +60,6 @@ class DlcStorageTest {
     }
 
     @Test
-    @SuppressWarnings({"unchecked", "rawtypes"})
     void testSaveIOException() {
         // Create a directory with the same name as the target file
         // This will cause a FileNotFoundException (which is an IOException) when FileOutputStream tries to open it
@@ -73,11 +72,11 @@ class DlcStorageTest {
         dlcStorage.save();
 
         // Verify that the error was logged correctly
-        ArgumentCaptor<Supplier<String>> supplierCaptor = ArgumentCaptor.forClass((Class) Supplier.class);
-        verify(mockLogger).log(eq(Level.SEVERE), any(IOException.class), supplierCaptor.capture());
-
-        // Verify the message
-        assertEquals("Could not save RevivalPlus storage " + storageFile.getPath(), supplierCaptor.getValue().get());
+        verify(mockLogger).log(
+                eq(Level.SEVERE),
+                any(IOException.class),
+                argThat(s -> ("Could not save RevivalPlus storage " + storageFile.getPath()).equals(s.get()))
+        );
     }
 
     @Test
