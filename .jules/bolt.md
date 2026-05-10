@@ -10,4 +10,4 @@
 
 ## 2024-05-08 - [Optimized String Allocation in TabCompleteUtil]
 **Learning:** Using `String.toLowerCase().startsWith()` inside loops (like player iteration or command completion) allocates a new string on the heap for every single check. For large collections, this causes severe GC pressure. `String.regionMatches(true, ...)` performs case-insensitive comparisons without allocating any new objects.
-**Action:** Replaced `.toLowerCase().startsWith()` with `.regionMatches(true, 0, lower, 0, lower.length())` in `TabCompleteUtil` to perform zero-allocation string prefix matching. This dramatically reduces memory footprint during tab-completion typing.
+**Action:** Replaced `.toLowerCase().startsWith()` with `.regionMatches(true, 0, prefix, 0, prefix.length())` in `TabCompleteUtil` to perform zero-allocation string prefix matching. This dramatically reduces memory footprint during tab-completion typing.
