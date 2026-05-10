@@ -26,8 +26,10 @@ class DlcNamesTest {
 
     private MockedStatic<DlcServices> dlcServicesMockedStatic;
     private DlcStorage mockStorage;
-    private final UUID TEST_UUID = UUID.randomUUID();
+    private final UUID testUuid = UUID.randomUUID();
     private static final String TABLE = "usernamecache";
+    private static final String NOTCH = "Notch";
+    private static final String FALLBACK = "Fallback";
 
     @BeforeEach
     void setUp() {
@@ -45,15 +47,15 @@ class DlcNamesTest {
 
     @Test
     void testCacheValid() {
-        DlcNames.cache(TEST_UUID, "Notch");
+        DlcNames.cache(testUuid, NOTCH);
 
-        verify(mockStorage).setValue(TABLE, TEST_UUID.toString(), "Notch");
+        verify(mockStorage).setValue(TABLE, testUuid.toString(), NOTCH);
         verify(mockStorage).save();
     }
 
     @Test
     void testCacheNullUuid() {
-        DlcNames.cache(null, "Notch");
+        DlcNames.cache(null, NOTCH);
 
         verify(mockStorage, never()).setValue(anyString(), anyString(), anyString());
         verify(mockStorage, never()).save();
@@ -61,7 +63,7 @@ class DlcNamesTest {
 
     @Test
     void testCacheNullUsername() {
-        DlcNames.cache(TEST_UUID, null);
+        DlcNames.cache(testUuid, null);
 
         verify(mockStorage, never()).setValue(anyString(), anyString(), anyString());
         verify(mockStorage, never()).save();
@@ -69,7 +71,7 @@ class DlcNamesTest {
 
     @Test
     void testCacheBlankUsername() {
-        DlcNames.cache(TEST_UUID, "   ");
+        DlcNames.cache(testUuid, "   ");
 
         verify(mockStorage, never()).setValue(anyString(), anyString(), anyString());
         verify(mockStorage, never()).save();
@@ -79,12 +81,12 @@ class DlcNamesTest {
 
     @Test
     void testGetValid() {
-        when(mockStorage.getValue(TABLE, TEST_UUID.toString())).thenReturn("Notch");
+        when(mockStorage.getValue(TABLE, testUuid.toString())).thenReturn(NOTCH);
 
-        String result = DlcNames.get(TEST_UUID);
+        String result = DlcNames.get(testUuid);
 
-        assertEquals("Notch", result);
-        verify(mockStorage).getValue(TABLE, TEST_UUID.toString());
+        assertEquals(NOTCH, result);
+        verify(mockStorage).getValue(TABLE, testUuid.toString());
     }
 
     @Test
@@ -99,29 +101,29 @@ class DlcNamesTest {
 
     @Test
     void testGetOrDefaultFound() {
-        when(mockStorage.getValue(TABLE, TEST_UUID.toString())).thenReturn("Notch");
+        when(mockStorage.getValue(TABLE, testUuid.toString())).thenReturn(NOTCH);
 
-        String result = DlcNames.getOrDefault(TEST_UUID, "Fallback");
+        String result = DlcNames.getOrDefault(testUuid, FALLBACK);
 
-        assertEquals("Notch", result);
+        assertEquals(NOTCH, result);
     }
 
     @Test
     void testGetOrDefaultNotFound() {
-        when(mockStorage.getValue(TABLE, TEST_UUID.toString())).thenReturn(null);
+        when(mockStorage.getValue(TABLE, testUuid.toString())).thenReturn(null);
 
-        String result = DlcNames.getOrDefault(TEST_UUID, "Fallback");
+        String result = DlcNames.getOrDefault(testUuid, FALLBACK);
 
-        assertEquals("Fallback", result);
+        assertEquals(FALLBACK, result);
     }
 
     @Test
     void testGetOrDefaultBlank() {
-        when(mockStorage.getValue(TABLE, TEST_UUID.toString())).thenReturn("   ");
+        when(mockStorage.getValue(TABLE, testUuid.toString())).thenReturn("   ");
 
-        String result = DlcNames.getOrDefault(TEST_UUID, "Fallback");
+        String result = DlcNames.getOrDefault(testUuid, FALLBACK);
 
-        assertEquals("Fallback", result);
+        assertEquals(FALLBACK, result);
     }
 
     // --- findUuidByName tests ---
@@ -139,34 +141,34 @@ class DlcNamesTest {
     @Test
     void testFindUuidByNameFoundExact() {
         Map<String, String> table = new HashMap<>();
-        table.put(TEST_UUID.toString(), "Notch");
+        table.put(testUuid.toString(), NOTCH);
         when(mockStorage.getTable(TABLE)).thenReturn(table);
 
-        Optional<UUID> result = DlcNames.findUuidByName("Notch");
+        Optional<UUID> result = DlcNames.findUuidByName(NOTCH);
 
         assertTrue(result.isPresent());
-        assertEquals(TEST_UUID, result.get());
+        assertEquals(testUuid, result.get());
     }
 
     @Test
     void testFindUuidByNameCaseInsensitiveAndTrimmed() {
         Map<String, String> table = new HashMap<>();
-        table.put(TEST_UUID.toString(), "NoTcH");
+        table.put(testUuid.toString(), "NoTcH");
         when(mockStorage.getTable(TABLE)).thenReturn(table);
 
         Optional<UUID> result = DlcNames.findUuidByName("  nOtCh  ");
 
         assertTrue(result.isPresent());
-        assertEquals(TEST_UUID, result.get());
+        assertEquals(testUuid, result.get());
     }
 
     @Test
     void testFindUuidByNameInvalidUuidFormat() {
         Map<String, String> table = new HashMap<>();
-        table.put("not-a-valid-uuid", "Notch");
+        table.put("not-a-valid-uuid", NOTCH);
         when(mockStorage.getTable(TABLE)).thenReturn(table);
 
-        Optional<UUID> result = DlcNames.findUuidByName("Notch");
+        Optional<UUID> result = DlcNames.findUuidByName(NOTCH);
 
         assertFalse(result.isPresent());
     }
@@ -174,10 +176,10 @@ class DlcNamesTest {
     @Test
     void testFindUuidByNameWithNullValueInStorage() {
         Map<String, String> table = new HashMap<>();
-        table.put(TEST_UUID.toString(), null);
+        table.put(testUuid.toString(), null);
         when(mockStorage.getTable(TABLE)).thenReturn(table);
 
-        Optional<UUID> result = DlcNames.findUuidByName("Notch");
+        Optional<UUID> result = DlcNames.findUuidByName(NOTCH);
 
         assertFalse(result.isPresent());
     }
@@ -185,7 +187,7 @@ class DlcNamesTest {
     @Test
     void testFindUuidByNameNotFound() {
         Map<String, String> table = new HashMap<>();
-        table.put(TEST_UUID.toString(), "Notch");
+        table.put(testUuid.toString(), NOTCH);
         when(mockStorage.getTable(TABLE)).thenReturn(table);
 
         Optional<UUID> result = DlcNames.findUuidByName("Jeb");
