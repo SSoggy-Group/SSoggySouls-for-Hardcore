@@ -18,13 +18,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
-import org.ssoggy.ssoggysouls.SSoggySouls;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+
+
+
+import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.CommandUtil;
@@ -104,35 +102,22 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!hasCommandAccess(sender)) {
-            return true;
-        }
-
-        handleRootCommand(sender, args);
-        return true;
-    }
-
-    private boolean hasCommandAccess(CommandSender sender) {
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
-            return false;
+            return true;
         }
 
         // Security check: Prevent Limbo-only OP from using this command
         if (PermissionUtil.isBlockedByLimboOpSecurity(sender, plugin)) {
             PermissionUtil.sendSecurityBlockMessage(sender);
-            return false;
+            return true;
         }
 
-        return true;
-    }
-
-    private void handleRootCommand(CommandSender sender, String[] args) {
         if (args.length == 0) {
             sendHelp(sender);
-            return;
+        } else {
+            dispatch(sender, args);
         }
-
-        dispatch(sender, args);
+        return true;
     }
 
     private void dispatch(CommandSender sender, String[] args) {
@@ -293,24 +278,24 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private static void sendGraceConfirmOptions(CommandSender sender) {
         if (sender instanceof Player player) {
-            Component message = Component.text("  ")
-                    .append(Component.text("[", NamedTextColor.GREEN)
-                            .append(Component.text("Overwrite", NamedTextColor.GREEN, TextDecoration.BOLD))
-                            .append(Component.text("]", NamedTextColor.GREEN))
-                            .clickEvent(ClickEvent.runCommand("/psadmin confirm overwrite"))
-                            .hoverEvent(HoverEvent.showText(Component.text("Overwrite with new grace period", NamedTextColor.GRAY))))
-                    .append(Component.text(" "))
-                    .append(Component.text("[", NamedTextColor.YELLOW)
-                            .append(Component.text("Stack", NamedTextColor.YELLOW, TextDecoration.BOLD))
-                            .append(Component.text("]", NamedTextColor.YELLOW))
-                            .clickEvent(ClickEvent.runCommand("/psadmin confirm stack"))
-                            .hoverEvent(HoverEvent.showText(Component.text("Stack (add time to existing)", NamedTextColor.GRAY))))
-                    .append(Component.text(" "))
-                    .append(Component.text("[", NamedTextColor.RED)
-                            .append(Component.text("Cancel", NamedTextColor.RED, TextDecoration.BOLD))
-                            .append(Component.text("]", NamedTextColor.RED))
-                            .clickEvent(ClickEvent.runCommand("/psadmin confirm cancel"))
-                            .hoverEvent(HoverEvent.showText(Component.text("Cancel the operation", NamedTextColor.GRAY))));
+            net.kyori.adventure.text.Component message = net.kyori.adventure.text.Component.text("  ")
+                    .append(net.kyori.adventure.text.Component.text("[", net.kyori.adventure.text.format.NamedTextColor.GREEN)
+                            .append(net.kyori.adventure.text.Component.text("Overwrite", net.kyori.adventure.text.format.NamedTextColor.GREEN, net.kyori.adventure.text.format.TextDecoration.BOLD))
+                            .append(net.kyori.adventure.text.Component.text("]", net.kyori.adventure.text.format.NamedTextColor.GREEN))
+                            .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/psadmin confirm overwrite"))
+                            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Overwrite with new grace period", net.kyori.adventure.text.format.NamedTextColor.GRAY))))
+                    .append(net.kyori.adventure.text.Component.text(" "))
+                    .append(net.kyori.adventure.text.Component.text("[", net.kyori.adventure.text.format.NamedTextColor.YELLOW)
+                            .append(net.kyori.adventure.text.Component.text("Stack", net.kyori.adventure.text.format.NamedTextColor.YELLOW, net.kyori.adventure.text.format.TextDecoration.BOLD))
+                            .append(net.kyori.adventure.text.Component.text("]", net.kyori.adventure.text.format.NamedTextColor.YELLOW))
+                            .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/psadmin confirm stack"))
+                            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Stack (add time to existing)", net.kyori.adventure.text.format.NamedTextColor.GRAY))))
+                    .append(net.kyori.adventure.text.Component.text(" "))
+                    .append(net.kyori.adventure.text.Component.text("[", net.kyori.adventure.text.format.NamedTextColor.RED)
+                            .append(net.kyori.adventure.text.Component.text("Cancel", net.kyori.adventure.text.format.NamedTextColor.RED, net.kyori.adventure.text.format.TextDecoration.BOLD))
+                            .append(net.kyori.adventure.text.Component.text("]", net.kyori.adventure.text.format.NamedTextColor.RED))
+                            .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/psadmin confirm cancel"))
+                            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Cancel the operation", net.kyori.adventure.text.format.NamedTextColor.GRAY))));
 
             player.sendMessage(message);
         } else {
@@ -667,16 +652,17 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     }
 
     private static void sendInteractiveHelp(CommandSender sender, String command, String description, int paddingSpaces) {
-        String padding = " ".repeat(Math.max(0, paddingSpaces));
         if (sender instanceof Player player) {
             String suggestCmd = command.split(" <")[0].split(" \\[")[0]; // extract base command safely
+            String padding = " ".repeat(Math.max(0, paddingSpaces));
 
-            Component message = Component.text(command + padding, NamedTextColor.YELLOW)
-                    .append(Component.text(" - " + description, NamedTextColor.GRAY))
-                    .clickEvent(ClickEvent.suggestCommand(suggestCmd + " "))
-                    .hoverEvent(HoverEvent.showText(Component.text("Click to prepare this command", NamedTextColor.GRAY)));
+            net.kyori.adventure.text.Component message = net.kyori.adventure.text.Component.text(command + padding, net.kyori.adventure.text.format.NamedTextColor.YELLOW)
+                    .append(net.kyori.adventure.text.Component.text(" - " + description, net.kyori.adventure.text.format.NamedTextColor.GRAY))
+                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand(suggestCmd + " "))
+                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to prepare this command", net.kyori.adventure.text.format.NamedTextColor.GRAY)));
             player.sendMessage(message);
         } else {
+            String padding = " ".repeat(Math.max(0, paddingSpaces));
             sender.sendMessage(MessageUtil.colorize("&e" + command + padding + " &7- " + description));
         }
     }

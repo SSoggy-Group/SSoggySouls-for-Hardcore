@@ -41,7 +41,7 @@ public class SSoggySoulsMod implements PluginContext {
         IEventBus modEventBus = context.getModEventBus();
 
         // Register the commonSetup method for modloading
-        modEventBus.addListener((FMLCommonSetupEvent event) -> commonSetup());
+        modEventBus.addListener(this::commonSetup);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -103,7 +103,7 @@ public class SSoggySoulsMod implements PluginContext {
         }
     }
 
-    private void commonSetup() {
+    private void commonSetup(final FMLCommonSetupEvent event) {
         ServerTransferUtil.register();
     }
 

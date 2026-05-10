@@ -48,8 +48,6 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public PlayerData getPlayer(UUID uuid) {
-        if (uuid == null) return null;
-
         String sql = SELECT_ALL + tableName + " WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {

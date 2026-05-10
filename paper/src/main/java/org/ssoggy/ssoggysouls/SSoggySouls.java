@@ -120,20 +120,18 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         java.io.File configFile = new java.io.File(getDataFolder(), "config.yml");
         if (!configFile.exists()) {
             saveDefaultConfig();
-            getLogger().info("""
-
-                    ===============================================================
-                                           SSOGGY SOULS
-                    ===============================================================
-                     The plugin is using SQLite (single-server mode) by default.
-                     
-                     If you are setting up a Dual-Server Network (Main + Limbo),
-                     you MUST stop the server, open config.yml, and change the
-                     'database.type' to 'mysql', then fill in your DB details.
-                     
-                     If you are using a single server, you can ignore this message.
-                    ===============================================================
-                    """);
+            getLogger().info("\n" +
+                    "===============================================================\n" +
+                    "                       SSOGGY SOULS\n" +
+                    "===============================================================\n" +
+                    " The plugin is using SQLite (single-server mode) by default.\n" +
+                    " \n" +
+                    " If you are setting up a Dual-Server Network (Main + Limbo),\n" +
+                    " you MUST stop the server, open config.yml, and change the\n" +
+                    " 'database.type' to 'mysql', then fill in your DB details.\n" +
+                    " \n" +
+                    " If you are using a single server, you can ignore this message.\n" +
+                    "===============================================================\n");
         } else {
             saveDefaultConfig();
         }
