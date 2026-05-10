@@ -64,7 +64,8 @@ public class RPStorage {
                     logger.log(Level.WARNING, "Storage file already exists: {0}", fileName);
                 }
             } catch (IOException e) {
-                logger.log(Level.SEVERE, "Could not create storage file: {0}", new Object[]{file.getPath(), e});
+                logger.log(Level.SEVERE, "Could not create storage file: {0}", file.getPath());
+                logger.log(Level.SEVERE, "Exception details:", e);
             }
         }
 
@@ -84,7 +85,8 @@ public class RPStorage {
             try {
                 Files.writeString(file.toPath(), data);
             } catch (IOException e) {
-                logger.log(Level.SEVERE, "Could not save configuration to {0}", new Object[]{file.getPath(), e});
+                logger.log(Level.SEVERE, "Could not save configuration to {0}", file.getPath());
+                logger.log(Level.SEVERE, "Exception details:", e);
             }
         });
     }
