@@ -292,7 +292,7 @@ A craftable item that grants players +1 life when used.
 
 - 1× Nether Star
 
-- 1× Gold Block
+- 2× Gold Block
 
 **Result:** 1 Extra Life item (displays as Nether Star)
 
@@ -466,7 +466,7 @@ ______________________________________________________________________
 
 The head is placed as a **permanent skull block** in the world.
 
-- The plugin scans **upward** from the death Y coordinate to find the first open air block sitting on solid ground. If you die inside lava it emerges above the lava surface — always accessible.
+- The plugin scans **upward** from the death Y coordinate to find the first open air block sitting on solid ground. If you die inside lava, it emerges above the lava surface and remains accessible.
 
 - The block persists forever. It can't burn, can't despawn, and can't be washed away by water.
 
@@ -493,7 +493,7 @@ Two extra options control its survival:
 | Option                  | What it does                                                                 |
 | ----------------------- | ---------------------------------------------------------------------------- |
 
-| `head-no-despawn: true` | Cancels the natural 5-minute despawn timer. The item stays until picked up.  |
+| `head-no-despawn: true` | Cancels the natural 5-minute despawn timer. The item stays until picked up. |
 | `head-fireproof: true`  | Marks the item as invulnerable. Fire, lava, and explosions can't destroy it. |
 
 **Configuration:**
