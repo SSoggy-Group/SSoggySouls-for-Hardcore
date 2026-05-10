@@ -104,12 +104,16 @@ public class LimboServerListener {
         return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
+    private static void sendCannotLeaveMessage(ServerPlayerEntity player) {
+        player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
+    }
+
     public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {
         if (db == null) return false;
         
         String fullCmd = "/" + command;
         if (db.isPlayerDead(player.getUuid()) && !isWhitelistedCommand(fullCmd)) {
-            player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
+            sendCannotLeaveMessage(player);
             return true;
         }
         return false;
@@ -141,7 +145,7 @@ public class LimboServerListener {
         player.experienceProgress = 0;
         player.setHealth(player.getMaxHealth());
         player.getHungerManager().setFoodLevel(20);
-                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
+        sendCannotLeaveMessage(player);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
