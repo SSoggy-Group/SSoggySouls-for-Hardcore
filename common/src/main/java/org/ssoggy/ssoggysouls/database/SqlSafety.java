@@ -15,7 +15,7 @@ final class SqlSafety {
 
     static String requireValidJdbcParam(String param, String label) {
         if (param == null || !JDBC_PARAM.matcher(param).matches()) {
-            throw new IllegalArgumentException(label + " must contain only alphanumeric characters, periods, hyphens, and underscores");
+            throw new IllegalArgumentException(label + " must contain only alphanumeric characters, periods, hyphens, underscores, colons, and brackets");
         }
         return param;
     }
