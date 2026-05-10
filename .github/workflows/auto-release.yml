@@ -333,7 +333,7 @@ jobs:
       - prepare-release
       - commit-version
       - github-release
-    if: needs.commit-version.outputs.tag_created == 'true'
+    # No job-level 'if' here, each step handles its own skipping logic to allow for retries.
 
     steps:
       - name: Download Release Jars
@@ -347,10 +347,15 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          if curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version" | grep -Fq "\"version_number\":\"${NEW_VERSION}+paper\""; then
+          # Correct endpoint: /v2/project/{id}/version
+          # We check if the version number is in the response.
+          echo "Checking if version ${NEW_VERSION}+paper exists for project Pb03qu6T..."
+          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+paper\""; then
             echo "Version ${NEW_VERSION}+paper already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
+            echo "Version ${NEW_VERSION}+paper not found on Modrinth."
             echo "already_published=false" >> "${GITHUB_OUTPUT}"
           fi
 
@@ -364,24 +369,9 @@ jobs:
           version: "${{ needs.prepare-release.outputs.new_version }}+paper"
           version-type: ${{ github.event.inputs.paper_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
-          loaders: |
-            paper
-            purpur
-            spigot
-            bukkit
-          game-versions: |
-            1.21.1
-            1.21.2
-            1.21.3
-            1.21.4
-            1.21.5
-            1.21.6
-            1.21.7
-            1.21.8
-            1.21.9
-            1.21.10
-            1.21.11
-          files: release-jars/SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
+          loaders: paper, purpur, spigot, bukkit
+          game-versions: 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7, 1.21.8, 1.21.9, 1.21.10, 1.21.11
+          modrinth-files: release-jars/SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
 
   publish-fabric:
     name: Publish Fabric
@@ -392,7 +382,7 @@ jobs:
       - prepare-release
       - commit-version
       - github-release
-    if: needs.commit-version.outputs.tag_created == 'true'
+    # No job-level 'if' here, each step handles its own skipping logic to allow for retries.
 
     steps:
       - name: Download Release Jars
@@ -406,10 +396,15 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          if curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version" | grep -Fq "\"version_number\":\"${NEW_VERSION}+fabric\""; then
+          # Correct endpoint: /v2/project/{id}/version
+          # We check if the version number is in the response.
+          echo "Checking if version ${NEW_VERSION}+fabric exists for project Pb03qu6T..."
+          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+fabric\""; then
             echo "Version ${NEW_VERSION}+fabric already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
+            echo "Version ${NEW_VERSION}+fabric not found on Modrinth."
             echo "already_published=false" >> "${GITHUB_OUTPUT}"
           fi
 
@@ -423,22 +418,9 @@ jobs:
           version: "${{ needs.prepare-release.outputs.new_version }}+fabric"
           version-type: ${{ github.event.inputs.fabric_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
-          loaders: |
-            fabric
-            quilt
-          game-versions: |
-            1.21.1
-            1.21.2
-            1.21.3
-            1.21.4
-            1.21.5
-            1.21.6
-            1.21.7
-            1.21.8
-            1.21.9
-            1.21.10
-            1.21.11
-          files: release-jars/SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
+          loaders: fabric, quilt
+          game-versions: 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7, 1.21.8, 1.21.9, 1.21.10, 1.21.11
+          modrinth-files: release-jars/SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
 
   publish-forge:
     name: Publish Forge
@@ -449,7 +431,7 @@ jobs:
       - prepare-release
       - commit-version
       - github-release
-    if: needs.commit-version.outputs.tag_created == 'true'
+    # No job-level 'if' here, each step handles its own skipping logic to allow for retries.
 
     steps:
       - name: Download Release Jars
@@ -463,10 +445,15 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          if curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version" | grep -Fq "\"version_number\":\"${NEW_VERSION}+forge\""; then
+          # Correct endpoint: /v2/project/{id}/version
+          # We check if the version number is in the response.
+          echo "Checking if version ${NEW_VERSION}+forge exists for project Pb03qu6T..."
+          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+forge\""; then
             echo "Version ${NEW_VERSION}+forge already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
+            echo "Version ${NEW_VERSION}+forge not found on Modrinth."
             echo "already_published=false" >> "${GITHUB_OUTPUT}"
           fi
 
@@ -481,19 +468,8 @@ jobs:
           version-type: ${{ github.event.inputs.forge_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: forge
-          game-versions: |
-            1.21.1
-            1.21.2
-            1.21.3
-            1.21.4
-            1.21.5
-            1.21.6
-            1.21.7
-            1.21.8
-            1.21.9
-            1.21.10
-            1.21.11
-          files: release-jars/SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+          game-versions: 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7, 1.21.8, 1.21.9, 1.21.10, 1.21.11
+          modrinth-files: release-jars/SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
 
   publish-neoforge:
     name: Publish NeoForge
@@ -504,7 +480,7 @@ jobs:
       - prepare-release
       - commit-version
       - github-release
-    if: needs.commit-version.outputs.tag_created == 'true'
+    # No job-level 'if' here, each step handles its own skipping logic to allow for retries.
 
     steps:
       - name: Download Release Jars
@@ -518,10 +494,15 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          if curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version" | grep -Fq "\"version_number\":\"${NEW_VERSION}+neoforge\""; then
+          # Correct endpoint: /v2/project/{id}/version
+          # We check if the version number is in the response.
+          echo "Checking if version ${NEW_VERSION}+neoforge exists for project Pb03qu6T..."
+          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+neoforge\""; then
             echo "Version ${NEW_VERSION}+neoforge already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
+            echo "Version ${NEW_VERSION}+neoforge not found on Modrinth."
             echo "already_published=false" >> "${GITHUB_OUTPUT}"
           fi
 
@@ -536,16 +517,5 @@ jobs:
           version-type: ${{ github.event.inputs.neoforge_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: neoforge
-          game-versions: |
-            1.21.1
-            1.21.2
-            1.21.3
-            1.21.4
-            1.21.5
-            1.21.6
-            1.21.7
-            1.21.8
-            1.21.9
-            1.21.10
-            1.21.11
-          files: release-jars/SSoggySouls-NeoForge-${{ needs.prepare-release.outputs.new_version }}.jar
+          game-versions: 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7, 1.21.8, 1.21.9, 1.21.10, 1.21.11
+          modrinth-files: release-jars/SSoggySouls-NeoForge-${{ needs.prepare-release.outputs.new_version }}.jar
