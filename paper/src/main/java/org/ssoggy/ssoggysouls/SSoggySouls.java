@@ -538,12 +538,14 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         }
     }
 
+    @Override
     public void debug(String message) {
         if (debugMode && getLogger().isLoggable(Level.INFO)) {
             getLogger().log(Level.INFO, "[DEBUG] {0}", message);
         }
     }
 
+    @Override
     public boolean isDebugMode() {
         return debugMode;
     }
@@ -590,6 +592,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         return limboServerName;
     }
 
+    @Override
     public int getDefaultLives() {
         return defaultLives;
     }
