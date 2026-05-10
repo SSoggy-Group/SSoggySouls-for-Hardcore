@@ -2,6 +2,8 @@ package org.ssoggy.ssoggysouls.hrm.dlc.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.block.Block;
+import net.minecraft.block.FenceBlock;
 import net.minecraft.command.CommandSource;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
@@ -106,9 +108,31 @@ public final class DlcCommandRegistration {
             C_SOUL_SAND, List.of("CRYING_OBSIDIAN", "OBSIDIAN"),
             C_FLOWER, List.of("SOUL_TORCH", "REDSTONE_TORCH"),
             C_ORE, List.of("ENCHANTING_TABLE"),
-            C_FENCE, List.of("OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE", "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE", "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"),
+            C_FENCE, defaultFenceBlockIds(),
             C_STAIR, List.of("MAGMA_BLOCK")
     );
+
+    private static List<String> defaultFenceBlockIds() {
+        List<String> fences = new ArrayList<>();
+        for (Block block : Registries.BLOCK) {
+            if (block instanceof FenceBlock) {
+                Identifier id = Registries.BLOCK.getId(block);
+                if (id != null) {
+                    fences.add(id.getPath().toUpperCase(Locale.ROOT));
+                }
+            }
+        }
+
+        if (fences.isEmpty()) {
+            return List.of(
+                    "OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE",
+                    "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE",
+                    "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"
+            );
+        }
+
+        return fences.stream().sorted().toList();
+    }
 
     private DlcCommandRegistration() {
     }
