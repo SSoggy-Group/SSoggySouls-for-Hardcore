@@ -342,7 +342,22 @@ jobs:
           name: release-jars
           path: release-jars
 
+      - name: Check if Paper version already exists on Modrinth
+        id: check_paper
+        env:
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://api.modrinth.com/v2/version/Pb03qu6T/${NEW_VERSION}+paper" || true)
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "Version ${NEW_VERSION}+paper already exists on Modrinth. Skipping upload."
+            echo "already_published=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Publish Paper to Modrinth
+        if: steps.check_paper.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
@@ -388,7 +403,22 @@ jobs:
           name: release-jars
           path: release-jars
 
+      - name: Check if Fabric version already exists on Modrinth
+        id: check_fabric
+        env:
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://api.modrinth.com/v2/version/Pb03qu6T/${NEW_VERSION}+fabric" || true)
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "Version ${NEW_VERSION}+fabric already exists on Modrinth. Skipping upload."
+            echo "already_published=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Publish Fabric to Modrinth
+        if: steps.check_fabric.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
@@ -432,7 +462,22 @@ jobs:
           name: release-jars
           path: release-jars
 
+      - name: Check if Forge version already exists on Modrinth
+        id: check_forge
+        env:
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://api.modrinth.com/v2/version/Pb03qu6T/${NEW_VERSION}+forge" || true)
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "Version ${NEW_VERSION}+forge already exists on Modrinth. Skipping upload."
+            echo "already_published=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Publish Forge to Modrinth
+        if: steps.check_forge.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
@@ -474,7 +519,22 @@ jobs:
           name: release-jars
           path: release-jars
 
+      - name: Check if NeoForge version already exists on Modrinth
+        id: check_neoforge
+        env:
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://api.modrinth.com/v2/version/Pb03qu6T/${NEW_VERSION}+neoforge" || true)
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "Version ${NEW_VERSION}+neoforge already exists on Modrinth. Skipping upload."
+            echo "already_published=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Publish NeoForge to Modrinth
+        if: steps.check_neoforge.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
