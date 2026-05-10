@@ -56,12 +56,15 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Build and analyze
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Build and Test
         run: |
           chmod +x ./gradlew
-          ./gradlew build sonar --info
+          ./gradlew build --info
+
+      - name: SonarQube Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --info
 
   dependency-submission:
     name: Submit Dependency Graph
