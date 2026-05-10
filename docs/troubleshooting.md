@@ -369,7 +369,7 @@ ______________________________________________________________________
 
 #### - Update Both Servers to Same Version
 
-1. Download the latest SSoggySouls JAR
+1. Download the latest SSoggySouls JAR (currently `SSoggySouls-4.5.0.jar`)
 1. Stop both servers
 1. Replace the JAR on **both** servers
 
@@ -832,7 +832,7 @@ java -version
 
 #### - Verify Minecraft Version
 
-Plugin supports 1.21.X only. Check server version:
+Plugin supports the Minecraft 1.21.x version family. Check server version:
 
 ```text
 
