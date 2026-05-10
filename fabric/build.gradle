@@ -10,11 +10,11 @@ base {
 }
 
 dependencies {
-    // Inject the common module — classes merged directly (same as Forge).
-    // Do NOT use 'include project(:common)' with JiJ: the common module has
-    // no semver version, which causes Loom's processIncludeJars to silently
-    // drop it and produce a 308-byte empty remapJar output.
+    // Inject the common module via JiJ (now has version = '1.0.0', fixing
+    // the 'unspecified is not valid semver' error that caused remapJar to
+    // produce an empty 308-byte JAR).
     implementation project(':common')
+    include project(':common')
 
     // Minecraft + Fabric
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -25,10 +25,11 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "me.lucko:fabric-permissions-api:0.3.1"
 
-    // Database dependencies — classes merged directly to bypass Loom semver issues.
-    implementation("com.zaxxer:HikariCP:7.0.2")
-    implementation("com.mysql:mysql-connector-j:9.7.0")
-    implementation("org.xerial:sqlite-jdbc:3.53.1.0")
+    // Database dependencies bundled via Jar-in-Jar so Fabric Loader
+    // unpacks them at runtime — plug-and-play, no manual installation needed.
+    include implementation("com.zaxxer:HikariCP:7.0.2")
+    include implementation("com.mysql:mysql-connector-j:9.7.0")
+    include implementation("org.xerial:sqlite-jdbc:3.53.1.0")
 
     // Mod Menu API (compile only, provided by Mod Menu mod at runtime)
     modCompileOnlyApi "com.terraformersmc:modmenu:11.0.4"
@@ -55,19 +56,7 @@ processResources {
 }
 
 jar {
-    // Merge common module and database driver classes directly into the Fabric JAR.
-    from(project(':common').sourceSets.main.output)
-    
-    // Include database dependencies in the fat jar
-    from {
-        configurations.runtimeClasspath
-            .filter { it.name.contains("HikariCP") || it.name.contains("mysql-connector-j") || it.name.contains("sqlite-jdbc") }
-            .collect { it.isDirectory() ? it : zipTree(it) }
-    }
-
     from("../LICENSE") {
         rename { "${it}_${project.base.archivesName.get()}" }
     }
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

@@ -1,4 +1,6 @@
-dependencies {
+group = 'org.ssoggy'
+version = '1.0.0'
+
     // Database connection pooling
     implementation 'com.zaxxer:HikariCP:7.0.2'
     
