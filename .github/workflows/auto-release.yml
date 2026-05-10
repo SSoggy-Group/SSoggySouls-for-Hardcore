@@ -187,12 +187,12 @@ jobs:
       - name: Build Minecraft Mods
         run: |
           chmod +x ./gradlew
-          # Build platforms sequentially to avoid plugin classpath conflicts (e.g. fastcsv)
-          ./gradlew :common:build
-          ./gradlew :fabric:build
-          ./gradlew :paper:build
-          ./gradlew :neoforge:build
-          ./gradlew :forge:build --no-daemon
+          # Build platforms in total isolation using -DonlyPlatform to avoid plugin conflicts
+          ./gradlew :common:build -DonlyPlatform=common --no-daemon
+          ./gradlew :fabric:build -DonlyPlatform=fabric --no-daemon
+          ./gradlew :paper:build -DonlyPlatform=paper --no-daemon
+          ./gradlew :neoforge:build -DonlyPlatform=neoforge --no-daemon
+          ./gradlew :forge:build -DonlyPlatform=forge --no-daemon
 
       - name: Locate and Rename Jars
         env:

@@ -29,7 +29,7 @@ dependencies {
     // unpacks them at runtime — plug-and-play, no manual installation needed.
     include implementation("com.zaxxer:HikariCP:7.0.2")
     include implementation("com.mysql:mysql-connector-j:9.7.0")
-    include implementation("org.xerial:sqlite-jdbc:3.53.1.0")
+    include implementation("org.xerial:sqlite-jdbc:3.45.3.0")
 
     // Mod Menu API (compile only, provided by Mod Menu mod at runtime)
     modCompileOnlyApi "com.terraformersmc:modmenu:11.0.4"
