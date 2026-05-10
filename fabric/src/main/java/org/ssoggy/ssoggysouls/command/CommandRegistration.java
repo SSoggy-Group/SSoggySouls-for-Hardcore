@@ -18,6 +18,7 @@ import org.ssoggy.ssoggysouls.listener.MainServerListener;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.AdminLogger;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.PermissionUtil;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -101,47 +102,53 @@ public class CommandRegistration {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     ServerCommandSource source = context.getSource();
 
-                    CompletableFuture.runAsync(() -> {
-                        PlayerData targetData = db.getPlayerByName(targetName);
-                        if (targetData == null) {
-                            source.getServer().execute(() ->
-                                source.sendError(MessageUtil.get("revive-not-found", PLAYER, targetName)));
-                            return;
-                        }
+                    if (PermissionUtil.isBlockedByLimboOpSecurity(source)) {
+                        PermissionUtil.sendSecurityBlockMessage(source);
+                        return 0;
+                    }
 
-                        if (!targetData.isDead()) {
-                            source.getServer().execute(() ->
-                                source.sendError(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
-                            return;
-                        }
-
-                        boolean success = db.revivePlayer(targetData.getUuid(), plugin.getDefaultLives());
-                        if (success) {
-                            source.getServer().execute(() -> {
-                                DlcDeaths.clearDeath(targetData.getUuid());
-                                GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
-                                org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(targetData.getUuid(), false);
-                                GhostState ghostState = GhostState.getServerState(source.getServer());
-                                ghostState.deathLocations.remove(targetData.getUuid());
-                                ghostState.deathHolders.remove(targetData.getUuid());
-                                ghostState.markDirty();
-                                source.sendFeedback(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
-                                AdminLogger.log(source.getName(), "Revived " + targetData.getUsername());
-
-                                // Restore game mode if player is online
-                                ServerPlayerEntity targetPlayer = source.getServer().getPlayerManager().getPlayer(targetData.getUuid());
-                                if (targetPlayer != null) {
-                                    targetPlayer.changeGameMode(net.minecraft.world.GameMode.SURVIVAL);
-                                    MainServerListener.setGhostModeAttributes(targetPlayer, false);
-                                    targetPlayer.sendMessage(MessageUtil.get("revive-success"), false);
-                                }
-                            });
-                        }
-                    });
+                    CompletableFuture.runAsync(() -> executeRevive(targetName, source, plugin, db));
                     return 1;
                 })
             )
         );
+    }
+
+    private static void executeRevive(String targetName, ServerCommandSource source, SSoggySoulsMod plugin, DatabaseManager db) {
+        PlayerData targetData = db.getPlayerByName(targetName);
+        if (targetData == null) {
+            source.getServer().execute(() ->
+                source.sendError(MessageUtil.get("revive-not-found", PLAYER, targetName)));
+            return;
+        }
+
+        if (!targetData.isDead()) {
+            source.getServer().execute(() ->
+                source.sendError(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
+            return;
+        }
+
+        boolean success = db.revivePlayer(targetData.getUuid(), plugin.getDefaultLives());
+        if (success) {
+            source.getServer().execute(() -> {
+                DlcDeaths.clearDeath(targetData.getUuid());
+                GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
+                GhostState ghostState = GhostState.getServerState(source.getServer());
+                ghostState.deathLocations.remove(targetData.getUuid());
+                ghostState.deathHolders.remove(targetData.getUuid());
+                ghostState.markDirty();
+                source.sendFeedback(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
+                AdminLogger.log(source.getName(), "Revived " + targetData.getUsername());
+
+                // Restore game mode if player is online
+                ServerPlayerEntity targetPlayer = source.getServer().getPlayerManager().getPlayer(targetData.getUuid());
+                if (targetPlayer != null) {
+                    targetPlayer.changeGameMode(net.minecraft.world.GameMode.SURVIVAL);
+                    MainServerListener.setGhostModeAttributes(targetPlayer, false);
+                    targetPlayer.sendMessage(MessageUtil.get("revive-success"), false);
+                }
+            });
+        }
     }
 
     private static void registerSetLivesCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
@@ -156,6 +163,11 @@ public class CommandRegistration {
                         int lives = IntegerArgumentType.getInteger(context, LIVES);
                         ServerCommandSource source = context.getSource();
 
+                        if (PermissionUtil.isBlockedByLimboOpSecurity(source)) {
+                            PermissionUtil.sendSecurityBlockMessage(source);
+                            return 0;
+                        }
+
                         CompletableFuture.runAsync(() -> {
                             PlayerData data = db.getPlayerByName(targetName);
                             if (data == null) {
@@ -169,7 +181,6 @@ public class CommandRegistration {
                                 if (lives > 0) {
                                     DlcDeaths.clearDeath(data.getUuid());
                                     GhostModeEvents.updateGhostStatus(data.getUuid(), false);
-                                    org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(data.getUuid(), false);
                                     GhostState ghostState = GhostState.getServerState(source.getServer());
                                     ghostState.deathLocations.remove(data.getUuid());
                                     ghostState.deathHolders.remove(data.getUuid());

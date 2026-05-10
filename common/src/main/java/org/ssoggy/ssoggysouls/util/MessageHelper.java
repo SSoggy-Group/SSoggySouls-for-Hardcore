@@ -42,7 +42,7 @@ public class MessageHelper {
      * @param text the input text
      * @return the text with color codes translated
      */
-    public static String colorize(String text) {
+    public static String translateAlternateColorCodes(String text) {
         if (text == null) return "";
         return text.replace('&', '\u00a7');
     }
@@ -55,7 +55,7 @@ public class MessageHelper {
      * @return the formatted string
      */
     public static String getFormatted(String key, Object... replacements) {
-        return colorize(prefix + getRaw(key, replacements));
+        return translateAlternateColorCodes(prefix + getRaw(key, replacements));
     }
 
     /**
@@ -66,6 +66,6 @@ public class MessageHelper {
      * @return the formatted string without prefix
      */
     public static String getFormattedNoPrefix(String key, Object... replacements) {
-        return colorize(getRaw(key, replacements));
+        return translateAlternateColorCodes(getRaw(key, replacements));
     }
 }

@@ -1,10 +1,10 @@
 # SSoggySouls
 
 <img src="https://cdn.modrinth.com/data/Pb03qu6T/images/70ce5f45786d4716bb6d47d242ee3238a2b4ec4a.jpeg" alt="SSoggySouls Banner">
-**Version 4.4.0** | Minecraft 1.21.X | Spigot/Paper/Purpur/Fabric/Forge
+**Version 4.4.15** | Minecraft 1.21.X | Spigot/Paper/Purpur/Fabric/Forge/NeoForge
 
 A hardcore lives system plugin. When you die enough times, you get exiled to a Limbo server (multi-server) or enter spectator mode (single-server) until your teammates revive you.
-> **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
+> **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
 > **[Read the Full Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Complete installation guides, configuration reference, troubleshooting, and more!
 
@@ -47,7 +47,7 @@ Wearing a dead player's head grants Speed II and Night Vision to help you delive
 
 ## Requirements
 
-- **Minecraft:** 1.21.X (Spigot, Paper, Purpur, Fabric, or Forge)
+- **Minecraft:** 1.21.X (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 - **Java:** 21+
 - **Database:** SQLite (built-in, zero setup) OR MySQL/MariaDB (required for multi-server)
 - *(Optional)* **Proxy:** Velocity with two backend servers

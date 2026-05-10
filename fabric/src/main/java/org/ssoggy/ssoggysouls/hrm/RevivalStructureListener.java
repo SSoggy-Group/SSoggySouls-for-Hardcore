@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.BlockState;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ProfileComponent;
+import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -75,8 +76,7 @@ public class RevivalStructureListener {
             return ActionResult.PASS;
         }
 
-        PlayerData actorData = db.getPlayer(serverPlayer.getUuid());
-        if (actorData == null || actorData.isDead()) {
+        if (db.isPlayerDead(serverPlayer.getUuid())) {
             return ActionResult.PASS;
         }
 
@@ -169,7 +169,6 @@ public class RevivalStructureListener {
         breakStructure(world, placedPos);
         DlcDeaths.clearDeath(revivedUuid);
         GhostModeEvents.updateGhostStatus(revivedUuid, false);
-        org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(revivedUuid, false);
         GhostState ghostState = GhostState.getServerState(world.getServer());
         ghostState.deathLocations.remove(revivedUuid);
         ghostState.deathHolders.remove(revivedUuid);
@@ -229,7 +228,7 @@ public class RevivalStructureListener {
         if (ConfigManager.getConfig().isRitualTotemEffect()) {
             revived.getWorld().playSound(null, revived.getBlockPos(), SoundEvents.ITEM_TOTEM_USE, SoundCategory.PLAYERS,
                     1.0f, 1.0f);
-            revived.getWorld().sendEntityStatus(revived, (byte) 35); // Status 35 is totem effect
+            revived.getWorld().sendEntityStatus(revived, EntityStatuses.USE_TOTEM_OF_UNDYING);
         }
     }
 

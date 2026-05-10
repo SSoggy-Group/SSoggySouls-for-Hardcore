@@ -42,7 +42,7 @@ public final class PermissionUtil {
             return false;
         }
 
-        // Check if player is in the trusted admins whitelist (by UUID or username)
+        // Check if player is in the trusted admins list (by UUID or username)
         Set<String> trustedAdmins = plugin.getLimboTrustedAdmins();
         if (!trustedAdmins.isEmpty()) {
             String playerUuid = player.getUniqueId().toString();
@@ -65,6 +65,6 @@ public final class PermissionUtil {
      */
     public static void sendSecurityBlockMessage(CommandSender sender) {
         sender.sendMessage(MessageUtil.colorize("&cSecurity Error: On the Limbo server, OP status cannot be used to execute this command."));
-        sender.sendMessage(MessageUtil.colorize("&7Either /deop yourself on Limbo, ask an administrator to add you to the whitelist, or have them grant you the bypass permission &e(ssoggysouls.bypass-limbo-op-security)&7."));
+        sender.sendMessage(MessageUtil.colorize("&7Either /deop yourself on Limbo, ask an administrator to add you to the trusted admins list, or have them grant you the bypass permission &e(ssoggysouls.bypass-limbo-op-security)&7."));
     }
 }

@@ -31,12 +31,16 @@ public class MainServerListener {
 
     private final DatabaseManager db;
 
-    public MainServerListener(DatabaseManager db) {
+    private MainServerListener(DatabaseManager db) {
         this.db = db;
         registerJoinEvent();
         registerQuitEvent();
         registerDeathEvent();
         registerRespawnEvent();
+    }
+
+    public static void register(DatabaseManager db) {
+        new MainServerListener(db);
     }
 
     private void registerJoinEvent() {
@@ -155,7 +159,6 @@ public class MainServerListener {
             player.changeGameMode(GameMode.ADVENTURE);
             setGhostModeAttributes(player, true);
             GhostModeEvents.updateGhostStatus(player.getUuid(), true);
-            org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(player.getUuid(), true);
             player.sendMessage(MessageUtil.get("death-now-ghost"), false);
 
             // Trigger head drop now that we know isDead is true (avoids race with DB state)

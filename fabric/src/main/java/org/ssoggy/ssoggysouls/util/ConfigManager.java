@@ -64,7 +64,7 @@ public class ConfigManager {
         if (input == null || input.equals("0") || input.isEmpty()) return 0;
         try {
             long totalMs = 0;
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+)([hms])").matcher(input.toLowerCase());
+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d++)\\s*+([hms])").matcher(input.toLowerCase());
             while (matcher.find()) {
                 long value = Long.parseLong(matcher.group(1));
                 char unit = matcher.group(2).charAt(0);
@@ -100,6 +100,10 @@ public class ConfigManager {
         private double limboSpawnZ = 0;
         private float limboSpawnYaw = 0;
         private float limboSpawnPitch = 0;
+
+        // --- Security ---
+        private boolean limboOpSecurityCheck = true;
+        private java.util.List<String> limboTrustedAdmins = new java.util.ArrayList<>();
 
         // --- Database Connection ---
         private String databaseType = "sqlite"; // "sqlite" or "mysql"
@@ -170,6 +174,7 @@ public class ConfigManager {
             messages.put("revive-not-found", "§cPlayer §e%player% §cnot found.");
             messages.put("revive-already-alive", "§e%player% §cis already alive.");
             messages.put("admin-revive-success", "§aSuccessfully revived §e%player%§a.");
+            messages.put("revive-from-limbo", "§a%player% §7has been revived and will return from Limbo shortly.");
             messages.put("extra-life-dead", "§cYou cannot use an Extra Life while dead!");
             messages.put("extra-life-at-max", "§cYou are already at the maximum number of lives!");
             messages.put("extra-life-gained", "§aYou gained an extra life! You now have §e%lives% §alives.");
@@ -178,7 +183,7 @@ public class ConfigManager {
             messages.put("death-now-ghost", "§cYou have died! You are now a ghost.");
             messages.put("limbo-welcome-visitor", "§eWelcome to Limbo as a visitor!");
             messages.put("limbo-welcome-dead", "§cWelcome to Limbo. You are dead!");
-            messages.put("limbo-cannot-leave", "§cYou cannot leave Limbo while dead.");
+            messages.put("limbo-cannot-leave", "§cYou are trapped in Limbo. Only revival can free you.");
             messages.put("revival-structure-incomplete", "§cThe revival structure is incomplete!");
             messages.put("admin-setlives-success", "§aSet §e%player%§a's lives to §e%lives%§a.");
         }
@@ -199,6 +204,8 @@ public class ConfigManager {
         public double getLimboSpawnZ() { return limboSpawnZ; }
         public float getLimboSpawnYaw() { return limboSpawnYaw; }
         public float getLimboSpawnPitch() { return limboSpawnPitch; }
+        public boolean isLimboOpSecurityCheck() { return limboOpSecurityCheck; }
+        public java.util.List<String> getLimboTrustedAdmins() { return limboTrustedAdmins; }
         public String getDatabaseType() { return databaseType; }
         public String getDatabaseHost() { return databaseHost; }
         public int getDatabasePort() { return databasePort; }
@@ -219,7 +226,11 @@ public class ConfigManager {
         public boolean isLoseInventory() { return loseInventory; }
         public boolean isGhostModeParticles() { return ghostModeParticles; }
         public int getSpectatorHeadRestrictRadius() { return spectatorHeadRestrictRadius; }
-        @Deprecated
+        /**
+         * @deprecated Use {@link #getSpectatorHeadRestrictRadius()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public int getSpectatorHeadrestrictRadius() { return getSpectatorHeadRestrictRadius(); }
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
         public boolean isCreativePlayersDropHeads() { return creativePlayersDropHeads; }
@@ -236,15 +247,39 @@ public class ConfigManager {
         public java.util.List<String> getOreBlockTag() { return oreBlockTag; }
         public java.util.List<String> getFenceBlockTag() { return fenceBlockTag; }
         public java.util.List<String> getStairBlockTag() { return stairBlockTag; }
-        @Deprecated
+        /**
+         * @deprecated Use {@link #getSoulSandBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getSoulSandBlocktag() { return getSoulSandBlockTag(); }
-        @Deprecated
+
+        /**
+         * @deprecated Use {@link #getFlowerBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getFlowerBlocktag() { return getFlowerBlockTag(); }
-        @Deprecated
+
+        /**
+         * @deprecated Use {@link #getOreBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getOreBlocktag() { return getOreBlockTag(); }
-        @Deprecated
+
+        /**
+         * @deprecated Use {@link #getFenceBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getFenceBlocktag() { return getFenceBlockTag(); }
-        @Deprecated
+
+        /**
+         * @deprecated Use {@link #getStairBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public java.util.List<String> getStairBlocktag() { return getStairBlockTag(); }
         public boolean isDebug() { return debug; }
         public boolean isCheckForUpdates() { return checkForUpdates; }
@@ -307,6 +342,8 @@ public class ConfigManager {
         public void setLimboSpawnZ(double z) { limboSpawnZ = z; }
         public void setLimboSpawnYaw(float yaw) { limboSpawnYaw = yaw; }
         public void setLimboSpawnPitch(float pitch) { limboSpawnPitch = pitch; }
+        public void setLimboOpSecurityCheck(boolean check) { limboOpSecurityCheck = check; }
+        public void setLimboTrustedAdmins(java.util.Collection<String> admins) { limboTrustedAdmins = normalizeStringList(admins); }
         public void setDatabaseType(String type) { databaseType = type; }
         public void setDatabaseHost(String host) { databaseHost = host; }
         public void setDatabasePort(int port) { databasePort = port; }
@@ -327,7 +364,11 @@ public class ConfigManager {
         public void setLoseInventory(boolean lose) { loseInventory = lose; }
         public void setGhostModeParticles(boolean particles) { ghostModeParticles = particles; }
         public void setSpectatorHeadRestrictRadius(int radius) { spectatorHeadRestrictRadius = radius; }
-        @Deprecated
+        /**
+         * @deprecated Use {@link #setSpectatorHeadRestrictRadius(int)} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
         public void setSpectatorHeadrestrictRadius(int radius) { setSpectatorHeadRestrictRadius(radius); }
         public void setRestrictMenuAccess(boolean restrict) { restrictMenuAccess = restrict; }
         public void setCreativePlayersDropHeads(boolean drop) { creativePlayersDropHeads = drop; }
@@ -350,6 +391,16 @@ public class ConfigManager {
             for (String block : blocks) {
                 if (block != null && !block.isBlank()) {
                     normalized.add(block.trim().toUpperCase(java.util.Locale.ROOT));
+                }
+            }
+            return normalized;
+        }
+
+        private static java.util.List<String> normalizeStringList(java.util.Collection<String> items) {
+            java.util.List<String> normalized = new java.util.ArrayList<>();
+            for (String item : items) {
+                if (item != null && !item.isBlank()) {
+                    normalized.add(item.trim().toLowerCase(java.util.Locale.ROOT));
                 }
             }
             return normalized;
