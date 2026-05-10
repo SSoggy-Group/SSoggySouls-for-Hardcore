@@ -133,7 +133,12 @@ dependencies {
     // pipeline too early and cause a fastcsv NoSuchMethodError).
     bundled 'com.zaxxer:HikariCP:7.0.2'
     bundled 'org.xerial:sqlite-jdbc:3.53.1.0'
-    bundled 'com.mysql:mysql-connector-j:9.7.0'
+    bundled ('com.mysql:mysql-connector-j:9.7.0') {
+        // Exclude fastcsv: MySQL Connector/J 9.x pulls in fastcsv 2.x but
+        // ForgeGradle 6.x internally uses fastcsv 1.x API. Mixing them on
+        // the same classpath causes a NoSuchMethodError during SRG mapping.
+        exclude group: 'de.siegmar', module: 'fastcsv'
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
