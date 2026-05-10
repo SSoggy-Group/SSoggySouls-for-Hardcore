@@ -23,7 +23,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -83,7 +83,7 @@ public class RevivalStructureListener {
 
         if (!isRitualStructure(world, placedPos)) {
             if (checkIncompleteStructure(world, placedPos)) {
-                serverPlayer.sendSystemMessage(Component.literal(MessageUtil.getRawString("revival-structure-incomplete")).withStyle(net.minecraft.ChatFormatting.RED));
+                serverPlayer.sendSystemMessage(Component.literal(MessageUtil.getRawString("revival-structure-incomplete")).withStyle(net.minecraft.ChatFormatting.RED), false);
                 world.playSound(null, placedPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.4f, 2f);
             }
             return;
@@ -109,7 +109,7 @@ public class RevivalStructureListener {
             String ownerName = org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames.getOrDefault(ownerUuid, "Player");
 
             if (!isDead) {
-                serverPlayer.server.execute(() -> {
+                serverPlayer.getServer().execute(() -> {
                     sendError(serverPlayer, ownerName + " is not dead!");
                     world.playSound(null, placedPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.4f, 2f);
                     refundHead(serverPlayer, refundedItem);
@@ -119,7 +119,7 @@ public class RevivalStructureListener {
 
             boolean success = db.revivePlayer(ownerUuid, ConfigManager.getConfig().getOnReviveLives());
             if (!success) {
-                serverPlayer.server.execute(() -> {
+                serverPlayer.getServer().execute(() -> {
                     sendError(serverPlayer, "Failed to revive. Check console.");
                     refundHead(serverPlayer, refundedItem);
                 });
@@ -130,7 +130,7 @@ public class RevivalStructureListener {
             new DlcStats(ownerUuid).incrementStat(DlcStat.REVIVES, 1);
             SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getScoreboardName(), ownerName);
 
-            serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, ownerName));
+            serverPlayer.getServer().execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, ownerName));
         });
     }
 
@@ -149,12 +149,12 @@ public class RevivalStructureListener {
         ghostState.removeDeathHolder(revivedUuid);
         ghostState.setDirty();
 
-        summoner.sendSystemMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()));
-        summoner.sendSystemMessage(MessageUtil.get("revive-from-limbo", "player", revivedName));
+        summoner.sendSystemMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()), false);
+        summoner.sendSystemMessage(MessageUtil.get("revive-from-limbo", "player", revivedName), false);
 
         world.players().forEach(p -> {
-            if (!p.getUUID().equals(summoner.getUUID())) {
-                p.sendSystemMessage(Component.literal("§e" + summoner.getScoreboardName() + " revived " + revivedName + "!"));
+            if (!p.getUUID().equals(summoner.getUUID()) && p instanceof ServerPlayer sp) {
+                sp.sendSystemMessage(Component.literal("§e" + summoner.getScoreboardName() + " revived " + revivedName + "!"), false);
             }
         });
 
@@ -177,10 +177,10 @@ public class RevivalStructureListener {
     }
 
     public static void restoreAtStructure(ServerPlayer revived, ServerLevel world, BlockPos spawnPos) {
-        revived.teleportTo(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 0, 0);
+        revived.teleportTo(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, java.util.Set.of(), 0, 0, true);
         revived.setGameMode(GameType.SURVIVAL);
         ServerLifecycleListener.setGhostModeAttributes(revived, false);
-        revived.sendSystemMessage(MessageUtil.get("revive-success"));
+        revived.sendSystemMessage(MessageUtil.get("revive-success"), false);
 
         revived.removeAllEffects();
         int resistanceTicks = ConfigManager.getConfig().getReviveResistanceTicks();
@@ -255,7 +255,7 @@ public class RevivalStructureListener {
     }
 
     private static void sendError(ServerPlayer player, String msg) {
-        player.sendSystemMessage(Component.literal("§c" + msg));
+        player.sendSystemMessage(Component.literal("§c" + msg), false);
     }
 
     private static boolean isRitualStructure(Level world, BlockPos headPos) {

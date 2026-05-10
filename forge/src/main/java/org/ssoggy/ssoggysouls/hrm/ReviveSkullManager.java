@@ -15,7 +15,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
@@ -50,9 +50,9 @@ public class ReviveSkullManager {
         CompletableFuture.runAsync(() -> {
             List<PlayerData> deadPlayers = db.getDeadPlayers();
 
-            serverPlayer.server.execute(() -> {
+            serverPlayer.getServer().execute(() -> {
                 if (deadPlayers.isEmpty()) {
-                    serverPlayer.sendSystemMessage(Component.literal("No dead players found.").withStyle(net.minecraft.ChatFormatting.GRAY));
+                    serverPlayer.sendSystemMessage(Component.literal("No dead players found.").withStyle(net.minecraft.ChatFormatting.GRAY), false);
                     return;
                 }
                 openMenu(serverPlayer, deadPlayers);
@@ -115,7 +115,7 @@ public class ReviveSkullManager {
                 if (!clickingPlayer.getInventory().add(realHead)) {
                     clickingPlayer.drop(realHead, false);
                 }
-                clickingPlayer.sendSystemMessage(Component.literal("Received " + name + "'s head.").withStyle(net.minecraft.ChatFormatting.GREEN));
+                clickingPlayer.sendSystemMessage(Component.literal("Received " + name + "'s head.").withStyle(net.minecraft.ChatFormatting.GREEN), false);
 
                 if (clickingPlayer instanceof ServerPlayer spe) {
                     spe.getServer().execute(spe::closeContainer);

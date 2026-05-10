@@ -7,12 +7,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.tick.ServerTickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -46,7 +46,7 @@ public class GhostModeEvents {
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(uuid);
             boolean isDead = data != null && data.isDead();
-            player.server.execute(() -> {
+            player.getServer().execute(() -> {
                 if (isDead) GHOST_CACHE.add(uuid);
                 else GHOST_CACHE.remove(uuid);
             });
@@ -103,10 +103,8 @@ public class GhostModeEvents {
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
+    public static void onServerTick(ServerTickEvent.Post event) {
         if (!ConfigManager.getConfig().isHrmEnabled()) return;
-
-        if (event.phase != TickEvent.Phase.END) return;
 
         for (UUID uuid : GHOST_CACHE) {
             ServerPlayer player = event.getServer().getPlayerList().getPlayer(uuid);
@@ -118,7 +116,7 @@ public class GhostModeEvents {
 
     private static void enforceGhostRestrictions(ServerPlayer player) {
         UUID uuid = player.getUUID();
-        GhostState state = GhostState.getServerState(player.server);
+        GhostState state = GhostState.getServerState(player.getServer());
 
         if (state.getDeathHolder(uuid) != null) {
             return;
@@ -140,19 +138,19 @@ public class GhostModeEvents {
 
     private static void applyTeleportFeedback(ServerPlayer player, BlockPos deathPos) {
         // Port of Paper's onPlayerMove teleport feedback (sound + particles).
-        player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
+        player.teleportTo((net.minecraft.server.level.ServerLevel) player.level(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), true);
         
         // Scope sound and particles to the ghost only to prevent location leaking
         player.playNotifySound(SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
         
         if (ConfigManager.getConfig().isGhostModeParticles()) {
-            player.serverLevel().sendParticles(player, ParticleTypes.DRAGON_BREATH, true,
+            ((net.minecraft.server.level.ServerLevel) player.level()).sendParticles(player, ParticleTypes.DRAGON_BREATH, true,
                     deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5,
                     50, 0.0, 1.0, 0.0, 0.2);
         }
         
         player.sendSystemMessage(Component.literal(GhostRestrictionLogic.RESTRICTION_MESSAGE)
-                .withStyle(net.minecraft.ChatFormatting.GRAY));
+                .withStyle(net.minecraft.ChatFormatting.GRAY), false);
     }
 
     public static void updateGhostStatus(UUID uuid, boolean isDead) {

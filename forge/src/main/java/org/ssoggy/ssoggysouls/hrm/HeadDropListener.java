@@ -43,13 +43,13 @@ public class HeadDropListener {
             world.setBlock(headPos, Blocks.PLAYER_HEAD.defaultBlockState(), 3);
             BlockEntity be = world.getBlockEntity(headPos);
             if (be instanceof SkullBlockEntity skull) {
-                skull.setOwner(new ResolvableProfile(player.getGameProfile()));
+                skull.setOwner(new ResolvableProfile(java.util.Optional.of(player.getGameProfile().getName()), java.util.Optional.of(player.getGameProfile().getId()), player.getGameProfile().getProperties()));
                 skull.setChanged();
             }
             SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getScoreboardName(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
             ItemStack head = new ItemStack(Items.PLAYER_HEAD);
-            head.set(DataComponents.PROFILE, new ResolvableProfile(player.getGameProfile()));
+            head.set(DataComponents.PROFILE, new ResolvableProfile(java.util.Optional.of(player.getGameProfile().getName()), java.util.Optional.of(player.getGameProfile().getId()), player.getGameProfile().getProperties()));
             head.set(DataComponents.CUSTOM_NAME,
                     Component.literal(player.getScoreboardName() + "'s Head")
                     .withStyle(net.minecraft.ChatFormatting.YELLOW));

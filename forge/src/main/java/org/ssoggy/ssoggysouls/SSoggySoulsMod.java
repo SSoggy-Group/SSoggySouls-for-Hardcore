@@ -4,10 +4,9 @@ import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
@@ -37,11 +36,9 @@ public class SSoggySoulsMod implements PluginContext {
     public static final Logger LOGGER = LogUtils.getLogger();
     private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MODID);
 
-    public SSoggySoulsMod(FMLJavaModLoadingContext context) {
-        IEventBus modEventBus = context.getModEventBus();
-
+    public SSoggySoulsMod(IEventBus modEventBus) {
         // Register the commonSetup method for modloading
-        modEventBus.addListener((FMLCommonSetupEvent event) -> commonSetup());
+        modEventBus.addListener(this::commonSetup);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -103,8 +100,8 @@ public class SSoggySoulsMod implements PluginContext {
         }
     }
 
-    private void commonSetup() {
-        ServerTransferUtil.register();
+    private void commonSetup(final FMLCommonSetupEvent event) {
+        event.enqueueWork(ServerTransferUtil::register);
     }
 
     @SubscribeEvent

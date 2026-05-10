@@ -10,7 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -111,7 +111,7 @@ public class CommandRegistration {
 
     private static void registerReviveCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("revive")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.hasPermissions(2))
             .then(Commands.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                         context.getSource().getServer().getPlayerList().getPlayers().stream().map(p -> p.getScoreboardName()), builder))
@@ -167,7 +167,7 @@ public class CommandRegistration {
             if (targetPlayer != null) {
                 targetPlayer.setGameMode(GameType.SURVIVAL);
                 ServerLifecycleListener.setGhostModeAttributes(targetPlayer, false);
-                targetPlayer.sendSystemMessage(MessageUtil.get("revive-success"));
+                targetPlayer.sendSystemMessage(MessageUtil.get("revive-success"), false);
             }
         });
     }

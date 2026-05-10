@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -101,8 +101,8 @@ public class GhostBlockEvents {
                         if (ghost != null) {
                             ghost.setGameMode(GameType.SPECTATOR);
                             ghost.setCamera(player);
-                            ghost.sendSystemMessage(Component.literal("Started spectating " + player.getScoreboardName()).withStyle(net.minecraft.ChatFormatting.GRAY));
-                            ghost.sendSystemMessage(Component.literal(player.getScoreboardName() + " is currently carrying your playerhead...").withStyle(net.minecraft.ChatFormatting.YELLOW));
+                            ghost.sendSystemMessage(Component.literal("Started spectating " + player.getScoreboardName()).withStyle(net.minecraft.ChatFormatting.GRAY), false);
+                            ghost.sendSystemMessage(Component.literal(player.getScoreboardName() + " is currently carrying your playerhead...").withStyle(net.minecraft.ChatFormatting.YELLOW), false);
                         }
                     });
                 }
@@ -167,8 +167,8 @@ public class GhostBlockEvents {
                         ghost.setGameMode(GameType.ADVENTURE);
                         ServerLifecycleListener.setGhostModeAttributes(ghost, true);
 
-                        ghost.teleportTo(ghost.serverLevel(), targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, ghost.getYRot(), ghost.getXRot());
-                        ghost.sendSystemMessage(Component.literal("Your head has been placed down.").withStyle(net.minecraft.ChatFormatting.GRAY));
+                        ghost.teleportTo((net.minecraft.server.level.ServerLevel) ghost.level(), targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, java.util.Set.of(), ghost.getYRot(), ghost.getXRot(), true);
+                        ghost.sendSystemMessage(Component.literal("Your head has been placed down.").withStyle(net.minecraft.ChatFormatting.GRAY), false);
                     }
                 });
             }

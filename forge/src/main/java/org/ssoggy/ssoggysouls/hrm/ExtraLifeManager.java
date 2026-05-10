@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -80,8 +80,8 @@ public class ExtraLifeManager {
     }
 
     private static void handleFailedUse(ServerPlayer serverPlayer, String messageKey) {
-        serverPlayer.server.execute(() -> {
-            serverPlayer.sendSystemMessage(MessageUtil.get(messageKey));
+        serverPlayer.getServer().execute(() -> {
+            serverPlayer.sendSystemMessage(MessageUtil.get(messageKey), false);
             if (!serverPlayer.isCreative()) {
                 ItemStack refundedItem = createExtraLifeItem();
                 if (!serverPlayer.getInventory().add(refundedItem)) {
@@ -97,8 +97,8 @@ public class ExtraLifeManager {
 
         SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getScoreboardName(), newLives);
 
-        serverPlayer.server.execute(() -> {
-            serverPlayer.sendSystemMessage(MessageUtil.get("extra-life-gained", "lives", newLives));
+        serverPlayer.getServer().execute(() -> {
+            serverPlayer.sendSystemMessage(MessageUtil.get("extra-life-gained", "lives", newLives), false);
             serverPlayer.level().playSound(null, serverPlayer.blockPosition(), SoundEvents.PLAYER_LEVELUP,
                     SoundSource.PLAYERS, 1.0f, 1.2f);
             serverPlayer.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60, 0, false, true));
