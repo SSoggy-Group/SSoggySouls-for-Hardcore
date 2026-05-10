@@ -369,7 +369,7 @@ ______________________________________________________________________
 
 #### - Update Both Servers to Same Version
 
-1. Download the latest SSoggySouls JAR
+1. Download the latest SSoggySouls JAR (currently `SSoggySouls-4.5.0.jar`)
 1. Stop both servers
 1. Replace the JAR on **both** servers
 
