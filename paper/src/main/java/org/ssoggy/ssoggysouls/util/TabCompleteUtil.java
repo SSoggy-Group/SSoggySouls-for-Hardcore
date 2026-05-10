@@ -18,11 +18,20 @@ public final class TabCompleteUtil {
      * @return list of matching player names
      */
     public static List<String> getOnlinePlayerNames(String prefix) {
+        if (prefix.isEmpty()) {
+            List<String> names = new ArrayList<>(Bukkit.getOnlinePlayers().size());
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                names.add(player.getName());
+            }
+            return names;
+        }
+
         List<String> names = new ArrayList<>();
         String lower = prefix.toLowerCase();
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getName().toLowerCase().startsWith(lower)) {
-                names.add(player.getName());
+            String name = player.getName();
+            if (name.length() >= lower.length() && name.regionMatches(true, 0, lower, 0, lower.length())) {
+                names.add(name);
             }
         }
         return names;
@@ -36,10 +45,12 @@ public final class TabCompleteUtil {
      * @return list of matching options
      */
     public static List<String> filterStartsWith(List<String> options, String prefix) {
+        if (prefix.isEmpty()) return new ArrayList<>(options);
+
         List<String> result = new ArrayList<>();
         String lower = prefix.toLowerCase();
         for (String option : options) {
-            if (option.toLowerCase().startsWith(lower)) {
+            if (option.length() >= lower.length() && option.regionMatches(true, 0, lower, 0, lower.length())) {
                 result.add(option);
             }
         }
