@@ -34,7 +34,7 @@ public class ConfigManager {
             save();
             org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("""
 
-
+                    
 
                     ===============================================================
 
@@ -52,7 +52,7 @@ public class ConfigManager {
 
                      'databaseType' to 'mysql', then fill in your DB details.
 
-
+                     
 
                      If you are using a single server, you can ignore this message.
 

@@ -32,16 +32,16 @@ public class ConfigManager {
             config = new ModConfig();
             save();
             org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("""
-
+                    
                     ===============================================================
                                            SSOGGY SOULS
                     ===============================================================
                      The mod is using SQLite (single-server mode) by default.
-
+                     
                      If you are setting up a Dual-Server Network (Main + Limbo),
                      you MUST stop the server, open ssoggysouls.json, and change the
                      'databaseType' to 'mysql', then fill in your DB details.
-
+                     
                      If you are using a single server, you can ignore this message.
                     ===============================================================
                     """);
