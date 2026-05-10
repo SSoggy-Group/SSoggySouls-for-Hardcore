@@ -18,20 +18,11 @@ public final class TabCompleteUtil {
      * @return list of matching player names
      */
     public static List<String> getOnlinePlayerNames(String prefix) {
-        if (prefix.isEmpty()) {
-            List<String> names = new ArrayList<>(Bukkit.getOnlinePlayers().size());
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                names.add(player.getName());
-            }
-            return names;
-        }
-
         List<String> names = new ArrayList<>();
-        String lower = prefix.toLowerCase();
+        String lower = prefix.toLowerCase(java.util.Locale.ROOT);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            String name = player.getName();
-            if (name.length() >= lower.length() && name.regionMatches(true, 0, lower, 0, lower.length())) {
-                names.add(name);
+            if (player.getName().toLowerCase(java.util.Locale.ROOT).startsWith(lower)) {
+                names.add(player.getName());
             }
         }
         return names;
@@ -45,12 +36,10 @@ public final class TabCompleteUtil {
      * @return list of matching options
      */
     public static List<String> filterStartsWith(List<String> options, String prefix) {
-        if (prefix.isEmpty()) return new ArrayList<>(options);
-
         List<String> result = new ArrayList<>();
-        String lower = prefix.toLowerCase();
+        String lower = prefix.toLowerCase(java.util.Locale.ROOT);
         for (String option : options) {
-            if (option.length() >= lower.length() && option.regionMatches(true, 0, lower, 0, lower.length())) {
+            if (option.toLowerCase(java.util.Locale.ROOT).startsWith(lower)) {
                 result.add(option);
             }
         }

@@ -32,6 +32,7 @@ public class GhostState extends PersistentState {
         return nbt;
     }
 
+
     public static GhostState fromNbt(NbtCompound nbt) {
         GhostState state = new GhostState();
 
@@ -57,7 +58,7 @@ public class GhostState extends PersistentState {
 
         Type<GhostState> type = new Type<>(
                 GhostState::new,
-                GhostState::fromNbt,
+                (nbt, registries) -> GhostState.fromNbt(nbt),
                 null
         );
 

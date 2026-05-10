@@ -102,35 +102,22 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!hasCommandAccess(sender)) {
-            return true;
-        }
-
-        handleRootCommand(sender, args);
-        return true;
-    }
-
-    private boolean hasCommandAccess(CommandSender sender) {
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
-            return false;
+            return true;
         }
 
         // Security check: Prevent Limbo-only OP from using this command
         if (PermissionUtil.isBlockedByLimboOpSecurity(sender, plugin)) {
             PermissionUtil.sendSecurityBlockMessage(sender);
-            return false;
+            return true;
         }
 
-        return true;
-    }
-
-    private void handleRootCommand(CommandSender sender, String[] args) {
         if (args.length == 0) {
             sendHelp(sender);
-            return;
+        } else {
+            dispatch(sender, args);
         }
-
-        dispatch(sender, args);
+        return true;
     }
 
     private void dispatch(CommandSender sender, String[] args) {
@@ -650,18 +637,34 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private static void sendHelp(CommandSender sender) {
         sender.sendMessage(MessageUtil.colorize("&6&l══ SSoggySouls Admin ══"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin lives set <player> <n>  &7- Set lives"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin lives give <player> <n> &7- Add lives"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin lives take <player> <n> &7- Remove lives"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin grace set <player> <time> &7- Grant grace (e.g., 1h30m, 2h, 90m)"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin grace remove <player>   &7- Remove grace"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin confirm <overwrite|stack|cancel> &7- Confirm grace operation"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin kill <player>           &7- Force-kill"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin revive <player> [lives] &7- Revive"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin reset <player>          &7- Reset to defaults"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin info <player>           &7- Detailed info"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin reload                  &7- Reload config"));
+        sendInteractiveHelp(sender, "/psadmin lives set <player> <n>", "Set lives", 2);
+        sendInteractiveHelp(sender, "/psadmin lives give <player> <n>", "Add lives", 1);
+        sendInteractiveHelp(sender, "/psadmin lives take <player> <n>", "Remove lives", 1);
+        sendInteractiveHelp(sender, "/psadmin grace set <player> <time>", "Grant grace (e.g., 1h30m, 2h, 90m)", 0);
+        sendInteractiveHelp(sender, "/psadmin grace remove <player>", "Remove grace", 3);
+        sendInteractiveHelp(sender, "/psadmin confirm <overwrite|stack|cancel>", "Confirm grace operation", 0);
+        sendInteractiveHelp(sender, "/psadmin kill <player>", "Force-kill", 11);
+        sendInteractiveHelp(sender, "/psadmin revive <player> [lives]", "Revive", 1);
+        sendInteractiveHelp(sender, "/psadmin reset <player>", "Reset to defaults", 10);
+        sendInteractiveHelp(sender, "/psadmin info <player>", "Detailed info", 11);
+        sendInteractiveHelp(sender, "/psadmin reload", "Reload config", 18);
         sender.sendMessage(MessageUtil.colorize("&6&l═══════════════════════"));
+    }
+
+    private static void sendInteractiveHelp(CommandSender sender, String command, String description, int paddingSpaces) {
+        if (sender instanceof Player player) {
+            String suggestCmd = command.split(" <")[0].split(" \\[")[0]; // extract base command safely
+            String padding = " ".repeat(Math.max(0, paddingSpaces));
+
+            net.kyori.adventure.text.Component message = net.kyori.adventure.text.Component.text(command + padding, net.kyori.adventure.text.format.NamedTextColor.YELLOW)
+                    .append(net.kyori.adventure.text.Component.text(" - " + description, net.kyori.adventure.text.format.NamedTextColor.GRAY))
+                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand(suggestCmd + " "))
+                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to prepare this command", net.kyori.adventure.text.format.NamedTextColor.GRAY)));
+            player.sendMessage(message);
+        } else {
+            String padding = " ".repeat(Math.max(0, paddingSpaces));
+            sender.sendMessage(MessageUtil.colorize("&e" + command + padding + " &7- " + description));
+        }
     }
 
     private static int parseIntOrError(CommandSender sender, String text) {
