@@ -25,14 +25,10 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "me.lucko:fabric-permissions-api:0.3.1"
 
-    // HikariCP for database connection pooling (nested into mod JAR via JiJ)
-    include implementation("com.zaxxer:HikariCP:7.0.2")
-
-    // MySQL Connector (nested into mod JAR via JiJ)
-    include implementation("com.mysql:mysql-connector-j:9.7.0")
-
-    // SQLite JDBC (nested into mod JAR via JiJ)
-    include implementation("org.xerial:sqlite-jdbc:3.53.1.0")
+    // Database dependencies — classes merged directly to bypass Loom semver issues.
+    implementation("com.zaxxer:HikariCP:7.0.2")
+    implementation("com.mysql:mysql-connector-j:9.7.0")
+    implementation("org.xerial:sqlite-jdbc:3.53.1.0")
 
     // Mod Menu API (compile only, provided by Mod Menu mod at runtime)
     modCompileOnlyApi "com.terraformersmc:modmenu:11.0.4"
@@ -59,8 +55,16 @@ processResources {
 }
 
 jar {
-    // Merge common module classes directly into the Fabric JAR.
+    // Merge common module and database driver classes directly into the Fabric JAR.
     from(project(':common').sourceSets.main.output)
+    
+    // Include database dependencies in the fat jar
+    from {
+        configurations.runtimeClasspath
+            .filter { it.name.contains("HikariCP") || it.name.contains("mysql-connector-j") || it.name.contains("sqlite-jdbc") }
+            .map { it.isDirectory() ? it : zipTree(it) }
+    }
+
     from("../LICENSE") {
         rename { "${it}_${project.base.archivesName.get()}" }
     }
