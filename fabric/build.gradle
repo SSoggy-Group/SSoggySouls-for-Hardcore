@@ -12,6 +12,7 @@ base {
 dependencies {
     // Inject the common module
     implementation project(':common')
+    include project(':common')
 
     // Minecraft + Fabric
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
