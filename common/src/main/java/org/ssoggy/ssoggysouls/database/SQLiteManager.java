@@ -69,7 +69,7 @@ public class SQLiteManager extends AbstractDatabaseManager {
 
             plugin.getLogger().log(Level.INFO, "SQLite connection established (database.db)");
 
-        } catch (SQLException e) {
+        } catch (SQLException | IllegalArgumentException e) {
             plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed!", e);
             throw new DatabaseInitializationException("SQLite initialization failed", e);
         }
