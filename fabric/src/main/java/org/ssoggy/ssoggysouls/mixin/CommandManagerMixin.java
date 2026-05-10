@@ -1,5 +1,6 @@
 package org.ssoggy.ssoggysouls.mixin;
 
+import com.mojang.brigadier.ParseResults;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -11,8 +12,9 @@ import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 
 @Mixin(CommandManager.class)
 public class CommandManagerMixin {
-    @Inject(method = "executeWithPrefix", at = @At("HEAD"), cancellable = true)
-    private void onExecuteWithPrefix(ServerCommandSource source, String command, CallbackInfoReturnable<Integer> cir) {
+    @Inject(method = "execute", at = @At("HEAD"), cancellable = true)
+    private void onExecute(ParseResults<ServerCommandSource> parseResults, String command, CallbackInfoReturnable<Integer> cir) {
+        ServerCommandSource source = parseResults.getContext().getSource();
         if (source.getEntity() instanceof ServerPlayerEntity player && LimboServerListener.shouldBlockCommand(player, command)) {
             cir.setReturnValue(0);
         }
