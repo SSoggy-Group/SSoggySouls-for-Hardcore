@@ -40,7 +40,7 @@ on:
       fabric_type:
         description: "Fabric release channel"
         required: false
-        default: "alpha"
+        default: "release"
         type: choice
         options:
           - release
@@ -49,7 +49,7 @@ on:
       forge_type:
         description: "Forge release channel"
         required: false
-        default: "alpha"
+        default: "release"
         type: choice
         options:
           - release
@@ -68,7 +68,7 @@ on:
       neoforge_type:
         description: "NeoForge release channel"
         required: false
-        default: "alpha"
+        default: "release"
         type: choice
         options:
           - release
@@ -425,7 +425,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           name: "SSoggySouls v${{ needs.prepare-release.outputs.new_version }} (Fabric/Quilt)"
           version: "${{ needs.prepare-release.outputs.new_version }}+fabric"
-          version-type: ${{ github.event.inputs.fabric_type || 'alpha' }}
+          version-type: ${{ github.event.inputs.fabric_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: |
             fabric
@@ -484,7 +484,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           name: "SSoggySouls v${{ needs.prepare-release.outputs.new_version }} (Forge)"
           version: "${{ needs.prepare-release.outputs.new_version }}+forge"
-          version-type: ${{ github.event.inputs.forge_type || 'alpha' }}
+          version-type: ${{ github.event.inputs.forge_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: forge
           game-versions: |
@@ -541,7 +541,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           name: "SSoggySouls v${{ needs.prepare-release.outputs.new_version }} (NeoForge)"
           version: "${{ needs.prepare-release.outputs.new_version }}+neoforge"
-          version-type: ${{ github.event.inputs.neoforge_type || 'alpha' }}
+          version-type: ${{ github.event.inputs.neoforge_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: neoforge
           game-versions: |
