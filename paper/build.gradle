@@ -6,10 +6,8 @@ group = 'org.ssoggy'
 version = '4.5.5'
 
 // Dedicated configuration for libs to bundle into the fat JAR.
-// Extends 'implementation' so classes are available at compile/runtime too.
 configurations {
     bundled
-    implementation.extendsFrom bundled
 }
 
 dependencies {
