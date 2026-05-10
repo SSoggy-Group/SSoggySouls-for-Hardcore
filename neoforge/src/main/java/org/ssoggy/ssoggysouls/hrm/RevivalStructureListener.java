@@ -13,7 +13,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityStatuses;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.item.ItemStack;
@@ -45,6 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RevivalStructureListener {
 
     private static final Map<UUID, GlobalPos> PENDING_REVIVALS = new ConcurrentHashMap<>();
+    private static final byte TOTEM_OF_UNDYING_EVENT = 35;
     private static DatabaseManager db;
 
     private RevivalStructureListener() {
@@ -194,7 +194,7 @@ public class RevivalStructureListener {
 
         if (ConfigManager.getConfig().isRitualTotemEffect()) {
             revived.level().playSound(null, revived.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1.0f, 1.0f);
-            world.broadcastEntityEvent(revived, EntityStatuses.USE_TOTEM_OF_UNDYING);
+            world.broadcastEntityEvent(revived, TOTEM_OF_UNDYING_EVENT);
         }
     }
 
