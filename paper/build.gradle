@@ -20,7 +20,7 @@ dependencies {
     // Database dependencies — in 'bundled' so they can be merged into
     // the fat JAR without resolving runtimeClasspath during configuration.
     bundled 'com.zaxxer:HikariCP:7.0.2'
-    bundled 'com.mysql:mysql-connector-j:9.7.0'
+    bundled 'com.mysql:mysql-connector-j:8.0.33'
     bundled 'org.xerial:sqlite-jdbc:3.53.1.0'
 
     // Testing
