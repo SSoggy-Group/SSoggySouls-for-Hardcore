@@ -65,6 +65,15 @@ on:
         required: false
         default: true
         type: boolean
+      neoforge_type:
+        description: "NeoForge release channel"
+        required: false
+        default: "alpha"
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
 
 # Prevents multiple releases from running at once and hitting "push rejected" errors
 concurrency:
@@ -184,15 +193,15 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          # NeoForge is built by Gradle, but intentionally not shipped yet.
-          # Add it to artifacts/publish steps only after parity testing is complete.
           RAW_PAPER="$(ls paper/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
           RAW_FABRIC="$(ls fabric/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
           RAW_FORGE="$(ls forge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
+          RAW_NEOFORGE="$(ls neoforge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
 
           mv "$RAW_PAPER" "SSoggySouls-Paper-${NEW_VERSION}.jar"
           mv "$RAW_FABRIC" "SSoggySouls-Fabric-${NEW_VERSION}.jar"
           mv "$RAW_FORGE" "SSoggySouls-Forge-${NEW_VERSION}.jar"
+          mv "$RAW_NEOFORGE" "SSoggySouls-NeoForge-${NEW_VERSION}.jar"
 
       - name: Upload Release Jars
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -204,6 +213,7 @@ jobs:
             SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
             SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
             SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+            SSoggySouls-NeoForge-${{ needs.prepare-release.outputs.new_version }}.jar
 
   commit-version:
     name: Commit Version
@@ -312,6 +322,7 @@ jobs:
             release-jars/SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
             release-jars/SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
             release-jars/SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+            release-jars/SSoggySouls-NeoForge-${{ needs.prepare-release.outputs.new_version }}.jar
 
   publish-paper:
     name: Publish Paper
@@ -444,3 +455,45 @@ jobs:
             1.21.10
             1.21.11
           files: release-jars/SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+
+  publish-neoforge:
+    name: Publish NeoForge
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs:
+      - prepare-release
+      - commit-version
+      - github-release
+    if: needs.commit-version.outputs.tag_created == 'true'
+
+    steps:
+      - name: Download Release Jars
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-jars
+          path: release-jars
+
+      - name: Publish NeoForge to Modrinth
+        uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
+        with:
+          modrinth-id: Pb03qu6T
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          name: "SSoggySouls v${{ needs.prepare-release.outputs.new_version }} (NeoForge)"
+          version: "${{ needs.prepare-release.outputs.new_version }}+neoforge"
+          version-type: ${{ github.event.inputs.neoforge_type || 'alpha' }}
+          changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
+          loaders: neoforge
+          game-versions: |
+            1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
+          files: release-jars/SSoggySouls-NeoForge-${{ needs.prepare-release.outputs.new_version }}.jar

@@ -4,4 +4,5 @@ paths:
   - common/src/main/java
   - fabric/src/main/java
   - forge/src/main/java
+  - neoforge/src/main/java
   - paper/src/main/java
