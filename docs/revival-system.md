@@ -110,7 +110,7 @@ Visual (from top, numbers 1-9):
 ```text
 
 1 2 3
-4.5.7
+4 5 6
 7 8 9
 
 ```
@@ -138,7 +138,7 @@ Soul Sand    Stair       Soul Sand
 1. Look up at the fence in the center of layer 2
 1. Place the head on top of the fence
 
-### Automatic Revision
+### Automatic Revival
 
 Once the head is placed on the fence, the plugin **automatically detects** the completed structure and:
 
@@ -249,15 +249,15 @@ Click on any player to get their head.
 
 ### Features
 
-- - Can be used multiple times (doesn't break)
+- Can be used multiple times (doesn't break)
 
-- - Opens a clean GUI
+- Opens a clean GUI
 
-- - No confusing items lying around
+- No confusing items lying around
 
-- - Can only be used by living players
+- Can only be used by living players
 
-- - Shows all currently dead players
+- Shows all currently dead players
 
 ### Configuration
 
@@ -306,13 +306,13 @@ A craftable item that grants players +1 life when used.
 
 ### Features
 
-- - Works for any player (not just newly revived)
+- Works for any player (not just newly revived)
 
-- - Respects maximum lives cap (can't exceed max-lives setting)
+- Respects maximum lives cap (can't exceed max-lives setting)
 
-- - Cannot be used while dead
+- Cannot be used while dead
 
-- - Shows clear success/failure message
+- Shows clear success/failure message
 
 ### Customizing the Recipe
 
@@ -429,7 +429,7 @@ Admin command for reviving. Same result as `/revive` but requires admin permissi
 
 - Works even if player is offline
 
-- - Works from console
+- Works from console
 
 ### Example Usage
 
