@@ -62,7 +62,7 @@ jar {
     from {
         configurations.runtimeClasspath
             .filter { it.name.contains("HikariCP") || it.name.contains("mysql-connector-j") || it.name.contains("sqlite-jdbc") }
-            .map { it.isDirectory() ? it : zipTree(it) }
+            .collect { it.isDirectory() ? it : zipTree(it) }
     }
 
     from("../LICENSE") {
