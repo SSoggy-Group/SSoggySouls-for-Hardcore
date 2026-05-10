@@ -112,33 +112,29 @@ repositories {
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 }
 
-// Dedicated configuration for libs to bundle into the fat JAR.
-// Extends 'implementation' so classes are available at compile/runtime too.
+// 'bundled' is intentionally NOT extended into 'implementation'.
+// The Forge module's own source only uses classes from :common and the
+// Forge API — it does NOT directly import HikariCP, MySQL, or SQLite.
+// Keeping DB deps out of compileClasspath prevents mysql-connector-j's
+// transitive fastcsv 3.x dep from leaking onto the classpath that
+// ForgeGradle uses to generate the SRG-mapped Minecraft JAR, which
+// would cause: NoSuchMethodError in CsvReaderBuilder.errorOnDifferentFieldCount()
 configurations {
     bundled
-    implementation.extendsFrom bundled
 }
 
-
 dependencies {
-    // Inject the common module
+    // Inject the common module (provides all DB manager classes)
     implementation project(':common')
 
-    // Specify the version of Minecraft to use.
+    // Forge Minecraft dependency
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // Database dependencies — declared in 'bundled' so they can be
-    // merged into the fat JAR without touching runtimeClasspath during
-    // task configuration (which would trigger ForgeGradle's mapping
-    // pipeline too early and cause a fastcsv NoSuchMethodError).
+    // Database dependencies — ONLY in 'bundled', resolved during :jar,
+    // never during compileClasspath resolution.
     bundled 'com.zaxxer:HikariCP:7.0.2'
     bundled 'org.xerial:sqlite-jdbc:3.53.1.0'
-    bundled ('com.mysql:mysql-connector-j:9.7.0') {
-        // Exclude fastcsv: MySQL Connector/J 9.x pulls in fastcsv 2.x but
-        // ForgeGradle 6.x internally uses fastcsv 1.x API. Mixing them on
-        // the same classpath causes a NoSuchMethodError during SRG mapping.
-        exclude group: 'de.siegmar', module: 'fastcsv'
-    }
+    bundled 'com.mysql:mysql-connector-j:9.7.0'
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
