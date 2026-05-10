@@ -7,6 +7,7 @@
 ## 2026-05-07 - [Optimized LimboCheckTask Player Iteration]
 **Learning:** Iterating over `Bukkit.getOnlinePlayers()` and doing a set `.contains(uuid)` lookup inside periodic tasks scales linearly O(N) with the number of online players. When tracking a specific subset of players (like `deadPlayers`), it's significantly faster to iterate the smaller subset O(M) and use `Bukkit.getPlayer(uuid)` for O(1) online verification.
 **Action:** Iterate over tracking sets directly and verify online presence with `Bukkit.getPlayer(uuid)` instead of iterating all online players, drastically reducing time complexity in tasks.
-## 2026-05-08 - [Optimized GhostModeEvents Player Iteration]
-**Learning:** Iterating over `server.getPlayerManager().getPlayerList()` and doing a set `.contains(uuid)` lookup inside frequent ServerTickEvents scales linearly O(N) with the number of online players. When tracking a specific subset of players (like ghosts in `GHOST_CACHE`), it's significantly faster to iterate the smaller subset O(M) and use `server.getPlayerManager().getPlayer(uuid)` for O(1) online verification.
-**Action:** Iterate over tracking sets directly and verify online presence instead of iterating all online players, drastically reducing time complexity in server tick tasks.
+
+## 2024-05-08 - [Optimized String Allocation in TabCompleteUtil]
+**Learning:** Using `String.toLowerCase().startsWith()` inside loops (like player iteration or command completion) allocates a new string on the heap for every single check. For large collections, this causes severe GC pressure. `String.regionMatches(true, ...)` performs case-insensitive comparisons without allocating any new objects.
+**Action:** Replaced `.toLowerCase().startsWith()` with `.regionMatches(true, 0, prefix, 0, prefix.length())` in `TabCompleteUtil` to perform zero-allocation string prefix matching. This dramatically reduces memory footprint during tab-completion typing.
