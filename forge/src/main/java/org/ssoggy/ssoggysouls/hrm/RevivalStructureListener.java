@@ -194,7 +194,7 @@ public class RevivalStructureListener {
 
         if (ConfigManager.getConfig().isRitualTotemEffect()) {
             revived.level().playSound(null, revived.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1.0f, 1.0f);
-            world.broadcastEntityEvent(revived, (byte) 35);
+            world.broadcastEntityEvent(revived, EntityEvent.TOTEM_OF_UNDYING);
         }
     }
 
