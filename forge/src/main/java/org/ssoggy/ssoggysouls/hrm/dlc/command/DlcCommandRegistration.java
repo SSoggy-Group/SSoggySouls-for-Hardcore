@@ -216,7 +216,7 @@ public final class DlcCommandRegistration {
 
     private static void registerGhostModeCommand(CommandDispatcher<CommandSourceStack> dispatcher, DatabaseManager db) {
         dispatcher.register(Commands.literal("ghostmode")
-                .requires(source -> source.hasPermissions(2))
+                .requires(source -> source.hasPermission(2))
                 .executes(context -> {
                     CommandSourceStack source = context.getSource();
                     if (!source.isPlayer()) {
@@ -269,7 +269,7 @@ public final class DlcCommandRegistration {
 
     private static void registerConfigCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("revivalconfig")
-                .requires(source -> source.hasPermissions(2))
+                .requires(source -> source.hasPermission(2))
                 .executes(context -> {
                     sendResult(context.getSource(), DlcCommandResult.fail("Please use /revivalconfig <structure|gamerule|timer|reload>"));
                     return 0;

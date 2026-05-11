@@ -10,7 +10,7 @@ import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
@@ -71,7 +71,7 @@ public class LimboServerListener {
             if (db.isPlayerDead(player.getUUID())) {
                 String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
                 if (!isWhitelistedCommand(cmdToCheck)) {
-                    event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+                    event.setCanceled(true);
                     player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"), false);
                 }
             }
@@ -116,7 +116,7 @@ public class LimboServerListener {
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
         if (world != null) {
-            player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), java.util.Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch(), true);
+            player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), java.util.Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
         }
 
         player.sendSystemMessage(MessageUtil.get("limbo-welcome-dead"));
