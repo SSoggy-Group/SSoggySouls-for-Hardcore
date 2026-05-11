@@ -78,7 +78,7 @@ public class ServerTransferUtil {
         );
 
         @Override
-        public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+        public CustomPacketPayload.Type<BungeeConnectPayload> type() {
             return PAYLOAD_TYPE;
         }
     }

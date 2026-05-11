@@ -5,8 +5,8 @@ import java.util.regex.Pattern;
 
 public final class TimeUtil {
 
-    private static final Pattern TIME_PATTERN = Pattern.compile("^(?:\\d+[hms])++$");
-    private static final Pattern COMPONENT_PATTERN = Pattern.compile("(\\d+)([hms])");
+    private static final Pattern TIME_PATTERN = Pattern.compile("^(?:\\d++\\s*+[hms]\\s*+)++$");
+    private static final Pattern COMPONENT_PATTERN = Pattern.compile("(\\d++)\\s*+([hms])");
 
     private TimeUtil() {
         throw new UnsupportedOperationException("Utility class");

@@ -40,7 +40,7 @@ public class GhostBlockEvents {
 
     private static void registerHeadBreak(DatabaseManager db) {
         // Detect when a player breaks a player's head block
-        PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
+        PlayerBlockBreakEvents.AFTER.register((world, player, ignoredPos, state, blockEntity) -> {
             if (world.isClient || !(player instanceof ServerPlayerEntity serverPlayer))
                 return;
 

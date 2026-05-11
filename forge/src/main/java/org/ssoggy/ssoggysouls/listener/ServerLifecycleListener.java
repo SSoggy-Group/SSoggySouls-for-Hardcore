@@ -65,7 +65,7 @@ public class ServerLifecycleListener {
         if (pending != null) {
             setGhostModeAttributes(player, false);
             ServerLevel targetWorld = player.server.getLevel(pending.dimension());
-            org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.restoreAtStructure(player, targetWorld != null ? targetWorld : player.serverLevel(), pending.pos());
+            org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.restoreAtStructure(player, targetWorld != null ? targetWorld : (ServerLevel) player.level(), pending.pos());
             return;
         }
 
@@ -140,7 +140,7 @@ public class ServerLifecycleListener {
             DlcDeaths.recordDeath(
                     player.getUUID(),
                     player.getScoreboardName(),
-                    player.serverLevel().dimension().location().toString(),
+                    ((ServerLevel) player.level()).dimension().location().toString(),
                     player.blockPosition().getX(),
                     player.blockPosition().getY(),
                     player.blockPosition().getZ()

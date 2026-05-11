@@ -23,38 +23,52 @@ public final class PlayerRevivalUtil {
     public static void restoreOnlineSpectator(SSoggySouls plugin, PlayerData data) {
         Player target = Bukkit.getPlayer(data.getUuid());
 
-        // Also clean up DLC death state if possible
+        clearDlcDeathState(plugin, data.getUuid(), data.getUsername());
+
+        if (target != null && target.isOnline() && shouldRestore(target)) {
+            executeRevival(plugin, target);
+        }
+    }
+
+    private static void clearDlcDeathState(SSoggySouls plugin, java.util.UUID uuid, String username) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             try {
                 if (RPStatic.DEAD_LOCATIONS != null) {
-                    RPStatic.DEAD_LOCATIONS.remove(data.getUuid());
+                    RPStatic.DEAD_LOCATIONS.remove(uuid);
                 }
                 if (RPStatic.DEAD_STORAGE != null) {
-                    RPStatic.DEAD_STORAGE.removeValue(data.getUuid().toString(), "deathpos");
-                    RPStatic.DEAD_STORAGE.removeValue(data.getUuid().toString(), "deathtime");
+                    RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), "deathpos");
+                    RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), "deathtime");
                     RPStatic.DEAD_STORAGE.saveConfig();
                 }
             } catch (Exception e) {
-                plugin.getLogger().warning("Failed to clear DLC death state for " + data.getUsername());
+                plugin.getLogger().warning("Failed to clear DLC death state for " + username);
             }
         });
+    }
 
-        if (target != null && target.isOnline()
-                && (target.getGameMode() != GameMode.SURVIVAL || GAMEMODESENUM.getPlayerGameMode(target) == GAMEMODESENUM.GHOSTMODE)) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                if (target.isOnline()) {
-                    GAMEMODESENUM.setPlayerGameMode(target, GAMEMODESENUM.SURVIVAL);
-                    target.sendMessage(MessageUtil.get("revive-success"));
+    private static boolean shouldRestore(Player target) {
+        return target.getGameMode() != GameMode.SURVIVAL || GAMEMODESENUM.getPlayerGameMode(target) == GAMEMODESENUM.GHOSTMODE;
+    }
 
-                    if (plugin.isLimboServer()) {
-                        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                            if (target.isOnline()) {
-                                ServerTransferUtil.sendToMain(target);
-                            }
-                        }, 40L);
-                    }
+    private static void executeRevival(SSoggySouls plugin, Player target) {
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (target.isOnline()) {
+                GAMEMODESENUM.setPlayerGameMode(target, GAMEMODESENUM.SURVIVAL);
+                target.sendMessage(MessageUtil.get("revive-success"));
+
+                if (plugin.isLimboServer()) {
+                    scheduleTransfer(plugin, target);
                 }
-            });
-        }
+            }
+        });
+    }
+
+    private static void scheduleTransfer(SSoggySouls plugin, Player target) {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (target.isOnline()) {
+                ServerTransferUtil.sendToMain(target);
+            }
+        }, 40L);
     }
 }

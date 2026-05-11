@@ -9,6 +9,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
@@ -53,7 +54,7 @@ public class LimboServerListener {
                     applyLimboState(player);
                 } else {
                     player.setGameMode(GameType.SURVIVAL);
-                    player.sendSystemMessage(MessageUtil.get("limbo-welcome-visitor"));
+                    player.sendSystemMessage(MessageUtil.get("limbo-welcome-visitor"), false);
                 }
             });
         });
@@ -71,7 +72,7 @@ public class LimboServerListener {
                 String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
                 if (!isWhitelistedCommand(cmdToCheck)) {
                     event.setCanceled(true);
-                    player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
+                    player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"), false);
                 }
             }
         }
@@ -80,7 +81,26 @@ public class LimboServerListener {
     @SubscribeEvent
     public static void onLivingDamage(LivingDamageEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
-            event.setCanceled(true); // Cancel damage for ghosts/dead players
+            event.setCanceled(true); // LivingDamageEvent usually still uses setCanceled in Forge if it implements ICancelable
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEntityTravel(EntityTravelToDimensionEvent event) {
+        if (db == null) return;
+        if (event.getEntity() instanceof ServerPlayer player) {
+            // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
+            ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+            ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
+            if (limboId != null && event.getDimension().toString().contains(limboId.toString())) return;
+
+            // Check for bypass permission (parity with Fabric)
+            if (player.hasPermissions(2)) return;
+
+            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
+                event.setCanceled(true);
+                player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
+            }
         }
     }
 
@@ -93,12 +113,10 @@ public class LimboServerListener {
         player.getFoodData().setFoodLevel(20);
         player.getFoodData().setSaturation(20f);
 
-        // Teleport to specific limbo spawn location config
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
-        ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
         if (world != null) {
-            player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+            player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), java.util.Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
         }
 
         player.sendSystemMessage(MessageUtil.get("limbo-welcome-dead"));

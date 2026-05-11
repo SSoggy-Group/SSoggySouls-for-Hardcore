@@ -7,18 +7,18 @@ title: Quick Start Guide
 
 This guide will help you get SSoggySouls up and running in 8 simple steps. For more detailed instructions, see the [Installation Guide](installation).
 
-> **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
+> **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
 ## Prerequisites
 
 **For a Single Server Setup (Easy):**
 
-- One Minecraft 1.21.X server (Spigot, Paper, Purpur, Fabric, or Forge)
+- One Minecraft 1.21.X server (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 - Java 21+
 
 **For a 2-Server Setup (Advanced):**
 
-- Two Minecraft 1.21.X servers (Spigot, Paper, Purpur, Fabric, or Forge)
+- Two Minecraft 1.21.X servers (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 - A Velocity Proxy connecting them
 - MySQL 5.7+ / MariaDB 10.2+ database
 - Java 21+
@@ -27,7 +27,7 @@ This guide will help you get SSoggySouls up and running in 8 simple steps. For m
 
 ### Step 1: Download
 
-Download the latest `SSoggySouls-4.4.6.jar` from:
+Download the latest `SSoggySouls-4.5.7.jar` from:
 
 - [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases)
 
@@ -35,12 +35,12 @@ Download the latest `SSoggySouls-4.4.6.jar` from:
 
 ### Step 2: Install Plugin
 
-Place `SSoggySouls-4.4.6.jar` in your server's `plugins/` folder.
+Place `SSoggySouls-4.5.7.jar` in your server's `plugins/` folder.
 
 If using a 2-server setup, install it on **both** backend servers:
 
-- Main server: `/plugins/SSoggySouls-4.4.6.jar`
-- Limbo server: `/plugins/SSoggySouls-4.4.6.jar`
+- Main server: `/plugins/SSoggySouls-4.5.7.jar`
+- Limbo server: `/plugins/SSoggySouls-4.5.7.jar`
 
 > **Important:** If using a proxy, install on backend servers only, NOT on Velocity!
 

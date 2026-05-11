@@ -45,7 +45,7 @@ public class MainServerListener {
 
     private void registerJoinEvent() {
         // Player Join
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+        ServerPlayConnectionEvents.JOIN.register((handler, ignoredSender, server) -> {
             ServerPlayerEntity player = handler.getPlayer();
             UUID uuid = player.getUuid();
 
@@ -172,7 +172,7 @@ public class MainServerListener {
 
     private void registerRespawnEvent() {
         // Player Respawn
-        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, ignoredAlive) -> {
             UUID uuid = newPlayer.getUuid();
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);

@@ -60,6 +60,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     private String mainServerName;
     private String limboServerName;
 
+    private static final String DATABASE_SQLITE = "sqlite";
     private static final String DEFAULT_WORLD = "world";
     private static final String CFG_SPAWN_X = "limbo.spawn.x";
     private static final String CFG_SPAWN_Y = "limbo.spawn.y";
@@ -119,18 +120,41 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         java.io.File configFile = new java.io.File(getDataFolder(), "config.yml");
         if (!configFile.exists()) {
             saveDefaultConfig();
-            getLogger().info("\n" +
-                    "===============================================================\n" +
-                    "                       SSOGGY SOULS\n" +
-                    "===============================================================\n" +
-                    " The plugin is using SQLite (single-server mode) by default.\n" +
-                    " \n" +
-                    " If you are setting up a Dual-Server Network (Main + Limbo),\n" +
-                    " you MUST stop the server, open config.yml, and change the\n" +
-                    " 'database.type' to 'mysql', then fill in your DB details.\n" +
-                    " \n" +
-                    " If you are using a single server, you can ignore this message.\n" +
-                    "===============================================================\n");
+            getLogger().info("""
+
+                    
+
+                    ===============================================================
+
+                    
+
+                                           SSOGGY SOULS
+
+                    
+
+                    ===============================================================
+
+                    
+
+                     The plugin is using SQLite (single-server mode) by default.
+
+                     
+
+                     If you are setting up a Dual-Server Network (Main + Limbo),
+
+                     you MUST stop the server, open config.yml, and change the
+
+                     'database.type' to 'mysql', then fill in your DB details.
+
+                     
+
+                     If you are using a single server, you can ignore this message.
+
+                    
+
+                    ===============================================================
+
+                    """);
         } else {
             saveDefaultConfig();
         }
@@ -333,9 +357,9 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         reloadConfig();
         FileConfiguration cfg = getConfig();
 
-        databaseType = normalizeConfigValue(cfg.getString("database.type", "sqlite"));
+        databaseType = normalizeConfigValue(cfg.getString("database.type", DATABASE_SQLITE));
         if (databaseType.isEmpty()) {
-            databaseType = "sqlite";
+            databaseType = DATABASE_SQLITE;
         }
         isLimboServer = cfg.getBoolean("is-limbo-server", false);
         if (isSingleServerMode() && isLimboServer) {
@@ -429,7 +453,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     }
 
     private static boolean isSqliteDatabaseType(String type) {
-        return "sqlite".equals(type) || "local".equals(type);
+        return DATABASE_SQLITE.equals(type) || "local".equals(type);
     }
 
     private long loadGracePeriod(FileConfiguration cfg) {
@@ -514,12 +538,14 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         }
     }
 
+    @Override
     public void debug(String message) {
         if (debugMode && getLogger().isLoggable(Level.INFO)) {
             getLogger().log(Level.INFO, "[DEBUG] {0}", message);
         }
     }
 
+    @Override
     public boolean isDebugMode() {
         return debugMode;
     }
@@ -566,6 +592,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         return limboServerName;
     }
 
+    @Override
     public int getDefaultLives() {
         return defaultLives;
     }

@@ -22,6 +22,7 @@ import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.AdminLogger;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.PermissionUtil;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -118,46 +119,57 @@ public class CommandRegistration {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     CommandSourceStack source = context.getSource();
 
-                    CompletableFuture.runAsync(() -> {
-                        PlayerData targetData = db.getPlayerByName(targetName);
-                        if (targetData == null) {
-                            source.getServer().execute(() ->
-                                source.sendFailure(MessageUtil.get("revive-not-found", PLAYER, targetName)));
-                            return;
-                        }
+                    if (PermissionUtil.isBlockedByLimboOpSecurity(source)) {
+                        PermissionUtil.sendSecurityBlockMessage(source);
+                        return 0;
+                    }
 
-                        if (!targetData.isDead()) {
-                            source.getServer().execute(() ->
-                                source.sendFailure(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
-                            return;
-                        }
-
-                        int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives();
-                        boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
-                        if (success) {
-                            source.getServer().execute(() -> {
-                                DlcDeaths.clearDeath(targetData.getUuid());
-                                GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
-                                GhostState ghostState = GhostState.getServerState(source.getServer());
-                                ghostState.removeDeathLocation(targetData.getUuid());
-                                ghostState.removeDeathHolder(targetData.getUuid());
-                                ghostState.setDirty();
-                                source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
-                                AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
-
-                                ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetData.getUuid());
-                                if (targetPlayer != null) {
-                                    targetPlayer.setGameMode(GameType.SURVIVAL);
-                                    ServerLifecycleListener.setGhostModeAttributes(targetPlayer, false);
-                                    targetPlayer.sendSystemMessage(MessageUtil.get("revive-success"));
-                                }
-                            });
-                        }
-                    });
+                    CompletableFuture.runAsync(() -> executeRevive(targetName, source));
                     return 1;
                 })
             )
         );
+    }
+
+    private static void executeRevive(String targetName, CommandSourceStack source) {
+        PlayerData targetData = db.getPlayerByName(targetName);
+        if (targetData == null) {
+            source.getServer().execute(() ->
+                source.sendFailure(MessageUtil.get("revive-not-found", PLAYER, targetName)));
+            return;
+        }
+
+        if (!targetData.isDead()) {
+            source.getServer().execute(() ->
+                source.sendFailure(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
+            return;
+        }
+
+        int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives();
+        boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
+        if (success) {
+            handleReviveSuccess(targetData, source);
+        }
+    }
+
+    private static void handleReviveSuccess(PlayerData targetData, CommandSourceStack source) {
+        source.getServer().execute(() -> {
+            DlcDeaths.clearDeath(targetData.getUuid());
+            GhostModeEvents.updateGhostStatus(targetData.getUuid(), false);
+            GhostState ghostState = GhostState.getServerState(source.getServer());
+            ghostState.removeDeathLocation(targetData.getUuid());
+            ghostState.removeDeathHolder(targetData.getUuid());
+            ghostState.setDirty();
+            source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
+            AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
+
+            ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetData.getUuid());
+            if (targetPlayer != null) {
+                targetPlayer.setGameMode(GameType.SURVIVAL);
+                ServerLifecycleListener.setGhostModeAttributes(targetPlayer, false);
+                targetPlayer.sendSystemMessage(MessageUtil.get("revive-success"));
+            }
+        });
     }
 
     private static void registerSetLivesCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -171,6 +183,11 @@ public class CommandRegistration {
                         String targetName = StringArgumentType.getString(context, PLAYER);
                         int lives = IntegerArgumentType.getInteger(context, LIVES);
                         CommandSourceStack source = context.getSource();
+
+                        if (PermissionUtil.isBlockedByLimboOpSecurity(source)) {
+                            PermissionUtil.sendSecurityBlockMessage(source);
+                            return 0;
+                        }
 
                         CompletableFuture.runAsync(() -> {
                             PlayerData data = db.getPlayerByName(targetName);

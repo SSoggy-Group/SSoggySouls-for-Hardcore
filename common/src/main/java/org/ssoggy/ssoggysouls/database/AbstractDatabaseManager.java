@@ -48,6 +48,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public PlayerData getPlayer(UUID uuid) {
+        if (uuid == null) return null;
         String sql = SELECT_ALL + tableName + " WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
@@ -301,13 +302,6 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
         }
         return null;
     }
-
-    /**
-     * Persists the plugin version for the given key. Subclasses override this to
-     * use the correct upsert syntax for their dialect.
-     */
-    @Override
-    public abstract void savePluginVersion(String key, String version);
 
     /**
      * Creates the metadata table if it does not already exist.

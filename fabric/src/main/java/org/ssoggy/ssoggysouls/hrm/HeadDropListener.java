@@ -20,7 +20,7 @@ public class HeadDropListener {
         // Utility class
     }
 
-    public static void register(DatabaseManager db) {
+    public static void register() {
         // Head drop is now triggered from MainServerListener.handleDeathSync
         // when isDead becomes true, avoiding the race condition with async DB state.
     }

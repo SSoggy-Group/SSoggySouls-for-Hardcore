@@ -7,7 +7,6 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
@@ -37,9 +36,7 @@ public class SSoggySoulsMod implements PluginContext {
     public static final Logger LOGGER = LogUtils.getLogger();
     private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MODID);
 
-    public SSoggySoulsMod(FMLJavaModLoadingContext context) {
-        IEventBus modEventBus = context.getModEventBus();
-
+    public SSoggySoulsMod(IEventBus modEventBus) {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
@@ -104,10 +101,11 @@ public class SSoggySoulsMod implements PluginContext {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        ServerTransferUtil.register();
+        event.enqueueWork(ServerTransferUtil::register);
     }
 
     @SubscribeEvent
+    @SuppressWarnings("unused")
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
     }

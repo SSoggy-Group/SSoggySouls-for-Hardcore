@@ -43,14 +43,14 @@ public class MySQLManager extends AbstractDatabaseManager {
     @Override
     public void initialize() throws DatabaseInitializationException {
         try {
-            String host = plugin.getConfigString("database.host", "localhost");
+            String host = SqlSafety.requireValidJdbcParam(plugin.getConfigString("database.host", "localhost"), "database.host");
             int port = plugin.getConfigInt("database.port", 3306);
-            String dbName = plugin.getConfigString("database.name", "minecraft");
+            String dbName = SqlSafety.requireValidJdbcParam(plugin.getConfigString("database.name", "minecraft"), "database.name");
             String user = plugin.getConfigString("database.username", "minecraft");
             String pass = plugin.getConfigString("database.password", "changeme");
             int poolSize = plugin.getConfigInt("database.pool-size", 5);
             String configuredTableName = plugin.getConfigString("database.table-name", "hardcore_players");
-            String sslMode = plugin.getConfigString("database.ssl-mode", "VERIFY_IDENTITY");
+            String sslMode = SqlSafety.requireValidJdbcParam(plugin.getConfigString("database.ssl-mode", "VERIFY_IDENTITY"), "database.ssl-mode");
             if (!SqlSafety.isIdentifier(configuredTableName)) {
                 plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", configuredTableName);
                 throw new DatabaseInitializationException("Invalid database.table-name: " + configuredTableName);
@@ -84,7 +84,7 @@ public class MySQLManager extends AbstractDatabaseManager {
             plugin.getLogger().log(Level.INFO, "MySQL connection established ({0}:{1}/{2})",
                     new Object[] { host, port, dbName });
 
-        } catch (SQLException e) {
+        } catch (SQLException | IllegalArgumentException e) {
             plugin.getLogger().log(Level.SEVERE, "MySQL initialization failed!", e);
             throw new DatabaseInitializationException("MySQL initialization failed", e);
         }

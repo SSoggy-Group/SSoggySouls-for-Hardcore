@@ -31,18 +31,20 @@ public class ConfigManager {
         } else {
             config = new ModConfig();
             save();
-            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("\n" +
-                    "===============================================================\n" +
-                    "                       SSOGGY SOULS\n" +
-                    "===============================================================\n" +
-                    " The mod is using SQLite (single-server mode) by default.\n" +
-                    " \n" +
-                    " If you are setting up a Dual-Server Network (Main + Limbo),\n" +
-                    " you MUST stop the server, open ssoggysouls.json, and change the\n" +
-                    " 'databaseType' to 'mysql', then fill in your DB details.\n" +
-                    " \n" +
-                    " If you are using a single server, you can ignore this message.\n" +
-                    "===============================================================\n");
+            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("""
+
+                    ===============================================================
+                                           SSOGGY SOULS
+                    ===============================================================
+                     The mod is using SQLite (single-server mode) by default.
+                     
+                     If you are setting up a Dual-Server Network (Main + Limbo),
+                     you MUST stop the server, open ssoggysouls.json, and change the
+                     'databaseType' to 'mysql', then fill in your DB details.
+                     
+                     If you are using a single server, you can ignore this message.
+                    ===============================================================
+                    """);
         }
     }
 
@@ -60,24 +62,11 @@ public class ConfigManager {
     }
 
     public static long parseGracePeriod(String input) {
-        if (input == null || input.equals("0") || input.isEmpty()) return 0;
-        try {
-            long totalMs = 0;
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d+)([hms])").matcher(input.toLowerCase());
-            while (matcher.find()) {
-                long value = Long.parseLong(matcher.group(1));
-                char unit = matcher.group(2).charAt(0);
-                switch (unit) {
-                    case 'h' -> totalMs += value * 3600000;
-                    case 'm' -> totalMs += value * 60000;
-                    case 's' -> totalMs += value * 1000;
-                    default -> { /* ignore */ }
-                }
-            }
-            return totalMs;
-        } catch (Exception e) {
+        if (input == null || input.equals("0") || input.isEmpty() || input.length() > 64) {
             return 0;
         }
+        long millis = TimeUtil.parseTimeToMillis(input);
+        return millis < 0 ? 0 : millis;
     }
 
     public static class ModConfig {
@@ -99,6 +88,10 @@ public class ConfigManager {
         private double limboSpawnZ = 0;
         private float limboSpawnYaw = 0;
         private float limboSpawnPitch = 0;
+
+        // --- Security ---
+        private boolean limboOpSecurityCheck = true;
+        private java.util.List<String> limboTrustedAdmins = new java.util.ArrayList<>();
 
         // --- Database Connection ---
         private String databaseType = "sqlite"; // "sqlite" or "mysql"
@@ -125,7 +118,8 @@ public class ConfigManager {
         // --- DLC / Ghost Mode ---
         private boolean loseInventory = false;
         private boolean ghostModeParticles = false;
-        private int spectatorHeadrestrictRadius = 16;
+        @com.google.gson.annotations.SerializedName("spectatorHeadrestrictRadius")
+        private int spectatorHeadRestrictRadius = 16;
         private boolean restrictMenuAccess = true;
         private boolean creativePlayersDropHeads = false;
         private boolean headBurnsInLava = false;
@@ -140,11 +134,16 @@ public class ConfigManager {
         private java.util.Map<String, String> messages = new java.util.HashMap<>();
 
         // --- Structure Block Tags ---
-        private java.util.List<String> soulSandBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("CRYING_OBSIDIAN", "OBSIDIAN"));
-        private java.util.List<String> flowerBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("SOUL_TORCH", "REDSTONE_TORCH"));
-        private java.util.List<String> oreBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("ENCHANTING_TABLE"));
-        private java.util.List<String> fenceBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE", "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE", "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"));
-        private java.util.List<String> stairBlocktag = new java.util.ArrayList<>(java.util.Arrays.asList("MAGMA_BLOCK"));
+        @com.google.gson.annotations.SerializedName("soulSandBlocktag")
+        private java.util.List<String> soulSandBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("CRYING_OBSIDIAN", "OBSIDIAN"));
+        @com.google.gson.annotations.SerializedName("flowerBlocktag")
+        private java.util.List<String> flowerBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("SOUL_TORCH", "REDSTONE_TORCH"));
+        @com.google.gson.annotations.SerializedName("oreBlocktag")
+        private java.util.List<String> oreBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("ENCHANTING_TABLE"));
+        @com.google.gson.annotations.SerializedName("fenceBlocktag")
+        private java.util.List<String> fenceBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("OAK_FENCE", "SPRUCE_FENCE", "BIRCH_FENCE", "JUNGLE_FENCE", "ACACIA_FENCE", "DARK_OAK_FENCE", "MANGROVE_FENCE", "CHERRY_FENCE", "BAMBOO_FENCE", "CRIMSON_FENCE", "WARPED_FENCE", "NETHER_BRICK_FENCE"));
+        @com.google.gson.annotations.SerializedName("stairBlocktag")
+        private java.util.List<String> stairBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("MAGMA_BLOCK"));
 
         // --- Debug ---
         private boolean debug = false;
@@ -164,6 +163,7 @@ public class ConfigManager {
             messages.put("revive-not-found", "§cPlayer §e%player% §cnot found.");
             messages.put("revive-already-alive", "§e%player% §cis already alive.");
             messages.put("admin-revive-success", "§aSuccessfully revived §e%player%§a.");
+            messages.put("revive-from-limbo", "§a%player% §7has been revived and will return from Limbo shortly.");
             messages.put("extra-life-dead", "§cYou cannot use an Extra Life while dead!");
             messages.put("extra-life-at-max", "§cYou are already at the maximum number of lives!");
             messages.put("extra-life-gained", "§aYou gained an extra life! You now have §e%lives% §alives.");
@@ -172,6 +172,7 @@ public class ConfigManager {
             messages.put("death-now-ghost", "§cYou have died! You are now a ghost.");
             messages.put("limbo-welcome-visitor", "§eWelcome to Limbo as a visitor!");
             messages.put("limbo-welcome-dead", "§cWelcome to Limbo. You are dead!");
+            messages.put("limbo-cannot-leave", "§cYou are trapped in Limbo. Only revival can free you.");
             messages.put("revival-structure-incomplete", "§cThe revival structure is incomplete!");
             messages.put("admin-setlives-success", "§aSet §e%player%§a's lives to §e%lives%§a.");
         }
@@ -192,6 +193,8 @@ public class ConfigManager {
         public double getLimboSpawnZ() { return limboSpawnZ; }
         public float getLimboSpawnYaw() { return limboSpawnYaw; }
         public float getLimboSpawnPitch() { return limboSpawnPitch; }
+        public boolean isLimboOpSecurityCheck() { return limboOpSecurityCheck; }
+        public java.util.List<String> getLimboTrustedAdmins() { return limboTrustedAdmins; }
         public String getDatabaseType() { return databaseType; }
         public String getDatabaseHost() { return databaseHost; }
         public int getDatabasePort() { return databasePort; }
@@ -211,7 +214,13 @@ public class ConfigManager {
         public boolean isLeaveStructureBase() { return leaveStructureBase; }
         public boolean isLoseInventory() { return loseInventory; }
         public boolean isGhostModeParticles() { return ghostModeParticles; }
-        public int getSpectatorHeadrestrictRadius() { return spectatorHeadrestrictRadius; }
+        public int getSpectatorHeadRestrictRadius() { return spectatorHeadRestrictRadius; }
+        /**
+         * @deprecated Use {@link #getSpectatorHeadRestrictRadius()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
+        public int getSpectatorHeadrestrictRadius() { return getSpectatorHeadRestrictRadius(); }
         public boolean isRestrictMenuAccess() { return restrictMenuAccess; }
         public boolean isCreativePlayersDropHeads() { return creativePlayersDropHeads; }
         public boolean isHeadBurnsInLava() { return headBurnsInLava; }
@@ -222,11 +231,45 @@ public class ConfigManager {
         public int getReviveGlowingTicks() { return reviveGlowingTicks; }
         public String getMessagePrefix() { return messagePrefix; }
         public java.util.Map<String, String> getMessages() { return messages; }
-        public java.util.List<String> getSoulSandBlocktag() { return soulSandBlocktag; }
-        public java.util.List<String> getFlowerBlocktag() { return flowerBlocktag; }
-        public java.util.List<String> getOreBlocktag() { return oreBlocktag; }
-        public java.util.List<String> getFenceBlocktag() { return fenceBlocktag; }
-        public java.util.List<String> getStairBlocktag() { return stairBlocktag; }
+        public java.util.List<String> getSoulSandBlockTag() { return soulSandBlockTag; }
+        public java.util.List<String> getFlowerBlockTag() { return flowerBlockTag; }
+        public java.util.List<String> getOreBlockTag() { return oreBlockTag; }
+        public java.util.List<String> getFenceBlockTag() { return fenceBlockTag; }
+        public java.util.List<String> getStairBlockTag() { return stairBlockTag; }
+        /**
+         * @deprecated Use {@link #getSoulSandBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
+        public java.util.List<String> getSoulSandBlocktag() { return getSoulSandBlockTag(); }
+
+        /**
+         * @deprecated Use {@link #getFlowerBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
+        public java.util.List<String> getFlowerBlocktag() { return getFlowerBlockTag(); }
+
+        /**
+         * @deprecated Use {@link #getOreBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
+        public java.util.List<String> getOreBlocktag() { return getOreBlockTag(); }
+
+        /**
+         * @deprecated Use {@link #getFenceBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
+        public java.util.List<String> getFenceBlocktag() { return getFenceBlockTag(); }
+
+        /**
+         * @deprecated Use {@link #getStairBlockTag()} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
+        public java.util.List<String> getStairBlocktag() { return getStairBlockTag(); }
         public boolean isDebug() { return debug; }
         public boolean isCheckForUpdates() { return checkForUpdates; }
 
@@ -280,6 +323,8 @@ public class ConfigManager {
         public void setLimboSpawnZ(double z) { limboSpawnZ = z; }
         public void setLimboSpawnYaw(float yaw) { limboSpawnYaw = yaw; }
         public void setLimboSpawnPitch(float pitch) { limboSpawnPitch = pitch; }
+        public void setLimboOpSecurityCheck(boolean check) { limboOpSecurityCheck = check; }
+        public void setLimboTrustedAdmins(java.util.Collection<String> admins) { limboTrustedAdmins = normalizeStringList(admins); }
         public void setDatabaseType(String type) { databaseType = type; }
         public void setDatabaseHost(String host) { databaseHost = host; }
         public void setDatabasePort(int port) { databasePort = port; }
@@ -299,7 +344,13 @@ public class ConfigManager {
         public void setLeaveStructureBase(boolean leave) { leaveStructureBase = leave; }
         public void setLoseInventory(boolean lose) { loseInventory = lose; }
         public void setGhostModeParticles(boolean particles) { ghostModeParticles = particles; }
-        public void setSpectatorHeadrestrictRadius(int radius) { spectatorHeadrestrictRadius = radius; }
+        public void setSpectatorHeadRestrictRadius(int radius) { spectatorHeadRestrictRadius = radius; }
+        /**
+         * @deprecated Use {@link #setSpectatorHeadRestrictRadius(int)} instead.
+         */
+        @Deprecated(since = "4.4.8")
+        @SuppressWarnings({"java:S1133", "java:S1201", "java:S1845"})
+        public void setSpectatorHeadrestrictRadius(int radius) { setSpectatorHeadRestrictRadius(radius); }
         public void setRestrictMenuAccess(boolean restrict) { restrictMenuAccess = restrict; }
         public void setCreativePlayersDropHeads(boolean drop) { creativePlayersDropHeads = drop; }
         public void setHeadBurnsInLava(boolean burns) { headBurnsInLava = burns; }
@@ -308,11 +359,11 @@ public class ConfigManager {
         public void setPublicObituaryAfter(int seconds) { publicObituaryAfter = seconds; }
         public void setReviveResistanceTicks(int ticks) { reviveResistanceTicks = ticks; }
         public void setReviveGlowingTicks(int ticks) { reviveGlowingTicks = ticks; }
-        public void setSoulSandBlocktag(java.util.Collection<String> blocks) { soulSandBlocktag = normalizeBlockList(blocks); }
-        public void setFlowerBlocktag(java.util.Collection<String> blocks) { flowerBlocktag = normalizeBlockList(blocks); }
-        public void setOreBlocktag(java.util.Collection<String> blocks) { oreBlocktag = normalizeBlockList(blocks); }
-        public void setFenceBlocktag(java.util.Collection<String> blocks) { fenceBlocktag = normalizeBlockList(blocks); }
-        public void setStairBlocktag(java.util.Collection<String> blocks) { stairBlocktag = normalizeBlockList(blocks); }
+        public void setSoulSandBlocktag(java.util.Collection<String> blocks) { soulSandBlockTag = normalizeBlockList(blocks); }
+        public void setFlowerBlocktag(java.util.Collection<String> blocks) { flowerBlockTag = normalizeBlockList(blocks); }
+        public void setOreBlocktag(java.util.Collection<String> blocks) { oreBlockTag = normalizeBlockList(blocks); }
+        public void setFenceBlocktag(java.util.Collection<String> blocks) { fenceBlockTag = normalizeBlockList(blocks); }
+        public void setStairBlocktag(java.util.Collection<String> blocks) { stairBlockTag = normalizeBlockList(blocks); }
         public void setDebug(boolean d) { debug = d; }
         public void setCheckForUpdates(boolean check) { checkForUpdates = check; }
 
@@ -321,6 +372,16 @@ public class ConfigManager {
             for (String block : blocks) {
                 if (block != null && !block.isBlank()) {
                     normalized.add(block.trim().toUpperCase(java.util.Locale.ROOT));
+                }
+            }
+            return normalized;
+        }
+
+        private static java.util.List<String> normalizeStringList(java.util.Collection<String> items) {
+            java.util.List<String> normalized = new java.util.ArrayList<>();
+            for (String item : items) {
+                if (item != null && !item.isBlank()) {
+                    normalized.add(item.trim().toLowerCase(java.util.Locale.ROOT));
                 }
             }
             return normalized;

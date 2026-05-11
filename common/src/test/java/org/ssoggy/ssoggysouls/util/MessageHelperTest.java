@@ -69,14 +69,14 @@ class MessageHelperTest {
     }
 
     @Test
-    void testColorizeAmperstandToSection() {
-        String result = MessageHelper.colorize("&aGreen &cRed");
+    void testTranslateAlternateColorCodesAmperstandToSection() {
+        String result = MessageHelper.translateAlternateColorCodes("&aGreen &cRed");
         assertEquals("\u00a7aGreen \u00a7cRed", result);
     }
 
     @Test
-    void testColorizeNull() {
-        String result = MessageHelper.colorize(null);
+    void testTranslateAlternateColorCodesNull() {
+        String result = MessageHelper.translateAlternateColorCodes(null);
         assertEquals("", result);
     }
 

@@ -1,4 +1,4 @@
-name: Auto Bump, Build, and Release
+name: Version Bump and Release
 
 on:
   push:
@@ -40,7 +40,7 @@ on:
       fabric_type:
         description: "Fabric release channel"
         required: false
-        default: "alpha"
+        default: "release"
         type: choice
         options:
           - release
@@ -49,7 +49,7 @@ on:
       forge_type:
         description: "Forge release channel"
         required: false
-        default: "alpha"
+        default: "release"
         type: choice
         options:
           - release
@@ -65,7 +65,15 @@ on:
         required: false
         default: true
         type: boolean
-
+      neoforge_type:
+        description: "NeoForge release channel"
+        required: false
+        default: "release"
+        type: choice
+        options:
+          - release
+          - beta
+          - alpha
 
 # Prevents multiple releases from running at once and hitting "push rejected" errors
 concurrency:
@@ -87,7 +95,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Calculate Next Version
         id: version_math
@@ -154,7 +162,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up Java
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -171,37 +179,95 @@ jobs:
           OLD_VERSION: ${{ needs.prepare-release.outputs.old_version }}
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          sed -i "s/version = '$OLD_VERSION'/version = '$NEW_VERSION'/g" paper/build.gradle || true
-          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
-          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
+          sed -i "s/^version = .*/version = '$NEW_VERSION'/g" paper/build.gradle || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-fabric/g" fabric/gradle.properties || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-forge/g" forge/gradle.properties || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-neoforge/g" neoforge/gradle.properties || true
 
       - name: Build Minecraft Mods
         run: |
           chmod +x ./gradlew
-          ./gradlew build
+          # Build platforms in total isolation using -DonlyPlatform to avoid plugin conflicts
+          ./gradlew :common:build -DonlyPlatform=common --no-daemon --info --stacktrace
+          ./gradlew :fabric:build -DonlyPlatform=fabric --no-daemon --info --stacktrace
+          ./gradlew :paper:build -DonlyPlatform=paper --no-daemon --info --stacktrace
+          ./gradlew :neoforge:build -DonlyPlatform=neoforge --no-daemon --info --stacktrace
+          ./gradlew :forge:build -DonlyPlatform=forge --no-daemon --info --stacktrace
+
+      - name: Upload Build Reports on Failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: build-reports
+          path: "**/build/reports/"
 
       - name: Locate and Rename Jars
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          RAW_PAPER="$(ls paper/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
-          RAW_FABRIC="$(ls fabric/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
-          RAW_FORGE="$(ls forge/build/libs/*.jar | grep -Ev 'sources|dev|slim|all' | head -n 1)"
+          echo "DEBUG: All jars produced by build:"
+          ls -lh paper/build/libs/ fabric/build/libs/ forge/build/libs/ neoforge/build/libs/ || true
+
+          # Paper: standard shadow jar — exclude sources, pick the largest remaining
+          RAW_PAPER="$(find paper/build/libs -maxdepth 1 -name '*.jar' \
+            ! -name '*sources*' ! -name '*dev*' ! -name '*slim*' \
+            ! -name '*all*' ! -name '*original*' ! -name '*shadow*' \
+            -printf '%s %p\n' | sort -rn | head -n 1 | awk '{print $2}')"
+
+          # Fabric Loom: remapJar output has NO -dev suffix; the pre-remap dev jar
+          # gets a -dev suffix added by Loom. Explicitly exclude -dev and -sources.
+          RAW_FABRIC="$(find fabric/build/libs -maxdepth 1 -name '*.jar' \
+            ! -name '*-dev.jar' ! -name '*sources*' \
+            -printf '%s %p\n' | sort -rn | head -n 1 | awk '{print $2}')"
+
+          # Forge: single jar produced by the jar task (no reobf since reobf=false)
+          RAW_FORGE="$(find forge/build/libs -maxdepth 1 -name '*.jar' \
+            ! -name '*sources*' ! -name '*dev*' ! -name '*slim*' \
+            ! -name '*all*' ! -name '*original*' ! -name '*shadow*' \
+            -printf '%s %p\n' | sort -rn | head -n 1 | awk '{print $2}')"
+
+          # NeoForge: jarJar produces a single fat jar; the plain jar is also emitted
+          # — pick the largest to get the jarJar (fat) artifact.
+          RAW_NEOFORGE="$(find neoforge/build/libs -maxdepth 1 -name '*.jar' \
+            ! -name '*sources*' ! -name '*dev*' ! -name '*slim*' \
+            ! -name '*all*' ! -name '*original*' ! -name '*shadow*' \
+            -printf '%s %p\n' | sort -rn | head -n 1 | awk '{print $2}')"
+
+          echo "Selected: Paper=$RAW_PAPER, Fabric=$RAW_FABRIC, Forge=$RAW_FORGE, NeoForge=$RAW_NEOFORGE"
+
+          if [ -z "$RAW_PAPER" ] || [ -z "$RAW_FABRIC" ] || [ -z "$RAW_FORGE" ] || [ -z "$RAW_NEOFORGE" ]; then
+            echo "Error: One or more jars not found! Check the DEBUG listing above."
+            exit 1
+          fi
 
           mv "$RAW_PAPER" "SSoggySouls-Paper-${NEW_VERSION}.jar"
           mv "$RAW_FABRIC" "SSoggySouls-Fabric-${NEW_VERSION}.jar"
           mv "$RAW_FORGE" "SSoggySouls-Forge-${NEW_VERSION}.jar"
+          mv "$RAW_NEOFORGE" "SSoggySouls-NeoForge-${NEW_VERSION}.jar"
 
-      - name: Upload Release Jars
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - name: Upload Paper Jar
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: release-jars
-          retention-days: 7
-          if-no-files-found: error
-          path: |
-            SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
-            SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
-            SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+          name: paper-jar
+          path: SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
+
+      - name: Upload Fabric Jar
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fabric-jar
+          path: SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
+
+      - name: Upload Forge Jar
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: forge-jar
+          path: SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+
+      - name: Upload NeoForge Jar
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: neoforge-jar
+          path: SSoggySouls-NeoForge-${{ needs.prepare-release.outputs.new_version }}.jar
 
   commit-version:
     name: Commit Version
@@ -217,7 +283,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 
@@ -226,9 +292,10 @@ jobs:
           OLD_VERSION: ${{ needs.prepare-release.outputs.old_version }}
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          sed -i "s/version = '$OLD_VERSION'/version = '$NEW_VERSION'/g" paper/build.gradle || true
-          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" fabric/gradle.properties || true
-          sed -i "s/mod_version=$OLD_VERSION/mod_version=$NEW_VERSION/g" forge/gradle.properties || true
+          sed -i "s/^version = .*/version = '$NEW_VERSION'/g" paper/build.gradle || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-fabric/g" fabric/gradle.properties || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-forge/g" forge/gradle.properties || true
+          sed -i "s/^mod_version=.*/mod_version=$NEW_VERSION-neoforge/g" neoforge/gradle.properties || true
 
       - name: Auto-Update Docs References
         env:
@@ -288,17 +355,33 @@ jobs:
       - prepare-release
       - build
       - commit-version
-    if: needs.commit-version.outputs.tag_created == 'true'
+    # Removed restrictive 'if' to allow manual re-runs and retries.
+    # The action itself will handle existing releases gracefully.
 
     steps:
-      - name: Download Release Jars
+      - name: Download Paper Jar
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: release-jars
-          path: release-jars
+          name: paper-jar
+
+      - name: Download Fabric Jar
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: fabric-jar
+
+      - name: Download Forge Jar
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: forge-jar
+
+      - name: Download NeoForge Jar
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: neoforge-jar
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        continue-on-error: true # Don't block publications if release already exists
         with:
           tag_name: "v${{ needs.prepare-release.outputs.new_version }}"
           name: "Build ${{ needs.prepare-release.outputs.new_version }}"
@@ -306,9 +389,10 @@ jobs:
           prerelease: ${{ github.event.inputs.gh_prerelease == 'true' || false }}
           make_latest: ${{ github.event.inputs.gh_latest == 'false' && 'false' || 'true' }}
           files: |
-            release-jars/SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
-            release-jars/SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
-            release-jars/SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+            SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
+            SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
+            SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+            SSoggySouls-NeoForge-${{ needs.prepare-release.outputs.new_version }}.jar
 
   publish-paper:
     name: Publish Paper
@@ -319,16 +403,33 @@ jobs:
       - prepare-release
       - commit-version
       - github-release
-    if: needs.commit-version.outputs.tag_created == 'true'
+    # No job-level 'if' here, each step handles its own skipping logic to allow for retries.
 
     steps:
-      - name: Download Release Jars
+      - name: Download Paper Jar
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: release-jars
-          path: release-jars
+          name: paper-jar
+
+      - name: Check if Paper version already exists on Modrinth
+        id: check_paper
+        env:
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          # Correct endpoint: /v2/project/{id}/version
+          # We check if the version number is in the response.
+          echo "Checking if version ${NEW_VERSION}+paper exists for project Pb03qu6T..."
+          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+paper\""; then
+            echo "Version ${NEW_VERSION}+paper already exists on Modrinth. Skipping upload."
+            echo "already_published=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "Version ${NEW_VERSION}+paper not found on Modrinth."
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+          fi
 
       - name: Publish Paper to Modrinth
+        if: steps.check_paper.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
@@ -354,7 +455,7 @@ jobs:
             1.21.9
             1.21.10
             1.21.11
-          files: release-jars/SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
+          modrinth-files: SSoggySouls-Paper-${{ needs.prepare-release.outputs.new_version }}.jar
 
   publish-fabric:
     name: Publish Fabric
@@ -365,23 +466,40 @@ jobs:
       - prepare-release
       - commit-version
       - github-release
-    if: needs.commit-version.outputs.tag_created == 'true'
+    # No job-level 'if' here, each step handles its own skipping logic to allow for retries.
 
     steps:
-      - name: Download Release Jars
+      - name: Download Fabric Jar
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: release-jars
-          path: release-jars
+          name: fabric-jar
+
+      - name: Check if Fabric version already exists on Modrinth
+        id: check_fabric
+        env:
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          # Correct endpoint: /v2/project/{id}/version
+          # We check if the version number is in the response.
+          echo "Checking if version ${NEW_VERSION}+fabric exists for project Pb03qu6T..."
+          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+fabric\""; then
+            echo "Version ${NEW_VERSION}+fabric already exists on Modrinth. Skipping upload."
+            echo "already_published=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "Version ${NEW_VERSION}+fabric not found on Modrinth."
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+          fi
 
       - name: Publish Fabric to Modrinth
+        if: steps.check_fabric.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           name: "SSoggySouls v${{ needs.prepare-release.outputs.new_version }} (Fabric/Quilt)"
           version: "${{ needs.prepare-release.outputs.new_version }}+fabric"
-          version-type: ${{ github.event.inputs.fabric_type || 'alpha' }}
+          version-type: ${{ github.event.inputs.fabric_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: |
             fabric
@@ -398,7 +516,7 @@ jobs:
             1.21.9
             1.21.10
             1.21.11
-          files: release-jars/SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
+          modrinth-files: SSoggySouls-Fabric-${{ needs.prepare-release.outputs.new_version }}.jar
 
   publish-forge:
     name: Publish Forge
@@ -409,23 +527,40 @@ jobs:
       - prepare-release
       - commit-version
       - github-release
-    if: needs.commit-version.outputs.tag_created == 'true'
+    # No job-level 'if' here, each step handles its own skipping logic to allow for retries.
 
     steps:
-      - name: Download Release Jars
+      - name: Download Forge Jar
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: release-jars
-          path: release-jars
+          name: forge-jar
+
+      - name: Check if Forge version already exists on Modrinth
+        id: check_forge
+        env:
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          # Correct endpoint: /v2/project/{id}/version
+          # We check if the version number is in the response.
+          echo "Checking if version ${NEW_VERSION}+forge exists for project Pb03qu6T..."
+          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+forge\""; then
+            echo "Version ${NEW_VERSION}+forge already exists on Modrinth. Skipping upload."
+            echo "already_published=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "Version ${NEW_VERSION}+forge not found on Modrinth."
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+          fi
 
       - name: Publish Forge to Modrinth
+        if: steps.check_forge.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           name: "SSoggySouls v${{ needs.prepare-release.outputs.new_version }} (Forge)"
           version: "${{ needs.prepare-release.outputs.new_version }}+forge"
-          version-type: ${{ github.event.inputs.forge_type || 'alpha' }}
+          version-type: ${{ github.event.inputs.forge_type || 'release' }}
           changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
           loaders: forge
           game-versions: |
@@ -440,4 +575,63 @@ jobs:
             1.21.9
             1.21.10
             1.21.11
-          files: release-jars/SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+          modrinth-files: SSoggySouls-Forge-${{ needs.prepare-release.outputs.new_version }}.jar
+
+  publish-neoforge:
+    name: Publish NeoForge
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs:
+      - prepare-release
+      - commit-version
+      - github-release
+    # No job-level 'if' here, each step handles its own skipping logic to allow for retries.
+
+    steps:
+      - name: Download NeoForge Jar
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: neoforge-jar
+
+      - name: Check if NeoForge version already exists on Modrinth
+        id: check_neoforge
+        env:
+          NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+        run: |
+          # Correct endpoint: /v2/project/{id}/version
+          # We check if the version number is in the response.
+          echo "Checking if version ${NEW_VERSION}+neoforge exists for project Pb03qu6T..."
+          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+neoforge\""; then
+            echo "Version ${NEW_VERSION}+neoforge already exists on Modrinth. Skipping upload."
+            echo "already_published=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "Version ${NEW_VERSION}+neoforge not found on Modrinth."
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Publish NeoForge to Modrinth
+        if: steps.check_neoforge.outputs.already_published != 'true'
+        uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
+        with:
+          modrinth-id: Pb03qu6T
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          name: "SSoggySouls v${{ needs.prepare-release.outputs.new_version }} (NeoForge)"
+          version: "${{ needs.prepare-release.outputs.new_version }}+neoforge"
+          version-type: ${{ github.event.inputs.neoforge_type || 'release' }}
+          changelog: ${{ github.event.head_commit.message || format('Manual release {0}', needs.prepare-release.outputs.new_version) }}
+          loaders: neoforge
+          game-versions: |
+            1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
+          modrinth-files: SSoggySouls-NeoForge-${{ needs.prepare-release.outputs.new_version }}.jar

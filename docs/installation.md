@@ -24,7 +24,7 @@ This comprehensive guide covers everything you need to know to properly install 
 
 - **Minecraft Version:** 1.21.X
 
-- **Server Software:** Spigot, Paper, Purpur, Fabric, or Forge
+- **Server Software:** Spigot, Paper, Purpur, Fabric, Forge, or NeoForge
 
 - **Java Version:** 21 or higher
 
@@ -194,7 +194,7 @@ Get the latest version:
 
 - [Modrinth](https://modrinth.com/project/Pb03qu6T)
 
-Download `SSoggySouls-4.4.6.jar` (or latest version).
+Download `SSoggySouls-4.5.7.jar` (or latest version).
 
 ### Installation Steps
 
@@ -205,14 +205,14 @@ Download `SSoggySouls-4.4.6.jar` (or latest version).
 **For Single Server Setups:**
 
 ```text
-Server: /plugins/SSoggySouls-4.4.6.jar
+Server: /plugins/SSoggySouls-4.5.7.jar
 ```
 
 **For 2-Server Setups (Main + Limbo):**
 
 ```text
-Main Server: /plugins/SSoggySouls-4.4.6.jar
-Limbo Server: /plugins/SSoggySouls-4.4.6.jar
+Main Server: /plugins/SSoggySouls-4.5.7.jar
+Limbo Server: /plugins/SSoggySouls-4.5.7.jar
 ```
 
 1. **Start your server(s)** to generate config files
@@ -239,21 +239,21 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## Forge Mod Installation
+## Forge & NeoForge Mod Installation
 
-The Forge version is installed similarly to the Bukkit version, but uses the `mods/` folder.
+The Forge and NeoForge versions are installed similarly to the Bukkit version, but use the `mods/` folder.
 
 ### Requirements
 
-- **Forge Loader** installed on your server (1.21.1).
+- **Forge or NeoForge Loader** installed on your server (1.21.1).
 
 ### Installation Steps
 
-1. Place `SSoggySouls-Forge-X.X.X.jar` into the `mods/` folder.
+1. Place `SSoggySouls-Forge-X.X.X.jar` or `SSoggySouls-NeoForge-X.X.X.jar` into the `mods/` folder.
 2. Start the server to generate `config/ssoggysouls.toml` (or `ssoggysouls.json` depending on build).
 3. Stop the server and configure as needed.
 
-> **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
+> **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
 ______________________________________________________________________
 
@@ -556,7 +556,7 @@ Check console logs for:
 
 ### Mistake 6: Different Plugin Versions
 
-**Wrong:** Main server has v3.2.6, Limbo has v4.4.6
+**Wrong:** Main server has v3.2.6, Limbo has v4.5.7
 
 **Right:** Both servers must use the exact same version
 
