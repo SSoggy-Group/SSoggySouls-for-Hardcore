@@ -1,7 +1,7 @@
 package org.ssoggy.ssoggysouls.util;
 
 import net.minecraftforge.event.tick.ServerTickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
