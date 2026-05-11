@@ -188,11 +188,18 @@ jobs:
         run: |
           chmod +x ./gradlew
           # Build platforms in total isolation using -DonlyPlatform to avoid plugin conflicts
-          ./gradlew :common:build -DonlyPlatform=common --no-daemon
-          ./gradlew :fabric:build -DonlyPlatform=fabric --no-daemon
-          ./gradlew :paper:build -DonlyPlatform=paper --no-daemon
-          ./gradlew :neoforge:build -DonlyPlatform=neoforge --no-daemon
-          ./gradlew :forge:build -DonlyPlatform=forge --no-daemon
+          ./gradlew :common:build -DonlyPlatform=common --no-daemon --info --stacktrace
+          ./gradlew :fabric:build -DonlyPlatform=fabric --no-daemon --info --stacktrace
+          ./gradlew :paper:build -DonlyPlatform=paper --no-daemon --info --stacktrace
+          ./gradlew :neoforge:build -DonlyPlatform=neoforge --no-daemon --info --stacktrace
+          ./gradlew :forge:build -DonlyPlatform=forge --no-daemon --info --stacktrace
+
+      - name: Upload Build Reports on Failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: build-reports
+          path: "**/build/reports/"
 
       - name: Locate and Rename Jars
         env:
