@@ -82,11 +82,11 @@ public class GhostModeEvents {
         handleCancelableEvent(event, event.getPlayer());
     }
 
-    private static void handleCancelableEvent(net.minecraftforge.eventbus.api.ICancellableEvent event, Player player) {
+    private static void handleCancelableEvent(net.minecraftforge.eventbus.api.Event event, Player player) {
         if (!ConfigManager.getConfig().isHrmEnabled()) return;
 
         if (isGhost(player)) {
-            event.setCanceled(true);
+            if (event.isCancelable()) event.setCanceled(true);
         }
     }
 
@@ -98,7 +98,7 @@ public class GhostModeEvents {
             if (event.getEntity() instanceof ServerPlayer serverPlayer) {
                 serverPlayer.setCamera(event.getTarget());
             }
-            event.setCanceled(true);
+            if (event.isCancelable()) event.setCanceled(true);
         }
     }
 
