@@ -7,3 +7,4 @@
 ## 2026-05-10 - [Interactive CLI Help Menus]
 **Learning:** Admin help menus in legacy command systems (like Bukkit/Paper) are often static text, forcing users to manually type complex subcommands.
 **Action:** Upgrade static text help menus to use Rich Components with `ClickEvent.suggestCommand()` and `HoverEvent.showText()` to reduce friction and typos for command-line users.
+## 2026-05-10 - [Interactive CLI Usage Error Catching]\n**Learning:** Implementing interactive components (like clickable auto-fill suggestions) on error handling messages transforms static frustration points into helpful recovery paths.\n**Action:** Use `CommandUtil.sendInteractiveUsage()` when catching command formatting errors in Bukkit to allow users to quickly fix their typos with a single click.

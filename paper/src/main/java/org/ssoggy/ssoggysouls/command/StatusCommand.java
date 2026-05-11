@@ -40,10 +40,7 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
         } else if (sender instanceof org.bukkit.entity.Player player) {
             targetName = player.getName();
         } else {
-            String msg = MessageUtil.colorize("&cUsage: /pstatus <player>");
-            if (msg != null) {
-                sender.sendMessage(msg);
-            }
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /pstatus <player>", "/pstatus ");
             return false;
         }
 
