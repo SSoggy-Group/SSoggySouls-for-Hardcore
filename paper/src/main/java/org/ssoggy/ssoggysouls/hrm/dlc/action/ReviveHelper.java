@@ -193,7 +193,7 @@ public class ReviveHelper {
         }
 
         if (Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("ritual-totem-effect", true))) {
-            deadPlayer.sendEntityEffect(EntityEffect.PROTECTED_FROM_DEATH, deadPlayer); // If this is removed in the newer versions then I will cry
+            deadPlayer.sendEntityEffect(EntityEffect.TOTEM_RESURRECT, deadPlayer); // If this is removed in the newer versions then I will cry
         }
     }
 
