@@ -45,12 +45,12 @@ public class ReviveSkullManager {
             return;
         }
 
-        event.setCanceled(true);
+        event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
 
         CompletableFuture.runAsync(() -> {
             List<PlayerData> deadPlayers = db.getDeadPlayers();
 
-            serverPlayer.getServer().execute(() -> {
+            serverPlayer.server.execute(() -> {
                 if (deadPlayers.isEmpty()) {
                     serverPlayer.sendSystemMessage(Component.literal("No dead players found.").withStyle(net.minecraft.ChatFormatting.GRAY), false);
                     return;
@@ -105,7 +105,8 @@ public class ReviveSkullManager {
     private static void handleMenuClick(ItemStack clicked, Player clickingPlayer) {
         if (!clicked.isEmpty() && clicked.is(Items.PLAYER_HEAD)) {
             ResolvableProfile profile = clicked.get(DataComponents.PROFILE);
-            if (profile != null && profile.getId().isPresent()) {
+            UUID profileId = profile != null ? profile.getId().orElse(null) : null;
+            if (profileId != null) {
                 String name = profile.getName().orElse("Unknown");
 
                 ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
@@ -118,7 +119,7 @@ public class ReviveSkullManager {
                 clickingPlayer.sendSystemMessage(Component.literal("Received " + name + "'s head.").withStyle(net.minecraft.ChatFormatting.GREEN), false);
 
                 if (clickingPlayer instanceof ServerPlayer spe) {
-                    spe.getServer().execute(spe::closeContainer);
+                    spe.server.execute(spe::closeContainer);
                 }
             }
         }

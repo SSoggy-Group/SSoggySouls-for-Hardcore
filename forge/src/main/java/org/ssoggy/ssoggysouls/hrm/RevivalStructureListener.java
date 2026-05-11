@@ -89,8 +89,7 @@ public class RevivalStructureListener {
             return;
         }
 
-        event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
 
         final ItemStack finalStack = stack.copy();
         finalStack.setCount(1);
@@ -109,7 +108,7 @@ public class RevivalStructureListener {
             String ownerName = org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames.getOrDefault(ownerUuid, "Player");
 
             if (!isDead) {
-                serverPlayer.getServer().execute(() -> {
+                serverPlayer.server.execute(() -> {
                     sendError(serverPlayer, ownerName + " is not dead!");
                     world.playSound(null, placedPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.4f, 2f);
                     refundHead(serverPlayer, refundedItem);
@@ -119,7 +118,7 @@ public class RevivalStructureListener {
 
             boolean success = db.revivePlayer(ownerUuid, ConfigManager.getConfig().getOnReviveLives());
             if (!success) {
-                serverPlayer.getServer().execute(() -> {
+                serverPlayer.server.execute(() -> {
                     sendError(serverPlayer, "Failed to revive. Check console.");
                     refundHead(serverPlayer, refundedItem);
                 });
@@ -130,7 +129,7 @@ public class RevivalStructureListener {
             new DlcStats(ownerUuid).incrementStat(DlcStat.REVIVES, 1);
             SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getScoreboardName(), ownerName);
 
-            serverPlayer.getServer().execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, ownerName));
+            serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, ownerName));
         });
     }
 

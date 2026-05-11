@@ -43,7 +43,7 @@ public class ExtraLifeManager {
             return;
         }
 
-        event.setCanceled(true);
+        event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
 
         if (!serverPlayer.isCreative()) {
             stack.shrink(1);
@@ -80,7 +80,7 @@ public class ExtraLifeManager {
     }
 
     private static void handleFailedUse(ServerPlayer serverPlayer, String messageKey) {
-        serverPlayer.getServer().execute(() -> {
+        serverPlayer.server.execute(() -> {
             serverPlayer.sendSystemMessage(MessageUtil.get(messageKey), false);
             if (!serverPlayer.isCreative()) {
                 ItemStack refundedItem = createExtraLifeItem();
@@ -97,7 +97,7 @@ public class ExtraLifeManager {
 
         SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getScoreboardName(), newLives);
 
-        serverPlayer.getServer().execute(() -> {
+        serverPlayer.server.execute(() -> {
             serverPlayer.sendSystemMessage(MessageUtil.get("extra-life-gained", "lives", newLives), false);
             serverPlayer.level().playSound(null, serverPlayer.blockPosition(), SoundEvents.PLAYER_LEVELUP,
                     SoundSource.PLAYERS, 1.0f, 1.2f);

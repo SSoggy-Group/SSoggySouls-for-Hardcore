@@ -6,8 +6,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.event.tick.ServerTickEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
@@ -26,10 +26,8 @@ public class HeadEffectsTask {
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
+    public static void onServerTick(ServerTickEvent.Post event) {
         if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled() || !org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHeadWearingEffects()) return;
-
-        if (event.phase != TickEvent.Phase.END) return;
 
         MinecraftServer server = event.getServer();
         if (server.getTickCount() % 20 != 0) return; // Once per second

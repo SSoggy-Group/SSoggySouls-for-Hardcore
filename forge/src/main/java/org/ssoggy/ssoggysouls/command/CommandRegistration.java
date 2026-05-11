@@ -111,7 +111,7 @@ public class CommandRegistration {
 
     private static void registerReviveCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("revive")
-            .requires(source -> source.hasPermissions(2))
+            .requires(source -> source.hasPermission(2))
             .then(Commands.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                         context.getSource().getServer().getPlayerList().getPlayers().stream().map(p -> p.getScoreboardName()), builder))

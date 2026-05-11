@@ -56,7 +56,7 @@ public class ServerLifecycleListener {
             DlcNames.cache(uuid, player.getScoreboardName());
 
             final PlayerData finalData = data;
-            player.getServer().execute(() -> handleJoinSync(player, finalData));
+            player.server.execute(() -> handleJoinSync(player, finalData));
         });
     }
 
@@ -64,7 +64,7 @@ public class ServerLifecycleListener {
         GlobalPos pending = org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.consumePendingRevival(player.getUUID());
         if (pending != null) {
             setGhostModeAttributes(player, false);
-            ServerLevel targetWorld = player.getServer().getLevel(pending.dimension());
+            ServerLevel targetWorld = player.server.getLevel(pending.dimension());
             org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.restoreAtStructure(player, targetWorld != null ? targetWorld : (ServerLevel) player.level(), pending.pos());
             return;
         }
@@ -118,7 +118,7 @@ public class ServerLifecycleListener {
                 new DlcStats(killer.getUUID()).incrementStat(DlcStat.KILLS, 1);
             }
 
-            player.getServer().execute(() -> handleDeathSync(player, data, remaining));
+            player.server.execute(() -> handleDeathSync(player, data, remaining));
         });
     }
 
@@ -134,13 +134,13 @@ public class ServerLifecycleListener {
             setGhostModeAttributes(player, true);
             player.sendSystemMessage(MessageUtil.get("death-now-ghost"), false);
             org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents.updateGhostStatus(player.getUUID(), true);
-            GhostState state = GhostState.getServerState(player.getServer());
+            GhostState state = GhostState.getServerState(player.server);
             state.setDeathLocation(player.getUUID(), player.blockPosition());
             state.setDirty();
             DlcDeaths.recordDeath(
                     player.getUUID(),
                     player.getScoreboardName(),
-                    ((ServerLevel) player.level()).dimension().location().toString(),
+                    ((ServerLevel) player.level()).dimension().toString(),
                     player.blockPosition().getX(),
                     player.blockPosition().getY(),
                     player.blockPosition().getZ()
@@ -162,7 +162,7 @@ public class ServerLifecycleListener {
 
         CompletableFuture.runAsync(() -> {
             if (db.isPlayerDead(uuid)) {
-                player.getServer().execute(() -> handleRespawnSync(player));
+                player.server.execute(() -> handleRespawnSync(player));
             }
         });
     }

@@ -46,7 +46,7 @@ public class GhostModeEvents {
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(uuid);
             boolean isDead = data != null && data.isDead();
-            player.getServer().execute(() -> {
+            player.server.execute(() -> {
                 if (isDead) GHOST_CACHE.add(uuid);
                 else GHOST_CACHE.remove(uuid);
             });
@@ -82,10 +82,10 @@ public class GhostModeEvents {
         handleCancelableEvent(event, event.getPlayer());
     }
 
-    private static void handleCancelableEvent(net.minecraftforge.eventbus.api.Event event, Player player) {
+    private static void handleCancelableEvent(net.minecraftforge.eventbus.api.ICancellableEvent event, Player player) {
         if (!ConfigManager.getConfig().isHrmEnabled()) return;
 
-        if (isGhost(player) && event.isCancelable()) {
+        if (isGhost(player)) {
             event.setCanceled(true);
         }
     }
@@ -98,7 +98,7 @@ public class GhostModeEvents {
             if (event.getEntity() instanceof ServerPlayer serverPlayer) {
                 serverPlayer.setCamera(event.getTarget());
             }
-            event.setCanceled(true);
+            event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
         }
     }
 
@@ -116,7 +116,7 @@ public class GhostModeEvents {
 
     private static void enforceGhostRestrictions(ServerPlayer player) {
         UUID uuid = player.getUUID();
-        GhostState state = GhostState.getServerState(player.getServer());
+        GhostState state = GhostState.getServerState(player.server);
 
         if (state.getDeathHolder(uuid) != null) {
             return;

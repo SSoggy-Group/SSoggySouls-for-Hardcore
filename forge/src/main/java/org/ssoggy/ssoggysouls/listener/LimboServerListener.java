@@ -49,7 +49,7 @@ public class LimboServerListener {
         CompletableFuture.runAsync(() -> {
             boolean isDead = db.isPlayerDead(uuid);
 
-            player.getServer().execute(() -> {
+            player.server.execute(() -> {
                 if (isDead) {
                     applyLimboState(player);
                 } else {
@@ -71,7 +71,7 @@ public class LimboServerListener {
             if (db.isPlayerDead(player.getUUID())) {
                 String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
                 if (!isWhitelistedCommand(cmdToCheck)) {
-                    event.setCanceled(true);
+                    event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
                     player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"), false);
                 }
             }
@@ -81,7 +81,7 @@ public class LimboServerListener {
     @SubscribeEvent
     public static void onLivingDamage(LivingDamageEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
-            event.setCanceled(true); // Cancel damage for ghosts/dead players
+            event.setCanceled(true); // LivingDamageEvent usually still uses setCanceled in Forge if it implements ICancelable
         }
     }
 
@@ -92,10 +92,10 @@ public class LimboServerListener {
             // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
             ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
-            if (limboId != null && event.getDimension().location().equals(limboId)) return;
+            if (limboId != null && event.getDimension().toString().contains(limboId.toString())) return;
 
             // Check for bypass permission (parity with Fabric)
-            if (player.hasPermissions(2)) return;
+            if (player.hasPermission(2)) return;
 
             if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
                 event.setCanceled(true);

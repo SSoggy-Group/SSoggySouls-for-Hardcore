@@ -52,11 +52,9 @@ public class GhostBlockEvents {
         }
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
-        if (profile == null || profile.getId().isEmpty()) {
-            return;
-        }
+        UUID ownerUuid = profile != null ? profile.getId().orElse(null) : null;
+        if (ownerUuid == null) return;
 
-        UUID ownerUuid = profile.getId().get();
         DlcDeaths.setHolder(ownerUuid, player.getUUID());
         DlcNames.cache(player.getUUID(), player.getScoreboardName());
     }
@@ -82,8 +80,8 @@ public class GhostBlockEvents {
 
     private static void handleHeadBreak(Level world, ServerPlayer player, SkullBlockEntity skull) {
         ResolvableProfile profile = skull.getOwnerProfile();
-        if (profile != null && profile.getId().isPresent()) {
-            UUID ownerUuid = profile.getId().get();
+        UUID ownerUuid = profile != null ? profile.getId().orElse(null) : null;
+        if (ownerUuid != null) {
             String name = profile.getName().orElse("Unknown");
             
             CompletableFuture.runAsync(() -> {
@@ -122,9 +120,8 @@ public class GhostBlockEvents {
         if (!stack.is(Items.PLAYER_HEAD)) return;
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
-        if (profile == null || profile.getId().isEmpty()) return;
-
-        UUID ownerUuid = profile.getId().get();
+        UUID ownerUuid = profile != null ? profile.getId().orElse(null) : null;
+        if (ownerUuid == null) return;
         BlockPos targetPos = event.getPos().relative(event.getFace());
 
         event.getLevel().getServer().execute(() -> handleHeadPlace(event.getLevel(), ownerUuid, targetPos));
@@ -136,7 +133,8 @@ public class GhostBlockEvents {
             BlockEntity be = world.getBlockEntity(targetPos);
             if (be instanceof SkullBlockEntity skull) {
                 ResolvableProfile profile = skull.getOwnerProfile();
-                if (profile != null && profile.getId().isPresent() && profile.getId().get().equals(ownerUuid)) {
+                UUID profileId = profile != null ? profile.getId().orElse(null) : null;
+                if (profileId != null && profileId.equals(ownerUuid)) {
                     updateGhostStateOnPlace(world, ownerUuid, targetPos);
                 }
             }
@@ -153,7 +151,7 @@ public class GhostBlockEvents {
         DlcDeaths.recordDeath(
                 ownerUuid,
                 DlcNames.getOrDefault(ownerUuid, ownerUuid.toString()),
-                world.dimension().location().toString(),
+                world.dimension().toString(),
                 targetPos.getX(),
                 targetPos.getY(),
                 targetPos.getZ()
