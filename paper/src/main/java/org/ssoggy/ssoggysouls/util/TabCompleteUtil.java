@@ -19,9 +19,8 @@ public final class TabCompleteUtil {
      */
     public static List<String> getOnlinePlayerNames(String prefix) {
         List<String> names = new ArrayList<>();
-        String lower = prefix.toLowerCase(java.util.Locale.ROOT);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getName().toLowerCase(java.util.Locale.ROOT).startsWith(lower)) {
+            if (player.getName().regionMatches(true, 0, prefix, 0, prefix.length())) {
                 names.add(player.getName());
             }
         }
@@ -37,9 +36,8 @@ public final class TabCompleteUtil {
      */
     public static List<String> filterStartsWith(List<String> options, String prefix) {
         List<String> result = new ArrayList<>();
-        String lower = prefix.toLowerCase(java.util.Locale.ROOT);
         for (String option : options) {
-            if (option.toLowerCase(java.util.Locale.ROOT).startsWith(lower)) {
+            if (option.regionMatches(true, 0, prefix, 0, prefix.length())) {
                 result.add(option);
             }
         }
