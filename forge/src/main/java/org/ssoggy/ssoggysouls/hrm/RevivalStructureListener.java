@@ -23,7 +23,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -176,7 +176,7 @@ public class RevivalStructureListener {
     }
 
     public static void restoreAtStructure(ServerPlayer revived, ServerLevel world, BlockPos spawnPos) {
-        revived.teleportTo(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, java.util.Set.of(), 0, 0, true);
+        revived.teleportTo(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, java.util.Set.of(), 0, 0);
         revived.setGameMode(GameType.SURVIVAL);
         ServerLifecycleListener.setGhostModeAttributes(revived, false);
         revived.sendSystemMessage(MessageUtil.get("revive-success"), false);

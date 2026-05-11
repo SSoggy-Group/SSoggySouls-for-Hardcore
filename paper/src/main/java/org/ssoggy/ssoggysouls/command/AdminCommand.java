@@ -130,15 +130,13 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             case "info"     -> handleInfo(sender, args);
             case "reload"   -> handleReload(sender);
             case SUB_CONFIRM  -> handleGraceConfirm(sender, args);
-            default -> sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin <subcommand> [args]"));
+            default -> CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin <subcommand> [args]", "/psadmin ");
         }
     }
 
     private void handleLives(CommandSender sender, String[] args) {
         if (args.length < 4) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin lives <set|give|take> <player> <amount>"));
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin lives <set|give|take> <player> <amount>", "/psadmin lives ");
             return;
         }
 
@@ -192,8 +190,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleGrace(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin grace <set|remove> <player> [time]"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin grace <set|remove> <player> [time]", "/psadmin grace ");
             return;
         }
 
@@ -237,8 +234,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void applyGraceSet(CommandSender sender, String[] args, PlayerData data) {
         if (args.length < 4) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin grace set <player> <time> (e.g., 1h30m, 2h, 90m)"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin grace set <player> <time> (e.g., 1h30m, 2h, 90m)", "/psadmin grace set " + data.getUsername() + " ");
             return;
         }
         String timeStr = args[3];
@@ -311,8 +307,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleGraceConfirm(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin confirm <overwrite|stack|cancel>"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin confirm <overwrite|stack|cancel>", "/psadmin confirm ");
             return;
         }
 
@@ -393,7 +388,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleKill(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MessageUtil.colorize("&cUsage: /psadmin kill <player>"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin kill <player>", "/psadmin kill ");
             return;
         }
 
@@ -488,8 +483,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleRevive(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin revive <player> [lives]"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin revive <player> [lives]", "/psadmin revive ");
             return;
         }
 
@@ -535,7 +529,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleReset(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MessageUtil.colorize("&cUsage: /psadmin reset <player>"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin reset <player>", "/psadmin reset ");
             return;
         }
 
@@ -566,7 +560,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleInfo(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MessageUtil.colorize("&cUsage: /psadmin info <player>"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin info <player>", "/psadmin info ");
             return;
         }
 

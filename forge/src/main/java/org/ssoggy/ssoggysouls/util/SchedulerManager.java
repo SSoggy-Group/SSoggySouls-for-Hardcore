@@ -1,7 +1,7 @@
 package org.ssoggy.ssoggysouls.util;
 
-import net.minecraftforge.event.tick.ServerTickEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.event.TickEvent.ServerTickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
@@ -20,7 +20,7 @@ public class SchedulerManager {
     private static int taskIdCounter = 0;
 
     @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post event) {
+    public static void onServerTick(ServerTickEvent event) {
         Iterator<ScheduledTask> iterator = tasks.iterator();
         while (iterator.hasNext()) {
             ScheduledTask task = iterator.next();

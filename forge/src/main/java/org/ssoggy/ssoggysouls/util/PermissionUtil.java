@@ -13,7 +13,7 @@ public final class PermissionUtil {
         if (!config.isLimboOpSecurityCheck()) return false;
         if (!config.isLimboServer()) return false;
         if (!source.isPlayer()) return false;
-        if (!source.hasPermissions(2)) return false;
+        if (!source.hasPermission(2)) return false;
 
         ServerPlayer player = source.getPlayer();
         if (player == null) return false;
