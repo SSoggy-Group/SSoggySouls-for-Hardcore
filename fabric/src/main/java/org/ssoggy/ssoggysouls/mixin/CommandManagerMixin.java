@@ -15,7 +15,8 @@ public class CommandManagerMixin {
     @Inject(method = "execute", at = @At("HEAD"), cancellable = true)
     private void onExecute(ParseResults<ServerCommandSource> parseResults, String command, CallbackInfoReturnable<Integer> cir) {
         ServerCommandSource source = parseResults.getContext().getSource();
-        if (source.getEntity() instanceof ServerPlayerEntity player && LimboServerListener.shouldBlockCommand(player, command)) {
+        String commandToBlock = command.startsWith("/") ? command.substring(1) : command;
+        if (source.getEntity() instanceof ServerPlayerEntity player && LimboServerListener.shouldBlockCommand(player, commandToBlock)) {
             cir.setReturnValue(0);
         }
     }
