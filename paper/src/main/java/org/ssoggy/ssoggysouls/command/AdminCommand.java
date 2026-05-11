@@ -136,7 +136,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleLives(CommandSender sender, String[] args) {
         if (args.length < 4) {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin lives <set|give|take> <player> <amount>", "/psadmin lives ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin lives <set|give|take> <player> <amount>", "/psadmin lives ");
             return;
         }
 
