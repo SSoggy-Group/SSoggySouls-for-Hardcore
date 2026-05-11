@@ -130,7 +130,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             case "info"     -> handleInfo(sender, args);
             case "reload"   -> handleReload(sender);
             case SUB_CONFIRM  -> handleGraceConfirm(sender, args);
-            default -> org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin <subcommand> [args]", "/psadmin ");
+            default -> CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin <subcommand> [args]", "/psadmin ");
         }
     }
 
