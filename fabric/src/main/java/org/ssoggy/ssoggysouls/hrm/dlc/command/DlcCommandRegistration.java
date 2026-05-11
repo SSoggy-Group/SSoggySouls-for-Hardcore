@@ -131,7 +131,7 @@ public final class DlcCommandRegistration {
             );
         }
 
-        return fences.stream().sorted().toList();
+        return fences.stream().distinct().sorted().toList();
     }
 
     private DlcCommandRegistration() {
