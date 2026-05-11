@@ -1,5 +1,6 @@
 package org.ssoggy.ssoggysouls.mixin;
 
+import com.mojang.brigadier.ParseResults;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
