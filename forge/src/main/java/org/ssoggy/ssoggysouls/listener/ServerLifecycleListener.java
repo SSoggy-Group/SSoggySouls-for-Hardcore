@@ -78,7 +78,7 @@ public class ServerLifecycleListener {
             if (player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE) {
                 player.setGameMode(GameType.ADVENTURE);
                 setGhostModeAttributes(player, true);
-                player.sendSystemMessage(MessageUtil.get("ghost-mode-active"), false);
+                player.sendSystemMessage(MessageUtil.get("ghost-mode-active"));
             }
         } else if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
             player.setGameMode(GameType.SURVIVAL);
@@ -125,14 +125,14 @@ public class ServerLifecycleListener {
     private static void handleDeathSync(ServerPlayer player, PlayerData data, int remaining) {
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
-                player.sendSystemMessage(MessageUtil.get("death-sending-to-limbo"), false);
+                player.sendSystemMessage(MessageUtil.get("death-sending-to-limbo"));
                 ServerTransferUtil.sendToLimbo(player);
                 return;
             }
 
             player.setGameMode(GameType.ADVENTURE);
             setGhostModeAttributes(player, true);
-            player.sendSystemMessage(MessageUtil.get("death-now-ghost"), false);
+            player.sendSystemMessage(MessageUtil.get("death-now-ghost"));
             org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents.updateGhostStatus(player.getUUID(), true);
             GhostState state = GhostState.getServerState(player.server);
             state.setDeathLocation(player.getUUID(), player.blockPosition());
@@ -140,7 +140,7 @@ public class ServerLifecycleListener {
             DlcDeaths.recordDeath(
                     player.getUUID(),
                     player.getScoreboardName(),
-                    ((ServerLevel) player.level()).dimension().toString(),
+                    ((ServerLevel) player.level()).dimension().location().toString(),
                     player.blockPosition().getX(),
                     player.blockPosition().getY(),
                     player.blockPosition().getZ()
@@ -150,7 +150,7 @@ public class ServerLifecycleListener {
                 HeadDropListener.triggerHeadDrop(player);
             }
         } else {
-            player.sendSystemMessage(MessageUtil.get("death-life-lost", "lives", remaining), false);
+            player.sendSystemMessage(MessageUtil.get("death-life-lost", "lives", remaining));
         }
     }
 

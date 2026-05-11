@@ -111,7 +111,7 @@ public class CommandRegistration {
 
     private static void registerReviveCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("revive")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.hasPermissions(2))
             .then(Commands.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                         context.getSource().getServer().getPlayerList().getPlayers().stream().map(p -> p.getScoreboardName()), builder))
@@ -167,14 +167,14 @@ public class CommandRegistration {
             if (targetPlayer != null) {
                 targetPlayer.setGameMode(GameType.SURVIVAL);
                 ServerLifecycleListener.setGhostModeAttributes(targetPlayer, false);
-                targetPlayer.sendSystemMessage(MessageUtil.get("revive-success"), false);
+                targetPlayer.sendSystemMessage(MessageUtil.get("revive-success"));
             }
         });
     }
 
     private static void registerSetLivesCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("psetlives")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.hasPermissions(2))
             .then(Commands.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                         context.getSource().getServer().getPlayerList().getPlayers().stream().map(p -> p.getScoreboardName()), builder))
@@ -227,7 +227,7 @@ public class CommandRegistration {
 
     private static void registerAdminLogCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("adminlog")
-            .requires(source -> source.hasPermission(3))
+            .requires(source -> source.hasPermissions(3))
             .executes(context -> {
                 CommandSourceStack source = context.getSource();
 

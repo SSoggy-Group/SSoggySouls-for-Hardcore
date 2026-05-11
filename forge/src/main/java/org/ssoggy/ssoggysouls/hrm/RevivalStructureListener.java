@@ -74,16 +74,16 @@ public class RevivalStructureListener {
         }
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
-        if (profile == null || profile.getId().isEmpty()) {
+        if (profile == null || profile.id().isEmpty()) {
             return;
         }
 
-        UUID ownerUuid = profile.getId().get();
+        UUID ownerUuid = profile.id().get();
         BlockPos placedPos = event.getPos().relative(event.getFace());
 
         if (!isRitualStructure(world, placedPos)) {
             if (checkIncompleteStructure(world, placedPos)) {
-                serverPlayer.sendSystemMessage(Component.literal(MessageUtil.getRawString("revival-structure-incomplete")).withStyle(net.minecraft.ChatFormatting.RED), false);
+                serverPlayer.sendSystemMessage(Component.literal(MessageUtil.getRawString("revival-structure-incomplete")).withStyle(net.minecraft.ChatFormatting.RED));
                 world.playSound(null, placedPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.4f, 2f);
             }
             return;

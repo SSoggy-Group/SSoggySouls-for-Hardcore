@@ -178,7 +178,7 @@ public final class DlcCommandRegistration {
                 );
                 sendTrustResult(source, result);
                 if (result.targetMessage() != null && target.onlinePlayer() != null) {
-                    target.onlinePlayer().sendSystemMessage(format(DlcCommandResult.success(result.targetMessage())), false);
+                    target.onlinePlayer().sendSystemMessage(format(DlcCommandResult.success(result.targetMessage())));
                 }
             });
         });
@@ -208,7 +208,7 @@ public final class DlcCommandRegistration {
 
                     sendResult(source, DlcCommandResult.success("Here is a list of all the current public deaths"));
                     for (DlcDeathRecord death : deaths) {
-                        source.sendSystemMessage(Component.literal(formatDeath(death)).withStyle(ChatFormatting.GOLD), false);
+                        source.sendSystemMessage(Component.literal(formatDeath(death)).withStyle(ChatFormatting.GOLD));
                     }
                     return 1;
                 }));
@@ -216,7 +216,7 @@ public final class DlcCommandRegistration {
 
     private static void registerGhostModeCommand(CommandDispatcher<CommandSourceStack> dispatcher, DatabaseManager db) {
         dispatcher.register(Commands.literal("ghostmode")
-                .requires(source -> source.hasPermission(2))
+                .requires(source -> source.hasPermissions(2))
                 .executes(context -> {
                     CommandSourceStack source = context.getSource();
                     if (!source.isPlayer()) {
@@ -269,7 +269,7 @@ public final class DlcCommandRegistration {
 
     private static void registerConfigCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("revivalconfig")
-                .requires(source -> source.hasPermission(2))
+                .requires(source -> source.hasPermissions(2))
                 .executes(context -> {
                     sendResult(context.getSource(), DlcCommandResult.fail("Please use /revivalconfig <structure|gamerule|timer|reload>"));
                     return 0;
@@ -426,7 +426,7 @@ public final class DlcCommandRegistration {
 
     private static void sendResult(CommandSourceStack source, DlcCommandResult result) {
         for (String line : result.message().split("\\n")) {
-            source.sendSystemMessage(format(new DlcCommandResult(result.status(), line, result.details())), false);
+            source.sendSystemMessage(format(new DlcCommandResult(result.status(), line, result.details())));
         }
     }
 

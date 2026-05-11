@@ -95,11 +95,11 @@ public class LimboServerListener {
             if (limboId != null && event.getDimension().toString().contains(limboId.toString())) return;
 
             // Check for bypass permission (parity with Fabric)
-            if (player.hasPermission(2)) return;
+            if (player.hasPermissions(2)) return;
 
             if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
                 event.setCanceled(true);
-                player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"), false);
+                player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
             }
         }
     }
@@ -119,6 +119,6 @@ public class LimboServerListener {
             player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), java.util.Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch(), true);
         }
 
-        player.sendSystemMessage(MessageUtil.get("limbo-welcome-dead"), false);
+        player.sendSystemMessage(MessageUtil.get("limbo-welcome-dead"));
     }
 }

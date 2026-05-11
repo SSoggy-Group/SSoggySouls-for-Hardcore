@@ -45,14 +45,14 @@ public class ReviveSkullManager {
             return;
         }
 
-        event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+        event.setCanceled(true);
 
         CompletableFuture.runAsync(() -> {
             List<PlayerData> deadPlayers = db.getDeadPlayers();
 
             serverPlayer.server.execute(() -> {
                 if (deadPlayers.isEmpty()) {
-                    serverPlayer.sendSystemMessage(Component.literal("No dead players found.").withStyle(net.minecraft.ChatFormatting.GRAY), false);
+                    serverPlayer.sendSystemMessage(Component.literal("No dead players found.").withStyle(net.minecraft.ChatFormatting.GRAY));
                     return;
                 }
                 openMenu(serverPlayer, deadPlayers);
@@ -105,9 +105,8 @@ public class ReviveSkullManager {
     private static void handleMenuClick(ItemStack clicked, Player clickingPlayer) {
         if (!clicked.isEmpty() && clicked.is(Items.PLAYER_HEAD)) {
             ResolvableProfile profile = clicked.get(DataComponents.PROFILE);
-            UUID profileId = profile != null ? profile.getId().orElse(null) : null;
-            if (profileId != null) {
-                String name = profile.getName().orElse("Unknown");
+            if (profile != null && profile.id().isPresent()) {
+                String name = profile.name().orElse("Unknown");
 
                 ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
                 realHead.set(DataComponents.PROFILE, profile);
@@ -116,10 +115,10 @@ public class ReviveSkullManager {
                 if (!clickingPlayer.getInventory().add(realHead)) {
                     clickingPlayer.drop(realHead, false);
                 }
-                clickingPlayer.sendSystemMessage(Component.literal("Received " + name + "'s head.").withStyle(net.minecraft.ChatFormatting.GREEN), false);
+                clickingPlayer.sendSystemMessage(Component.literal("Received " + name + "'s head.").withStyle(net.minecraft.ChatFormatting.GREEN));
 
                 if (clickingPlayer instanceof ServerPlayer spe) {
-                    spe.server.execute(spe::closeContainer);
+                    spe.getServer().execute(spe::closeContainer);
                 }
             }
         }

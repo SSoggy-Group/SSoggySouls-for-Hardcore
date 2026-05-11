@@ -98,7 +98,7 @@ public class GhostModeEvents {
             if (event.getEntity() instanceof ServerPlayer serverPlayer) {
                 serverPlayer.setCamera(event.getTarget());
             }
-            event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+            event.setCanceled(true);
         }
     }
 
@@ -138,7 +138,7 @@ public class GhostModeEvents {
 
     private static void applyTeleportFeedback(ServerPlayer player, BlockPos deathPos) {
         // Port of Paper's onPlayerMove teleport feedback (sound + particles).
-        player.teleportTo((net.minecraft.server.level.ServerLevel) player.level(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), true);
+        player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
         
         // Scope sound and particles to the ghost only to prevent location leaking
         player.playNotifySound(SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
