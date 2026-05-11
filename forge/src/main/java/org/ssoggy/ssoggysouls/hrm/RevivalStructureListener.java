@@ -74,11 +74,11 @@ public class RevivalStructureListener {
         }
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
-        if (profile == null || profile.id().isEmpty()) {
+        if (profile == null || profile.getId().isEmpty()) {
             return;
         }
 
-        UUID ownerUuid = profile.id().get();
+        UUID ownerUuid = profile.getId().get();
         BlockPos placedPos = event.getPos().relative(event.getFace());
 
         if (!isRitualStructure(world, placedPos)) {

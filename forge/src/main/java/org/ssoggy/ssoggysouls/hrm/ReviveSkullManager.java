@@ -105,8 +105,8 @@ public class ReviveSkullManager {
     private static void handleMenuClick(ItemStack clicked, Player clickingPlayer) {
         if (!clicked.isEmpty() && clicked.is(Items.PLAYER_HEAD)) {
             ResolvableProfile profile = clicked.get(DataComponents.PROFILE);
-            if (profile != null && profile.id().isPresent()) {
-                String name = profile.name().orElse("Unknown");
+            if (profile != null && profile.getId().isPresent()) {
+                String name = profile.getName().orElse("Unknown");
 
                 ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
                 realHead.set(DataComponents.PROFILE, profile);
