@@ -58,7 +58,7 @@ public class GhostState extends SavedData {
         tag.put(DEATH_LOCATIONS, locations);
 
         CompoundTag holders = new CompoundTag();
-        deathHolders.forEach(uuid -> holders.putUUID(uuid.toString(), uuid));
+        deathHolders.forEach((ghostUuid, holderUuid) -> holders.putUUID(ghostUuid.toString(), holderUuid));
         tag.put(DEATH_HOLDERS, holders);
 
         return tag;
