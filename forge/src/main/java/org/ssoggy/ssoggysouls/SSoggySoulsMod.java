@@ -35,6 +35,7 @@ public class SSoggySoulsMod implements PluginContext {
 
     public static final String MODID = "ssoggysouls";
     public static final Logger LOGGER = LogUtils.getLogger();
+    private DatabaseManager databaseManager;
     private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MODID);
 
     public SSoggySoulsMod(FMLJavaModLoadingContext context) {
@@ -54,7 +55,7 @@ public class SSoggySoulsMod implements PluginContext {
 
         // Initialize database
         String dbType = ConfigManager.getConfig().getDatabaseType();
-        DatabaseManager databaseManager;
+        // DatabaseManager databaseManager;
         if ("mysql".equalsIgnoreCase(dbType)) {
             databaseManager = new MySQLManager(this);
         } else {
