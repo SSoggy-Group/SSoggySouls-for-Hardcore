@@ -23,6 +23,8 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 public class LimboServerListener implements Listener {
 
+    public static final java.util.Set<java.util.UUID> LIMBO_CACHE = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private static final String PERM_BYPASS = "ssoggysouls.bypass";
 
     private final SSoggySouls plugin;
@@ -44,6 +46,7 @@ public class LimboServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
+        LIMBO_CACHE.add(event.getPlayer().getUniqueId());
         Player player = event.getPlayer();
 
         if (player.hasPermission(PERM_BYPASS)) {
@@ -234,5 +237,10 @@ public class LimboServerListener implements Listener {
                 player.teleport(player.getWorld().getSpawnLocation());
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        LIMBO_CACHE.remove(event.getPlayer().getUniqueId());
     }
 }

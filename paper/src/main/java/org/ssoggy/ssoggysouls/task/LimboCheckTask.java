@@ -13,6 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
+import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 
 public class LimboCheckTask extends BukkitRunnable {
 
@@ -27,7 +28,6 @@ public class LimboCheckTask extends BukkitRunnable {
         Set<UUID> onlinePlayers = collectOnlinePlayers();
         if (onlinePlayers.isEmpty()) return;
 
-        // Avoid string concatenation overhead unless debug is enabled
         if (plugin.isDebugMode()) {
             plugin.debug("Limbo check: scanning " + onlinePlayers.size() + " player(s)...");
         }
@@ -41,8 +41,10 @@ public class LimboCheckTask extends BukkitRunnable {
 
     private Set<UUID> collectOnlinePlayers() {
         Set<UUID> players = new java.util.HashSet<>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            players.add(player.getUniqueId());
+        for (UUID uuid : LimboServerListener.LIMBO_CACHE) {
+            if (Bukkit.getPlayer(uuid) != null) {
+                players.add(uuid);
+            }
         }
         return players;
     }
@@ -53,7 +55,6 @@ public class LimboCheckTask extends BukkitRunnable {
         for (UUID uuid : onlinePlayers) {
             if (Boolean.FALSE.equals(deathStatuses.get(uuid))) {
                 toRelease.add(uuid);
-                // Avoid string concatenation overhead unless debug is enabled
                 if (plugin.isDebugMode()) {
                     plugin.debug("Player " + uuid + " has been revived! Releasing...");
                 }

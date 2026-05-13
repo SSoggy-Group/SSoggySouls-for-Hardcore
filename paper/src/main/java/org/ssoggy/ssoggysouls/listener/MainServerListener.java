@@ -28,6 +28,8 @@ import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
 public class MainServerListener implements Listener {
 
+    public static final java.util.Set<java.util.UUID> SPECTATOR_CACHE = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private static final String PERM_BYPASS = "ssoggysouls.bypass";
     private static final String MSG_SENT_TO_LIMBO = "death-sent-to-limbo";
     private static final String MSG_NOW_SPECTATOR = "death-now-spectator";
@@ -67,6 +69,10 @@ public class MainServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
+        if (event.getPlayer().getGameMode() == org.bukkit.GameMode.SPECTATOR) {
+            SPECTATOR_CACHE.add(event.getPlayer().getUniqueId());
+        }
+
         Player player = event.getPlayer();
         if (player.hasPermission(PERM_BYPASS)) {
             if (plugin.isDebugMode()) {
@@ -248,6 +254,8 @@ public class MainServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
+        SPECTATOR_CACHE.remove(event.getPlayer().getUniqueId());
+
         Player player = event.getPlayer();
         if (player.hasPermission(PERM_BYPASS)) return;
 
@@ -461,6 +469,12 @@ public class MainServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onGameModeChange(PlayerGameModeChangeEvent event) {
+        if (event.getNewGameMode() == org.bukkit.GameMode.SPECTATOR) {
+            SPECTATOR_CACHE.add(event.getPlayer().getUniqueId());
+        } else {
+            SPECTATOR_CACHE.remove(event.getPlayer().getUniqueId());
+        }
+
         // detect external SPECTATOR->SURVIVAL change (HRM or other plugin revive)
         String deathMode = effectiveDeathMode();
         boolean shouldDetect = !SSoggySouls.MODE_LIMBO.equals(deathMode) || plugin.isDetectHrmRevive();
