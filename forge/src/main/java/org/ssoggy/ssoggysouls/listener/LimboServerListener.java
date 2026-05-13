@@ -115,6 +115,7 @@ public class LimboServerListener {
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
+        ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
         if (world != null) {
             player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), java.util.Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
         }

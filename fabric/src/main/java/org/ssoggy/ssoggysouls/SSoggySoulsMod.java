@@ -2,8 +2,11 @@ package org.ssoggy.ssoggysouls;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.ssoggy.ssoggysouls.task.LimboCheckTask;
+import org.ssoggy.ssoggysouls.task.MainReviveCheckTask;
 
 import java.io.File;
 
@@ -78,9 +81,13 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
         if (ConfigManager.getConfig().isLimboServer()) {
             LOGGER.info("Starting in LIMBO server mode...");
             LimboServerListener.register(databaseManager);
+            LimboCheckTask limboCheckTask = new LimboCheckTask(this);
+            ServerTickEvents.END_SERVER_TICK.register(limboCheckTask::tick);
         } else {
             LOGGER.info("Starting in MAIN server mode...");
             MainServerListener.register(databaseManager);
+            MainReviveCheckTask mainReviveCheckTask = new MainReviveCheckTask(this);
+            ServerTickEvents.END_SERVER_TICK.register(mainReviveCheckTask::tick);
 
             // Phase 4: Init Built-in Hardcore Revive Features
             HeadDropListener.register();

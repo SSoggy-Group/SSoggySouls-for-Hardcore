@@ -29,6 +29,8 @@ import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcServices;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 import org.ssoggy.ssoggysouls.util.SchedulerManager;
+import org.ssoggy.ssoggysouls.task.LimboCheckTask;
+import org.ssoggy.ssoggysouls.task.MainReviveCheckTask;
 
 @Mod(SSoggySoulsMod.MODID)
 public class SSoggySoulsMod implements PluginContext {
@@ -75,9 +77,15 @@ public class SSoggySoulsMod implements PluginContext {
         if (ConfigManager.getConfig().isLimboServer()) {
             NeoForge.EVENT_BUS.register(LimboServerListener.class);
             LimboServerListener.setDatabase(databaseManager);
+            
+            int intervalTicks = ConfigManager.getConfig().getConfigInt("limbo.check-interval-seconds", 3) * 20;
+            SchedulerManager.runTimer(new LimboCheckTask(this), 60, intervalTicks);
         } else {
             NeoForge.EVENT_BUS.register(ServerLifecycleListener.class);
             ServerLifecycleListener.setDatabase(databaseManager);
+
+            int intervalTicks = ConfigManager.getConfig().getConfigInt("limbo.check-interval-seconds", 3) * 20;
+            SchedulerManager.runTimer(new MainReviveCheckTask(this), 60, intervalTicks);
 
             NeoForge.EVENT_BUS.register(ExtraLifeManager.class);
             ExtraLifeManager.register(databaseManager);

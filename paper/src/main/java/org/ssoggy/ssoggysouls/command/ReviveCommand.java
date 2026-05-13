@@ -44,7 +44,7 @@ public class ReviveCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length != 1) {
-            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /" + label + " <player>", "/" + label + " ");
+            CommandUtil.sendInteractiveUsage(sender, MessageUtil.get("revive-usage", "label", label), "/" + label + " ");
             return false;
         }
 

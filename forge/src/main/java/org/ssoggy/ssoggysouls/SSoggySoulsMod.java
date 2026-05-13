@@ -28,6 +28,8 @@ import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcServices;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
+import org.ssoggy.ssoggysouls.task.LimboCheckTask;
+import org.ssoggy.ssoggysouls.task.MainReviveCheckTask;
 
 @Mod(SSoggySoulsMod.MODID)
 public class SSoggySoulsMod implements PluginContext {
@@ -72,9 +74,11 @@ public class SSoggySoulsMod implements PluginContext {
         if (ConfigManager.getConfig().isLimboServer()) {
             MinecraftForge.EVENT_BUS.register(LimboServerListener.class);
             LimboServerListener.setDatabase(databaseManager);
+            MinecraftForge.EVENT_BUS.register(new LimboCheckTask(this));
         } else {
             MinecraftForge.EVENT_BUS.register(ServerLifecycleListener.class);
             ServerLifecycleListener.setDatabase(databaseManager);
+            MinecraftForge.EVENT_BUS.register(new MainReviveCheckTask(this));
 
             MinecraftForge.EVENT_BUS.register(ExtraLifeManager.class);
             ExtraLifeManager.register(databaseManager);
