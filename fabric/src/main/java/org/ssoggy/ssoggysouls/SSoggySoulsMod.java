@@ -81,8 +81,7 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
         if (ConfigManager.getConfig().isLimboServer()) {
             LOGGER.info("Starting in LIMBO server mode...");
             LimboServerListener.register(databaseManager);
-            LimboCheckTask limboCheckTask = new LimboCheckTask(this);
-            ServerTickEvents.END_SERVER_TICK.register(limboCheckTask::tick);
+            ServerTickEvents.END_SERVER_TICK.register(new LimboCheckTask(this)::tick);
         } else {
             LOGGER.info("Starting in MAIN server mode...");
             MainServerListener.register(databaseManager);
