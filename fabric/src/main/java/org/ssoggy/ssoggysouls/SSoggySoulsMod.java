@@ -41,22 +41,22 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
     public static final String MOD_ID = "ssoggysouls";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MOD_ID);
+    private DatabaseManager databaseManager;
 
     @Override
     public void onInitialize() {
         LOGGER.info("SSoggySouls Fabric is loading...");
 
-        // Phase 2: Load Configs
+        // Phase 1: Load Configs
         ConfigManager.load();
         MessageUtil.loadMessages();
 
         // Phase 2: Initialize database based on config
         String dbType = ConfigManager.getConfig().getDatabaseType();
-        DatabaseManager databaseManager;
         if ("mysql".equalsIgnoreCase(dbType)) {
-            databaseManager = new MySQLManager(this);
+            this.databaseManager = new MySQLManager(this);
         } else {
-            databaseManager = new SQLiteManager(this);
+            this.databaseManager = new SQLiteManager(this);
         }
         try {
             databaseManager.initialize();
@@ -64,6 +64,8 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
             LOGGER.error("Failed to initialize database. Disabling features. Error: {}", e.getMessage(), e);
             throw new IllegalStateException("Failed to initialize SSoggySouls database", e);
         }
+        
+        // Initialize DLC Services
         DlcServices.init(this);
 
         // Phase 3: Register commands (Brigadier)
@@ -147,5 +149,10 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
     @Override
     public int getConfigInt(String path, int defaultValue) {
         return ConfigManager.getConfig().getConfigInt(path, defaultValue);
+    }
+
+    @Override
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 }

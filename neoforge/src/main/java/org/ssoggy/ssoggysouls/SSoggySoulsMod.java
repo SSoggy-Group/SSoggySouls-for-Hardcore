@@ -38,6 +38,7 @@ public class SSoggySoulsMod implements PluginContext {
     public static final String MODID = "ssoggysouls";
     public static final Logger LOGGER = LogUtils.getLogger();
     private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MODID);
+    private DatabaseManager databaseManager;
 
     public SSoggySoulsMod(IEventBus modEventBus) {
         // Register the commonSetup method for modloading
@@ -56,11 +57,10 @@ public class SSoggySoulsMod implements PluginContext {
 
         // Initialize database
         String dbType = ConfigManager.getConfig().getDatabaseType();
-        DatabaseManager databaseManager;
         if ("mysql".equalsIgnoreCase(dbType)) {
-            databaseManager = new MySQLManager(this);
+            this.databaseManager = new MySQLManager(this);
         } else {
-            databaseManager = new SQLiteManager(this);
+            this.databaseManager = new SQLiteManager(this);
         }
         
         try {
@@ -160,5 +160,10 @@ public class SSoggySoulsMod implements PluginContext {
     @Override
     public int getConfigInt(String path, int defaultValue) {
         return ConfigManager.getConfig().getConfigInt(path, defaultValue);
+    }
+
+    @Override
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 }

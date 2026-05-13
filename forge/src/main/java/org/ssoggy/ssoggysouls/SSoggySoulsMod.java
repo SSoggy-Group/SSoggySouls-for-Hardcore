@@ -154,4 +154,9 @@ public class SSoggySoulsMod implements PluginContext {
     public int getConfigInt(String path, int defaultValue) {
         return ConfigManager.getConfig().getConfigInt(path, defaultValue);
     }
+
+    @Override
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
 }
