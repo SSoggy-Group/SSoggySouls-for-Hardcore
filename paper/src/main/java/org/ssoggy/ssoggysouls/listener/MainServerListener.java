@@ -53,6 +53,11 @@ public class MainServerListener implements Listener {
         this.db = plugin.getDatabaseManager();
         // Initialize cached config values
         refreshConfigCache();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getGameMode() == GameMode.SPECTATOR && !p.hasPermission(PERM_BYPASS)) {
+                SPECTATOR_CACHE.add(p.getUniqueId());
+            }
+        }
     }
     
     /**
@@ -69,11 +74,11 @@ public class MainServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (event.getPlayer().getGameMode() == org.bukkit.GameMode.SPECTATOR) {
-            SPECTATOR_CACHE.add(event.getPlayer().getUniqueId());
+        Player player = event.getPlayer();
+        if (player.getGameMode() == org.bukkit.GameMode.SPECTATOR && !player.hasPermission(PERM_BYPASS)) {
+            SPECTATOR_CACHE.add(player.getUniqueId());
         }
 
-        Player player = event.getPlayer();
         if (player.hasPermission(PERM_BYPASS)) {
             if (plugin.isDebugMode()) {
                 plugin.debug(player.getName() + " has bypass permission, skipping checks.");
@@ -469,10 +474,11 @@ public class MainServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onGameModeChange(PlayerGameModeChangeEvent event) {
-        if (event.getNewGameMode() == org.bukkit.GameMode.SPECTATOR) {
-            SPECTATOR_CACHE.add(event.getPlayer().getUniqueId());
+        Player player = event.getPlayer();
+        if (event.getNewGameMode() == org.bukkit.GameMode.SPECTATOR && !player.hasPermission(PERM_BYPASS)) {
+            SPECTATOR_CACHE.add(player.getUniqueId());
         } else {
-            SPECTATOR_CACHE.remove(event.getPlayer().getUniqueId());
+            SPECTATOR_CACHE.remove(player.getUniqueId());
         }
 
         // detect external SPECTATOR->SURVIVAL change (HRM or other plugin revive)
@@ -480,7 +486,6 @@ public class MainServerListener implements Listener {
         boolean shouldDetect = !SSoggySouls.MODE_LIMBO.equals(deathMode) || plugin.isDetectHrmRevive();
         if (!shouldDetect) return;
 
-        Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
         if (expectedGamemodeChanges.remove(uuid)) return;

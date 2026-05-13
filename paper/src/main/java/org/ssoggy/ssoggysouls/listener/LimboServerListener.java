@@ -35,6 +35,11 @@ public class LimboServerListener implements Listener {
     public LimboServerListener(SSoggySouls plugin) {
         this.plugin = plugin;
         refreshLimboSpawnCache();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getGameMode() == GameMode.ADVENTURE) {
+                LIMBO_CACHE.add(p.getUniqueId());
+            }
+        }
     }
     
     /**
@@ -46,7 +51,6 @@ public class LimboServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        LIMBO_CACHE.add(event.getPlayer().getUniqueId());
         Player player = event.getPlayer();
 
         if (player.hasPermission(PERM_BYPASS)) {
@@ -101,6 +105,8 @@ public class LimboServerListener implements Listener {
 
         player.sendMessage(MessageUtil.getNoPrefix("limbo-welcome"));
         
+        LIMBO_CACHE.add(player.getUniqueId());
+
         if (plugin.isDebugMode()) {
             plugin.debug("Applied limbo state to " + player.getName());
         }
