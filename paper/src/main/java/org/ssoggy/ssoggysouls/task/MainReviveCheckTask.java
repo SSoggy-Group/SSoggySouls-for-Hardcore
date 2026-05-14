@@ -1,7 +1,10 @@
 package org.ssoggy.ssoggysouls.task;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -15,7 +18,6 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 // pings the db on main server for spectators who've been revived externally and then restores em to survival
 
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MainReviveCheckTask extends BukkitRunnable {
@@ -45,19 +47,29 @@ public class MainReviveCheckTask extends BukkitRunnable {
             return p == null || p.getGameMode() != GameMode.SPECTATOR || p.hasPermission(PERM_BYPASS);
         });
 
-        if (trackedSpectators.isEmpty()) return;
-
-        if (plugin.isDebugMode()) {
-            plugin.debug("Main revive check: scanning " + trackedSpectators.size() + " spectator(s)...");
+        Set<UUID> spectatorsToCheck = new HashSet<>(trackedSpectators);
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (onlinePlayer.getGameMode() == GameMode.SPECTATOR && !onlinePlayer.hasPermission(PERM_BYPASS)) {
+                UUID uuid = onlinePlayer.getUniqueId();
+                spectatorsToCheck.add(uuid);
+                trackedSpectators.add(uuid);
+            }
         }
 
-        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(trackedSpectators);
+        if (spectatorsToCheck.isEmpty()) return;
+
+        if (plugin.isDebugMode()) {
+            plugin.debug("Main revive check: scanning " + spectatorsToCheck.size() + " spectator(s)...");
+        }
+
+        Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(spectatorsToCheck);
         List<UUID> revived = new ArrayList<>();
 
-        for (UUID uuid : trackedSpectators) {
+        for (UUID uuid : spectatorsToCheck) {
             Boolean isDead = deathStatuses.get(uuid);
             if (isDead != null && !isDead) {
                 revived.add(uuid);
+                trackedSpectators.remove(uuid);
                 if (plugin.isDebugMode()) {
                     plugin.debug("Spectator " + uuid + " is no longer dead in DB, restoring...");
                 }
