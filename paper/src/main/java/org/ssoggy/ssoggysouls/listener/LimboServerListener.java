@@ -131,7 +131,7 @@ public class LimboServerListener implements Listener {
         if (player.hasPermission(PERM_BYPASS) || player.hasPermission("ssoggysouls.admin")) return;
 
         String rawMessage = event.getMessage();
-        String command = rawMessage.split(" ")[0];
+        String command = rawMessage.toLowerCase().split(" ")[0];
 
         if (isWhitelistedCommand(command)) {
             return;
@@ -163,12 +163,12 @@ public class LimboServerListener implements Listener {
     }
 
     private static boolean isWhitelistedCommand(String command) {
-        return "/msg".equalsIgnoreCase(command) || "/tell".equalsIgnoreCase(command)
-                || "/r".equalsIgnoreCase(command) || "/reply".equalsIgnoreCase(command)
-                || "/help".equalsIgnoreCase(command) || "/list".equalsIgnoreCase(command)
-                || "/pstatus".equalsIgnoreCase(command)
-                || "/psadmin".equalsIgnoreCase(command) || "/psa".equalsIgnoreCase(command)
-                || "/revive".equalsIgnoreCase(command) || "/psetlives".equalsIgnoreCase(command);
+        return "/msg".equals(command) || "/tell".equals(command)
+                || "/r".equals(command) || "/reply".equals(command)
+                || "/help".equals(command) || "/list".equals(command)
+                || "/pstatus".equals(command)
+                || "/psadmin".equals(command) || "/psa".equals(command)
+                || "/revive".equals(command) || "/psetlives".equals(command);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

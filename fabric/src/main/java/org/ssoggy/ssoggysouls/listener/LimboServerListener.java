@@ -100,13 +100,8 @@ public class LimboServerListener {
 
     private static boolean isWhitelistedCommand(String message) {
         String[] tokens = message.trim().split("\\s+");
-        String command = tokens.length > 0 ? tokens[0] : "";
-        for (String whitelisted : WHITELISTED_COMMANDS) {
-            if (whitelisted.equalsIgnoreCase(command) || whitelisted.equalsIgnoreCase("/" + command)) {
-                return true;
-            }
-        }
-        return false;
+        String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
+        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
     public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {
@@ -151,9 +146,9 @@ public class LimboServerListener {
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
         if (worldId != null) {
-            ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
-            if (world != null) {
-                player.teleport(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+            ServerWorld targetWorld = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
+            if (targetWorld != null) {
+                player.teleport(targetWorld, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
             }
         }
 
