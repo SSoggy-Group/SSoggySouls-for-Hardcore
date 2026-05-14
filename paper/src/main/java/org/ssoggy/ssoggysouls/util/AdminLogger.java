@@ -19,6 +19,8 @@ public class AdminLogger {
     }
 
     public static void log(SSoggySouls plugin, String sender, String action) {
+        String safeSender = sender != null ? sender.replace('\n', '_').replace('\r', '_').replace(':', '_') : "Unknown";
+        String safeAction = action != null ? action.replace('\n', '_').replace('\r', '_') : "Unknown";
         File dataFolder = plugin.getDataFolder();
         if (!dataFolder.exists()) {
             dataFolder.mkdirs();
@@ -30,9 +32,9 @@ public class AdminLogger {
                     PrintWriter pw = new PrintWriter(fw)) {
 
                 String timestamp = DATE_FORMAT.format(LocalDateTime.now());
-                String logEntry = String.format("[%s] ADMIN ACTION - %s: %s", timestamp, sender, action);
+                String logEntry = String.format("[%s] ADMIN ACTION - %s: %s", timestamp, safeSender, safeAction);
                 pw.println(logEntry);
-                plugin.getLogger().log(Level.INFO, "[Admin Log] {0}: {1}", new Object[] { sender, action });
+                plugin.getLogger().log(Level.INFO, "[Admin Log] {0}: {1}", new Object[] { safeSender, safeAction });
 
             } catch (IOException e) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to write to admin log file", e);

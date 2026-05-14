@@ -416,10 +416,14 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          # Correct endpoint: /v2/project/{id}/version
-          # We check if the version number is in the response.
           echo "Checking if version ${NEW_VERSION}+paper exists for project Pb03qu6T..."
-          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          # Fetch versions from Modrinth API with a timeout and retry logic
+          RESPONSE=$(curl -s --max-time 10 --retry 3 "https://api.modrinth.com/v2/project/Pb03qu6T/version") || {
+            echo "Failed to contact Modrinth API. Assuming not published to be safe, but continue-on-error will handle duplicates."
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          }
+          
           if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+paper\""; then
             echo "Version ${NEW_VERSION}+paper already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
@@ -431,6 +435,7 @@ jobs:
       - name: Publish Paper to Modrinth
         if: steps.check_paper.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
+        continue-on-error: true # Prevents workflow failure if the version already exists or a transient error occurs
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
@@ -479,21 +484,24 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          # Correct endpoint: /v2/project/{id}/version
-          # We check if the version number is in the response.
           echo "Checking if version ${NEW_VERSION}+fabric exists for project Pb03qu6T..."
-          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          RESPONSE=$(curl -s --max-time 10 --retry 3 "https://api.modrinth.com/v2/project/Pb03qu6T/version") || {
+            echo "Failed to contact Modrinth API. Assuming not published."
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          }
+          
           if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+fabric\""; then
             echo "Version ${NEW_VERSION}+fabric already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
-            echo "Version ${NEW_VERSION}+fabric not found on Modrinth."
             echo "already_published=false" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Publish Fabric to Modrinth
         if: steps.check_fabric.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
+        continue-on-error: true
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
@@ -540,21 +548,24 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          # Correct endpoint: /v2/project/{id}/version
-          # We check if the version number is in the response.
           echo "Checking if version ${NEW_VERSION}+forge exists for project Pb03qu6T..."
-          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          RESPONSE=$(curl -s --max-time 10 --retry 3 "https://api.modrinth.com/v2/project/Pb03qu6T/version") || {
+            echo "Failed to contact Modrinth API. Assuming not published."
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          }
+          
           if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+forge\""; then
             echo "Version ${NEW_VERSION}+forge already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
-            echo "Version ${NEW_VERSION}+forge not found on Modrinth."
             echo "already_published=false" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Publish Forge to Modrinth
         if: steps.check_forge.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
+        continue-on-error: true
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
@@ -599,21 +610,24 @@ jobs:
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
         run: |
-          # Correct endpoint: /v2/project/{id}/version
-          # We check if the version number is in the response.
           echo "Checking if version ${NEW_VERSION}+neoforge exists for project Pb03qu6T..."
-          RESPONSE=$(curl -s "https://api.modrinth.com/v2/project/Pb03qu6T/version")
+          RESPONSE=$(curl -s --max-time 10 --retry 3 "https://api.modrinth.com/v2/project/Pb03qu6T/version") || {
+            echo "Failed to contact Modrinth API. Assuming not published."
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          }
+          
           if echo "$RESPONSE" | grep -Fq "\"version_number\":\"${NEW_VERSION}+neoforge\""; then
             echo "Version ${NEW_VERSION}+neoforge already exists on Modrinth. Skipping upload."
             echo "already_published=true" >> "${GITHUB_OUTPUT}"
           else
-            echo "Version ${NEW_VERSION}+neoforge not found on Modrinth."
             echo "already_published=false" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Publish NeoForge to Modrinth
         if: steps.check_neoforge.outputs.already_published != 'true'
         uses: Kir-Antipov/mc-publish@995edadc13559a8b28d0b7e6571229f067ec7659
+        continue-on-error: true
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}

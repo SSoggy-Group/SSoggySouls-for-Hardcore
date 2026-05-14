@@ -1,4 +1,5 @@
 package org.ssoggy.ssoggysouls;
+import org.ssoggy.ssoggysouls.database.DatabaseManager;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -32,4 +33,7 @@ public interface PluginContext {
     String getConfigString(String path, String defaultValue);
 
     int getConfigInt(String path, int defaultValue);
+
+    /** Returns the database manager. */
+    DatabaseManager getDatabaseManager();
 }
