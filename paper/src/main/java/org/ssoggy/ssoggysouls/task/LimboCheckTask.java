@@ -36,7 +36,10 @@ public class LimboCheckTask extends BukkitRunnable {
     @Override
     public void run() {
         // Clean up offline players
-        trackedPlayers.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
+        trackedPlayers.removeIf(uuid -> {
+            Player p = Bukkit.getPlayer(uuid);
+            return p == null || p.getGameMode() != org.bukkit.GameMode.ADVENTURE || p.hasPermission("ssoggysouls.bypass");
+        });
 
         if (trackedPlayers.isEmpty()) return;
 
