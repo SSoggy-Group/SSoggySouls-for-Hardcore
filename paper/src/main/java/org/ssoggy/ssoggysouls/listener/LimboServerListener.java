@@ -23,6 +23,8 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 public class LimboServerListener implements Listener {
 
+    public static final java.util.Set<java.util.UUID> LIMBO_CACHE = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private static final String PERM_BYPASS = "ssoggysouls.bypass";
 
     private final SSoggySouls plugin;
@@ -33,6 +35,11 @@ public class LimboServerListener implements Listener {
     public LimboServerListener(SSoggySouls plugin) {
         this.plugin = plugin;
         refreshLimboSpawnCache();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getGameMode() == GameMode.ADVENTURE) {
+                LIMBO_CACHE.add(p.getUniqueId());
+            }
+        }
     }
     
     /**
@@ -98,6 +105,8 @@ public class LimboServerListener implements Listener {
 
         player.sendMessage(MessageUtil.getNoPrefix("limbo-welcome"));
         
+        LIMBO_CACHE.add(player.getUniqueId());
+
         if (plugin.isDebugMode()) {
             plugin.debug("Applied limbo state to " + player.getName());
         }
@@ -234,5 +243,10 @@ public class LimboServerListener implements Listener {
                 player.teleport(player.getWorld().getSpawnLocation());
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        LIMBO_CACHE.remove(event.getPlayer().getUniqueId());
     }
 }
