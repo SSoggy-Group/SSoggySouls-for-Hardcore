@@ -13,6 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
+import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,39 +36,33 @@ public class LimboCheckTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        // Clean up offline players
+        Set<UUID> onlinePlayers = new java.util.HashSet<>(LimboServerListener.LIMBO_CACHE);
         trackedPlayers.removeIf(uuid -> {
             Player p = Bukkit.getPlayer(uuid);
             return p == null || p.getGameMode() != org.bukkit.GameMode.ADVENTURE || p.hasPermission("ssoggysouls.bypass");
         });
+        onlinePlayers.addAll(trackedPlayers);
+        if (onlinePlayers.isEmpty()) return;
 
-        if (trackedPlayers.isEmpty()) return;
-
-        // Avoid string concatenation overhead unless debug is enabled
         if (plugin.isDebugMode()) {
-            plugin.debug("Limbo check: scanning " + trackedPlayers.size() + " player(s)...");
+            plugin.debug("Limbo check: scanning " + onlinePlayers.size() + " player(s)...");
         }
 
-        List<UUID> toRelease = findRevivedPlayers(trackedPlayers);
-
-        if (!toRelease.isEmpty()) {
-            Bukkit.getScheduler().runTask(plugin, () -> releaseAll(toRelease));
-        }
-    }
-
-    private List<UUID> findRevivedPlayers(Set<UUID> onlinePlayers) {
-        List<UUID> toRelease = new ArrayList<>();
         java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(onlinePlayers);
+        List<UUID> toRelease = new ArrayList<>();
+
         for (UUID uuid : onlinePlayers) {
             if (Boolean.FALSE.equals(deathStatuses.get(uuid))) {
                 toRelease.add(uuid);
-                // Avoid string concatenation overhead unless debug is enabled
                 if (plugin.isDebugMode()) {
                     plugin.debug("Player " + uuid + " has been revived! Releasing...");
                 }
             }
         }
-        return toRelease;
+
+        if (!toRelease.isEmpty()) {
+            Bukkit.getScheduler().runTask(plugin, () -> releaseAll(toRelease));
+        }
     }
 
     private void releaseAll(List<UUID> uuids) {

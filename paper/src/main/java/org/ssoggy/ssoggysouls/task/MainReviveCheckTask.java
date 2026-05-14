@@ -15,8 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
-
-// pings the db on main server for spectators who've been revived externally and then restores em to survival
+import org.ssoggy.ssoggysouls.listener.MainServerListener;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,18 +40,12 @@ public class MainReviveCheckTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        // Clean up tracking set: remove offline players or those who are no longer spectators/have bypass
-        trackedSpectators.removeIf(uuid -> {
-            Player p = Bukkit.getPlayer(uuid);
-            return p == null || p.getGameMode() != GameMode.SPECTATOR || p.hasPermission(PERM_BYPASS);
-        });
-
-        Set<UUID> spectatorsToCheck = new HashSet<>(trackedSpectators);
+        Set<UUID> spectatorsToCheck = new HashSet<>(MainServerListener.SPECTATOR_CACHE);
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             if (onlinePlayer.getGameMode() == GameMode.SPECTATOR && !onlinePlayer.hasPermission(PERM_BYPASS)) {
                 UUID uuid = onlinePlayer.getUniqueId();
                 spectatorsToCheck.add(uuid);
-                trackedSpectators.add(uuid);
+                MainServerListener.SPECTATOR_CACHE.add(uuid);
             }
         }
 
@@ -70,6 +63,7 @@ public class MainReviveCheckTask extends BukkitRunnable {
             if (isDead != null && !isDead) {
                 revived.add(uuid);
                 trackedSpectators.remove(uuid);
+                MainServerListener.SPECTATOR_CACHE.remove(uuid);
                 if (plugin.isDebugMode()) {
                     plugin.debug("Spectator " + uuid + " is no longer dead in DB, restoring...");
                 }
@@ -84,7 +78,7 @@ public class MainReviveCheckTask extends BukkitRunnable {
     private void restoreAll(List<UUID> uuids) {
         for (UUID uuid : uuids) {
             Player player = Bukkit.getPlayer(uuid);
-            if (player != null && player.isOnline()) {
+            if (player != null && player.isOnline() && player.getGameMode() == GameMode.SPECTATOR) {
                 player.setGameMode(GameMode.SURVIVAL);
                 player.sendMessage(MessageUtil.get("revive-success"));
                 plugin.getLogger().log(Level.INFO,
