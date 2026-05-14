@@ -44,11 +44,7 @@ public class ServerTransferUtil {
                 },
                 buf -> {
                     try {
-                        int readable = buf.readableBytes();
-                        if (readable > 1024) {
-                            throw new java.io.IOException("Payload too large: " + readable + " bytes (max 1024)");
-                        }
-                        byte[] bytes = new byte[readable];
+                        byte[] bytes = new byte[buf.readableBytes()];
                         buf.readBytes(bytes);
                         java.io.DataInputStream dis = new java.io.DataInputStream(
                                 new java.io.ByteArrayInputStream(bytes));

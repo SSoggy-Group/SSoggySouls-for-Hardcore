@@ -1,10 +1,7 @@
 package org.ssoggy.ssoggysouls.task;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -15,8 +12,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
-import org.ssoggy.ssoggysouls.listener.MainServerListener;
 
+// pings the db on main server for spectators who've been revived externally and then restores em to survival
+
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MainReviveCheckTask extends BukkitRunnable {
@@ -40,30 +39,25 @@ public class MainReviveCheckTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        Set<UUID> spectatorsToCheck = new HashSet<>(MainServerListener.SPECTATOR_CACHE);
-        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            if (onlinePlayer.getGameMode() == GameMode.SPECTATOR && !onlinePlayer.hasPermission(PERM_BYPASS)) {
-                UUID uuid = onlinePlayer.getUniqueId();
-                spectatorsToCheck.add(uuid);
-                MainServerListener.SPECTATOR_CACHE.add(uuid);
-            }
-        }
+        // Clean up tracking set: remove offline players or those who are no longer spectators/have bypass
+        trackedSpectators.removeIf(uuid -> {
+            Player p = Bukkit.getPlayer(uuid);
+            return p == null || p.getGameMode() != GameMode.SPECTATOR || p.hasPermission(PERM_BYPASS);
+        });
 
-        if (spectatorsToCheck.isEmpty()) return;
+        if (trackedSpectators.isEmpty()) return;
 
         if (plugin.isDebugMode()) {
-            plugin.debug("Main revive check: scanning " + spectatorsToCheck.size() + " spectator(s)...");
+            plugin.debug("Main revive check: scanning " + trackedSpectators.size() + " spectator(s)...");
         }
 
-        Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(spectatorsToCheck);
+        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(trackedSpectators);
         List<UUID> revived = new ArrayList<>();
 
-        for (UUID uuid : spectatorsToCheck) {
+        for (UUID uuid : trackedSpectators) {
             Boolean isDead = deathStatuses.get(uuid);
             if (isDead != null && !isDead) {
                 revived.add(uuid);
-                trackedSpectators.remove(uuid);
-                MainServerListener.SPECTATOR_CACHE.remove(uuid);
                 if (plugin.isDebugMode()) {
                     plugin.debug("Spectator " + uuid + " is no longer dead in DB, restoring...");
                 }
@@ -78,7 +72,7 @@ public class MainReviveCheckTask extends BukkitRunnable {
     private void restoreAll(List<UUID> uuids) {
         for (UUID uuid : uuids) {
             Player player = Bukkit.getPlayer(uuid);
-            if (player != null && player.isOnline() && player.getGameMode() == GameMode.SPECTATOR) {
+            if (player != null && player.isOnline()) {
                 player.setGameMode(GameMode.SURVIVAL);
                 player.sendMessage(MessageUtil.get("revive-success"));
                 plugin.getLogger().log(Level.INFO,
