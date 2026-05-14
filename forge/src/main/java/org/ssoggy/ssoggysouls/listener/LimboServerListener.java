@@ -34,10 +34,18 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String fullCommand) {
-        String clean = fullCommand.trim().toLowerCase(java.util.Locale.ROOT);
-        String[] tokens = clean.split("\\s+");
-        String command = tokens.length > 0 ? tokens[0] : "";
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
+        String trimmed = fullCommand.trim();
+        if (trimmed.isEmpty()) return false;
+
+        int firstSpace = trimmed.indexOf(' ');
+        String command = firstSpace >= 0 ? trimmed.substring(0, firstSpace) : trimmed;
+
+        for (String whitelistedCommand : WHITELISTED_COMMANDS) {
+            if (whitelistedCommand.equalsIgnoreCase(command)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @SubscribeEvent
