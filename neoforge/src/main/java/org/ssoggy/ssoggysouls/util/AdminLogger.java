@@ -20,8 +20,8 @@ public class AdminLogger {
     }
 
     public static void log(String sender, String action) {
-        String safeSender = sender != null ? sender.replace("\n", "_").replace("\r", "_") : "Unknown";
-        String safeAction = action != null ? action.replace("\n", "_").replace("\r", "_") : "Unknown";
+        String safeSender = sender != null ? sender.replace('\n', '_').replace('\r', '_').replace(':', '_') : "Unknown";
+        String safeAction = action != null ? action.replace('\n', '_').replace('\r', '_') : "Unknown";
         File dataFolder = FMLPaths.CONFIGDIR.get().resolve(SSoggySoulsMod.MODID).toFile();
         if (!dataFolder.exists()) {
             dataFolder.mkdirs();
