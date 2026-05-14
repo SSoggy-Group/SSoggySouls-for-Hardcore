@@ -15,36 +15,46 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 // pings the db on main server for spectators who've been revived externally and then restores em to survival
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class MainReviveCheckTask extends BukkitRunnable {
 
     private static final String PERM_BYPASS = "ssoggysouls.bypass";
 
     private final SSoggySouls plugin;
+    private final Set<UUID> trackedSpectators = ConcurrentHashMap.newKeySet();
 
     public MainReviveCheckTask(SSoggySouls plugin) {
         this.plugin = plugin;
     }
 
+    public void addSpectator(UUID uuid) {
+        trackedSpectators.add(uuid);
+    }
+
+    public void removeSpectator(UUID uuid) {
+        trackedSpectators.remove(uuid);
+    }
+
     @Override
     public void run() {
-        java.util.Set<UUID> spectators = new java.util.HashSet<>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getGameMode() == GameMode.SPECTATOR
-                    && !player.hasPermission(PERM_BYPASS)) {
-                spectators.add(player.getUniqueId());
-            }
-        }
+        // Clean up tracking set: remove offline players or those who are no longer spectators/have bypass
+        trackedSpectators.removeIf(uuid -> {
+            Player p = Bukkit.getPlayer(uuid);
+            return p == null || p.getGameMode() != GameMode.SPECTATOR || p.hasPermission(PERM_BYPASS);
+        });
 
-        if (spectators.isEmpty()) return;
+        if (trackedSpectators.isEmpty()) return;
 
         if (plugin.isDebugMode()) {
-            plugin.debug("Main revive check: scanning " + spectators.size() + " spectator(s)...");
+            plugin.debug("Main revive check: scanning " + trackedSpectators.size() + " spectator(s)...");
         }
 
-        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(spectators);
+        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(trackedSpectators);
         List<UUID> revived = new ArrayList<>();
 
-        for (UUID uuid : spectators) {
+        for (UUID uuid : trackedSpectators) {
             Boolean isDead = deathStatuses.get(uuid);
             if (isDead != null && !isDead) {
                 revived.add(uuid);

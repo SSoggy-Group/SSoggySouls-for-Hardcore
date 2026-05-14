@@ -14,37 +14,42 @@ import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 public class LimboCheckTask extends BukkitRunnable {
 
     private final SSoggySouls plugin;
+    private final Set<UUID> trackedPlayers = ConcurrentHashMap.newKeySet();
 
     public LimboCheckTask(SSoggySouls plugin) {
         this.plugin = plugin;
     }
 
+    public void addPlayer(UUID uuid) {
+        trackedPlayers.add(uuid);
+    }
+
+    public void removePlayer(UUID uuid) {
+        trackedPlayers.remove(uuid);
+    }
+
     @Override
     public void run() {
-        Set<UUID> onlinePlayers = collectOnlinePlayers();
-        if (onlinePlayers.isEmpty()) return;
+        // Clean up offline players
+        trackedPlayers.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
+
+        if (trackedPlayers.isEmpty()) return;
 
         // Avoid string concatenation overhead unless debug is enabled
         if (plugin.isDebugMode()) {
-            plugin.debug("Limbo check: scanning " + onlinePlayers.size() + " player(s)...");
+            plugin.debug("Limbo check: scanning " + trackedPlayers.size() + " player(s)...");
         }
 
-        List<UUID> toRelease = findRevivedPlayers(onlinePlayers);
+        List<UUID> toRelease = findRevivedPlayers(trackedPlayers);
 
         if (!toRelease.isEmpty()) {
             Bukkit.getScheduler().runTask(plugin, () -> releaseAll(toRelease));
         }
-    }
-
-    private Set<UUID> collectOnlinePlayers() {
-        Set<UUID> players = new java.util.HashSet<>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            players.add(player.getUniqueId());
-        }
-        return players;
     }
 
     private List<UUID> findRevivedPlayers(Set<UUID> onlinePlayers) {

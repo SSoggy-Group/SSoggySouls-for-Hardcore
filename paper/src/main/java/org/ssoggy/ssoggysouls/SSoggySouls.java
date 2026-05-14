@@ -265,12 +265,13 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
     private void enableMainMode() {
         getLogger().info("Registering MAIN server listeners...");
-        mainServerListener = new MainServerListener(this);
+        MainReviveCheckTask mainReviveCheckTask = new MainReviveCheckTask(this);
+        mainServerListener = new MainServerListener(this, mainReviveCheckTask);
         getServer().getPluginManager().registerEvents(mainServerListener, this);
 
         int intervalSeconds = getConfig().getInt("limbo.check-interval-seconds", 3);
         long intervalTicks = intervalSeconds * 20L;
-        new MainReviveCheckTask(this).runTaskTimerAsynchronously(this, 60L, intervalTicks);
+        mainReviveCheckTask.runTaskTimerAsynchronously(this, 60L, intervalTicks);
         getLogger().log(Level.INFO, "Main revive check task started (every {0}s).", intervalSeconds);
 
         if (hrmEnabled) {
@@ -307,12 +308,13 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
     private void enableLimboMode() {
         getLogger().info("Registering LIMBO server listeners and tasks...");
-        limboServerListener = new LimboServerListener(this);
+        LimboCheckTask limboCheckTask = new LimboCheckTask(this);
+        limboServerListener = new LimboServerListener(this, limboCheckTask);
         getServer().getPluginManager().registerEvents(limboServerListener, this);
 
         int intervalSeconds = getConfig().getInt("limbo.check-interval-seconds", 3);
         long intervalTicks = intervalSeconds * 20L;
-        new LimboCheckTask(this).runTaskTimerAsynchronously(this, 60L, intervalTicks);
+        limboCheckTask.runTaskTimerAsynchronously(this, 60L, intervalTicks);
         getLogger().log(Level.INFO, "Limbo check task started (every {0}s).", intervalSeconds);
     }
 

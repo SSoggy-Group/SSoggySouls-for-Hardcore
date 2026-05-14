@@ -20,18 +20,21 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.task.LimboCheckTask;
 
 public class LimboServerListener implements Listener {
 
     private static final String PERM_BYPASS = "ssoggysouls.bypass";
 
     private final SSoggySouls plugin;
+    private final LimboCheckTask checkTask;
     
     // Cache limbo spawn location to avoid repeated lookups
     private Location cachedLimboSpawn;
 
-    public LimboServerListener(SSoggySouls plugin) {
+    public LimboServerListener(SSoggySouls plugin, LimboCheckTask checkTask) {
         this.plugin = plugin;
+        this.checkTask = checkTask;
         refreshLimboSpawnCache();
     }
     
@@ -60,6 +63,7 @@ public class LimboServerListener implements Listener {
                 if (!player.isOnline()) return;
 
                 if (isDead) {
+                    checkTask.addPlayer(player.getUniqueId());
                     applyLimboState(player);
                 } else {
                     if (plugin.isDebugMode()) {
@@ -70,6 +74,11 @@ public class LimboServerListener implements Listener {
                 }
             });
         });
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        checkTask.removePlayer(event.getPlayer().getUniqueId());
     }
 
     private void applyLimboState(Player player) {
