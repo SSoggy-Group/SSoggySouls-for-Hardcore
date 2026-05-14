@@ -13,7 +13,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
-import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 
 public class LimboCheckTask extends BukkitRunnable {
 
@@ -25,34 +24,42 @@ public class LimboCheckTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        Set<UUID> onlinePlayers = new java.util.HashSet<>(LimboServerListener.LIMBO_CACHE);
+        Set<UUID> onlinePlayers = collectOnlinePlayers();
         if (onlinePlayers.isEmpty()) return;
 
+        // Avoid string concatenation overhead unless debug is enabled
         if (plugin.isDebugMode()) {
             plugin.debug("Limbo check: scanning " + onlinePlayers.size() + " player(s)...");
         }
 
-        // Database calls can block; however, this is run synchronously via BukkitRunnable.
-        // wait, we should run db query async to avoid blocking main thread.
-        // Actually, LimboCheckTask was synchronous before. But wait! The review said "This task runs asynchronously".
-        // Let's check SSoggySouls.java how it's scheduled.
-        // I will write the code to assume it's running async, but call Bukkit.getPlayer sync.
+        List<UUID> toRelease = findRevivedPlayers(onlinePlayers);
 
-        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(onlinePlayers);
+        if (!toRelease.isEmpty()) {
+            Bukkit.getScheduler().runTask(plugin, () -> releaseAll(toRelease));
+        }
+    }
+
+    private Set<UUID> collectOnlinePlayers() {
+        Set<UUID> players = new java.util.HashSet<>();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            players.add(player.getUniqueId());
+        }
+        return players;
+    }
+
+    private List<UUID> findRevivedPlayers(Set<UUID> onlinePlayers) {
         List<UUID> toRelease = new ArrayList<>();
-
+        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(onlinePlayers);
         for (UUID uuid : onlinePlayers) {
             if (Boolean.FALSE.equals(deathStatuses.get(uuid))) {
                 toRelease.add(uuid);
+                // Avoid string concatenation overhead unless debug is enabled
                 if (plugin.isDebugMode()) {
                     plugin.debug("Player " + uuid + " has been revived! Releasing...");
                 }
             }
         }
-
-        if (!toRelease.isEmpty()) {
-            Bukkit.getScheduler().runTask(plugin, () -> releaseAll(toRelease));
-        }
+        return toRelease;
     }
 
     private void releaseAll(List<UUID> uuids) {

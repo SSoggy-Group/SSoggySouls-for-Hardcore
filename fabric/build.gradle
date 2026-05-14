@@ -9,14 +9,10 @@ base {
     archivesName = project.archives_base_name
 }
 
-java {
-    withSourcesJar()
-    withJavadocJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-}
-
 dependencies {
+    // Inject the common module via JiJ (now has version = '1.0.0', fixing
+    // the 'unspecified is not valid semver' error that caused remapJar to
+    // produce an empty 308-byte JAR).
     implementation project(':common')
     include project(':common')
 
@@ -52,7 +48,6 @@ test {
     useJUnitPlatform()
 }
 
-
 processResources {
     inputs.property "version", project.version
 
@@ -61,6 +56,8 @@ processResources {
     }
 }
 
-remapJar {
-    inputFile = jar.archiveFile
+jar {
+    from("../LICENSE") {
+        rename { "${it}_${project.base.archivesName.get()}" }
+    }
 }

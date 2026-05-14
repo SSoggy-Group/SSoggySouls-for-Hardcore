@@ -12,7 +12,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
-import org.ssoggy.ssoggysouls.listener.MainServerListener;
+
+// pings the db on main server for spectators who've been revived externally and then restores em to survival
 
 public class MainReviveCheckTask extends BukkitRunnable {
 
@@ -26,7 +27,13 @@ public class MainReviveCheckTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        java.util.Set<UUID> spectators = new java.util.HashSet<>(MainServerListener.SPECTATOR_CACHE);
+        java.util.Set<UUID> spectators = new java.util.HashSet<>();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getGameMode() == GameMode.SPECTATOR
+                    && !player.hasPermission(PERM_BYPASS)) {
+                spectators.add(player.getUniqueId());
+            }
+        }
 
         if (spectators.isEmpty()) return;
 
@@ -55,7 +62,7 @@ public class MainReviveCheckTask extends BukkitRunnable {
     private void restoreAll(List<UUID> uuids) {
         for (UUID uuid : uuids) {
             Player player = Bukkit.getPlayer(uuid);
-            if (player != null && player.isOnline() && player.getGameMode() == GameMode.SPECTATOR) {
+            if (player != null && player.isOnline()) {
                 player.setGameMode(GameMode.SURVIVAL);
                 player.sendMessage(MessageUtil.get("revive-success"));
                 plugin.getLogger().log(Level.INFO,

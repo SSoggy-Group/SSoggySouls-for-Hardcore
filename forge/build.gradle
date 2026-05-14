@@ -109,9 +109,7 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    mavenCentral()
-    maven { url = 'https://maven.minecraftforge.net/' }
-    maven { url = 'https://maven.neoforged.net/releases/' }
+    // ForgeGradle automatically adds the Forge maven and Maven Central for you
 }
 
 // 'bundled' is intentionally NOT extended into 'implementation'.

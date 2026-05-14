@@ -23,8 +23,6 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 public class LimboServerListener implements Listener {
 
-    public static final java.util.Set<java.util.UUID> LIMBO_CACHE = java.util.concurrent.ConcurrentHashMap.newKeySet();
-
     private static final String PERM_BYPASS = "ssoggysouls.bypass";
 
     private final SSoggySouls plugin;
@@ -35,11 +33,6 @@ public class LimboServerListener implements Listener {
     public LimboServerListener(SSoggySouls plugin) {
         this.plugin = plugin;
         refreshLimboSpawnCache();
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.getGameMode() == GameMode.ADVENTURE) {
-                LIMBO_CACHE.add(p.getUniqueId());
-            }
-        }
     }
     
     /**
@@ -105,8 +98,6 @@ public class LimboServerListener implements Listener {
 
         player.sendMessage(MessageUtil.getNoPrefix("limbo-welcome"));
         
-        LIMBO_CACHE.add(player.getUniqueId());
-
         if (plugin.isDebugMode()) {
             plugin.debug("Applied limbo state to " + player.getName());
         }
@@ -140,7 +131,9 @@ public class LimboServerListener implements Listener {
         if (player.hasPermission(PERM_BYPASS) || player.hasPermission("ssoggysouls.admin")) return;
 
         String rawMessage = event.getMessage();
-        if (isWhitelistedCommand(rawMessage)) {
+        String command = rawMessage.split(" ")[0];
+
+        if (isWhitelistedCommand(command)) {
             return;
         }
 
@@ -169,14 +162,7 @@ public class LimboServerListener implements Listener {
         });
     }
 
-    private static boolean isWhitelistedCommand(String commandInput) {
-        String trimmed = commandInput.trim();
-        if (trimmed.isEmpty()) {
-            return false;
-        }
-        int firstSpace = trimmed.indexOf(' ');
-        String command = firstSpace >= 0 ? trimmed.substring(0, firstSpace) : trimmed;
-
+    private static boolean isWhitelistedCommand(String command) {
         return "/msg".equalsIgnoreCase(command) || "/tell".equalsIgnoreCase(command)
                 || "/r".equalsIgnoreCase(command) || "/reply".equalsIgnoreCase(command)
                 || "/help".equalsIgnoreCase(command) || "/list".equalsIgnoreCase(command)
@@ -248,10 +234,5 @@ public class LimboServerListener implements Listener {
                 player.teleport(player.getWorld().getSpawnLocation());
             }
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        LIMBO_CACHE.remove(event.getPlayer().getUniqueId());
     }
 }

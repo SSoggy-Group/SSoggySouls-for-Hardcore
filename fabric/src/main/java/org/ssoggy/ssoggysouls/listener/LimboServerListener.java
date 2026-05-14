@@ -19,6 +19,7 @@ import net.minecraft.text.Text;
 
 import java.util.UUID;
 import java.util.Set;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 public class LimboServerListener {
@@ -98,15 +99,10 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String message) {
-        String trimmed = message.trim();
-        if (trimmed.isEmpty()) {
-            return false;
-        }
-        int firstSpace = trimmed.indexOf(' ');
-        String command = firstSpace >= 0 ? trimmed.substring(0, firstSpace) : trimmed;
-
-        for (String whitelistedCommand : WHITELISTED_COMMANDS) {
-            if (whitelistedCommand.equalsIgnoreCase(command)) {
+        String[] tokens = message.trim().split("\\s+");
+        String command = tokens.length > 0 ? tokens[0] : "";
+        for (String whitelisted : WHITELISTED_COMMANDS) {
+            if (whitelisted.equalsIgnoreCase(command) || whitelisted.equalsIgnoreCase("/" + command)) {
                 return true;
             }
         }

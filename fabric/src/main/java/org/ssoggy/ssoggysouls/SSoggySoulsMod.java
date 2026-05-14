@@ -2,11 +2,8 @@ package org.ssoggy.ssoggysouls;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.ssoggy.ssoggysouls.task.LimboCheckTask;
-import org.ssoggy.ssoggysouls.task.MainReviveCheckTask;
 
 import java.io.File;
 
@@ -41,22 +38,22 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
     public static final String MOD_ID = "ssoggysouls";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MOD_ID);
-    private DatabaseManager databaseManager;
 
     @Override
     public void onInitialize() {
         LOGGER.info("SSoggySouls Fabric is loading...");
 
-        // Phase 1: Load Configs
+        // Phase 2: Load Configs
         ConfigManager.load();
         MessageUtil.loadMessages();
 
         // Phase 2: Initialize database based on config
         String dbType = ConfigManager.getConfig().getDatabaseType();
+        DatabaseManager databaseManager;
         if ("mysql".equalsIgnoreCase(dbType)) {
-            this.databaseManager = new MySQLManager(this);
+            databaseManager = new MySQLManager(this);
         } else {
-            this.databaseManager = new SQLiteManager(this);
+            databaseManager = new SQLiteManager(this);
         }
         try {
             databaseManager.initialize();
@@ -64,8 +61,6 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
             LOGGER.error("Failed to initialize database. Disabling features. Error: {}", e.getMessage(), e);
             throw new IllegalStateException("Failed to initialize SSoggySouls database", e);
         }
-        
-        // Initialize DLC Services
         DlcServices.init(this);
 
         // Phase 3: Register commands (Brigadier)
@@ -83,12 +78,9 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
         if (ConfigManager.getConfig().isLimboServer()) {
             LOGGER.info("Starting in LIMBO server mode...");
             LimboServerListener.register(databaseManager);
-            ServerTickEvents.END_SERVER_TICK.register(new LimboCheckTask(this)::tick);
         } else {
             LOGGER.info("Starting in MAIN server mode...");
             MainServerListener.register(databaseManager);
-            MainReviveCheckTask mainReviveCheckTask = new MainReviveCheckTask(this);
-            ServerTickEvents.END_SERVER_TICK.register(mainReviveCheckTask::tick);
 
             // Phase 4: Init Built-in Hardcore Revive Features
             HeadDropListener.register();
@@ -149,10 +141,5 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
     @Override
     public int getConfigInt(String path, int defaultValue) {
         return ConfigManager.getConfig().getConfigInt(path, defaultValue);
-    }
-
-    @Override
-    public DatabaseManager getDatabaseManager() {
-        return databaseManager;
     }
 }
