@@ -25,10 +25,9 @@ import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
+import org.ssoggy.ssoggysouls.task.MainReviveCheckTask;
 
 public class MainServerListener implements Listener {
-
-    public static final java.util.Set<java.util.UUID> SPECTATOR_CACHE = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private static final String PERM_BYPASS = "ssoggysouls.bypass";
     private static final String MSG_SENT_TO_LIMBO = "death-sent-to-limbo";
@@ -36,6 +35,7 @@ public class MainServerListener implements Listener {
 
     private final SSoggySouls plugin;
     private final DatabaseManager db;
+    private final MainReviveCheckTask mainReviveCheckTask;
     
     // Cache frequently accessed config values to avoid repeated lookups
     private String cachedDeathMode;
@@ -48,16 +48,12 @@ public class MainServerListener implements Listener {
     private final Map<UUID, BukkitTask> hybridPendingTransfers = new HashMap<>();
     private final Map<UUID, Long> reviveCooldowns = new ConcurrentHashMap<>();
 
-    public MainServerListener(SSoggySouls plugin) {
+    public MainServerListener(SSoggySouls plugin, MainReviveCheckTask mainReviveCheckTask) {
         this.plugin = plugin;
         this.db = plugin.getDatabaseManager();
+        this.mainReviveCheckTask = mainReviveCheckTask;
         // Initialize cached config values
         refreshConfigCache();
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.getGameMode() == GameMode.SPECTATOR && !p.hasPermission(PERM_BYPASS)) {
-                SPECTATOR_CACHE.add(p.getUniqueId());
-            }
-        }
     }
     
     /**
@@ -75,10 +71,6 @@ public class MainServerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (player.getGameMode() == org.bukkit.GameMode.SPECTATOR && !player.hasPermission(PERM_BYPASS)) {
-            SPECTATOR_CACHE.add(player.getUniqueId());
-        }
-
         if (player.hasPermission(PERM_BYPASS)) {
             if (plugin.isDebugMode()) {
                 plugin.debug(player.getName() + " has bypass permission, skipping checks.");
@@ -226,6 +218,7 @@ public class MainServerListener implements Listener {
         player.sendMessage(MessageUtil.get(MSG_NOW_SPECTATOR));
         expectedGamemodeChanges.add(player.getUniqueId());
         player.setGameMode(GameMode.SPECTATOR);
+        mainReviveCheckTask.addSpectator(player.getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -259,12 +252,11 @@ public class MainServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        SPECTATOR_CACHE.remove(event.getPlayer().getUniqueId());
-
         Player player = event.getPlayer();
         if (player.hasPermission(PERM_BYPASS)) return;
 
         UUID uuid = player.getUniqueId();
+        mainReviveCheckTask.removeSpectator(uuid);
 
         // Cancel any pending hybrid transfer since player is offline
         cancelHybridTransfer(uuid);
@@ -379,6 +371,7 @@ public class MainServerListener implements Listener {
                 "timeout", formatTime(cachedHybridTimeout))); // Use cached value
         expectedGamemodeChanges.add(uuid);
         player.setGameMode(GameMode.SPECTATOR);
+        mainReviveCheckTask.addSpectator(uuid);
         scheduleHybridTimeout(player, uuid);
     }
 
@@ -449,17 +442,20 @@ public class MainServerListener implements Listener {
                 case SSoggySouls.MODE_SPECTATOR -> {
                     expectedGamemodeChanges.add(uuid);
                     player.setGameMode(GameMode.SPECTATOR);
+                    mainReviveCheckTask.addSpectator(uuid);
                 }
                 case SSoggySouls.MODE_HYBRID -> {
                     hybridWindowUsed.add(uuid);
                     expectedGamemodeChanges.add(uuid);
                     player.setGameMode(GameMode.SPECTATOR);
+                    mainReviveCheckTask.addSpectator(uuid);
                     scheduleHybridTimeout(player, uuid);
                 }
                 default -> {
                     if (plugin.isSpectatorOnDeath()) {
                         expectedGamemodeChanges.add(uuid);
                         player.setGameMode(GameMode.SPECTATOR);
+                        mainReviveCheckTask.addSpectator(uuid);
                     }
                     Bukkit.getScheduler().runTaskLater(plugin, () -> {
                         if (player.isOnline()) {
@@ -474,18 +470,12 @@ public class MainServerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onGameModeChange(PlayerGameModeChangeEvent event) {
-        Player player = event.getPlayer();
-        if (event.getNewGameMode() == org.bukkit.GameMode.SPECTATOR && !player.hasPermission(PERM_BYPASS)) {
-            SPECTATOR_CACHE.add(player.getUniqueId());
-        } else {
-            SPECTATOR_CACHE.remove(player.getUniqueId());
-        }
-
         // detect external SPECTATOR->SURVIVAL change (HRM or other plugin revive)
         String deathMode = effectiveDeathMode();
         boolean shouldDetect = !SSoggySouls.MODE_LIMBO.equals(deathMode) || plugin.isDetectHrmRevive();
         if (!shouldDetect) return;
 
+        Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
         if (expectedGamemodeChanges.remove(uuid)) return;

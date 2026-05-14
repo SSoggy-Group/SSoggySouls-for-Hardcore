@@ -28,15 +28,12 @@ import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcServices;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
-import org.ssoggy.ssoggysouls.task.LimboCheckTask;
-import org.ssoggy.ssoggysouls.task.MainReviveCheckTask;
 
 @Mod(SSoggySoulsMod.MODID)
 public class SSoggySoulsMod implements PluginContext {
 
     public static final String MODID = "ssoggysouls";
     public static final Logger LOGGER = LogUtils.getLogger();
-    private DatabaseManager databaseManager;
     private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MODID);
 
     public SSoggySoulsMod(IEventBus modEventBus) {
@@ -54,7 +51,7 @@ public class SSoggySoulsMod implements PluginContext {
 
         // Initialize database
         String dbType = ConfigManager.getConfig().getDatabaseType();
-        // DatabaseManager databaseManager;
+        DatabaseManager databaseManager;
         if ("mysql".equalsIgnoreCase(dbType)) {
             databaseManager = new MySQLManager(this);
         } else {
@@ -75,11 +72,9 @@ public class SSoggySoulsMod implements PluginContext {
         if (ConfigManager.getConfig().isLimboServer()) {
             MinecraftForge.EVENT_BUS.register(LimboServerListener.class);
             LimboServerListener.setDatabase(databaseManager);
-            MinecraftForge.EVENT_BUS.register(new LimboCheckTask(this));
         } else {
             MinecraftForge.EVENT_BUS.register(ServerLifecycleListener.class);
             ServerLifecycleListener.setDatabase(databaseManager);
-            MinecraftForge.EVENT_BUS.register(new MainReviveCheckTask(this));
 
             MinecraftForge.EVENT_BUS.register(ExtraLifeManager.class);
             ExtraLifeManager.register(databaseManager);
@@ -154,10 +149,5 @@ public class SSoggySoulsMod implements PluginContext {
     @Override
     public int getConfigInt(String path, int defaultValue) {
         return ConfigManager.getConfig().getConfigInt(path, defaultValue);
-    }
-
-    @Override
-    public DatabaseManager getDatabaseManager() {
-        return databaseManager;
     }
 }

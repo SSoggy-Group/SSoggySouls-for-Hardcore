@@ -20,26 +20,22 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.task.LimboCheckTask;
 
 public class LimboServerListener implements Listener {
-
-    public static final java.util.Set<java.util.UUID> LIMBO_CACHE = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private static final String PERM_BYPASS = "ssoggysouls.bypass";
 
     private final SSoggySouls plugin;
+    private final LimboCheckTask checkTask;
     
     // Cache limbo spawn location to avoid repeated lookups
     private Location cachedLimboSpawn;
 
-    public LimboServerListener(SSoggySouls plugin) {
+    public LimboServerListener(SSoggySouls plugin, LimboCheckTask checkTask) {
         this.plugin = plugin;
+        this.checkTask = checkTask;
         refreshLimboSpawnCache();
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.getGameMode() == GameMode.ADVENTURE) {
-                LIMBO_CACHE.add(p.getUniqueId());
-            }
-        }
     }
     
     /**
@@ -67,6 +63,7 @@ public class LimboServerListener implements Listener {
                 if (!player.isOnline()) return;
 
                 if (isDead) {
+                    checkTask.addPlayer(player.getUniqueId());
                     applyLimboState(player);
                 } else {
                     if (plugin.isDebugMode()) {
@@ -77,6 +74,11 @@ public class LimboServerListener implements Listener {
                 }
             });
         });
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        checkTask.removePlayer(event.getPlayer().getUniqueId());
     }
 
     private void applyLimboState(Player player) {
@@ -105,8 +107,6 @@ public class LimboServerListener implements Listener {
 
         player.sendMessage(MessageUtil.getNoPrefix("limbo-welcome"));
         
-        LIMBO_CACHE.add(player.getUniqueId());
-
         if (plugin.isDebugMode()) {
             plugin.debug("Applied limbo state to " + player.getName());
         }
@@ -243,10 +243,5 @@ public class LimboServerListener implements Listener {
                 player.teleport(player.getWorld().getSpawnLocation());
             }
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        LIMBO_CACHE.remove(event.getPlayer().getUniqueId());
     }
 }

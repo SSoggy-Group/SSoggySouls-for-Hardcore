@@ -13,3 +13,6 @@
 ## 2026-05-11 - [Eliminated String Allocation inside loops in DlcNames and TabComplete]
 **Learning:** Using `toLowerCase()` or `toUpperCase()` inside iteration loops (like tab completions or iterating over all tracked players) causes hidden O(N) string allocations, leading to unnecessary GC pressure during frequent events.
 **Action:** Replace `toLowerCase()` and `.startsWith()` with `String.regionMatches(true, ...)` for prefix checks, and use `String.equalsIgnoreCase()` for exact matches to completely avoid string allocations.
+## 2026-05-14 - [Optimized MainReviveCheckTask Player Iteration]
+**Learning:** Iterating over `Bukkit.getOnlinePlayers()` and doing a set `.add(uuid)` lookup inside periodic tasks scales linearly O(N) with the number of online players. When tracking a specific subset of players (like `trackedSpectators`), it's significantly faster to iterate the smaller subset O(M) and verify online presence instead of iterating all online players to filter them out.
+**Action:** Iterate over tracking sets directly instead of iterating all online players, drastically reducing time complexity in tasks.
