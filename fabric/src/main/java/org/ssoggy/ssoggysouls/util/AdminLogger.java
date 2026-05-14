@@ -20,6 +20,8 @@ public class AdminLogger {
     }
 
     public static void log(String sender, String action) {
+        String safeSender = sender != null ? sender.replace("\n", "_").replace("\r", "_") : "Unknown";
+        String safeAction = action != null ? action.replace("\n", "_").replace("\r", "_") : "Unknown";
         File dataFolder = FabricLoader.getInstance().getConfigDir().resolve(SSoggySoulsMod.MOD_ID).toFile();
         if (!dataFolder.exists()) {
             dataFolder.mkdirs();
@@ -31,9 +33,9 @@ public class AdminLogger {
                     PrintWriter pw = new PrintWriter(fw)) {
 
                 String timestamp = DATE_FORMAT.format(LocalDateTime.now());
-                String logEntry = String.format("[%s] ADMIN ACTION - %s: %s", timestamp, sender, action);
+                String logEntry = String.format("[%s] ADMIN ACTION - %s: %s", timestamp, safeSender, safeAction);
                 pw.println(logEntry);
-                SSoggySoulsMod.LOGGER.info("[Admin Log] {}: {}", sender, action);
+                SSoggySoulsMod.LOGGER.info("[Admin Log] {}: {}", safeSender, safeAction);
 
             } catch (IOException e) {
                 SSoggySoulsMod.LOGGER.error("Failed to write to admin log file", e);
