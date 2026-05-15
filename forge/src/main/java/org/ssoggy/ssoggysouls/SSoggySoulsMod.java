@@ -67,7 +67,7 @@ public class SSoggySoulsMod implements PluginContext {
         DlcServices.init(this);
 
         // Set Database instances
-        CommandRegistration.setDatabase(databaseManager);
+        CommandRegistration.setDatabase(this, databaseManager);
         
         if (ConfigManager.getConfig().isLimboServer()) {
             MinecraftForge.EVENT_BUS.register(LimboServerListener.class);

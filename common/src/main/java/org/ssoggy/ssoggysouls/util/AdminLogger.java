@@ -1,14 +1,13 @@
 package org.ssoggy.ssoggysouls.util;
 
-import net.neoforged.fml.loading.FMLPaths;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
-
+import org.ssoggy.ssoggysouls.PluginContext;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.logging.Level;
 
 public class AdminLogger {
 
@@ -24,11 +23,11 @@ public class AdminLogger {
         return input.replace('\n', '_').replace('\r', '_');
     }
 
-    public static void log(String sender, String action) {
+    public static void log(PluginContext plugin, String sender, String action) {
         String safeSender = sanitize(sender);
         String safeAction = sanitize(action);
 
-        File dataFolder = FMLPaths.CONFIGDIR.get().resolve(SSoggySoulsMod.MODID).toFile();
+        File dataFolder = plugin.getDataFolder();
         if (!dataFolder.exists()) {
             dataFolder.mkdirs();
         }
@@ -41,10 +40,10 @@ public class AdminLogger {
                 String timestamp = DATE_FORMAT.format(LocalDateTime.now());
                 String logEntry = String.format("[%s] ADMIN ACTION - %s: %s", timestamp, safeSender, safeAction);
                 pw.println(logEntry);
-                SSoggySoulsMod.LOGGER.info("[Admin Log] {}: {}", safeSender, safeAction);
+                plugin.getLogger().log(Level.INFO, "[Admin Log] {0}: {1}", new Object[] { safeSender, safeAction });
 
             } catch (IOException e) {
-                SSoggySoulsMod.LOGGER.error("Failed to write to admin log file", e);
+                plugin.getLogger().log(Level.SEVERE, "Failed to write to admin log file", e);
             }
         }
     }
