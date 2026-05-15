@@ -35,7 +35,7 @@ public class CommandRegistration {
         CommandRegistrationCallback.EVENT.register((dispatcher, ignoredRegistryAccess, ignoredEnvironment) -> {
             registerStatusCommand(dispatcher, db);
             registerReviveCommand(dispatcher, plugin, db);
-            registerSetLivesCommand(dispatcher, plugin, db);
+            registerSetLivesCommand(dispatcher, db);
             registerAdminLogCommand(dispatcher, plugin);
             DlcCommandRegistration.register(dispatcher, db);
         });
@@ -138,7 +138,7 @@ public class CommandRegistration {
                 ghostState.deathHolders.remove(targetData.getUuid());
                 ghostState.markDirty();
                 source.sendFeedback(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
-                AdminLogger.log(plugin, source.getName(), "Revived " + targetData.getUsername());
+                AdminLogger.log(source.getName(), "Revived " + targetData.getUsername());
 
                 // Restore game mode if player is online
                 ServerPlayerEntity targetPlayer = source.getServer().getPlayerManager().getPlayer(targetData.getUuid());
@@ -151,7 +151,7 @@ public class CommandRegistration {
         }
     }
 
-    private static void registerSetLivesCommand(CommandDispatcher<ServerCommandSource> dispatcher, SSoggySoulsMod plugin, DatabaseManager db) {
+    private static void registerSetLivesCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
         dispatcher.register(CommandManager.literal("psetlives")
             .requires(source -> source.hasPermissionLevel(2))
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
@@ -192,7 +192,7 @@ public class CommandRegistration {
                                 }
                                 source.sendFeedback(() -> MessageUtil.get("admin-setlives-success",
                                         PLAYER, data.getUsername(), LIVES, lives), true);
-                                AdminLogger.log(plugin, source.getName(), "Set lives for " + data.getUsername() + " to " + lives);
+                                AdminLogger.log(source.getName(), "Set lives for " + data.getUsername() + " to " + lives);
                             });
                         });
                         return 1;

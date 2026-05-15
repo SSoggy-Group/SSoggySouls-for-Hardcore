@@ -39,10 +39,8 @@ public class CommandRegistration {
     private static final String PLAYER = "player";
     private static final String LIVES = "lives";
     private static DatabaseManager db;
-    private static SSoggySoulsMod plugin;
 
-    public static void setDatabase(SSoggySoulsMod modInstance, DatabaseManager database) {
-        plugin = modInstance;
+    public static void setDatabase(DatabaseManager database) {
         db = database;
     }
 
@@ -163,7 +161,7 @@ public class CommandRegistration {
             ghostState.removeDeathHolder(targetData.getUuid());
             ghostState.setDirty();
             source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
-            AdminLogger.log(plugin, source.getTextName(), "Revived " + targetData.getUsername());
+            AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
 
             ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetData.getUuid());
             if (targetPlayer != null) {
@@ -215,7 +213,7 @@ public class CommandRegistration {
                                 }
                                 source.sendSuccess(() -> MessageUtil.get("admin-setlives-success",
                                         PLAYER, data.getUsername(), LIVES, lives), true);
-                                AdminLogger.log(plugin, source.getTextName(), "Set lives for " + data.getUsername() + " to " + lives);
+                                AdminLogger.log(source.getTextName(), "Set lives for " + data.getUsername() + " to " + lives);
                             });
                         });
                         return 1;

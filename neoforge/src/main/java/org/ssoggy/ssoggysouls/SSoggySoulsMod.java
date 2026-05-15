@@ -70,7 +70,7 @@ public class SSoggySoulsMod implements PluginContext {
         DlcServices.init(this);
 
         // Set Database instances
-        CommandRegistration.setDatabase(this, databaseManager);
+        CommandRegistration.setDatabase(databaseManager);
         
         if (ConfigManager.getConfig().isLimboServer()) {
             NeoForge.EVENT_BUS.register(LimboServerListener.class);
