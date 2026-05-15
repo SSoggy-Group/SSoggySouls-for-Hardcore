@@ -6,3 +6,7 @@
 **Vulnerability:** In database managers (`MySQLManager`, `SQLiteManager`), dynamic DDL methods like `createMetadataTableIfNeeded` directly concatenated string arguments (`metaTable`) into `CREATE TABLE` commands. Even though the table name was internally hardcoded, lack of validation poses an SQL injection risk if the method's signature or usage expands.
 **Learning:** Defensive programming requires validating all dynamic identifiers used in non-parameterizable SQL statements (DDL).
 **Prevention:** Apply the existing `isValidIdentifier` (whitelisting regex `^\w+$`) check to table and column name parameters before they are concatenated into SQL queries.
+## 2025-05-15 - Prevent Log Forging / CRLF Injection in Custom Loggers
+**Vulnerability:** Unsanitized user inputs (e.g., `sender`, `action` parameters) were passed directly to `PrintWriter.println()` and `Logger.info()` in `AdminLogger.java` across all module implementations (`paper`, `fabric`, `forge`, `neoforge`).
+**Learning:** This exposes the application to Log Forging (CRLF Injection), where a malicious user could supply inputs containing newline (`\n`) and carriage return (`\r`) characters to insert fake log entries, obscuring legitimate audit trails or tricking log parsing systems.
+**Prevention:** Always implement an input sanitization step—such as replacing `\n` and `\r` with an underscore `_`—before writing user-controlled strings to application or system logs.
