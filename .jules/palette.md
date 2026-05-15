@@ -8,3 +8,6 @@
 **Learning:** Admin help menus in legacy command systems (like Bukkit/Paper) are often static text, forcing users to manually type complex subcommands.
 **Action:** Upgrade static text help menus to use Rich Components with `ClickEvent.suggestCommand()` and `HoverEvent.showText()` to reduce friction and typos for command-line users.
 ## 2026-05-10 - [Interactive CLI Usage Error Catching]\n**Learning:** Implementing interactive components (like clickable auto-fill suggestions) on error handling messages transforms static frustration points into helpful recovery paths.\n**Action:** Use `CommandUtil.sendInteractiveUsage()` when catching command formatting errors in Bukkit to allow users to quickly fix their typos with a single click.
+## 2026-05-15 - [Interactive CLI Error Messages]
+**Learning:** When users mistype a command (like missing an argument in /revive), the default static error message forces them to re-type the whole thing. By using Kyori Adventure Rich Components (via CommandUtil.sendInteractiveUsage) for the usage error message, they can just click the error text to auto-fill the command in their chat bar.
+**Action:** Update static command error messages to use sendInteractiveUsage so that mistakes are easily correctable.
