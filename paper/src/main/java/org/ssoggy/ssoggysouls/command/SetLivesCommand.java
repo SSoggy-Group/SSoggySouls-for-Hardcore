@@ -64,7 +64,7 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
 
         int maxLives = plugin.getMaxLives();
         if (maxLives > 0 && lives > maxLives) {
-            CommandUtil.sendInteractiveUsage(sender, "&cMaximum lives: " + maxLives, "/psetlives " + args[0] + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cMaximum lives: " + maxLives, "/" + label + " " + args[0] + " ");
             return false;
         }
 
