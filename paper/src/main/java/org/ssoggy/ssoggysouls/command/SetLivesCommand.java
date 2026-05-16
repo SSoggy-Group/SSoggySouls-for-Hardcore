@@ -53,18 +53,18 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
         try {
             lives = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
-            CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[1], "/" + label + " " + args[0] + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[1], "/psetlives " + args[0] + " ");
             return false;
         }
 
         if (lives < 0) {
-            CommandUtil.sendInteractiveUsage(sender, "&cLives cannot be negative.", "/" + label + " " + args[0] + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cLives cannot be negative.", "/psetlives " + args[0] + " ");
             return false;
         }
 
         int maxLives = plugin.getMaxLives();
         if (maxLives > 0 && lives > maxLives) {
-            CommandUtil.sendInteractiveUsage(sender, "&cMaximum lives: " + maxLives, "/" + label + " " + args[0] + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cMaximum lives: " + maxLives, "/psetlives " + args[0] + " ");
             return false;
         }
 

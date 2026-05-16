@@ -65,12 +65,12 @@ public class AdminLogCommand implements CommandExecutor {
         try {
             int count = Integer.parseInt(args[0]);
             if (count <= 0 || count > 100) {
-                CommandUtil.sendInteractiveUsage(sender, "&cPlease specify a number between 1 and 100.", "/adminlog ");
+                org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cPlease specify a number between 1 and 100.", "/adminlog ");
                 return -1;
             }
             return count;
         } catch (NumberFormatException e) {
-            CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[0], "/adminlog ");
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[0], "/adminlog ");
             return -1;
         }
     }

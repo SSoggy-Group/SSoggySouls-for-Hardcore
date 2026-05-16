@@ -665,7 +665,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         try {
             return Integer.parseInt(text);
         } catch (NumberFormatException e) {
-            CommandUtil.sendInteractiveUsage(sender, ERR_NUMBER + text, suggestCmd);
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, ERR_NUMBER + text, suggestCmd);
             return -1;
         }
     }
