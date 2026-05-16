@@ -32,6 +32,7 @@ public class ReviveCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
+    @SuppressWarnings("java:S3516")
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.revive", "&cYou don't have permission to revive players.")) {
             return true;

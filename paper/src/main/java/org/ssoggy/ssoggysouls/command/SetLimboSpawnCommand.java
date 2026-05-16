@@ -21,6 +21,7 @@ public class SetLimboSpawnCommand implements CommandExecutor {
     }
 
     @Override
+    @SuppressWarnings("java:S3516")
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender == null) {
             return false;
