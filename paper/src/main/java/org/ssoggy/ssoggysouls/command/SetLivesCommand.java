@@ -58,7 +58,7 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
         }
 
         if (lives < 0) {
-            CommandUtil.sendInteractiveUsage(sender, "&cLives cannot be negative.", "/psetlives " + args[0] + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cLives cannot be negative.", "/" + label + " " + args[0] + " ");
             return false;
         }
 
