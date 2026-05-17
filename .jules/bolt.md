@@ -16,3 +16,6 @@
 ## 2026-05-14 - [Optimized MainReviveCheckTask Player Iteration]
 **Learning:** Iterating over `Bukkit.getOnlinePlayers()` and doing a set `.add(uuid)` lookup inside periodic tasks scales linearly O(N) with the number of online players. When tracking a specific subset of players (like `trackedSpectators`), it's significantly faster to iterate the smaller subset O(M) and verify online presence instead of iterating all online players to filter them out.
 **Action:** Iterate over tracking sets directly instead of iterating all online players, drastically reducing time complexity in tasks.
+## 2026-05-17 - [Eliminated String Allocation inside loop in SocialCommand TabComplete]
+**Learning:** Returning a newly created `ArrayList` mapped from Enum string values `.toLowerCase()` inside `onTabComplete` creates unnecessary string allocations every time a user requests tab completions, generating GC pressure and latency spikes since tab complete gets triggered on every keystroke.
+**Action:** Cache the mapped Enum `.toLowerCase()` values in a `private static final List<String>` during class initialization, and then apply `TabCompleteUtil.filterStartsWith()` during `onTabComplete` to avoid redundant string mapping and collection building.
