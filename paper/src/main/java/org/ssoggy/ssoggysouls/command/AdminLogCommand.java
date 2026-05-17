@@ -70,7 +70,7 @@ public class AdminLogCommand implements CommandExecutor {
             }
             return count;
         } catch (NumberFormatException e) {
-            sender.sendMessage(MessageUtil.colorize("&cInvalid number: " + args[0]));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[0], "/adminlog ");
             return -1;
         }
     }
