@@ -43,7 +43,7 @@ import org.jspecify.annotations.Nullable;
 
 public class RPConfigCommand implements CommandExecutor, TabCompleter {
     // ⚡ Bolt: Cache enum string mappings to avoid redundant O(N) array allocations on every tab complete
-    private static final List<String> OPTION_CONFIGS = Arrays.stream(OPTIONCONFIGENUM.values()).filter(x -> x.index > 0).map(x -> x.id).toList();
+    private static final List<String> OPTION_CONFIGS = Arrays.stream(OPTIONCONFIGENUM.values()).map(x -> x.id.toLowerCase(java.util.Locale.ROOT)).toList();
     private static final List<String> OPTION_EDITS = Arrays.stream(OPTIONEDITENUM.values()).map(x -> x.id).toList();
 
     private static final String OPT_STRUCTURE = "STRUCTURE";
