@@ -52,7 +52,7 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
         try {
             lives = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
-            sender.sendMessage(MessageUtil.colorize("&cInvalid number: " + args[1]));
+            CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[1], "/" + label + " " + args[0] + " ");
             return false;
         }
 
