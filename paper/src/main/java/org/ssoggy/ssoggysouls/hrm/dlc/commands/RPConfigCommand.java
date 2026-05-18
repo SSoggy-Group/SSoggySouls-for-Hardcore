@@ -291,7 +291,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         String opt1 = cmdKeywords.getOrDefault(plOpt1.toLowerCase(), ""); // opt1 short for option 1
 
         return switch(args.length) {
-            case 1 -> OPTION_CONFIGS;
+            case 1 -> org.bukkit.util.StringUtil.copyPartialMatches(args[0], OPTION_CONFIGS, new java.util.ArrayList<>());
             case 2 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
                     yield new java.util.ArrayList<>(RPStatic.BLOCK_TAGS.keySet());
