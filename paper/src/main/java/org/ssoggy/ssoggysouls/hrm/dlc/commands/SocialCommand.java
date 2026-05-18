@@ -204,7 +204,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         return switch (args.length) { // This is just preference
-            case 0, 1 -> TRUST_ACTIONS;
+            case 0, 1 -> org.bukkit.util.StringUtil.copyPartialMatches(args.length > 0 ? args[0] : "", TRUST_ACTIONS, new java.util.ArrayList<>());
             case 2 ->
                     Bukkit.getOnlinePlayers().stream().filter(x -> !x.getUniqueId().equals(sender instanceof Player p ? p.getUniqueId() : null)).map(Player::getName).toList();
             default -> Collections.emptyList(); // Allowing unnecessary suggestions feels unfinished
