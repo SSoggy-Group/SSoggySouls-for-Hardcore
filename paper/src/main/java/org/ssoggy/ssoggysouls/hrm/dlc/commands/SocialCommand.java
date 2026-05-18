@@ -38,6 +38,8 @@ import org.jspecify.annotations.Nullable;
 import java.util.*;
 
 public class SocialCommand implements CommandExecutor, TabCompleter {
+    // ⚡ Bolt: Cache enum string mappings to avoid redundant O(N) array allocations and .toLowerCase() calls on every tab complete
+    private static final List<String> TRUST_ACTIONS = Arrays.stream(TRUSTENUM.values()).map(x -> x.name().toLowerCase(Locale.ROOT)).toList();
 
     public void executeFail(CommandSender cmdSender, RPCommandOutput cmdOutput) {
         cmdOutput.success = COMMANDOUTPUTENUM.FALSE;
@@ -202,8 +204,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         return switch (args.length) { // This is just preference
-            case 0, 1 ->
-                    new ArrayList<>(Arrays.stream(TRUSTENUM.values()).map(x -> x.name().toLowerCase(Locale.ROOT)).toList());
+            case 0, 1 -> TRUST_ACTIONS;
             case 2 ->
                     Bukkit.getOnlinePlayers().stream().filter(x -> !x.getUniqueId().equals(sender instanceof Player p ? p.getUniqueId() : null)).map(Player::getName).toList();
             default -> Collections.emptyList(); // Allowing unnecessary suggestions feels unfinished
