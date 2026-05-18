@@ -304,7 +304,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             }
             case 3 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
-                    yield OPTION_EDITS;
+                    yield org.bukkit.util.StringUtil.copyPartialMatches(args[2], OPTION_EDITS, new java.util.ArrayList<>());
                 } else if (Objects.equals(opt1, OPT_GAMERULE)) {
                     yield LIST_BOOLEAN;
                 }
