@@ -31,6 +31,7 @@ class MySQLManagerTest {
     private PreparedStatement preparedStatement;
     private ResultSet resultSet;
     private MySQLManager mySQLManager;
+    private PluginContext plugin;
     private final UUID testUuid = UUID.randomUUID();
 
     private static final String TEST_USER = "TestUser";
@@ -42,7 +43,7 @@ class MySQLManagerTest {
     @BeforeEach
     void setup() throws Exception {
         // Use Mockito only for our own interfaces (PluginContext)
-        PluginContext plugin = mock(PluginContext.class);
+        plugin = mock(PluginContext.class);
 
         // Use a real anonymous logger
         Logger logger = Logger.getAnonymousLogger();
@@ -381,5 +382,50 @@ class MySQLManagerTest {
         String version = mySQLManager.getPluginVersion("main");
 
         assertNull(version); // Graceful error handling: returns null
+    }
+
+    @Test
+    void testShutdownClosesDataSourceWhenOpen() throws Exception {
+        com.zaxxer.hikari.HikariDataSource hikariDataSource = mock(com.zaxxer.hikari.HikariDataSource.class);
+        when(hikariDataSource.isClosed()).thenReturn(false);
+
+        java.lang.reflect.Field field = MySQLManager.class.getDeclaredField("hikariDataSource");
+        field.setAccessible(true);
+        field.set(mySQLManager, hikariDataSource);
+
+        Logger mockLogger = mock(Logger.class);
+        when(plugin.getLogger()).thenReturn(mockLogger);
+
+        mySQLManager.shutdown();
+
+        verify(hikariDataSource).close();
+        verify(mockLogger).info("MySQL connection pool closed.");
+    }
+
+    @Test
+    void testShutdownDoesNotCloseDataSourceWhenAlreadyClosed() throws Exception {
+        com.zaxxer.hikari.HikariDataSource hikariDataSource = mock(com.zaxxer.hikari.HikariDataSource.class);
+        when(hikariDataSource.isClosed()).thenReturn(true);
+
+        java.lang.reflect.Field field = MySQLManager.class.getDeclaredField("hikariDataSource");
+        field.setAccessible(true);
+        field.set(mySQLManager, hikariDataSource);
+
+        Logger mockLogger = mock(Logger.class);
+        when(plugin.getLogger()).thenReturn(mockLogger);
+
+        mySQLManager.shutdown();
+
+        verify(hikariDataSource, never()).close();
+        verify(mockLogger, never()).info(anyString());
+    }
+
+    @Test
+    void testShutdownDoesNotThrowWhenDataSourceIsNull() throws Exception {
+        java.lang.reflect.Field field = MySQLManager.class.getDeclaredField("hikariDataSource");
+        field.setAccessible(true);
+        field.set(mySQLManager, null);
+
+        assertDoesNotThrow(() -> mySQLManager.shutdown());
     }
 }
