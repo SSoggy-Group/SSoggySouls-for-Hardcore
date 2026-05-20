@@ -25,7 +25,6 @@ import org.ssoggy.ssoggysouls.util.PermissionUtil;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class CommandRegistration {
