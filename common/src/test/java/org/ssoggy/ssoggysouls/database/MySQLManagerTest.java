@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -31,6 +32,7 @@ class MySQLManagerTest {
     private PreparedStatement preparedStatement;
     private ResultSet resultSet;
     private MySQLManager mySQLManager;
+    private PluginContext plugin;
     private final UUID testUuid = UUID.randomUUID();
 
     private static final String TEST_USER = "TestUser";
@@ -38,16 +40,16 @@ class MySQLManagerTest {
     private static final String COL_LIVES = "lives";
     private static final String COL_IS_DEAD = "is_dead";
     private static final String MOCK_DB_ERROR = "Mock DB Error";
+    private Logger mockLogger;
 
     @BeforeEach
     void setup() throws Exception {
         // Use Mockito only for our own interfaces (PluginContext)
-        PluginContext plugin = mock(PluginContext.class);
+        plugin = mock(PluginContext.class);
 
-        // Use a real anonymous logger
-        Logger logger = Logger.getAnonymousLogger();
-        logger.setLevel(java.util.logging.Level.OFF);
-        when(plugin.getLogger()).thenReturn(logger);
+        // Use a mock logger to verify logging
+        mockLogger = mock(Logger.class);
+        when(plugin.getLogger()).thenReturn(mockLogger);
 
         // Use Mockito for JDBC interfaces via mock() calls instead of @Mock annotations
         // This avoids the MockitoExtension's field injection which triggers module checks
@@ -141,6 +143,12 @@ class MySQLManagerTest {
         verify(preparedStatement).setLong(6, 2000L);
         verify(preparedStatement).setLong(7, 3000L);
         verify(preparedStatement).setLong(8, 4000L);
+        verify(preparedStatement).setString(9, data.getUsername());
+        verify(preparedStatement).setInt(10, data.getLives());
+        verify(preparedStatement).setBoolean(11, data.isDead());
+        verify(preparedStatement).setLong(12, data.getLastDeath());
+        verify(preparedStatement).setLong(13, data.getLastSeen());
+        verify(preparedStatement).setLong(14, data.getGraceUntil());
         verify(preparedStatement).executeUpdate();
     }
 
@@ -175,6 +183,44 @@ class MySQLManagerTest {
     }
 
     @Test
+    void testIsPlayerDeadNotFound() throws SQLException {
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(false);
+
+        boolean isDead = mySQLManager.isPlayerDead(testUuid);
+
+        assertTrue(isDead); // Should default to true if not found
+        verify(preparedStatement).setString(1, testUuid.toString());
+        verify(preparedStatement).executeQuery();
+    }
+
+    @Test
+    void testIsPlayerDeadCacheMissAlive() throws SQLException {
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(false);
+
+        boolean isDead = mySQLManager.isPlayerDead(testUuid);
+
+        assertFalse(isDead);
+        verify(preparedStatement).setString(1, testUuid.toString());
+        verify(preparedStatement).executeQuery();
+    }
+
+    @Test
+    void testIsPlayerDeadCacheHitAlive() throws SQLException {
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(false);
+
+        assertFalse(mySQLManager.isPlayerDead(testUuid));
+        reset(preparedStatement);
+
+        assertFalse(mySQLManager.isPlayerDead(testUuid));
+        verify(preparedStatement, never()).executeQuery();
+    }
+
+    @Test
     void testRevivePlayerSuccess() throws SQLException {
         when(preparedStatement.executeUpdate()).thenReturn(1);
 
@@ -188,6 +234,17 @@ class MySQLManagerTest {
     @Test
     void testRevivePlayerFailure() throws SQLException {
         when(preparedStatement.executeUpdate()).thenReturn(0);
+
+        boolean result = mySQLManager.revivePlayer(testUuid, 3);
+
+        assertFalse(result);
+        verify(preparedStatement).setInt(1, 3);
+        verify(preparedStatement).setString(2, testUuid.toString());
+    }
+
+    @Test
+    void testRevivePlayerSQLException() throws SQLException {
+        when(preparedStatement.executeUpdate()).thenThrow(new SQLException(MOCK_DB_ERROR));
 
         boolean result = mySQLManager.revivePlayer(testUuid, 3);
 
@@ -348,12 +405,23 @@ class MySQLManagerTest {
     }
 
     @Test
+    void testGetPlayerByNameSQLException() throws SQLException {
+        when(preparedStatement.executeQuery()).thenThrow(new SQLException(MOCK_DB_ERROR));
+
+        PlayerData data = mySQLManager.getPlayerByName(TEST_USER);
+
+        assertNull(data); // Graceful error handling: returns null instead of throwing
+        verify(mockLogger).log(eq(Level.WARNING), any(SQLException.class), any(java.util.function.Supplier.class));
+    }
+
+    @Test
     void testGetPlayerSQLException() throws SQLException {
         when(preparedStatement.executeQuery()).thenThrow(new SQLException(MOCK_DB_ERROR));
 
         PlayerData data = mySQLManager.getPlayer(testUuid);
 
         assertNull(data); // Graceful error handling: returns null instead of throwing
+        verify(mockLogger).log(eq(Level.WARNING), any(SQLException.class), any(java.util.function.Supplier.class));
     }
 
     @Test
@@ -381,5 +449,57 @@ class MySQLManagerTest {
         String version = mySQLManager.getPluginVersion("main");
 
         assertNull(version); // Graceful error handling: returns null
+    }
+
+    @Test
+    void testShutdownClosesDataSourceWhenOpen() throws Exception {
+        com.zaxxer.hikari.HikariDataSource hikariDataSource = mock(com.zaxxer.hikari.HikariDataSource.class);
+        when(hikariDataSource.isClosed()).thenReturn(false);
+
+        injectHikariDataSource(hikariDataSource);
+
+        Logger mockLogger = mock(Logger.class);
+        when(plugin.getLogger()).thenReturn(mockLogger);
+
+        mySQLManager.shutdown();
+
+        verify(hikariDataSource).close();
+        verify(mockLogger).info("MySQL connection pool closed.");
+    }
+
+    @Test
+    void testShutdownDoesNotCloseDataSourceWhenAlreadyClosed() throws Exception {
+        com.zaxxer.hikari.HikariDataSource hikariDataSource = mock(com.zaxxer.hikari.HikariDataSource.class);
+        when(hikariDataSource.isClosed()).thenReturn(true);
+
+        injectHikariDataSource(hikariDataSource);
+
+        Logger mockLogger = mock(Logger.class);
+        when(plugin.getLogger()).thenReturn(mockLogger);
+
+        mySQLManager.shutdown();
+
+        verify(hikariDataSource, never()).close();
+        verify(mockLogger, never()).info(anyString());
+    }
+
+    @Test
+    void testShutdownDoesNotThrowWhenDataSourceIsNull() throws Exception {
+        injectHikariDataSource(null);
+
+        assertDoesNotThrow(() -> mySQLManager.shutdown());
+    }
+
+
+    private void injectHikariDataSource(com.zaxxer.hikari.HikariDataSource hikariDataSource) throws Exception {
+        java.lang.reflect.Field field = MySQLManager.class.getDeclaredField("dataSource");
+        field.setAccessible(true);
+        java.lang.reflect.Field hikariField = MySQLManager.class.getDeclaredField("hikariDataSource");
+        hikariField.setAccessible(true);
+        if (mySQLManager == null) {
+            mySQLManager = new MySQLManager(plugin);
+        }
+        field.set(mySQLManager, hikariDataSource);
+        hikariField.set(mySQLManager, hikariDataSource);
     }
 }
