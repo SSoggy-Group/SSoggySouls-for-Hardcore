@@ -48,7 +48,7 @@ class SqlSafetyTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
             SqlSafety.requireValidJdbcParam(param, "TestLabel");
         });
-        assertTrue(ex.getMessage().contains("TestLabel must contain only alphanumeric"));
+        assertEquals("TestLabel must contain only alphanumeric characters, periods, hyphens, underscores, colons, and square brackets", ex.getMessage());
     }
 
     @ParameterizedTest
