@@ -95,7 +95,7 @@ class SQLiteManagerTest {
         sqliteManager.savePlayer(data);
 
         // Update data
-        PlayerData updatedData = new PlayerData(testUuid, "NewUser", 1, true, 1000L, 2500L, 3500L, 4500L);
+        PlayerData updatedData = new PlayerData(testUuid, "NewUser", 1, true, 9999L, 2500L, 3500L, 4500L);
         sqliteManager.savePlayer(updatedData);
 
         // Verify upsert
