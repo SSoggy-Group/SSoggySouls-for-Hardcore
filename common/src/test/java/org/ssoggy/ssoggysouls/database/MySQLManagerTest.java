@@ -141,6 +141,12 @@ class MySQLManagerTest {
         verify(preparedStatement).setLong(6, 2000L);
         verify(preparedStatement).setLong(7, 3000L);
         verify(preparedStatement).setLong(8, 4000L);
+        verify(preparedStatement).setString(9, TEST_USER);
+        verify(preparedStatement).setInt(10, 3);
+        verify(preparedStatement).setBoolean(11, false);
+        verify(preparedStatement).setLong(12, 2000L);
+        verify(preparedStatement).setLong(13, 3000L);
+        verify(preparedStatement).setLong(14, 4000L);
         verify(preparedStatement).executeUpdate();
     }
 
