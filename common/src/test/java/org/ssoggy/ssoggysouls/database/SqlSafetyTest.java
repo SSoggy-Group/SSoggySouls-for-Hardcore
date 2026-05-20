@@ -3,6 +3,11 @@ package org.ssoggy.ssoggysouls.database;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import static org.mockito.Mockito.*;
+
 class SqlSafetyTest {
 
     @Test
@@ -44,5 +49,22 @@ class SqlSafetyTest {
         assertThrows(IllegalArgumentException.class, () -> SqlSafety.requireValidJdbcParam("param;", "Param"));
         assertThrows(IllegalArgumentException.class, () -> SqlSafety.requireValidJdbcParam("param' OR 1=1", "Param"));
         assertThrows(IllegalArgumentException.class, () -> SqlSafety.requireValidJdbcParam("param(", "Param"));
+    }
+
+    @Test
+    void testConstructor() throws Exception {
+        java.lang.reflect.Constructor<SqlSafety> constructor = SqlSafety.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        constructor.newInstance();
+    }
+
+    @Test
+    void testPrepareStatement() throws SQLException {
+        Connection mockConn = mock(Connection.class);
+        PreparedStatement mockStmt = mock(PreparedStatement.class);
+        when(mockConn.prepareStatement("SELECT * FROM valid_table")).thenReturn(mockStmt);
+
+        PreparedStatement result = SqlSafety.prepareStatement(mockConn, "SELECT * FROM valid_table");
+        assertEquals(mockStmt, result);
     }
 }
