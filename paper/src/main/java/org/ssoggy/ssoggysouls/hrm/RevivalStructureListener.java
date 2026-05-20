@@ -26,7 +26,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
-import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 // detects when player head is placed for HRM structure (so cool to short it to HRM i know)
