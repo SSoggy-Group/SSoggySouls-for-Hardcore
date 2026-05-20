@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -38,16 +39,16 @@ class MySQLManagerTest {
     private static final String COL_LIVES = "lives";
     private static final String COL_IS_DEAD = "is_dead";
     private static final String MOCK_DB_ERROR = "Mock DB Error";
+    private Logger mockLogger;
 
     @BeforeEach
     void setup() throws Exception {
         // Use Mockito only for our own interfaces (PluginContext)
         PluginContext plugin = mock(PluginContext.class);
 
-        // Use a real anonymous logger
-        Logger logger = Logger.getAnonymousLogger();
-        logger.setLevel(java.util.logging.Level.OFF);
-        when(plugin.getLogger()).thenReturn(logger);
+        // Use a mock logger to verify logging
+        mockLogger = mock(Logger.class);
+        when(plugin.getLogger()).thenReturn(mockLogger);
 
         // Use Mockito for JDBC interfaces via mock() calls instead of @Mock annotations
         // This avoids the MockitoExtension's field injection which triggers module checks
@@ -348,12 +349,23 @@ class MySQLManagerTest {
     }
 
     @Test
+    void testGetPlayerByNameSQLException() throws SQLException {
+        when(preparedStatement.executeQuery()).thenThrow(new SQLException(MOCK_DB_ERROR));
+
+        PlayerData data = mySQLManager.getPlayerByName(TEST_USER);
+
+        assertNull(data); // Graceful error handling: returns null instead of throwing
+        verify(mockLogger).log(eq(Level.WARNING), any(SQLException.class), any(java.util.function.Supplier.class));
+    }
+
+    @Test
     void testGetPlayerSQLException() throws SQLException {
         when(preparedStatement.executeQuery()).thenThrow(new SQLException(MOCK_DB_ERROR));
 
         PlayerData data = mySQLManager.getPlayer(testUuid);
 
         assertNull(data); // Graceful error handling: returns null instead of throwing
+        verify(mockLogger).log(eq(Level.WARNING), any(SQLException.class), any(java.util.function.Supplier.class));
     }
 
     @Test
