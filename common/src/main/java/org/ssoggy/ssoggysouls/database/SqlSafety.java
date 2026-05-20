@@ -35,10 +35,7 @@ final class SqlSafety {
      * @return true if valid, false otherwise.
      */
     public static boolean isValidIdentifier(String identifier) {
-        if (identifier == null || identifier.trim().isEmpty()) {
-            return false;
-        }
-        return identifier.matches("\\A[a-zA-Z0-9_]+\\z");
+        return identifier != null && IDENTIFIER.matcher(identifier).matches();
     }
 
     @SuppressWarnings("java:S2077")
