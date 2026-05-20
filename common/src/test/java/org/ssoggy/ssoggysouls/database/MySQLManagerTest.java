@@ -197,6 +197,17 @@ class MySQLManagerTest {
     }
 
     @Test
+    void testRevivePlayerSQLException() throws SQLException {
+        when(preparedStatement.executeUpdate()).thenThrow(new SQLException(MOCK_DB_ERROR));
+
+        boolean result = mySQLManager.revivePlayer(testUuid, 3);
+
+        assertFalse(result);
+        verify(preparedStatement).setInt(1, 3);
+        verify(preparedStatement).setString(2, testUuid.toString());
+    }
+
+    @Test
     void testGetPlayerByNameFound() throws SQLException {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
