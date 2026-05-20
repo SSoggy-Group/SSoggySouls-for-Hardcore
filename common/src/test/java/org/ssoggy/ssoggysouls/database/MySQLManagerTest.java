@@ -143,6 +143,12 @@ class MySQLManagerTest {
         verify(preparedStatement).setLong(6, 2000L);
         verify(preparedStatement).setLong(7, 3000L);
         verify(preparedStatement).setLong(8, 4000L);
+        verify(preparedStatement).setString(9, data.getUsername());
+        verify(preparedStatement).setInt(10, data.getLives());
+        verify(preparedStatement).setBoolean(11, data.isDead());
+        verify(preparedStatement).setLong(12, data.getLastDeath());
+        verify(preparedStatement).setLong(13, data.getLastSeen());
+        verify(preparedStatement).setLong(14, data.getGraceUntil());
         verify(preparedStatement).executeUpdate();
     }
 
