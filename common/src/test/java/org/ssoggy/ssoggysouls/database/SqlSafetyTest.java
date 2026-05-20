@@ -74,7 +74,7 @@ class SqlSafetyTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
             SqlSafety.requireIdentifier(identifier, "TestLabel");
         });
-        assertTrue(ex.getMessage().contains("TestLabel must contain only ASCII letters, digits, and underscores"));
+        assertEquals("TestLabel must contain only ASCII letters, digits, and underscores", ex.getMessage());
     }
 
     @ParameterizedTest
