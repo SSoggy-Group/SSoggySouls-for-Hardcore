@@ -7,7 +7,6 @@ import org.ssoggy.ssoggysouls.PluginContext;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
