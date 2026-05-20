@@ -93,18 +93,22 @@ class AbstractDatabaseManagerTest {
 
         @Override
         public void initialize() throws DatabaseInitializationException {
+            throw new UnsupportedOperationException("Not implemented");
         }
 
         @Override
         public void shutdown() {
+            throw new UnsupportedOperationException("Not implemented");
         }
 
         @Override
         public void savePlayer(PlayerData data) {
+            throw new UnsupportedOperationException("Not implemented");
         }
 
         @Override
         public void savePluginVersion(String key, String version) {
+            throw new UnsupportedOperationException("Not implemented");
         }
 
         @Override
