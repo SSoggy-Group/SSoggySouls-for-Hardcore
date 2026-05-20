@@ -73,13 +73,11 @@ class SQLiteManagerTest {
     }
 
     @Test
-    void testShutdownHandlesNullDataSource() throws Exception {
-        // Set dataSource to null
-        Field dataSourceField = SQLiteManager.class.getDeclaredField("dataSource");
-        dataSourceField.setAccessible(true);
-        dataSourceField.set(sqLiteManager, null);
+    @Test
+    void testShutdownHandlesNullDataSource() {
+        SQLiteManager managerWithNull = new SQLiteManager(plugin);
 
-        assertDoesNotThrow(() -> sqLiteManager.shutdown());
+        assertDoesNotThrow(managerWithNull::shutdown);
         verify(logger, never()).info(anyString());
     }
 }
