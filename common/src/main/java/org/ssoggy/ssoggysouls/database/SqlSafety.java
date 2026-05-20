@@ -38,7 +38,7 @@ final class SqlSafety {
         if (identifier == null || identifier.trim().isEmpty()) {
             return false;
         }
-        return identifier.matches("^[a-zA-Z0-9_]+$");
+        return identifier.matches("\\A[a-zA-Z0-9_]+\\z");
     }
 
     @SuppressWarnings("java:S2077")
