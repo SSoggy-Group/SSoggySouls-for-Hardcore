@@ -22,7 +22,8 @@ class SQLiteManagerTest {
 
     private SQLiteManager sqliteManager;
     private PluginContext mockPlugin;
-    private File tempDir;
+    @org.junit.jupiter.api.io.TempDir
+    File tempDir;
     private final UUID testUuid = UUID.randomUUID();
     private static final String TEST_USER = "TestUser";
 
