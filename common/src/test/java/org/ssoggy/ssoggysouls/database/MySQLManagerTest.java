@@ -389,9 +389,7 @@ class MySQLManagerTest {
         com.zaxxer.hikari.HikariDataSource hikariDataSource = mock(com.zaxxer.hikari.HikariDataSource.class);
         when(hikariDataSource.isClosed()).thenReturn(false);
 
-        java.lang.reflect.Field field = MySQLManager.class.getDeclaredField("hikariDataSource");
-        field.setAccessible(true);
-        field.set(mySQLManager, hikariDataSource);
+        injectHikariDataSource(hikariDataSource);
 
         Logger mockLogger = mock(Logger.class);
         when(plugin.getLogger()).thenReturn(mockLogger);
