@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,7 +39,13 @@ class SQLiteManagerTest {
         mocks = MockitoAnnotations.openMocks(this);
         when(plugin.getLogger()).thenReturn(logger);
 
-        sqLiteManager = new SQLiteManager(plugin);
+        // Bypass constructor logic to test shutdown in isolation
+        sqLiteManager = mock(SQLiteManager.class, CALLS_REAL_METHODS);
+
+        // Manually inject the plugin context since we bypassed the constructor
+        Field pluginField = AbstractDatabaseManager.class.getDeclaredField("plugin");
+        pluginField.setAccessible(true);
+        pluginField.set(sqLiteManager, plugin);
 
         // Inject the mocked dataSource using reflection
         Field dataSourceField = SQLiteManager.class.getDeclaredField("dataSource");
@@ -73,11 +81,13 @@ class SQLiteManagerTest {
     }
 
     @Test
-    @Test
-    void testShutdownHandlesNullDataSource() {
-        SQLiteManager managerWithNull = new SQLiteManager(plugin);
+    void testShutdownHandlesNullDataSource() throws Exception {
+        // Set dataSource to null
+        Field dataSourceField = SQLiteManager.class.getDeclaredField("dataSource");
+        dataSourceField.setAccessible(true);
+        dataSourceField.set(sqLiteManager, null);
 
-        assertDoesNotThrow(managerWithNull::shutdown);
+        assertDoesNotThrow(() -> sqLiteManager.shutdown());
         verify(logger, never()).info(anyString());
     }
 }
