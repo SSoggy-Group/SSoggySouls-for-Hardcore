@@ -418,9 +418,7 @@ class MySQLManagerTest {
 
     @Test
     void testShutdownDoesNotThrowWhenDataSourceIsNull() throws Exception {
-        java.lang.reflect.Field field = MySQLManager.class.getDeclaredField("hikariDataSource");
-        field.setAccessible(true);
-        field.set(mySQLManager, null);
+        injectHikariDataSource(null);
 
         assertDoesNotThrow(() -> mySQLManager.shutdown());
     }
