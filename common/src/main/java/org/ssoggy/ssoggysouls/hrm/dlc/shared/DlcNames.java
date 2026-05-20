@@ -1,6 +1,5 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.shared;
 
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,12 +38,11 @@ public final class DlcNames {
 
         String normalized = username.trim();
         for (Map.Entry<String, String> entry : DlcServices.usernameStorage().getTable(TABLE).entrySet()) {
-            if (entry.getValue() != null && entry.getValue().toLowerCase(Locale.ROOT).equals(normalized.toLowerCase(Locale.ROOT))) {
+            if (entry.getValue() != null && entry.getValue().equalsIgnoreCase(normalized)) {
                 try {
                     return Optional.of(UUID.fromString(entry.getKey()));
-                } catch (IllegalArgumentException e) {
-                    DlcServices.logger().warning("Invalid UUID found in username cache: " + entry.getKey());
-                    continue;
+                } catch (IllegalArgumentException ignored) {
+                    return Optional.empty();
                 }
             }
         }
