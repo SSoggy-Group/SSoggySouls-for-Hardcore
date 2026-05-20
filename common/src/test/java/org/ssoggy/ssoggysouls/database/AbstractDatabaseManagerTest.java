@@ -1,11 +1,11 @@
 package org.ssoggy.ssoggysouls.database;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import java.util.logging.Logger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.sql.DataSource;
@@ -25,7 +25,7 @@ import org.ssoggy.ssoggysouls.model.PlayerData;
 class AbstractDatabaseManagerTest {
 
     @Mock private PluginContext pluginContext;
-    @Mock private java.util.logging.Logger logger;
+    @Mock private Logger logger;
     @Mock private DataSource dataSource;
     @Mock private Connection connection;
     @Mock private PreparedStatement preparedStatement;
@@ -43,16 +43,24 @@ class AbstractDatabaseManagerTest {
         }
 
         @Override
-        public void initialize() throws DatabaseInitializationException {}
+        public void initialize() throws DatabaseInitializationException {
+            // no-op for tests
+        }
 
         @Override
-        public void shutdown() {}
+        public void shutdown() {
+            // no-op for tests
+        }
 
         @Override
-        public void savePlayer(PlayerData data) {}
+        public void savePlayer(PlayerData data) {
+            // no-op for tests
+        }
 
         @Override
-        public void savePluginVersion(String key, String version) {}
+        public void savePluginVersion(String key, String version) {
+            // no-op for tests
+        }
 
         @Override
         protected DataSource getDataSource() {
@@ -66,7 +74,7 @@ class AbstractDatabaseManagerTest {
     }
 
     @BeforeEach
-    void setUp() throws SQLException {
+    void setUp() {
         when(pluginContext.getLogger()).thenReturn(logger);
         manager = new TestDatabaseManager(pluginContext, dataSource);
     }
