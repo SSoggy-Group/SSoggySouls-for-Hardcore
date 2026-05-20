@@ -175,6 +175,44 @@ class MySQLManagerTest {
     }
 
     @Test
+    void testIsPlayerDeadNotFound() throws SQLException {
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(false);
+
+        boolean isDead = mySQLManager.isPlayerDead(testUuid);
+
+        assertTrue(isDead); // Should default to true if not found
+        verify(preparedStatement).setString(1, testUuid.toString());
+        verify(preparedStatement).executeQuery();
+    }
+
+    @Test
+    void testIsPlayerDeadCacheMissAlive() throws SQLException {
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(false);
+
+        boolean isDead = mySQLManager.isPlayerDead(testUuid);
+
+        assertFalse(isDead);
+        verify(preparedStatement).setString(1, testUuid.toString());
+        verify(preparedStatement).executeQuery();
+    }
+
+    @Test
+    void testIsPlayerDeadCacheHitAlive() throws SQLException {
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(false);
+
+        assertFalse(mySQLManager.isPlayerDead(testUuid));
+        reset(preparedStatement);
+
+        assertFalse(mySQLManager.isPlayerDead(testUuid));
+        verify(preparedStatement, never()).executeQuery();
+    }
+
+    @Test
     void testRevivePlayerSuccess() throws SQLException {
         when(preparedStatement.executeUpdate()).thenReturn(1);
 
