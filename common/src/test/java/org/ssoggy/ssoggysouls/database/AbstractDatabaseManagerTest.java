@@ -170,13 +170,13 @@ class AbstractDatabaseManagerTest {
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true).thenReturn(false);
         when(resultSet.getString("uuid")).thenReturn(uuid2.toString());
-        when(resultSet.getBoolean("is_dead")).thenReturn(true);
+        when(resultSet.getBoolean("is_dead")).thenReturn(false);
 
         Map<UUID, Boolean> result = dbManager.arePlayersDead(uuids);
 
         assertEquals(2, result.size());
         assertFalse(result.get(uuid1)); // From cache
-        assertTrue(result.get(uuid2)); // From SQL
+        assertFalse(result.get(uuid2)); // From SQL (overwriting fail-safe true)
 
         verify(preparedStatement).setString(1, uuid2.toString());
     }
