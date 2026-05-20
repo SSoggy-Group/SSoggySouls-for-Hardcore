@@ -14,7 +14,6 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.GhostRestrictionLogic;
