@@ -40,16 +40,16 @@ class AbstractDatabaseManagerTest {
         }
 
         @Override
-        public void initialize() throws DatabaseInitializationException {}
+        public void initialize() throws DatabaseInitializationException { /* No-op */ }
 
         @Override
-        public void shutdown() {}
+        public void shutdown() { /* No-op */ }
 
         @Override
-        public void savePlayer(org.ssoggy.ssoggysouls.model.PlayerData data) {}
+        public void savePlayer(org.ssoggy.ssoggysouls.model.PlayerData data) { /* No-op */ }
 
         @Override
-        public void savePluginVersion(String key, String version) {}
+        public void savePluginVersion(String key, String version) { /* No-op */ }
 
         @Override
         protected String metadataTableDdl(String metaTable) {
