@@ -458,9 +458,6 @@ class MySQLManagerTest {
 
         injectHikariDataSource(hikariDataSource);
 
-        Logger mockLogger = mock(Logger.class);
-        when(plugin.getLogger()).thenReturn(mockLogger);
-
         mySQLManager.shutdown();
 
         verify(hikariDataSource).close();
@@ -474,9 +471,6 @@ class MySQLManagerTest {
 
         injectHikariDataSource(hikariDataSource);
 
-        Logger mockLogger = mock(Logger.class);
-        when(plugin.getLogger()).thenReturn(mockLogger);
-
         mySQLManager.shutdown();
 
         verify(hikariDataSource, never()).close();
@@ -488,5 +482,11 @@ class MySQLManagerTest {
         injectHikariDataSource(null);
 
         assertDoesNotThrow(() -> mySQLManager.shutdown());
+    }
+
+    private void injectHikariDataSource(com.zaxxer.hikari.HikariDataSource hikariDataSource) throws Exception {
+        java.lang.reflect.Field field = MySQLManager.class.getDeclaredField("hikariDataSource");
+        field.setAccessible(true);
+        field.set(mySQLManager, hikariDataSource);
     }
 }
