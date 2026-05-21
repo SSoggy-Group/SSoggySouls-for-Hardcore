@@ -6,19 +6,30 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class HeadDropListener {
 
     private HeadDropListener() {
         // Utility class
     }
+
+    private static final Map<UUID, List<GlobalPos>> headBlockLocations = new ConcurrentHashMap<>();
 
     public static void register(DatabaseManager db) {
         // Head drop is now triggered from MainServerListener.handleDeathSync
@@ -50,6 +61,10 @@ public class HeadDropListener {
                 skull.setOwner(new ProfileComponent(player.getGameProfile()));
                 skull.markDirty();
             }
+
+            headBlockLocations
+                    .computeIfAbsent(player.getUuid(), k -> new ArrayList<>())
+                    .add(GlobalPos.create(world.getRegistryKey(), headPos));
             SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getName().getString(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
             // Create player head item
@@ -82,5 +97,53 @@ public class HeadDropListener {
             mutable.move(0, 1, 0);
         }
         return origin;
+    }
+
+    public static void removeDroppedHeads(UUID ownerUuid, MinecraftServer server) {
+        List<GlobalPos> knownLocations = headBlockLocations.remove(ownerUuid);
+        if (knownLocations != null) {
+            removeTrackedHeadBlocks(ownerUuid, server, knownLocations);
+        }
+        scanWorldForItemEntities(ownerUuid, server);
+    }
+
+    private static void removeTrackedHeadBlocks(UUID ownerUuid, MinecraftServer server, List<GlobalPos> knownLocations) {
+        for (GlobalPos pos : knownLocations) {
+            ServerWorld world = server.getWorld(pos.dimension());
+            if (world == null) continue;
+
+            BlockPos blockPos = pos.pos();
+            if (!world.isChunkLoaded(blockPos)) {
+                // We skip if not loaded to prevent loading tons of chunks.
+                continue;
+            }
+
+            if (world.getBlockState(blockPos).getBlock() == net.minecraft.block.Blocks.PLAYER_HEAD ||
+                world.getBlockState(blockPos).getBlock() == net.minecraft.block.Blocks.PLAYER_WALL_HEAD) {
+                net.minecraft.block.entity.BlockEntity be = world.getBlockEntity(blockPos);
+                if (be instanceof net.minecraft.block.entity.SkullBlockEntity skull) {
+                    ProfileComponent ownerProfile = skull.getOwner();
+                    if (ownerProfile != null && ownerProfile.id().isPresent() && ownerProfile.id().get().equals(ownerUuid)) {
+                        world.setBlockState(blockPos, net.minecraft.block.Blocks.AIR.getDefaultState());
+                    }
+                }
+            }
+        }
+    }
+
+    private static void scanWorldForItemEntities(UUID ownerUuid, MinecraftServer server) {
+        for (ServerWorld world : server.getWorlds()) {
+            for (net.minecraft.entity.Entity entity : world.iterateEntities()) {
+                if (entity instanceof ItemEntity itemEntity) {
+                    ItemStack stack = itemEntity.getStack();
+                    if (stack.isOf(Items.PLAYER_HEAD) && stack.contains(DataComponentTypes.PROFILE)) {
+                        ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
+                        if (profile != null && profile.id().isPresent() && profile.id().get().equals(ownerUuid)) {
+                            itemEntity.discard();
+                        }
+                    }
+                }
+            }
+        }
     }
 }
