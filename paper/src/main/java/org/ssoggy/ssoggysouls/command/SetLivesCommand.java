@@ -42,7 +42,7 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length != 2) {
-            CommandUtil.sendInteractiveUsage(sender, MessageUtil.get("setlives-usage"), "/psetlives ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psetlives <player> <amount>", "/psetlives ");
             return false;
         }
 
