@@ -458,9 +458,6 @@ class MySQLManagerTest {
 
         injectHikariDataSource(hikariDataSource);
 
-        Logger mockLogger = mock(Logger.class);
-        when(plugin.getLogger()).thenReturn(mockLogger);
-
         mySQLManager.shutdown();
 
         verify(hikariDataSource).close();
@@ -473,9 +470,6 @@ class MySQLManagerTest {
         when(hikariDataSource.isClosed()).thenReturn(true);
 
         injectHikariDataSource(hikariDataSource);
-
-        Logger mockLogger = mock(Logger.class);
-        when(plugin.getLogger()).thenReturn(mockLogger);
 
         mySQLManager.shutdown();
 

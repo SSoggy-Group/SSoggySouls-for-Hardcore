@@ -42,7 +42,7 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length != 2) {
-            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psetlives <player> <amount>", "/psetlives ");
+            CommandUtil.sendInteractiveUsage(sender, MessageUtil.get("setlives-usage"), "/psetlives ");
             return false;
         }
 
@@ -57,13 +57,13 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
         }
 
         if (lives < 0) {
-            CommandUtil.sendInteractiveUsage(sender, "&cLives cannot be negative.", "/psetlives " + targetName + " ");
+            sender.sendMessage(MessageUtil.colorize("&cLives cannot be negative."));
             return false;
         }
 
         int maxLives = plugin.getMaxLives();
         if (maxLives > 0 && lives > maxLives) {
-            CommandUtil.sendInteractiveUsage(sender, "&cMaximum lives: " + maxLives, "/psetlives " + targetName + " ");
+            sender.sendMessage(MessageUtil.colorize("&cMaximum lives: " + maxLives));
             return false;
         }
 
