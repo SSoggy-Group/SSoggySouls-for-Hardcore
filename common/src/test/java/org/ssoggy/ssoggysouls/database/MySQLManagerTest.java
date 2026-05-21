@@ -489,4 +489,10 @@ class MySQLManagerTest {
 
         assertDoesNotThrow(() -> mySQLManager.shutdown());
     }
+
+    private void injectHikariDataSource(com.zaxxer.hikari.HikariDataSource hikariDataSource) throws Exception {
+        java.lang.reflect.Field field = MySQLManager.class.getDeclaredField("hikariDataSource");
+        field.setAccessible(true);
+        field.set(mySQLManager, hikariDataSource);
+    }
 }
