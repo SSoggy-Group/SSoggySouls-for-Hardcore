@@ -11,18 +11,18 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:26.1.0'
 
     // MySQL Connector
-    compileOnly 'com.mysql:mysql-connector-j:8.0.33'
+    compileOnly 'com.mysql:mysql-connector-j:9.7.0'
 
     // SQLite JDBC
-    compileOnly 'org.xerial:sqlite-jdbc:3.45.3.0'
+    compileOnly 'org.xerial:sqlite-jdbc:3.53.1.0'
 
     // SLF4J API (provided by the server environments)
-    compileOnly 'org.slf4j:slf4j-api:2.0.17'
+    compileOnly 'org.slf4j:slf4j-api:2.0.18'
 
     // Testing - needs these for real
     testImplementation 'com.zaxxer:HikariCP:7.0.2'
     testImplementation 'com.mysql:mysql-connector-j:9.7.0'
-    testImplementation 'org.xerial:sqlite-jdbc:3.45.3.0'
+    testImplementation 'org.xerial:sqlite-jdbc:3.53.1.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.4'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.4'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.14.4'
