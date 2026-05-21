@@ -4,12 +4,23 @@ pluginManagement {
         gradlePluginPortal()
         maven { url = 'https://maven.fabricmc.net/' }
         maven { url = 'https://maven.minecraftforge.net/' }
+        maven { url = 'https://maven.neoforged.net/releases' }
     }
 }
 
 rootProject.name = 'SSoggySouls'
 
 include 'common'
-include 'fabric'
-include 'forge'
-include 'paper'
+
+// Allow isolation of platforms to prevent plugin-level conflicts (e.g. Forge vs NeoForge)
+def onlyPlatform = System.getProperty("onlyPlatform")
+if (onlyPlatform) {
+    if (onlyPlatform != "common") {
+        include onlyPlatform
+    }
+} else {
+    include 'fabric'
+    include 'forge'
+    include 'neoforge'
+    include 'paper'
+}

@@ -42,6 +42,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
 public class RPConfigCommand implements CommandExecutor, TabCompleter {
+    // ⚡ Bolt: Cache enum string mappings to avoid redundant O(N) array allocations on every tab complete
+    private static final List<String> OPTION_CONFIGS = Arrays.stream(OPTIONCONFIGENUM.values()).map(x -> x.id.toLowerCase(java.util.Locale.ROOT)).toList();
+    private static final List<String> OPTION_EDITS = Arrays.stream(OPTIONEDITENUM.values()).map(x -> x.id).toList();
+
     private static final String OPT_STRUCTURE = "STRUCTURE";
     private static final String OPT_GAMERULE = "GAMERULE";
     private static final String OPT_TIMER = "TIMER";
@@ -211,7 +215,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + args[0] + ERR_MARKER_EMPTY;
+                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
                 break;
             case 2:
                 if (!RPStatic.BLOCK_TAGS.containsKey(args[1])) {
@@ -228,8 +232,8 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     result.message = CMD_PREFIX + args[0] + " " + args[1] + ERR_MARKER_OPEN + args[2] + ERR_MARKER_CLOSE;
                     break;
                 }
-                // fall through to default intentionally for reset action
-                executeStructureCMD(args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result);
+                // reset action has exactly 3 args, so no material argument is available
+                executeStructureCMD("", args[2], args[1], result);
                 break;
             default:
                 executeStructureCMD(args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result); // All params are successfully entered
@@ -241,7 +245,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + args[0] + ERR_MARKER_EMPTY;
+                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:
@@ -263,7 +267,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + args[0] + ERR_MARKER_EMPTY;
+                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:
@@ -287,7 +291,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         String opt1 = cmdKeywords.getOrDefault(plOpt1.toLowerCase(), ""); // opt1 short for option 1
 
         return switch(args.length) {
-            case 1 -> Arrays.stream(OPTIONCONFIGENUM.values()).filter(x -> x.index > 0).map(x -> x.id).toList();
+            case 1 -> org.bukkit.util.StringUtil.copyPartialMatches(args[0], OPTION_CONFIGS, new java.util.ArrayList<>());
             case 2 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
                     yield new java.util.ArrayList<>(RPStatic.BLOCK_TAGS.keySet());
@@ -300,7 +304,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             }
             case 3 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
-                    yield Arrays.stream(OPTIONEDITENUM.values()).map(x -> x.id).toList();
+                    yield org.bukkit.util.StringUtil.copyPartialMatches(args[2], OPTION_EDITS, new java.util.ArrayList<>());
                 } else if (Objects.equals(opt1, OPT_GAMERULE)) {
                     yield LIST_BOOLEAN;
                 }

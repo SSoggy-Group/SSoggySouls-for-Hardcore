@@ -77,13 +77,13 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
 
         if (ConfigManager.getConfig().isLimboServer()) {
             LOGGER.info("Starting in LIMBO server mode...");
-            new LimboServerListener(databaseManager);
+            LimboServerListener.register(databaseManager);
         } else {
             LOGGER.info("Starting in MAIN server mode...");
-            new MainServerListener(databaseManager);
+            MainServerListener.register(databaseManager);
 
             // Phase 4: Init Built-in Hardcore Revive Features
-            HeadDropListener.register(databaseManager);
+            HeadDropListener.register();
             RevivalStructureListener.register(databaseManager);
             ExtraLifeManager.register(databaseManager);
             ReviveSkullManager.register(databaseManager);
@@ -94,10 +94,14 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
             GhostBlockEvents.register(databaseManager);
         }
 
-        new UpdateChecker().checkForUpdates();
+        if (ConfigManager.getConfig().isCheckForUpdates()) {
+            // Intentional fire-and-forget: run a one-time startup update check; no retained instance needed.
+            new UpdateChecker().checkForUpdates();
+        }
         LOGGER.info("SSoggySouls Fabric loaded successfully!");
     }
 
+    @Override
     public File getDataFolder() {
         File dir = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID).toFile();
         if (!dir.exists()) {
@@ -111,14 +115,17 @@ public class SSoggySoulsMod implements ModInitializer, PluginContext {
         return JUL_LOGGER;
     }
 
+    @Override
     public int getDefaultLives() {
         return ConfigManager.getConfig().getDefaultLives();
     }
 
+    @Override
     public boolean isDebugMode() {
         return ConfigManager.getConfig().isDebug();
     }
 
+    @Override
     public void debug(String message) {
         if (isDebugMode()) {
             LOGGER.info("[DEBUG] {}", message);

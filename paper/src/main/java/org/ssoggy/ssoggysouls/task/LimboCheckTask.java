@@ -14,43 +14,42 @@ import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 public class LimboCheckTask extends BukkitRunnable {
 
     private final SSoggySouls plugin;
+    private final Set<UUID> trackedPlayers = ConcurrentHashMap.newKeySet();
 
     public LimboCheckTask(SSoggySouls plugin) {
         this.plugin = plugin;
     }
 
+    public void addPlayer(UUID uuid) {
+        trackedPlayers.add(uuid);
+    }
+
+    public void removePlayer(UUID uuid) {
+        trackedPlayers.remove(uuid);
+    }
+
     @Override
     public void run() {
-        Set<UUID> onlinePlayers = collectOnlinePlayers();
-        if (onlinePlayers.isEmpty()) return;
+        // Clean up offline players
+        trackedPlayers.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
+
+        if (trackedPlayers.isEmpty()) return;
 
         // Avoid string concatenation overhead unless debug is enabled
         if (plugin.isDebugMode()) {
-            plugin.debug("Limbo check: scanning " + onlinePlayers.size() + " player(s)...");
+            plugin.debug("Limbo check: scanning " + trackedPlayers.size() + " player(s)...");
         }
 
-        List<UUID> toRelease = findRevivedPlayers(onlinePlayers);
+        List<UUID> toRelease = findRevivedPlayers(trackedPlayers);
 
         if (!toRelease.isEmpty()) {
             Bukkit.getScheduler().runTask(plugin, () -> releaseAll(toRelease));
         }
-    }
-
-    private Set<UUID> collectOnlinePlayers() {
-        Set<UUID> players = new java.util.HashSet<>();
-        Set<UUID> deadPlayers = plugin.getLimboDeadPlayers();
-        // Bolt Optimization: Iterate over dead players instead of all online players
-        // This changes the complexity from O(N) to O(M) where M is typically much smaller than N
-        for (UUID uuid : deadPlayers) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) {
-                players.add(uuid);
-            }
-        }
-        return players;
     }
 
     private List<UUID> findRevivedPlayers(Set<UUID> onlinePlayers) {
@@ -69,9 +68,7 @@ public class LimboCheckTask extends BukkitRunnable {
     }
 
     private void releaseAll(List<UUID> uuids) {
-        Set<UUID> deadPlayers = plugin.getLimboDeadPlayers();
         for (UUID uuid : uuids) {
-            deadPlayers.remove(uuid);
             Player player = Bukkit.getPlayer(uuid);
             if (player != null && player.isOnline()) {
                 releasePlayer(player);

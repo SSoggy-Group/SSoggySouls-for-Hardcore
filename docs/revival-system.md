@@ -138,7 +138,7 @@ Soul Sand    Stair       Soul Sand
 1. Look up at the fence in the center of layer 2
 1. Place the head on top of the fence
 
-### Automatic Revision
+### Automatic Revival
 
 Once the head is placed on the fence, the plugin **automatically detects** the completed structure and:
 
@@ -249,15 +249,15 @@ Click on any player to get their head.
 
 ### Features
 
-- - Can be used multiple times (doesn't break)
+- Can be used multiple times (doesn't break)
 
-- - Opens a clean GUI
+- Opens a clean GUI
 
-- - No confusing items lying around
+- No confusing items lying around
 
-- - Can only be used by living players
+- Can only be used by living players
 
-- - Shows all currently dead players
+- Shows all currently dead players
 
 ### Configuration
 
@@ -292,7 +292,7 @@ A craftable item that grants players +1 life when used.
 
 - 1× Nether Star
 
-- 1× Gold Block
+- 2× Gold Block
 
 **Result:** 1 Extra Life item (displays as Nether Star)
 
@@ -306,13 +306,13 @@ A craftable item that grants players +1 life when used.
 
 ### Features
 
-- - Works for any player (not just newly revived)
+- Works for any player (not just newly revived)
 
-- - Respects maximum lives cap (can't exceed max-lives setting)
+- Respects maximum lives cap (can't exceed max-lives setting)
 
-- - Cannot be used while dead
+- Cannot be used while dead
 
-- - Shows clear success/failure message
+- Shows clear success/failure message
 
 ### Customizing the Recipe
 
@@ -429,7 +429,7 @@ Admin command for reviving. Same result as `/revive` but requires admin permissi
 
 - Works even if player is offline
 
-- - Works from console
+- Works from console
 
 ### Example Usage
 
@@ -466,7 +466,7 @@ ______________________________________________________________________
 
 The head is placed as a **permanent skull block** in the world.
 
-- The plugin scans **upward** from the death Y coordinate to find the first open air block sitting on solid ground. If you die inside lava it emerges above the lava surface — always accessible.
+- The plugin scans **upward** from the death Y coordinate to find the first open air block sitting on solid ground. If you die inside lava, it emerges above the lava surface and remains accessible.
 
 - The block persists forever. It can't burn, can't despawn, and can't be washed away by water.
 
@@ -493,7 +493,7 @@ Two extra options control its survival:
 | Option                  | What it does                                                                 |
 | ----------------------- | ---------------------------------------------------------------------------- |
 
-| `head-no-despawn: true` | Cancels the natural 5-minute despawn timer. The item stays until picked up.  |
+| `head-no-despawn: true` | Cancels the natural 5-minute despawn timer. The item stays until picked up. |
 | `head-fireproof: true`  | Marks the item as invulnerable. Fire, lava, and explosions can't destroy it. |
 
 **Configuration:**
@@ -680,14 +680,6 @@ ______________________________________________________________________
 ______________________________________________________________________
 
 ## Tips & Tricks
-
-### Efficient Revival Teams
-
-- 👷 **Designate a gatherer** - Collects heads and materials
-
-- 👷 **Designate a builder** - Constructs revival structures
-
-- 👷 **Designate a guard** - Protects team while reviving
 
 ### Ritual Structure Locations
 

@@ -2,7 +2,6 @@ package org.ssoggy.ssoggysouls.listener;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
-import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
@@ -16,38 +15,33 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 
 import java.util.UUID;
 import java.util.Set;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class LimboServerListener {
 
-    private final DatabaseManager db;
-    private static final Set<UUID> limboDeadPlayers = ConcurrentHashMap.newKeySet();
+    private static DatabaseManager db;
+
+    private static final String LIMBO_CANNOT_LEAVE_MESSAGE = "limbo-cannot-leave";
 
     private static final Set<String> WHITELISTED_COMMANDS = Set.of(
             "/msg", "/tell", "/r", "/reply", "/help", "/list",
             "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
     );
 
-    public LimboServerListener(DatabaseManager db) {
-        this.db = db;
+    private LimboServerListener() {
         registerJoinEvent();
-        registerDisconnectEvent();
-        registerCommandRestrictionEvent();
         registerCancelDamageEvent();
         registerWorldChangeEvent();
     }
 
-    public static void updateLimboStatus(UUID uuid, boolean isDead) {
-        if (isDead) {
-            limboDeadPlayers.add(uuid);
-        } else {
-            limboDeadPlayers.remove(uuid);
-        }
+    public static void register(DatabaseManager db) {
+        LimboServerListener.db = db;
+        new LimboServerListener();
     }
 
     private void registerJoinEvent() {
@@ -68,40 +62,22 @@ public class LimboServerListener {
             return;
         }
         if (data != null && data.isDead()) {
-            limboDeadPlayers.add(uuid);
             applyLimboState(player);
         } else {
-            limboDeadPlayers.remove(uuid);
             player.changeGameMode(GameMode.SURVIVAL);
             player.sendMessage(MessageUtil.get("limbo-welcome-visitor"), false);
         }
     }
 
-    private void registerDisconnectEvent() {
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> limboDeadPlayers.remove(handler.getPlayer().getUuid()));
-    }
-
-    private void registerCommandRestrictionEvent() {
-        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, unusedParams) -> {
-            if (source.getEntity() instanceof ServerPlayerEntity player
-                    && limboDeadPlayers.contains(player.getUuid())
-                    && !isWhitelistedCommand(message.getContent().getString())) {
-                player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
-                return false;
-            }
-            return true;
-        });
-    }
-
     private void registerCancelDamageEvent() {
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) ->
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, ignoredSource, ignoredAmount) ->
             !(entity instanceof ServerPlayerEntity player && player.interactionManager.getGameMode() == GameMode.ADVENTURE)
         );
     }
 
     private void registerWorldChangeEvent() {
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
-            if (!limboDeadPlayers.contains(player.getUuid())) {
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, ignoredOrigin, destination) -> {
+            if (db == null || !db.isPlayerDead(player.getUuid())) {
                 return;
             }
 
@@ -111,12 +87,13 @@ public class LimboServerListener {
                 return;
             }
             RegistryKey<World> limboWorldKey = RegistryKey.of(RegistryKeys.WORLD, worldId);
-            if (!destination.getRegistryKey().equals(limboWorldKey)) {
-                ServerWorld limboWorld = player.getServer().getWorld(limboWorldKey);
-                if (limboWorld != null) {
-                    player.teleport(limboWorld, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
-                    player.sendMessage(MessageUtil.get("limbo-cannot-leave"), false);
-                }
+            if (destination.getRegistryKey().equals(limboWorldKey)) {
+                return;
+            }
+            ServerWorld limboWorld = player.getServer().getWorld(limboWorldKey);
+            if (limboWorld != null) {
+                player.teleport(limboWorld, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
             }
         });
     }
@@ -124,7 +101,37 @@ public class LimboServerListener {
     private static boolean isWhitelistedCommand(String message) {
         String[] tokens = message.trim().split("\\s+");
         String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
-        return WHITELISTED_COMMANDS.contains(command);
+        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
+    }
+
+    public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {
+        if (db == null) return false;
+        
+        String fullCmd = "/" + command;
+        if (db.isPlayerDead(player.getUuid()) && !isWhitelistedCommand(fullCmd)) {
+            player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean shouldBlockPortal(ServerPlayerEntity player, ServerWorld destination) {
+        if (db == null) return false;
+        if (player.hasPermissionLevel(2)) return false; // Basic bypass logic placeholder
+
+        // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
+        ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        if (worldId != null && destination.getRegistryKey().getValue().equals(worldId)) {
+            return false;
+        }
+
+        // Only intercept portal-triggered travel to avoid blocking server-driven transfers.
+        if (player.interactionManager.getGameMode() == GameMode.ADVENTURE && player.portalManager.isInPortal() && db.isPlayerDead(player.getUuid())) {
+            player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
+            return true;
+        }
+        return false;
     }
 
     private void applyLimboState(ServerPlayerEntity player) {
@@ -134,9 +141,8 @@ public class LimboServerListener {
         player.experienceProgress = 0;
         player.setHealth(player.getMaxHealth());
         player.getHungerManager().setFoodLevel(20);
-        player.getHungerManager().setSaturationLevel(20f);
+                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
 
-        // Teleport to specific limbo spawn location config
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
         if (worldId != null) {

@@ -17,7 +17,6 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
@@ -40,6 +39,8 @@ public class GhostBlockEvents {
 
     @SubscribeEvent
     public static void onItemPickup(EntityItemPickupEvent event) {
+        if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled()) return;
+
         if (db == null || !(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
@@ -50,17 +51,17 @@ public class GhostBlockEvents {
         }
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
-        if (profile == null || profile.id().isEmpty()) {
-            return;
-        }
-
+        if (profile == null || profile.id().isEmpty()) return;
         UUID ownerUuid = profile.id().get();
+
         DlcDeaths.setHolder(ownerUuid, player.getUUID());
         DlcNames.cache(player.getUUID(), player.getScoreboardName());
     }
 
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
+        if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled()) return;
+
         if (db == null || event.getLevel().isClientSide() || !(event.getPlayer() instanceof ServerPlayer player)) {
             return;
         }
@@ -108,7 +109,8 @@ public class GhostBlockEvents {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer player)) {
+        ServerPlayer player = org.ssoggy.ssoggysouls.util.HrmUtil.getValidServerPlayer(event, db);
+        if (player == null) {
             return;
         }
 
@@ -117,7 +119,6 @@ public class GhostBlockEvents {
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
         if (profile == null || profile.id().isEmpty()) return;
-
         UUID ownerUuid = profile.id().get();
         BlockPos targetPos = event.getPos().relative(event.getFace());
 

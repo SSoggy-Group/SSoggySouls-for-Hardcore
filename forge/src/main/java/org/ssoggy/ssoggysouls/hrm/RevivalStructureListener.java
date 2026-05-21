@@ -9,10 +9,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.item.ItemStack;
@@ -23,7 +23,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
@@ -32,12 +31,10 @@ import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStat;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcStats;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
-import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,11 +57,11 @@ public class RevivalStructureListener {
 
     @SubscribeEvent
     public static void onBlockPlace(PlayerInteractEvent.RightClickBlock event) {
-        if (db == null || event.getLevel().isClientSide() || !(event.getEntity() instanceof ServerPlayer)) {
+        ServerPlayer serverPlayer = org.ssoggy.ssoggysouls.util.HrmUtil.getValidServerPlayer(event, db);
+        if (serverPlayer == null) {
             return;
         }
 
-        ServerPlayer serverPlayer = (ServerPlayer) event.getEntity();
         Level world = event.getLevel();
         ItemStack stack = event.getItemStack();
 
@@ -88,8 +85,7 @@ public class RevivalStructureListener {
             return;
         }
 
-        event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
 
         final ItemStack finalStack = stack.copy();
         finalStack.setCount(1);
@@ -104,18 +100,12 @@ public class RevivalStructureListener {
                                        DatabaseManager db, ItemStack refundedItem) {
         new DlcStats(serverPlayer.getUUID()).incrementStat(DlcStat.RITUAL_STARTED, 1);
         CompletableFuture.runAsync(() -> {
-            PlayerData data = db.getPlayer(ownerUuid);
-            if (data == null) {
-                serverPlayer.server.execute(() -> {
-                    sendError(serverPlayer, "Unknown player.");
-                    refundHead(serverPlayer, refundedItem);
-                });
-                return;
-            }
+            boolean isDead = db.isPlayerDead(ownerUuid);
+            String ownerName = org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames.getOrDefault(ownerUuid, "Player");
 
-            if (!data.isDead()) {
+            if (!isDead) {
                 serverPlayer.server.execute(() -> {
-                    sendError(serverPlayer, data.getUsername() + " is not dead!");
+                    sendError(serverPlayer, ownerName + " is not dead!");
                     world.playSound(null, placedPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.4f, 2f);
                     refundHead(serverPlayer, refundedItem);
                 });
@@ -133,9 +123,9 @@ public class RevivalStructureListener {
 
             new DlcStats(serverPlayer.getUUID()).incrementStat(DlcStat.RITUAL_COMPLETED, 1);
             new DlcStats(ownerUuid).incrementStat(DlcStat.REVIVES, 1);
-            SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getScoreboardName(), data.getUsername());
+            SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getScoreboardName(), ownerName);
 
-            serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, data.getUsername()));
+            serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, ownerName));
         });
     }
 
@@ -156,12 +146,12 @@ public class RevivalStructureListener {
 
         HeadDropListener.removeDroppedHeads(revivedUuid, world.getServer());
 
-        summoner.sendSystemMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()));
-        summoner.sendSystemMessage(MessageUtil.get("revive-from-limbo", "player", revivedName));
+        summoner.sendSystemMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()), false);
+        summoner.sendSystemMessage(MessageUtil.get("revive-from-limbo", "player", revivedName), false);
 
         world.players().forEach(p -> {
-            if (!p.getUUID().equals(summoner.getUUID())) {
-                p.sendSystemMessage(Component.literal("§e" + summoner.getScoreboardName() + " revived " + revivedName + "!"));
+            if (!p.getUUID().equals(summoner.getUUID()) && p instanceof ServerPlayer sp) {
+                sp.sendSystemMessage(Component.literal("§e" + summoner.getScoreboardName() + " revived " + revivedName + "!"), false);
             }
         });
 
@@ -184,10 +174,10 @@ public class RevivalStructureListener {
     }
 
     public static void restoreAtStructure(ServerPlayer revived, ServerLevel world, BlockPos spawnPos) {
-        revived.teleportTo(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 0, 0);
+        revived.teleportTo(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, java.util.Set.of(), 0, 0);
         revived.setGameMode(GameType.SURVIVAL);
         ServerLifecycleListener.setGhostModeAttributes(revived, false);
-        revived.sendSystemMessage(MessageUtil.get("revive-success"));
+        revived.sendSystemMessage(MessageUtil.get("revive-success"), false);
 
         revived.removeAllEffects();
         int resistanceTicks = ConfigManager.getConfig().getReviveResistanceTicks();
@@ -201,7 +191,7 @@ public class RevivalStructureListener {
 
         if (ConfigManager.getConfig().isRitualTotemEffect()) {
             revived.level().playSound(null, revived.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1.0f, 1.0f);
-            world.broadcastEntityEvent(revived, (byte) 35);
+            world.broadcastEntityEvent(revived, EntityEvent.TALISMAN_ACTIVATE);
         }
     }
 
@@ -262,7 +252,7 @@ public class RevivalStructureListener {
     }
 
     private static void sendError(ServerPlayer player, String msg) {
-        player.sendSystemMessage(Component.literal("§c" + msg));
+        player.sendSystemMessage(Component.literal("§c" + msg), false);
     }
 
     private static boolean isRitualStructure(Level world, BlockPos headPos) {

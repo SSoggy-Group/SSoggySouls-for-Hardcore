@@ -1,10 +1,26 @@
-name: Continuous Integration
+name: CI Tests
 
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - ".codex/**"
+      - ".jules/**"
+      - "docs/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/*.log"
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - ".codex/**"
+      - ".jules/**"
+      - "docs/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/*.log"
+
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -20,21 +36,62 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0  # Full history for accurate SonarQube blame analysis
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: "21"
           distribution: "temurin"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
 
-      - name: Build with Gradle Wrapper
+      - name: Build and Test
         run: |
           chmod +x ./gradlew
-          ./gradlew build
+          # Build platforms in total isolation using -DonlyPlatform to avoid plugin conflicts
+          ./gradlew :common:build -DonlyPlatform=common --no-daemon
+          ./gradlew :fabric:build -DonlyPlatform=fabric --no-daemon
+          ./gradlew :paper:build -DonlyPlatform=paper --no-daemon
+          ./gradlew :neoforge:build -DonlyPlatform=neoforge --no-daemon
+          ./gradlew :forge:build -DonlyPlatform=forge --no-daemon
+
+  sonar:
+    name: SonarQube Analysis
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: SonarQube Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :common:test :common:jacocoTestReport classes sonar
 
   dependency-submission:
     name: Submit Dependency Graph
@@ -46,13 +103,13 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           java-version: "21"
           distribution: "temurin"
 
       - name: Generate and Submit Dependency Graph
-        uses: gradle/actions/dependency-submission@v4
+        uses: gradle/actions/dependency-submission@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6.1.0

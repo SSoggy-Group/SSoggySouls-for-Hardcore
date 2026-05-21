@@ -16,7 +16,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
-import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 import java.util.ArrayList;
@@ -33,7 +32,7 @@ public class HeadDropListener {
 
     private static final Map<UUID, List<GlobalPos>> headBlockLocations = new ConcurrentHashMap<>();
 
-    public static void register(DatabaseManager db) {
+    public static void register() {
         // Head drop is triggered from ServerLifecycleListener
     }
 
@@ -59,7 +58,7 @@ public class HeadDropListener {
             }
 
             headBlockLocations
-                    .computeIfAbsent(player.getUUID(), k -> new ArrayList<>())
+                    .computeIfAbsent(player.getUUID(), ignoredUuid -> new ArrayList<>())
                     .add(GlobalPos.of(world.dimension(), headPos));
             SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getScoreboardName(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
@@ -93,14 +92,19 @@ public class HeadDropListener {
     }
 
     public static void removeDroppedHeads(UUID ownerUuid, MinecraftServer server) {
-        List<GlobalPos> knownLocations = headBlockLocations.remove(ownerUuid);
+        List<GlobalPos> knownLocations = headBlockLocations.get(ownerUuid);
         if (knownLocations != null) {
+            List<GlobalPos> remainingLocations = new ArrayList<>();
             for (GlobalPos pos : knownLocations) {
                 ServerLevel world = server.getLevel(pos.dimension());
-                if (world == null) continue;
+                if (world == null) {
+                    remainingLocations.add(pos);
+                    continue;
+                }
 
                 BlockPos blockPos = pos.pos();
                 if (!world.isLoaded(blockPos)) {
+                    remainingLocations.add(pos);
                     continue;
                 }
 
@@ -114,6 +118,12 @@ public class HeadDropListener {
                         }
                     }
                 }
+            }
+
+            if (remainingLocations.isEmpty()) {
+                headBlockLocations.remove(ownerUuid);
+            } else {
+                headBlockLocations.put(ownerUuid, remainingLocations);
             }
         }
 

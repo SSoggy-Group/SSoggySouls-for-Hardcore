@@ -31,7 +31,7 @@ public class MainServerListener {
 
     private final DatabaseManager db;
 
-    public MainServerListener(DatabaseManager db) {
+    private MainServerListener(DatabaseManager db) {
         this.db = db;
         registerJoinEvent();
         registerQuitEvent();
@@ -39,9 +39,13 @@ public class MainServerListener {
         registerRespawnEvent();
     }
 
+    public static void register(DatabaseManager db) {
+        new MainServerListener(db);
+    }
+
     private void registerJoinEvent() {
         // Player Join
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+        ServerPlayConnectionEvents.JOIN.register((handler, ignoredSender, server) -> {
             ServerPlayerEntity player = handler.getPlayer();
             UUID uuid = player.getUuid();
 
@@ -155,7 +159,6 @@ public class MainServerListener {
             player.changeGameMode(GameMode.ADVENTURE);
             setGhostModeAttributes(player, true);
             GhostModeEvents.updateGhostStatus(player.getUuid(), true);
-            org.ssoggy.ssoggysouls.listener.LimboServerListener.updateLimboStatus(player.getUuid(), true);
             player.sendMessage(MessageUtil.get("death-now-ghost"), false);
 
             // Trigger head drop now that we know isDead is true (avoids race with DB state)
@@ -169,7 +172,7 @@ public class MainServerListener {
 
     private void registerRespawnEvent() {
         // Player Respawn
-        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, ignoredAlive) -> {
             UUID uuid = newPlayer.getUuid();
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);

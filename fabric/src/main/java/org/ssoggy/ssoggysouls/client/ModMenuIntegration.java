@@ -52,7 +52,7 @@ public class ModMenuIntegration implements ModMenuApi {
             .build());
 
             // Back button
-            this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.back"), button -> this.client.setScreen(this.parent))
+            this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.back"), ignored -> this.client.setScreen(this.parent))
                 .dimensions(this.width / 2 - 100, this.height - 40, 200, 20).build());
         }
 

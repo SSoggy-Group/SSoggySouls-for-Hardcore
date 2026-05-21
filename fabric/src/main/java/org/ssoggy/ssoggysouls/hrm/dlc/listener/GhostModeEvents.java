@@ -7,12 +7,16 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
+import org.ssoggy.ssoggysouls.hrm.dlc.shared.GhostRestrictionLogic;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
@@ -37,7 +41,7 @@ public class GhostModeEvents {
 
     private static void registerLifecycleEvents(DatabaseManager db) {
         // Populate cache on join
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+        ServerPlayConnectionEvents.JOIN.register((handler, ignoredSender, server) -> {
             UUID uuid = handler.getPlayer().getUuid();
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
@@ -53,12 +57,12 @@ public class GhostModeEvents {
         });
 
         // Clean up cache on disconnect
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> GHOST_CACHE.remove(handler.getPlayer().getUuid()));
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, ignoredServer) -> GHOST_CACHE.remove(handler.getPlayer().getUuid()));
     }
 
     private static void registerInteractionEvents() {
         // Prevent block interaction
-        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+        UseBlockCallback.EVENT.register((player, ignoredWorld, ignoredHand, ignoredHitResult) -> {
             if (isGhost(player)) {
                 return ActionResult.FAIL;
             }
@@ -66,7 +70,7 @@ public class GhostModeEvents {
         });
 
         // Prevent item usage
-        UseItemCallback.EVENT.register((player, world, hand) -> {
+        UseItemCallback.EVENT.register((player, ignoredWorld, hand) -> {
             if (isGhost(player)) {
                 return TypedActionResult.fail(player.getStackInHand(hand));
             }
@@ -74,7 +78,7 @@ public class GhostModeEvents {
         });
 
         // Prevent attacking entities
-        AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+        AttackEntityCallback.EVENT.register((player, ignoredWorld, ignoredHand, ignoredEntity, ignoredHitResult) -> {
             if (isGhost(player)) {
                 return ActionResult.FAIL;
             }
@@ -82,7 +86,7 @@ public class GhostModeEvents {
         });
 
         // Prevent interacting with entities
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+        UseEntityCallback.EVENT.register((player, ignoredWorld, ignoredHand, entity, ignoredHitResult) -> {
             if (isGhost(player)) {
                 // DLC logic: start spectating the entity if right clicked
                 if (player instanceof ServerPlayerEntity serverPlayer) {
@@ -97,8 +101,9 @@ public class GhostModeEvents {
     private static void registerTickEvents() {
         // Handle movement restriction via ticking (since Fabric lacks a PlayerMoveEvent)
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                if (isGhost(player)) {
+            for (UUID uuid : GHOST_CACHE) {
+                ServerPlayerEntity player = server.getPlayerManager().getPlayer(uuid);
+                if (player != null) {
                     enforceGhostRestrictions(player);
                 }
             }
@@ -124,14 +129,30 @@ public class GhostModeEvents {
             BlockPos deathPos = state.deathLocations.get(uuid);
             BlockPos currentPos = player.getBlockPos();
 
-            double distanceSq = currentPos.getSquaredDistance(deathPos);
-            double maxDistance = ConfigManager.getConfig().getSpectatorHeadrestrictRadius();
+            double maxDistance = ConfigManager.getConfig().getSpectatorHeadRestrictRadius();
 
-            if (distanceSq > (maxDistance * maxDistance)) {
-                player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());
-                player.sendMessage(net.minecraft.text.Text.literal("You may not travel that far away from your death location").styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)), true);
+            if (GhostRestrictionLogic.isOutOfBounds(deathPos.getX(), deathPos.getY(), deathPos.getZ(),
+                    currentPos.getX(), currentPos.getY(), currentPos.getZ(), maxDistance)) {
+                applyTeleportFeedback(player, deathPos);
             }
         }
+    }
+
+    private static void applyTeleportFeedback(ServerPlayerEntity player, BlockPos deathPos) {
+        // Port of Paper's onPlayerMove teleport feedback (sound + particles).
+        player.teleport(player.getServerWorld(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYaw(), player.getPitch());
+        
+        // Scope sound and particles to the ghost only to prevent location leaking
+        player.playSound(SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT, 1.0f, 1.0f);
+        
+        if (ConfigManager.getConfig().isGhostModeParticles()) {
+            player.getServerWorld().spawnParticles(player, ParticleTypes.DRAGON_BREATH,
+                    true, deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5,
+                    50, 0.0, 1.0, 0.0, 0.2);
+        }
+        
+        player.sendMessage(net.minecraft.text.Text.literal(GhostRestrictionLogic.RESTRICTION_MESSAGE)
+                .styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)), true);
     }
 
     public static void updateGhostStatus(UUID uuid, boolean isDead) {

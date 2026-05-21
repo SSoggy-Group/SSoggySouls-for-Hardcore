@@ -1,3 +1,19 @@
 ## 2024-05-07 - Accessible Navigation Active States
 **Learning:** Using a visual class like `is-active` is insufficient for screen readers to understand which page is currently being viewed in a navigation menu. They require an explicit semantic attribute to indicate the current context.
 **Action:** Always pair visual active classes with `aria-current="page"` on the active navigation link to provide full context to assistive technologies.
+## 2024-05-08 - Skip-to-Content Link Visibility
+**Learning:** A "skip-to-content" link was present in the HTML but lacked styling, meaning it wasn't visible when focused via keyboard navigation. This defeats the purpose of the skip link for sighted keyboard users.
+**Action:** When adding or maintaining a skip-to-content link, ensure it has specific `:focus` styles that make it visible and easily readable when receiving keyboard focus.
+## 2026-05-10 - [Interactive CLI Help Menus]
+**Learning:** Admin help menus in legacy command systems (like Bukkit/Paper) are often static text, forcing users to manually type complex subcommands.
+**Action:** Upgrade static text help menus to use Rich Components with `ClickEvent.suggestCommand()` and `HoverEvent.showText()` to reduce friction and typos for command-line users.
+## 2026-05-10 - [Interactive CLI Usage Error Catching]\n**Learning:** Implementing interactive components (like clickable auto-fill suggestions) on error handling messages transforms static frustration points into helpful recovery paths.\n**Action:** Use `CommandUtil.sendInteractiveUsage()` when catching command formatting errors in Bukkit to allow users to quickly fix their typos with a single click.
+## 2026-05-15 - [Interactive CLI Error Messages]
+**Learning:** When users mistype a command (like missing an argument in /revive), the default static error message forces them to re-type the whole thing. By using Kyori Adventure Rich Components (via CommandUtil.sendInteractiveUsage) for the usage error message, they can just click the error text to auto-fill the command in their chat bar.
+**Action:** Update static command error messages to use sendInteractiveUsage so that mistakes are easily correctable.
+## 2026-05-15 - [Interactive CLI Number Parsing Errors]
+**Learning:** Number parsing errors (e.g., NumberFormatException) in legacy command systems often default to static "Invalid number" messages. By refactoring methods like `parseIntOrError` to accept a base `suggestCmd`, these static errors can be upgraded to use `CommandUtil.sendInteractiveUsage`, allowing users to quickly correct invalid numeric inputs via a clickable chat component.
+**Action:** Always provide the base command context when catching input format errors to build actionable auto-fill error suggestions.
+## 2026-05-15 - [Interactive CLI Limit Constraints]
+**Learning:** Similarly to parsing errors, logical constraints and bound limits (like `< 0` or `> maxLives` or line limits) traditionally send dead-end static messages. Using `sendInteractiveUsage` for these limit constraint errors provides the same recovery path benefits, letting the user simply click and change the number without retyping the base command.
+**Action:** Always use `sendInteractiveUsage` with the base command when failing bounds checks or limit constraints on command arguments, rather than regular `sendMessage`.

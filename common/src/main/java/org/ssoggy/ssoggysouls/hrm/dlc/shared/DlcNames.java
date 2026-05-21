@@ -37,9 +37,9 @@ public final class DlcNames {
             return Optional.empty();
         }
 
-        String normalized = username.trim().toLowerCase(Locale.ROOT);
+        String normalized = username.trim();
         for (Map.Entry<String, String> entry : DlcServices.usernameStorage().getTable(TABLE).entrySet()) {
-            if (entry.getValue() != null && entry.getValue().toLowerCase(Locale.ROOT).equals(normalized)) {
+            if (entry.getValue() != null && entry.getValue().equalsIgnoreCase(normalized)) {
                 try {
                     return Optional.of(UUID.fromString(entry.getKey()));
                 } catch (IllegalArgumentException ignored) {

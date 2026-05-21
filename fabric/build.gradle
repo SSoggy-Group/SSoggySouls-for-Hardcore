@@ -10,8 +10,11 @@ base {
 }
 
 dependencies {
-    // Inject the common module
+    // Inject the common module via JiJ (now has version = '1.0.0', fixing
+    // the 'unspecified is not valid semver' error that caused remapJar to
+    // produce an empty 308-byte JAR).
     implementation project(':common')
+    include project(':common')
 
     // Minecraft + Fabric
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -20,25 +23,25 @@ dependencies {
 
     // Fabric API modules
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "me.lucko:fabric-permissions-api:0.3.1"
 
-    // HikariCP for database connection pooling (nested into mod JAR via JiJ)
-    include implementation("com.zaxxer:HikariCP:5.1.0")
-
-    // MySQL Connector (nested into mod JAR via JiJ)
-    include implementation("com.mysql:mysql-connector-j:8.3.0")
-
-    // SQLite JDBC (nested into mod JAR via JiJ)
-    include implementation("org.xerial:sqlite-jdbc:3.45.3.0")
+    // Database dependencies bundled via Jar-in-Jar so Fabric Loader
+    // unpacks them at runtime — plug-and-play, no manual installation needed.
+    include implementation("com.zaxxer:HikariCP:7.0.2")
+    include implementation("com.mysql:mysql-connector-j:8.0.33")
+    include group: 'org.xerial', name: 'sqlite-jdbc', version: '3.45.3.0'
+    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.45.3.0'
 
     // Mod Menu API (compile only, provided by Mod Menu mod at runtime)
-    modCompileOnlyApi "com.terraformersmc:modmenu:11.0.1"
+    modCompileOnlyApi "com.terraformersmc:modmenu:11.0.4"
 
     // Testing
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.1'
-    testImplementation 'org.mockito:mockito-core:5.14.2'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.14.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
+    testImplementation 'org.mockito:mockito-core:5.23.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.23.0'
 }
 
 test {

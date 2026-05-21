@@ -25,6 +25,7 @@ import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
+import org.ssoggy.ssoggysouls.task.MainReviveCheckTask;
 
 public class MainServerListener implements Listener {
 
@@ -34,6 +35,7 @@ public class MainServerListener implements Listener {
 
     private final SSoggySouls plugin;
     private final DatabaseManager db;
+    private final MainReviveCheckTask mainReviveCheckTask;
     
     // Cache frequently accessed config values to avoid repeated lookups
     private String cachedDeathMode;
@@ -46,9 +48,10 @@ public class MainServerListener implements Listener {
     private final Map<UUID, BukkitTask> hybridPendingTransfers = new HashMap<>();
     private final Map<UUID, Long> reviveCooldowns = new ConcurrentHashMap<>();
 
-    public MainServerListener(SSoggySouls plugin) {
+    public MainServerListener(SSoggySouls plugin, MainReviveCheckTask mainReviveCheckTask) {
         this.plugin = plugin;
         this.db = plugin.getDatabaseManager();
+        this.mainReviveCheckTask = mainReviveCheckTask;
         // Initialize cached config values
         refreshConfigCache();
     }
@@ -215,6 +218,7 @@ public class MainServerListener implements Listener {
         player.sendMessage(MessageUtil.get(MSG_NOW_SPECTATOR));
         expectedGamemodeChanges.add(player.getUniqueId());
         player.setGameMode(GameMode.SPECTATOR);
+        mainReviveCheckTask.addSpectator(player.getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -252,6 +256,7 @@ public class MainServerListener implements Listener {
         if (player.hasPermission(PERM_BYPASS)) return;
 
         UUID uuid = player.getUniqueId();
+        mainReviveCheckTask.removeSpectator(uuid);
 
         // Cancel any pending hybrid transfer since player is offline
         cancelHybridTransfer(uuid);
@@ -366,6 +371,7 @@ public class MainServerListener implements Listener {
                 "timeout", formatTime(cachedHybridTimeout))); // Use cached value
         expectedGamemodeChanges.add(uuid);
         player.setGameMode(GameMode.SPECTATOR);
+        mainReviveCheckTask.addSpectator(uuid);
         scheduleHybridTimeout(player, uuid);
     }
 
@@ -436,17 +442,20 @@ public class MainServerListener implements Listener {
                 case SSoggySouls.MODE_SPECTATOR -> {
                     expectedGamemodeChanges.add(uuid);
                     player.setGameMode(GameMode.SPECTATOR);
+                    mainReviveCheckTask.addSpectator(uuid);
                 }
                 case SSoggySouls.MODE_HYBRID -> {
                     hybridWindowUsed.add(uuid);
                     expectedGamemodeChanges.add(uuid);
                     player.setGameMode(GameMode.SPECTATOR);
+                    mainReviveCheckTask.addSpectator(uuid);
                     scheduleHybridTimeout(player, uuid);
                 }
                 default -> {
                     if (plugin.isSpectatorOnDeath()) {
                         expectedGamemodeChanges.add(uuid);
                         player.setGameMode(GameMode.SPECTATOR);
+                        mainReviveCheckTask.addSpectator(uuid);
                     }
                     Bukkit.getScheduler().runTaskLater(plugin, () -> {
                         if (player.isOnline()) {

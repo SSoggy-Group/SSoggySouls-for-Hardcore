@@ -25,7 +25,7 @@ ______________________________________________________________________
 
 **A:** You need:
 
-1. **Main Server** - Your survival/gameplay server (1.21.X Spigot/Paper/Purpur)
+1. **Main Server** - Your survival/gameplay server (1.21.X Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 
 1. **Limbo Server** - Purgatory server for dead players (same version)
 
@@ -57,7 +57,7 @@ ______________________________________________________________________
 
 **A:** SSoggySouls requires **Minecraft 1.21.X** with:
 
-- Spigot, Paper, or Purpur server software
+- Spigot, Paper, Purpur, Fabric, Forge, or NeoForge server software
 
 - Java 21 or higher
 

@@ -130,21 +130,19 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             case "info"     -> handleInfo(sender, args);
             case "reload"   -> handleReload(sender);
             case SUB_CONFIRM  -> handleGraceConfirm(sender, args);
-            default -> sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin <subcommand> [args]"));
+            default -> CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin <subcommand> [args]", "/psadmin ");
         }
     }
 
     private void handleLives(CommandSender sender, String[] args) {
         if (args.length < 4) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin lives <set|give|take> <player> <amount>"));
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin lives <set|give|take> <player> <amount>", "/psadmin lives ");
             return;
         }
 
         String action = args[1].toLowerCase();
         String targetName = args[2];
-        int amount = parseIntOrError(sender, args[3]);
+        int amount = parseIntOrError(sender, args[3], "/psadmin lives " + action + " " + targetName + " ");
         if (amount < 0) return;
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
@@ -192,8 +190,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleGrace(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin grace <set|remove> <player> [time]"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin grace <set|remove> <player> [time]", "/psadmin grace ");
             return;
         }
 
@@ -237,8 +234,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void applyGraceSet(CommandSender sender, String[] args, PlayerData data) {
         if (args.length < 4) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin grace set <player> <time> (e.g., 1h30m, 2h, 90m)"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin grace set <player> <time> (e.g., 1h30m, 2h, 90m)", "/psadmin grace set " + data.getUsername() + " ");
             return;
         }
         String timeStr = args[3];
@@ -311,8 +307,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleGraceConfirm(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin confirm <overwrite|stack|cancel>"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin confirm <overwrite|stack|cancel>", "/psadmin confirm ");
             return;
         }
 
@@ -393,7 +388,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleKill(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MessageUtil.colorize("&cUsage: /psadmin kill <player>"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin kill <player>", "/psadmin kill ");
             return;
         }
 
@@ -488,14 +483,13 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleRevive(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cUsage: /psadmin revive <player> [lives]"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin revive <player> [lives]", "/psadmin revive ");
             return;
         }
 
         String targetName = args[1];
         int livesToRestore = args.length >= 3
-                ? parseIntOrError(sender, args[2])
+                ? parseIntOrError(sender, args[2], "/psadmin revive " + targetName + " ")
                 : plugin.getLivesOnRevive();
         if (livesToRestore < 0) return;
 
@@ -535,7 +529,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleReset(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MessageUtil.colorize("&cUsage: /psadmin reset <player>"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin reset <player>", "/psadmin reset ");
             return;
         }
 
@@ -566,7 +560,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleInfo(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MessageUtil.colorize("&cUsage: /psadmin info <player>"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin info <player>", "/psadmin info ");
             return;
         }
 
@@ -637,25 +631,41 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private static void sendHelp(CommandSender sender) {
         sender.sendMessage(MessageUtil.colorize("&6&l══ SSoggySouls Admin ══"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin lives set <player> <n>  &7- Set lives"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin lives give <player> <n> &7- Add lives"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin lives take <player> <n> &7- Remove lives"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin grace set <player> <time> &7- Grant grace (e.g., 1h30m, 2h, 90m)"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin grace remove <player>   &7- Remove grace"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin confirm <overwrite|stack|cancel> &7- Confirm grace operation"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin kill <player>           &7- Force-kill"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin revive <player> [lives] &7- Revive"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin reset <player>          &7- Reset to defaults"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin info <player>           &7- Detailed info"));
-        sender.sendMessage(MessageUtil.colorize("&e/psadmin reload                  &7- Reload config"));
+        sendInteractiveHelp(sender, "/psadmin lives set <player> <n>", "Set lives", 2);
+        sendInteractiveHelp(sender, "/psadmin lives give <player> <n>", "Add lives", 1);
+        sendInteractiveHelp(sender, "/psadmin lives take <player> <n>", "Remove lives", 1);
+        sendInteractiveHelp(sender, "/psadmin grace set <player> <time>", "Grant grace (e.g., 1h30m, 2h, 90m)", 0);
+        sendInteractiveHelp(sender, "/psadmin grace remove <player>", "Remove grace", 3);
+        sendInteractiveHelp(sender, "/psadmin confirm <overwrite|stack|cancel>", "Confirm grace operation", 0);
+        sendInteractiveHelp(sender, "/psadmin kill <player>", "Force-kill", 11);
+        sendInteractiveHelp(sender, "/psadmin revive <player> [lives]", "Revive", 1);
+        sendInteractiveHelp(sender, "/psadmin reset <player>", "Reset to defaults", 10);
+        sendInteractiveHelp(sender, "/psadmin info <player>", "Detailed info", 11);
+        sendInteractiveHelp(sender, "/psadmin reload", "Reload config", 18);
         sender.sendMessage(MessageUtil.colorize("&6&l═══════════════════════"));
     }
 
-    private static int parseIntOrError(CommandSender sender, String text) {
+    private static void sendInteractiveHelp(CommandSender sender, String command, String description, int paddingSpaces) {
+        if (sender instanceof Player player) {
+            String suggestCmd = command.split(" <")[0].split(" \\[")[0]; // extract base command safely
+            String padding = " ".repeat(Math.max(0, paddingSpaces));
+
+            net.kyori.adventure.text.Component message = net.kyori.adventure.text.Component.text(command + padding, net.kyori.adventure.text.format.NamedTextColor.YELLOW)
+                    .append(net.kyori.adventure.text.Component.text(" - " + description, net.kyori.adventure.text.format.NamedTextColor.GRAY))
+                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand(suggestCmd + " "))
+                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to prepare this command", net.kyori.adventure.text.format.NamedTextColor.GRAY)));
+            player.sendMessage(message);
+        } else {
+            String padding = " ".repeat(Math.max(0, paddingSpaces));
+            sender.sendMessage(MessageUtil.colorize("&e" + command + padding + " &7- " + description));
+        }
+    }
+
+    private static int parseIntOrError(CommandSender sender, String text, String suggestCmd) {
         try {
             return Integer.parseInt(text);
         } catch (NumberFormatException e) {
-            sender.sendMessage(MessageUtil.colorize(ERR_NUMBER + text));
+            CommandUtil.sendInteractiveUsage(sender, ERR_NUMBER + text, suggestCmd);
             return -1;
         }
     }

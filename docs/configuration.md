@@ -45,15 +45,15 @@ The Fabric version of SSoggySouls uses a `ssoggysouls.json` file for configurati
 
 ______________________________________________________________________
 
-## Forge Mod Configuration
+## Forge & NeoForge Mod Configuration
 
-The Forge version of SSoggySouls uses either a `ssoggysouls.toml` or `ssoggysouls.json` file for configuration, depending on your version.
+The Forge and NeoForge versions of SSoggySouls use either a `ssoggysouls.toml` or `ssoggysouls.json` file for configuration, depending on your version.
 
 **Location:** `config/ssoggysouls.toml` (or `.json`)
 
-> **Note:** Configuration options are designed to be consistent across all versions (Bukkit, Fabric, and Forge). You can edit these files manually while the server is stopped.
+> **Note:** Configuration options are designed to be consistent across all versions (Bukkit, Fabric, Forge, and NeoForge). You can edit these files manually while the server is stopped.
 >
-> **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
+> **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
 ______________________________________________________________________
 

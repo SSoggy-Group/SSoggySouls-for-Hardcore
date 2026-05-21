@@ -60,6 +60,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     private String mainServerName;
     private String limboServerName;
 
+    private static final String DATABASE_SQLITE = "sqlite";
     private static final String DEFAULT_WORLD = "world";
     private static final String CFG_SPAWN_X = "limbo.spawn.x";
     private static final String CFG_SPAWN_Y = "limbo.spawn.y";
@@ -111,30 +112,12 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     private HeadDropListener headDropListener;
 
     private Location limboSpawn;
-    private final Set<UUID> limboDeadPlayers = ConcurrentHashMap.newKeySet();
 
     @Override
     public void onEnable() {
         setInstance(this);
 
-        java.io.File configFile = new java.io.File(getDataFolder(), "config.yml");
-        if (!configFile.exists()) {
-            saveDefaultConfig();
-            getLogger().info("\n" +
-                    "===============================================================\n" +
-                    "                       SSOGGY SOULS\n" +
-                    "===============================================================\n" +
-                    " The plugin is using SQLite (single-server mode) by default.\n" +
-                    " \n" +
-                    " If you are setting up a Dual-Server Network (Main + Limbo),\n" +
-                    " you MUST stop the server, open config.yml, and change the\n" +
-                    " 'database.type' to 'mysql', then fill in your DB details.\n" +
-                    " \n" +
-                    " If you are using a single server, you can ignore this message.\n" +
-                    "===============================================================\n");
-        } else {
-            saveDefaultConfig();
-        }
+        printDatabaseWarningIfNeeded();
 
         for (World world : getServer().getWorlds()) {
             originalWorldHardcore.put(world.getName(), world.isHardcore());
@@ -145,23 +128,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
 
-        String dbType = databaseType;
-
-        if (isSqliteDatabaseType(dbType)) {
-            databaseManager = new org.ssoggy.ssoggysouls.database.SQLiteManager(this);
-        } else {
-            databaseManager = new org.ssoggy.ssoggysouls.database.MySQLManager(this);
-        }
-
-        try {
-            databaseManager.initialize();
-        } catch (DatabaseInitializationException e) {
-            boolean isSqlite = isSqliteDatabaseType(dbType);
-            getLogger().log(Level.SEVERE, "Failed to connect to {0}! Disabling plugin.", isSqlite ? "SQLite" : "MySQL");
-            getLogger().log(Level.SEVERE, "Initialization error details:", e);
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
+        if (!initializeDatabase()) return;
 
         // Check version compatibility between Main and Limbo servers
         checkVersionCompatibility();
@@ -174,6 +141,79 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
             enableMainMode();
         }
 
+        printBanner();
+
+        if (getConfig().getBoolean("check-for-updates", true)) {
+            new UpdateChecker(this).checkForUpdates();
+        }
+    }
+
+    private void printDatabaseWarningIfNeeded() {
+        java.io.File configFile = new java.io.File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            saveDefaultConfig();
+            getLogger().info("""
+
+                    
+
+                    ===============================================================
+
+                    
+
+                                           SSOGGY SOULS
+
+                    
+
+                    ===============================================================
+
+                    
+
+                     The plugin is using SQLite (single-server mode) by default.
+
+                     
+
+                     If you are setting up a Dual-Server Network (Main + Limbo),
+
+                     you MUST stop the server, open config.yml, and change the
+
+                     'database.type' to 'mysql', then fill in your DB details.
+
+                     
+
+                     If you are using a single server, you can ignore this message.
+
+                    
+
+                    ===============================================================
+
+                    """);
+        } else {
+            saveDefaultConfig();
+        }
+    }
+
+    private boolean initializeDatabase() {
+        String dbType = databaseType;
+
+        if (isSqliteDatabaseType(dbType)) {
+            databaseManager = new org.ssoggy.ssoggysouls.database.SQLiteManager(this);
+        } else {
+            databaseManager = new org.ssoggy.ssoggysouls.database.MySQLManager(this);
+        }
+
+        try {
+            databaseManager.initialize();
+            return true;
+        } catch (DatabaseInitializationException e) {
+            boolean isSqlite = isSqliteDatabaseType(dbType);
+            getLogger().log(Level.SEVERE, "Failed to connect to {0}! Disabling plugin.", isSqlite ? "SQLite" : "MySQL");
+            getLogger().log(Level.SEVERE, "Initialization error details:", e);
+            getServer().getPluginManager().disablePlugin(this);
+            return false;
+        }
+    }
+
+    private void printBanner() {
         String mode = isLimboServer ? "LIMBO SERVER" : "MAIN SERVER";
         String version = getPluginMeta().getVersion();
 
@@ -202,12 +242,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         getLogger().info(BORDER_EMPTY);
         getLogger().info(BORDER_BOTTOM);
         getLogger().info("");
-
-        if (getConfig().getBoolean("check-for-updates", true)) {
-            new UpdateChecker(this).checkForUpdates();
-        }
     }
-
     @Override
     public void onDisable() {
         getServer().getMessenger().unregisterOutgoingPluginChannel(this);
@@ -242,12 +277,13 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
     private void enableMainMode() {
         getLogger().info("Registering MAIN server listeners...");
-        mainServerListener = new MainServerListener(this);
+        MainReviveCheckTask mainReviveCheckTask = new MainReviveCheckTask(this);
+        mainServerListener = new MainServerListener(this, mainReviveCheckTask);
         getServer().getPluginManager().registerEvents(mainServerListener, this);
 
         int intervalSeconds = getConfig().getInt("limbo.check-interval-seconds", 3);
         long intervalTicks = intervalSeconds * 20L;
-        new MainReviveCheckTask(this).runTaskTimerAsynchronously(this, 60L, intervalTicks);
+        mainReviveCheckTask.runTaskTimerAsynchronously(this, 60L, intervalTicks);
         getLogger().log(Level.INFO, "Main revive check task started (every {0}s).", intervalSeconds);
 
         if (hrmEnabled) {
@@ -284,12 +320,13 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
     private void enableLimboMode() {
         getLogger().info("Registering LIMBO server listeners and tasks...");
-        limboServerListener = new LimboServerListener(this);
+        LimboCheckTask limboCheckTask = new LimboCheckTask(this);
+        limboServerListener = new LimboServerListener(this, limboCheckTask);
         getServer().getPluginManager().registerEvents(limboServerListener, this);
 
         int intervalSeconds = getConfig().getInt("limbo.check-interval-seconds", 3);
         long intervalTicks = intervalSeconds * 20L;
-        new LimboCheckTask(this).runTaskTimerAsynchronously(this, 60L, intervalTicks);
+        limboCheckTask.runTaskTimerAsynchronously(this, 60L, intervalTicks);
         getLogger().log(Level.INFO, "Limbo check task started (every {0}s).", intervalSeconds);
     }
 
@@ -334,9 +371,9 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         reloadConfig();
         FileConfiguration cfg = getConfig();
 
-        databaseType = normalizeConfigValue(cfg.getString("database.type", "sqlite"));
+        databaseType = normalizeConfigValue(cfg.getString("database.type", DATABASE_SQLITE));
         if (databaseType.isEmpty()) {
-            databaseType = "sqlite";
+            databaseType = DATABASE_SQLITE;
         }
         isLimboServer = cfg.getBoolean("is-limbo-server", false);
         if (isSingleServerMode() && isLimboServer) {
@@ -430,7 +467,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     }
 
     private static boolean isSqliteDatabaseType(String type) {
-        return "sqlite".equals(type) || "local".equals(type);
+        return DATABASE_SQLITE.equals(type) || "local".equals(type);
     }
 
     private long loadGracePeriod(FileConfiguration cfg) {
@@ -515,12 +552,14 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         }
     }
 
+    @Override
     public void debug(String message) {
         if (debugMode && getLogger().isLoggable(Level.INFO)) {
             getLogger().log(Level.INFO, "[DEBUG] {0}", message);
         }
     }
 
+    @Override
     public boolean isDebugMode() {
         return debugMode;
     }
@@ -567,6 +606,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         return limboServerName;
     }
 
+    @Override
     public int getDefaultLives() {
         return defaultLives;
     }
@@ -611,9 +651,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         return limboSpawn;
     }
 
-    public Set<UUID> getLimboDeadPlayers() {
-        return limboDeadPlayers;
-    }
+
 
     public boolean isHrmEnabled() {
         return hrmEnabled;

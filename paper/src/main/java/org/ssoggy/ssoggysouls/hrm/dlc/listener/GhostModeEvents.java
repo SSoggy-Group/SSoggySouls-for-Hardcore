@@ -45,26 +45,26 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class GhostModeEvents implements Listener {
-    @EventHandler(priority = EventPriority.LOW)
-    public void onPlayerDropItem(PlayerDropItemEvent event) {
-        Player player = event.getPlayer();
+    private void cancelEventIfGhostMode(Player player, org.bukkit.event.Cancellable event) {
         if (GAMEMODESENUM.getPlayerGameMode(player) == GAMEMODESENUM.GHOSTMODE) {
             event.setCancelled(true);
         }
     }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onPlayerDropItem(PlayerDropItemEvent event) {
+        cancelEventIfGhostMode(event.getPlayer(), event);
+    }
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerAttack(PrePlayerAttackEntityEvent event) {
-        Player player = event.getPlayer();
-        if (GAMEMODESENUM.getPlayerGameMode(player) == GAMEMODESENUM.GHOSTMODE) {
+        if (GAMEMODESENUM.getPlayerGameMode(event.getPlayer()) == GAMEMODESENUM.GHOSTMODE) {
             event.setCancelled(true);
         }
     }
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        if (GAMEMODESENUM.getPlayerGameMode(player) == GAMEMODESENUM.GHOSTMODE) {
-            event.setCancelled(true);
-        }
+        if (event.getHand() == EquipmentSlot.OFF_HAND) return;
+        cancelEventIfGhostMode(event.getPlayer(), event);
     }
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
@@ -117,7 +117,7 @@ public class GhostModeEvents implements Listener {
             player.teleportAsync(deadLocation); // Note: radius could gradually increase over time in a future iteration
 
             if (Boolean.TRUE.equals(RPStatic.CONFIG_RULES.getOrDefault("ghost-mode-particles", false))) {
-                player.getWorld().spawnParticle(org.bukkit.Particle.DRAGON_BREATH, deadLocation, 50, 0, 1, 0, 0.2);
+                player.spawnParticle(org.bukkit.Particle.DRAGON_BREATH, deadLocation, 50, 0, 1, 0, 0.2);
             }
             
             player.playSound(player, Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1, 0);

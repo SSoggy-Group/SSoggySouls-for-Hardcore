@@ -4,9 +4,9 @@
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=SSoggy-Group_SSoggySouls-for-Hardcore&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=SSoggy-Group_SSoggySouls-for-Hardcore) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SSoggy-Group_SSoggySouls-for-Hardcore&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=SSoggy-Group_SSoggySouls-for-Hardcore) [![AI Code Assurance](https://sonarcloud.io/api/project_badges/ai_code_assurance?project=SSoggy-Group_SSoggySouls-for-Hardcore)](https://sonarcloud.io/summary/new_code?id=SSoggy-Group_SSoggySouls-for-Hardcore) [![Auto Bump, Build, and Release](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml) [![Continuous Integration](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml)
 
 
-**Version 4.4.0** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore) 
-A hardcore lives system mod/plugin for Minecraft 1.21.X (Supports Spigot, Paper, Purpur, Fabric, and Forge). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
-> **Note:** Fabric and Forge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
+**Version 4.5.7** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
+A hardcore lives system mod/plugin for Minecraft 1.21.X (Supports Spigot, Paper, Purpur, Fabric, Forge, and NeoForge). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
+> **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 >
 > **[Complete Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Installation guides, configuration reference, commands, troubleshooting, and more!
 
@@ -267,7 +267,7 @@ Living players can check out Limbo using `/limbo`.
 - Different welcome messages for visitors vs dead people
 
 ## Requirements
-- **Minecraft:** 1.21.X (Spigot, Paper, Purpur, Fabric, or Forge)
+- **Minecraft:** 1.21.X (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 
 - **Proxy:** Velocity (BungeeCord/Waterfall might work but not tested)
 
@@ -346,15 +346,15 @@ After setup, test everything:
 
 ### Step 1: Download
 
-Download the latest release (`SSoggySouls-4.4.0.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
+Download the latest release (`SSoggySouls-4.5.7.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
 
 ### Step 2: Install Plugin
 
-Place `SSoggySouls-4.4.0.jar` in the `plugins/` folder of **both** servers:
+Place `SSoggySouls-4.5.7.jar` in the `plugins/` folder of **both** servers:
 
-- Main server: `/plugins/SSoggySouls-4.4.0.jar`
+- Main server: `/plugins/SSoggySouls-4.5.7.jar`
 
-- Limbo server: `/plugins/SSoggySouls-4.4.0.jar`
+- Limbo server: `/plugins/SSoggySouls-4.5.7.jar`
 
 ### Step 3: Generate Config
 
@@ -891,7 +891,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 
 ## Changelog
 
-### v4.4.0
+### v4.5.7
 
 **What's Changed:**
 
@@ -905,7 +905,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 
 - **Rename: PolarSouls to SSoggySouls** - Finished renaming everything internally. No config changes needed.
 
-**Full Changelog:** [v1...v4.4.0](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v4.4.0)
+**Full Changelog:** [v1...v4.5.7](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v4.5.7)
 
 ## Credits
 
@@ -930,3 +930,4 @@ This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
 See the [LICENSE](LICENSE) file for full details.
 
 (note: if you’re wondering why most commits are from one day, I rewrote the history cuz it was terrible)
+(note 2: i use AI in this project for fixes, suggestions, feedback, porting and stuff like that. i wrote the base of the code myself

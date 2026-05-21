@@ -14,7 +14,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
-import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ public class HeadDropListener {
 
     private static final Map<UUID, List<GlobalPos>> headBlockLocations = new ConcurrentHashMap<>();
 
-    public static void register(DatabaseManager db) {
+    public static void register() {
         // Head drop is now triggered from MainServerListener.handleDeathSync
         // when isDead becomes true, avoiding the race condition with async DB state.
     }
@@ -63,7 +62,7 @@ public class HeadDropListener {
             }
 
             headBlockLocations
-                    .computeIfAbsent(player.getUuid(), ArrayList::new)
+                    .computeIfAbsent(player.getUuid(), ignoredUuid -> new ArrayList<>())
                     .add(GlobalPos.create(world.getRegistryKey(), headPos));
             SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getName().getString(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
@@ -100,15 +99,20 @@ public class HeadDropListener {
     }
 
     public static void removeDroppedHeads(UUID ownerUuid, MinecraftServer server) {
-        List<GlobalPos> knownLocations = headBlockLocations.remove(ownerUuid);
+        List<GlobalPos> knownLocations = headBlockLocations.get(ownerUuid);
         if (knownLocations != null) {
+            List<GlobalPos> remainingLocations = new ArrayList<>();
             for (GlobalPos pos : knownLocations) {
                 ServerWorld world = server.getWorld(pos.dimension());
-                if (world == null) continue;
+                if (world == null) {
+                    remainingLocations.add(pos);
+                    continue;
+                }
 
                 BlockPos blockPos = pos.pos();
                 if (!world.isChunkLoaded(blockPos)) {
                     // We skip if not loaded to prevent loading tons of chunks.
+                    remainingLocations.add(pos);
                     continue;
                 }
 
@@ -122,6 +126,12 @@ public class HeadDropListener {
                         }
                     }
                 }
+            }
+
+            if (remainingLocations.isEmpty()) {
+                headBlockLocations.remove(ownerUuid);
+            } else {
+                headBlockLocations.put(ownerUuid, remainingLocations);
             }
         }
 
