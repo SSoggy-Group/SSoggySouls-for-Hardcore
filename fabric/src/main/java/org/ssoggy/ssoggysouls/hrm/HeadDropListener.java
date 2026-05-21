@@ -63,7 +63,7 @@ public class HeadDropListener {
             }
 
             headBlockLocations
-                    .computeIfAbsent(player.getUuid(), k -> new ArrayList<>())
+                    .computeIfAbsent(player.getUuid(), ArrayList::new)
                     .add(GlobalPos.create(world.getRegistryKey(), headPos));
             SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getName().getString(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
