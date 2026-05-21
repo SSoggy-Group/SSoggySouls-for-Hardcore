@@ -57,13 +57,13 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
         }
 
         if (lives < 0) {
-            sender.sendMessage(MessageUtil.colorize("&cLives cannot be negative."));
+            CommandUtil.sendInteractiveUsage(sender, "&cLives cannot be negative.", "/psetlives " + targetName + " ");
             return false;
         }
 
         int maxLives = plugin.getMaxLives();
         if (maxLives > 0 && lives > maxLives) {
-            sender.sendMessage(MessageUtil.colorize("&cMaximum lives: " + maxLives));
+            CommandUtil.sendInteractiveUsage(sender, "&cMaximum lives: " + maxLives, "/psetlives " + targetName + " ");
             return false;
         }
 
