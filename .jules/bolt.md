@@ -20,3 +20,7 @@
 ## 2024-05-18 - [Enum Caching for Tab Completions]
 **Learning:** Calling `Enum.values()` inside command `onTabComplete` methods allocates a new array on every keystroke, causing unnecessary garbage collection overhead on highly active paths.
 **Action:** Always pre-compute and cache `Enum.values()` mapping conversions (like `.name().toLowerCase()`) in a `static final List<String>` during class initialization to prevent redundant string and array allocations during tab completion.
+
+## 2024-05-24 - [Avoid Stream map allocation overhead on player names in Brigadier]
+**Learning:** In Fabric and Forge/NeoForge Brigadier command tab completions, doing `server.getPlayerList().stream().map(p -> p.getName())` inside `.suggests(...)` allocates a new stream and performs O(N) operations on every keystroke.
+**Action:** Use `server.getPlayerNames()` natively available on the server instance which returns a cached string array `String[]` that can simply be wrapped using `Arrays.asList()`, removing stream allocations entirely during tab-completion.

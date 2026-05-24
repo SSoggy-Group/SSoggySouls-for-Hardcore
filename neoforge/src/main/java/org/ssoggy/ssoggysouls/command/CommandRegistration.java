@@ -77,7 +77,7 @@ public class CommandRegistration {
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                        context.getSource().getServer().getPlayerList().getPlayers().stream().map(p -> p.getScoreboardName()), builder))
+                        java.util.Arrays.asList(context.getSource().getServer().getPlayerNames()), builder))
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     CommandSourceStack source = context.getSource();
@@ -111,7 +111,7 @@ public class CommandRegistration {
             .requires(source -> source.hasPermission(2))
             .then(Commands.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                        context.getSource().getServer().getPlayerList().getPlayers().stream().map(p -> p.getScoreboardName()), builder))
+                        java.util.Arrays.asList(context.getSource().getServer().getPlayerNames()), builder))
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     CommandSourceStack source = context.getSource();
@@ -174,7 +174,7 @@ public class CommandRegistration {
             .requires(source -> source.hasPermission(2))
             .then(Commands.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                        context.getSource().getServer().getPlayerList().getPlayers().stream().map(p -> p.getScoreboardName()), builder))
+                        java.util.Arrays.asList(context.getSource().getServer().getPlayerNames()), builder))
                 .then(Commands.argument(LIVES, IntegerArgumentType.integer(0))
                     .executes(context -> {
                         String targetName = StringArgumentType.getString(context, PLAYER);
