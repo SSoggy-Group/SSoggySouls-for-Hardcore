@@ -29,6 +29,7 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
         this.db = plugin.getDatabaseManager();
     }
 
+    @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
@@ -43,7 +44,7 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
 
         if (args.length != 2) {
             CommandUtil.sendInteractiveUsage(sender, MessageUtil.get("setlives-usage"), "/psetlives ");
-            return false;
+            return true;
         }
 
         String targetName = args[0];
@@ -53,18 +54,18 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
             lives = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
             CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[1], "/psetlives " + targetName + " ");
-            return false;
+            return true;
         }
 
         if (lives < 0) {
             CommandUtil.sendInteractiveUsage(sender, "&cLives cannot be negative.", "/psetlives " + targetName + " ");
-            return false;
+            return true;
         }
 
         int maxLives = plugin.getMaxLives();
         if (maxLives > 0 && lives > maxLives) {
             CommandUtil.sendInteractiveUsage(sender, "&cMaximum lives: " + maxLives, "/psetlives " + targetName + " ");
-            return false;
+            return true;
         }
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
