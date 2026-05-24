@@ -77,7 +77,7 @@ public class CommandRegistration {
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                        java.util.Arrays.asList(context.getSource().getServer().getPlayerNames()), builder))
+                        context.getSource().getServer().getPlayerNames(), builder))
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     CommandSourceStack source = context.getSource();
