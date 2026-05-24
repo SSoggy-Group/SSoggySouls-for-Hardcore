@@ -23,4 +23,4 @@
 
 ## 2024-05-24 - [Avoid Stream map allocation overhead on player names in Brigadier]
 **Learning:** In Fabric and Forge/NeoForge Brigadier command tab completions, doing `server.getPlayerList().stream().map(p -> p.getName())` inside `.suggests(...)` allocates a new stream and performs O(N) operations on every keystroke.
-**Action:** Use `server.getPlayerNames()` natively available on the server instance which returns a cached string array `String[]` that can simply be wrapped using `Arrays.asList()`, removing stream allocations entirely during tab-completion.
+**Action:** Use `server.getPlayerNames()` natively available on the server instance, which returns a `String[]`. This avoids the overhead of the Stream API entirely during tab-completion.
