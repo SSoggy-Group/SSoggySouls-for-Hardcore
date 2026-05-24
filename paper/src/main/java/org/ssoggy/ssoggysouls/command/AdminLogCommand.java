@@ -65,7 +65,7 @@ public class AdminLogCommand implements CommandExecutor {
         try {
             int count = Integer.parseInt(args[0]);
             if (count <= 0 || count > 100) {
-                sender.sendMessage(MessageUtil.colorize("&cPlease specify a number between 1 and 100."));
+                org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cPlease specify a number between 1 and 100.", "/adminlog ");
                 return -1;
             }
             return count;
