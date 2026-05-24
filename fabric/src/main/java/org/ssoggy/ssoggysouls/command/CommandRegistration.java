@@ -62,7 +62,7 @@ public class CommandRegistration {
             })
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> CommandSource.suggestMatching(
-                        context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString()), builder))
+                        context.getSource().getServer().getPlayerNames(), builder))
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     ServerCommandSource source = context.getSource();
@@ -97,7 +97,7 @@ public class CommandRegistration {
             .requires(source -> source.hasPermissionLevel(2))
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> CommandSource.suggestMatching(
-                        context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString()), builder))
+                        context.getSource().getServer().getPlayerNames(), builder))
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     ServerCommandSource source = context.getSource();
@@ -157,7 +157,7 @@ public class CommandRegistration {
             .requires(source -> source.hasPermissionLevel(2))
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> CommandSource.suggestMatching(
-                        context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString()), builder))
+                        context.getSource().getServer().getPlayerNames(), builder))
                 .then(CommandManager.argument(LIVES, IntegerArgumentType.integer(0))
                     .executes(context -> {
                         String targetName = StringArgumentType.getString(context, PLAYER);
