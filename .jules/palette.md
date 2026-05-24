@@ -17,3 +17,6 @@
 ## 2026-05-15 - [Interactive CLI Limit Constraints]
 **Learning:** Similarly to parsing errors, logical constraints and bound limits (like `< 0` or `> maxLives` or line limits) traditionally send dead-end static messages. Using `sendInteractiveUsage` for these limit constraint errors provides the same recovery path benefits, letting the user simply click and change the number without retyping the base command.
 **Action:** Always use `sendInteractiveUsage` with the base command when failing bounds checks or limit constraints on command arguments, rather than regular `sendMessage`.
+## 2026-05-15 - [Interactive CLI Limit Constraints]
+**Learning:** Similarly to parsing errors, logical constraints and bound limits (like `< 0` or `> maxLives` or line limits) traditionally send dead-end static messages. Using `sendInteractiveUsage` for these limit constraint errors provides the same recovery path benefits, letting the user simply click and change the number without retyping the base command.
+**Action:** Always use `sendInteractiveUsage` with the base command when failing bounds checks or limit constraints on command arguments, rather than regular `sendMessage`.
