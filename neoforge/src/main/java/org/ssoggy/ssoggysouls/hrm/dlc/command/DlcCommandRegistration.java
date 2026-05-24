@@ -132,7 +132,7 @@ public final class DlcCommandRegistration {
                         .executes(context -> executeTrust(context.getSource(), db, StringArgumentType.getString(context, ACTION), null))
                         .then(Commands.argument(PLAYER, StringArgumentType.word())
                                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                                        java.util.Arrays.asList(context.getSource().getServer().getPlayerNames()),
+                                        context.getSource().getServer().getPlayerNames(),
                                         builder))
                                 .executes(context -> executeTrust(context.getSource(), db,
                                         StringArgumentType.getString(context, ACTION),
