@@ -20,6 +20,7 @@ import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
 import org.ssoggy.ssoggysouls.util.AdminLogger;
 
 public class SetLivesCommand implements CommandExecutor, TabCompleter {
+    private static final String PSETLIVES_BASE = "/psetlives ";
 
     private final SSoggySouls plugin;
     private final DatabaseManager db;
@@ -43,7 +44,7 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length != 2) {
-            CommandUtil.sendInteractiveUsage(sender, MessageUtil.get("setlives-usage"), "/psetlives ");
+            CommandUtil.sendInteractiveUsage(sender, MessageUtil.get("setlives-usage"), PSETLIVES_BASE);
             return true;
         }
 
@@ -53,18 +54,18 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
         try {
             lives = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
-            CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[1], "/psetlives " + targetName + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[1], PSETLIVES_BASE + targetName + " ");
             return true;
         }
 
         if (lives < 0) {
-            CommandUtil.sendInteractiveUsage(sender, "&cLives cannot be negative.", "/psetlives " + targetName + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cLives cannot be negative.", PSETLIVES_BASE + targetName + " ");
             return true;
         }
 
         int maxLives = plugin.getMaxLives();
         if (maxLives > 0 && lives > maxLives) {
-            CommandUtil.sendInteractiveUsage(sender, "&cMaximum lives: " + maxLives, "/psetlives " + targetName + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cMaximum lives: " + maxLives, PSETLIVES_BASE + targetName + " ");
             return true;
         }
 
