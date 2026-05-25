@@ -25,6 +25,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
+import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -140,7 +141,7 @@ public final class DlcCommandRegistration {
 
     private static int executeTrust(CommandSourceStack source, DatabaseManager db, String rawAction, String targetName) {
         if (!source.isPlayer()) {
-            sendResult(source, DlcCommandResult.fail("This command can only be run by a player."));
+            sendResult(source, DlcCommandResult.fail(MessageUtil.getRawString("admin-players-only")));
             return 0;
         }
 
