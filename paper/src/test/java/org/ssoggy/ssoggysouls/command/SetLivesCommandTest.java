@@ -33,10 +33,11 @@ class SetLivesCommandTest {
     private MockedStatic<CommandUtil> commandUtilMock;
     private MockedStatic<PermissionUtil> permissionUtilMock;
     private SetLivesCommand setLivesCommand;
+    private AutoCloseable mocks;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mocks = MockitoAnnotations.openMocks(this);
         when(plugin.getDatabaseManager()).thenReturn(db);
         setLivesCommand = new SetLivesCommand(plugin);
 
