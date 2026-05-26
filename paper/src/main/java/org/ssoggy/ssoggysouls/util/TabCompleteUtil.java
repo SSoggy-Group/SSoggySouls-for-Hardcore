@@ -18,8 +18,22 @@ public final class TabCompleteUtil {
      * @return list of matching player names
      */
     public static List<String> getOnlinePlayerNames(String prefix) {
+        return getOnlinePlayerNames(prefix, null);
+    }
+
+    /**
+     * gets online player names matching the given prefix, excluding a specific name.
+     *
+     * @param prefix      the prefix to filter by (case-insensitive)
+     * @param excludeName a name to exclude from the results (case-insensitive), or null
+     * @return list of matching player names
+     */
+    public static List<String> getOnlinePlayerNames(String prefix, String excludeName) {
         List<String> names = new ArrayList<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
+            if (excludeName != null && player.getName().equalsIgnoreCase(excludeName)) {
+                continue;
+            }
             if (player.getName().regionMatches(true, 0, prefix, 0, prefix.length())) {
                 names.add(player.getName());
             }

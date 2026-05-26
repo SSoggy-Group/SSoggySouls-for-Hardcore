@@ -286,4 +286,17 @@ class AbstractDatabaseManagerTest {
         assertEquals(300L, data.getLastSeen());
         assertEquals(400L, data.getGraceUntil());
     }
+
+    @Test
+    void testSetLives() throws SQLException {
+        UUID testUuid = UUID.randomUUID();
+        when(preparedStatement.executeUpdate()).thenReturn(1);
+
+        dbManager.setLives(testUuid, 5);
+
+        verify(preparedStatement).setInt(1, 5);
+        verify(preparedStatement).setBoolean(2, false);
+        verify(preparedStatement).setString(3, testUuid.toString());
+        verify(preparedStatement).executeUpdate();
+    }
 }
