@@ -24,7 +24,7 @@ public class VisitLimboCommand implements CommandExecutor {
         if (sender instanceof Player player) {
             handleVisit(player);
         } else if (sender != null) {
-            sender.sendMessage(MessageUtil.get("command-only-players"));
+            sender.sendMessage("Only players can use this command.");
         }
         return true;
     }

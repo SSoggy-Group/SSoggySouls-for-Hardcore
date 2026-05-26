@@ -1,6 +1,7 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -25,7 +26,6 @@ import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
-import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -132,7 +132,7 @@ public final class DlcCommandRegistration {
                         .executes(context -> executeTrust(context.getSource(), db, StringArgumentType.getString(context, ACTION), null))
                         .then(Commands.argument(PLAYER, StringArgumentType.word())
                                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                                        context.getSource().getServer().getPlayerNames(),
+                                        context.getSource().getServer().getPlayerList().getPlayers().stream().map(ServerPlayer::getScoreboardName),
                                         builder))
                                 .executes(context -> executeTrust(context.getSource(), db,
                                         StringArgumentType.getString(context, ACTION),
@@ -141,7 +141,7 @@ public final class DlcCommandRegistration {
 
     private static int executeTrust(CommandSourceStack source, DatabaseManager db, String rawAction, String targetName) {
         if (!source.isPlayer()) {
-            sendResult(source, DlcCommandResult.fail(MessageUtil.getFormattedNoPrefix("admin-players-only")));
+            sendResult(source, DlcCommandResult.fail("This command can only be run by a player."));
             return 0;
         }
 
@@ -227,7 +227,7 @@ public final class DlcCommandRegistration {
                 })
                 .then(Commands.argument(PLAYER, StringArgumentType.word())
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                                java.util.Arrays.asList(context.getSource().getServer().getPlayerNames()),
+                                context.getSource().getServer().getPlayerList().getPlayers().stream().map(ServerPlayer::getScoreboardName),
                                 builder))
                         .executes(context -> {
                             String targetName = StringArgumentType.getString(context, PLAYER);
