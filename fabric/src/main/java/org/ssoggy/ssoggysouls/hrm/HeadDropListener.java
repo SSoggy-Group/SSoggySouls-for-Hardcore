@@ -10,6 +10,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
@@ -49,7 +50,7 @@ public class HeadDropListener {
                 skull.setOwner(new ProfileComponent(player.getGameProfile()));
                 skull.markDirty();
             }
-            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getName().getString(), headPos.getX(), headPos.getY(), headPos.getZ());
+            SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getName().getString(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
             // Create player head item
             ItemStack head = new ItemStack(Items.PLAYER_HEAD);
@@ -69,7 +70,7 @@ public class HeadDropListener {
             }
 
             world.spawnEntity(itemEntity);
-            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("Dropped {}'s head at {} {} {}", player.getName().getString(), pos.getX(), pos.getY(), pos.getZ());
+            SSoggySoulsMod.LOGGER.info("Dropped {}'s head at {} {} {}", player.getName().getString(), pos.getX(), pos.getY(), pos.getZ());
         }
     }
 

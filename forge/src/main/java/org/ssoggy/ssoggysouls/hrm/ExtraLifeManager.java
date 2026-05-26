@@ -14,6 +14,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
@@ -94,7 +95,7 @@ public class ExtraLifeManager {
         int newLives = currentLives + 1;
         db.setLives(uuid, newLives);
 
-        org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getScoreboardName(), newLives);
+        SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getScoreboardName(), newLives);
 
         serverPlayer.server.execute(() -> {
             serverPlayer.sendSystemMessage(MessageUtil.get("extra-life-gained", "lives", newLives));
