@@ -13,13 +13,11 @@ class DeathStatusCacheTest {
 
     private DeathStatusCache cache;
     private UUID testUuid1;
-    private UUID testUuid2;
 
     @BeforeEach
     void setUp() {
         cache = new DeathStatusCache();
         testUuid1 = UUID.randomUUID();
-        testUuid2 = UUID.randomUUID();
     }
 
     @Test

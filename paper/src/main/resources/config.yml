@@ -90,7 +90,7 @@ database:
   username: "minecraft"
 
   # MySQL password (Pterodactyl: check Databases tab) — CHANGE THIS!
-  password: "changeme"
+  password: ""
 
   # Connection pool size (simultaneous DB connections, 5 is fine for most servers)
   pool-size: 5
