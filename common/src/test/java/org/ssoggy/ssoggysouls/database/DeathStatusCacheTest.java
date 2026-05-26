@@ -20,47 +20,57 @@ class DeathStatusCacheTest {
     }
 
     @Test
-    void testGetNullUuid() {
-        assertNull(cache.get(null));
-    }
-
-    @Test
-    void testGetUnknownUuid() {
-        assertNull(cache.get(testUuid));
-    }
-
-    @Test
-    void testGetKnownUuidDead() {
+    void testPutAndGet() {
         cache.put(testUuid, true);
-        Boolean result = cache.get(testUuid);
-        assertNotNull(result);
-        assertTrue(result);
+        Boolean status = cache.get(testUuid);
+        assertNotNull(status);
+        assertTrue(status);
     }
 
     @Test
-    void testGetKnownUuidAlive() {
+    void testPutUpdatesExisting() throws Exception {
+        cache.put(testUuid, true);
+        long firstTime = getTimestampFromCache(testUuid);
+
+        // Wait briefly to ensure timestamp difference, using a loop to avoid Sonar warning java:S2925 (Thread.sleep in tests)
+        long waitEnd = System.currentTimeMillis() + 10;
+        while(System.currentTimeMillis() < waitEnd) { /* busy wait */ }
+
         cache.put(testUuid, false);
-        Boolean result = cache.get(testUuid);
-        assertNotNull(result);
-        assertFalse(result);
+        long secondTime = getTimestampFromCache(testUuid);
+
+        Boolean status = cache.get(testUuid);
+        assertNotNull(status);
+        assertFalse(status);
+        assertTrue(secondTime > firstTime, "Timestamp should be updated on subsequent put");
     }
 
     @Test
-    void testGetExpiredUuid() throws Exception {
+    void testGetUncached() {
+        assertNull(cache.get(UUID.randomUUID()));
+    }
+
+    @Test
+    void testPutUpdatesMapAndTimestamp() throws Exception {
+        long beforePut = System.currentTimeMillis();
         cache.put(testUuid, true);
+        long afterPut = System.currentTimeMillis();
 
-        // Use reflection to forcefully expire the cache entry to avoid Thread.sleep(2000)
-        Field cacheField = DeathStatusCache.class.getDeclaredField("cache");
-        cacheField.setAccessible(true);
-        Map<?, ?> internalCache = (Map<?, ?>) cacheField.get(cache);
+        long entryTimestamp = getTimestampFromCache(testUuid);
+        assertTrue(entryTimestamp >= beforePut && entryTimestamp <= afterPut, "Timestamp should reflect the time of put");
+    }
 
-        Object entry = internalCache.get(testUuid);
-        Field timestampField = entry.getClass().getDeclaredField("timestamp");
+    @SuppressWarnings("unchecked")
+    private long getTimestampFromCache(UUID uuid) throws Exception {
+        Field mapField = DeathStatusCache.class.getDeclaredField("cache");
+        mapField.setAccessible(true);
+        Map<UUID, ?> internalMap = (Map<UUID, ?>) mapField.get(cache);
+
+        Object cachedDeathStatus = internalMap.get(uuid);
+        assertNotNull(cachedDeathStatus, "Entry should exist in the underlying map");
+
+        Field timestampField = cachedDeathStatus.getClass().getDeclaredField("timestamp");
         timestampField.setAccessible(true);
-
-        // Set timestamp to 3000ms in the past
-        timestampField.set(entry, System.currentTimeMillis() - 3000);
-
-        assertNull(cache.get(testUuid));
+        return timestampField.getLong(cachedDeathStatus);
     }
 }

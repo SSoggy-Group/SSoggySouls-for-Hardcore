@@ -144,8 +144,6 @@ public class RevivalStructureListener {
         ghostState.removeDeathHolder(revivedUuid);
         ghostState.setDirty();
 
-        HeadDropListener.removeDroppedHeads(revivedUuid, world.getServer());
-
         summoner.sendSystemMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()), false);
         summoner.sendSystemMessage(MessageUtil.get("revive-from-limbo", "player", revivedName), false);
 

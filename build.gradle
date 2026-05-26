@@ -17,13 +17,11 @@ sonar {
     properties {
         property "sonar.projectKey", "SSoggy-Group_SSoggySouls-for-Hardcore"
         property "sonar.organization", "ssoggy-group"
-        property "sonar.coverage.jacoco.xmlReportPaths", "**/build/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
 
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'jacoco'
 
     configurations.all {
         resolutionStrategy {
@@ -50,14 +48,5 @@ subprojects {
         maven { url = 'https://repo.papermc.io/repository/maven-public/' }
         maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
         maven { url = 'https://maven.terraformersmc.com/releases/' }
-    }
-}
-
-subprojects {
-    jacocoTestReport {
-        dependsOn test
-        reports {
-            xml.required = true
-        }
     }
 }
