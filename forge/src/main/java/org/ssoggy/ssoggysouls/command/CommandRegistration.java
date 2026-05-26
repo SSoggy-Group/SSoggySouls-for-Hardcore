@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.command.DlcCommandRegistration;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
@@ -28,7 +27,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(modid = org.ssoggy.ssoggysouls.SSoggySoulsMod.MODID)
+@net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = org.ssoggy.ssoggysouls.SSoggySoulsMod.MODID)
 public class CommandRegistration {
     
     private CommandRegistration() {
