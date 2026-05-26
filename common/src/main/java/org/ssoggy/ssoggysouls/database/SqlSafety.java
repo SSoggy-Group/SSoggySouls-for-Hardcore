@@ -28,7 +28,13 @@ final class SqlSafety {
         return identifier;
     }
 
-    static boolean isIdentifier(String identifier) {
+    /**
+     * Verifies that the given string contains only alphanumeric characters and underscores.
+     * This prevents SQL injection when dynamic table names must be used.
+     * @param identifier The string to check.
+     * @return true if valid, false otherwise.
+     */
+    public static boolean isValidIdentifier(String identifier) {
         return identifier != null && IDENTIFIER.matcher(identifier).matches();
     }
 

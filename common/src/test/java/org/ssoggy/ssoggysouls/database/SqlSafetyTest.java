@@ -8,12 +8,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.lang.reflect.Proxy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SqlSafetyTest {
 
@@ -45,10 +46,11 @@ class SqlSafetyTest {
             "param\\with\\slash"
     })
     void testRequireValidJdbcParam_Invalid(String param) {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            SqlSafety.requireValidJdbcParam(param, "TestLabel");
-        });
-        assertEquals("TestLabel must contain only alphanumeric characters, periods, hyphens, underscores, colons, and square brackets", ex.getMessage());
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> SqlSafety.requireValidJdbcParam(param, "TestLabel"));
+        assertEquals(
+                "TestLabel must contain only alphanumeric characters, periods, hyphens, underscores, colons, and square brackets",
+                ex.getMessage());
     }
 
     @ParameterizedTest
@@ -71,9 +73,8 @@ class SqlSafetyTest {
             "param;drop table;"
     })
     void testRequireIdentifier_Invalid(String identifier) {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            SqlSafety.requireIdentifier(identifier, "TestLabel");
-        });
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> SqlSafety.requireIdentifier(identifier, "TestLabel"));
         assertEquals("TestLabel must contain only ASCII letters, digits, and underscores", ex.getMessage());
     }
 
@@ -83,8 +84,8 @@ class SqlSafetyTest {
             "12345",
             "test_123"
     })
-    void testIsIdentifier_True(String identifier) {
-        assertTrue(SqlSafety.isIdentifier(identifier));
+    void testIsValidIdentifier_True(String identifier) {
+        assertTrue(SqlSafety.isValidIdentifier(identifier));
     }
 
     @ParameterizedTest
@@ -96,39 +97,26 @@ class SqlSafetyTest {
             "param with space",
             "param;drop table;"
     })
-    void testIsIdentifier_False(String identifier) {
-        assertFalse(SqlSafety.isIdentifier(identifier));
+    void testIsValidIdentifier_False(String identifier) {
+        assertFalse(SqlSafety.isValidIdentifier(identifier));
+    }
+
+    @Test
+    void testConstructor() throws Exception {
+        java.lang.reflect.Constructor<SqlSafety> constructor = SqlSafety.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 
     @Test
     void testPrepareStatement() throws SQLException {
-        Connection mockConnection = (Connection) Proxy.newProxyInstance(
-                Connection.class.getClassLoader(),
-                new Class<?>[]{Connection.class},
-                (proxy, method, args) -> {
-                    if (method.getName().equals("prepareStatement") && args.length == 1) {
-                        return createMockPreparedStatement((String) args[0]);
-                    }
-                    throw new UnsupportedOperationException("Not implemented");
-                }
-        );
-
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
         String sql = "SELECT * FROM users WHERE id = ?";
+        when(mockConnection.prepareStatement(sql)).thenReturn(mockStatement);
+
         PreparedStatement stmt = SqlSafety.prepareStatement(mockConnection, sql);
 
-        assertEquals("MockPreparedStatement[" + sql + "]", stmt.toString());
-    }
-
-    private PreparedStatement createMockPreparedStatement(String sql) {
-        return (PreparedStatement) Proxy.newProxyInstance(
-                PreparedStatement.class.getClassLoader(),
-                new Class<?>[]{PreparedStatement.class},
-                (proxy, method, args) -> {
-                    if (method.getName().equals("toString")) {
-                        return "MockPreparedStatement[" + sql + "]";
-                    }
-                    throw new UnsupportedOperationException("Not implemented");
-                }
-        );
+        assertEquals(mockStatement, stmt);
     }
 }
