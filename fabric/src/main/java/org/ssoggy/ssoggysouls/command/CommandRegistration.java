@@ -62,7 +62,7 @@ public class CommandRegistration {
             })
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> CommandSource.suggestMatching(
-                        context.getSource().getServer().getPlayerNames(), builder))
+                        context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString()), builder))
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     ServerCommandSource source = context.getSource();
@@ -97,7 +97,7 @@ public class CommandRegistration {
             .requires(source -> source.hasPermissionLevel(2))
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> CommandSource.suggestMatching(
-                        context.getSource().getServer().getPlayerNames(), builder))
+                        context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString()), builder))
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     ServerCommandSource source = context.getSource();
@@ -137,7 +137,6 @@ public class CommandRegistration {
                 ghostState.deathLocations.remove(targetData.getUuid());
                 ghostState.deathHolders.remove(targetData.getUuid());
                 ghostState.markDirty();
-                org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(targetData.getUuid(), source.getServer());
                 source.sendFeedback(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
                 AdminLogger.log(source.getName(), "Revived " + targetData.getUsername());
 
@@ -157,7 +156,7 @@ public class CommandRegistration {
             .requires(source -> source.hasPermissionLevel(2))
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> CommandSource.suggestMatching(
-                        context.getSource().getServer().getPlayerNames(), builder))
+                        context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString()), builder))
                 .then(CommandManager.argument(LIVES, IntegerArgumentType.integer(0))
                     .executes(context -> {
                         String targetName = StringArgumentType.getString(context, PLAYER);

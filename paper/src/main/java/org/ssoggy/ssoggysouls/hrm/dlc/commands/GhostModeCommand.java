@@ -59,7 +59,7 @@ public class GhostModeCommand implements CommandExecutor, TabCompleter { // Lazy
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length < 2) {
-            return org.ssoggy.ssoggysouls.util.TabCompleteUtil.getOnlinePlayerNames(args.length > 0 ? args[0] : "");
+            return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
         }
         return Collections.emptyList();
     }
