@@ -91,5 +91,7 @@ class AbstractDatabaseManagerTest {
         verify(preparedStatement).setBoolean(2, false);
         verify(preparedStatement).setString(3, testUuid.toString());
         verify(preparedStatement).executeUpdate();
+        verify(preparedStatement).close();
+        verify(connection).close();
     }
 }
