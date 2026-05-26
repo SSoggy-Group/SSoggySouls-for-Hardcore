@@ -67,14 +67,16 @@ class DeathStatusCacheTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void testPutNullUuid() throws Exception {
         assertDoesNotThrow(() -> cache.put(null, true));
+        assertTrue(getInternalMap().isEmpty(), "Internal cache map should be empty when putting null UUID");
+    }
 
+    @SuppressWarnings("unchecked")
+    private Map<UUID, ?> getInternalMap() throws Exception {
         Field mapField = DeathStatusCache.class.getDeclaredField("cache");
         mapField.setAccessible(true);
-        Map<UUID, ?> internalMap = (Map<UUID, ?>) mapField.get(cache);
-        assertTrue(internalMap.isEmpty(), "Internal cache map should be empty when putting null UUID");
+        return (Map<UUID, ?>) mapField.get(cache);
     }
 
     @SuppressWarnings("unchecked")
