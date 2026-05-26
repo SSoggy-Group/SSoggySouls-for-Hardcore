@@ -930,3 +930,4 @@ This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
 See the [LICENSE](LICENSE) file for full details.
 
 (note: if you’re wondering why most commits are from one day, I rewrote the history cuz it was terrible)
+(note 2: i use AI in this project for fixes, suggestions, feedback, porting and stuff like that. i wrote the base of the code myself
