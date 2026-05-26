@@ -82,6 +82,7 @@ class DeathStatusCacheTest {
         Map<UUID, Object> map = (Map<UUID, Object>) cacheField.get(cache);
 
         Object cachedDeathStatus = map.get(testUuid1);
+        assertNotNull(cachedDeathStatus, "Cached entry should exist in the internal map");
 
         Field timestampField = cachedDeathStatus.getClass().getDeclaredField("timestamp");
         timestampField.setAccessible(true);
