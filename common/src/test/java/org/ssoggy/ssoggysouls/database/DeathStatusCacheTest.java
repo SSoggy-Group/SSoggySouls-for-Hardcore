@@ -66,6 +66,19 @@ class DeathStatusCacheTest {
         assertTrue(entryTimestamp >= beforePut && entryTimestamp <= afterPut, "Timestamp should reflect the time of put");
     }
 
+    @Test
+    void testPutNullUuid() throws Exception {
+        assertDoesNotThrow(() -> cache.put(null, true));
+        assertTrue(getInternalMap().isEmpty(), "Internal cache map should be empty when putting null UUID");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<UUID, ?> getInternalMap() throws Exception {
+        Field mapField = DeathStatusCache.class.getDeclaredField("cache");
+        mapField.setAccessible(true);
+        return (Map<UUID, ?>) mapField.get(cache);
+    }
+
     @SuppressWarnings("unchecked")
     private long getTimestampFromCache(UUID uuid) throws Exception {
         Field mapField = DeathStatusCache.class.getDeclaredField("cache");
