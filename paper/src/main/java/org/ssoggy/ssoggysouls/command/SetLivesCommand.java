@@ -30,6 +30,7 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
+    @SuppressWarnings("java:S3516")
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
             return true;

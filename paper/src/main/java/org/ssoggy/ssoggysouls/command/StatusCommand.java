@@ -28,7 +28,7 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    @SuppressWarnings("java:S2259") // colorize() never returns null
+    @SuppressWarnings({"java:S2259", "java:S3516"}) // colorize() never returns null; always returns true by design
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender == null) {
             return false;

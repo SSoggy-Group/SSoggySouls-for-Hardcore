@@ -11,6 +11,9 @@
 ## 2026-05-15 - [Interactive CLI Error Messages]
 **Learning:** When users mistype a command (like missing an argument in /revive), the default static error message forces them to re-type the whole thing. By using Kyori Adventure Rich Components (via CommandUtil.sendInteractiveUsage) for the usage error message, they can just click the error text to auto-fill the command in their chat bar.
 **Action:** Update static command error messages to use sendInteractiveUsage so that mistakes are easily correctable.
+## 2026-05-15 - [Interactive CLI Argument Error Catching]
+**Learning:** Static argument validation error messages (like "Invalid number" or "Out of bounds") force users to completely re-type the command. By replacing `sendMessage` with `CommandUtil.sendInteractiveUsage()` for these errors, users can simply click the error message to auto-fill the command and correct their mistake, significantly reducing friction.
+**Action:** When catching `NumberFormatException` or validating numeric bounds in command arguments, use `sendInteractiveUsage()` with a pre-filled suggestion (e.g. `/psetlives <player> `) to create a helpful recovery path instead of a static frustration point.
 ## 2026-05-15 - [Interactive CLI Number Parsing Errors]
 **Learning:** Number parsing errors (e.g., NumberFormatException) in legacy command systems often default to static "Invalid number" messages. By refactoring methods like `parseIntOrError` to accept a base `suggestCmd`, these static errors can be upgraded to use `CommandUtil.sendInteractiveUsage`, allowing users to quickly correct invalid numeric inputs via a clickable chat component.
 **Action:** Always provide the base command context when catching input format errors to build actionable auto-fill error suggestions.
