@@ -24,8 +24,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
@@ -128,7 +126,7 @@ public class RevivalStructureListener {
 
             new DlcStats(serverPlayer.getUUID()).incrementStat(DlcStat.RITUAL_COMPLETED, 1);
             new DlcStats(ownerUuid).incrementStat(DlcStat.REVIVES, 1);
-            SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getScoreboardName(), ownerName);
+            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getScoreboardName(), ownerName);
 
             serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, ownerName));
         });
@@ -172,7 +170,7 @@ public class RevivalStructureListener {
             restoreAtStructure(revivedPlayer, (ServerLevel) world, placedPos);
         } else {
             PENDING_REVIVALS.put(revivedUuid, GlobalPos.of(world.dimension(), placedPos));
-            SSoggySoulsMod.LOGGER.info("{} is offline; revival effects will be applied on next login.", revivedName);
+            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.info("{} is offline; revival effects will be applied on next login.", revivedName);
         }
     }
 

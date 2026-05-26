@@ -12,7 +12,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.command.DlcCommandRegistration;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
@@ -29,7 +28,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
+@Mod.EventBusSubscriber(modid = org.ssoggy.ssoggysouls.SSoggySoulsMod.MODID)
 public class CommandRegistration {
     
     private CommandRegistration() {
@@ -47,7 +46,7 @@ public class CommandRegistration {
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         if (db == null) {
-            SSoggySoulsMod.LOGGER.error("Cannot register commands: DatabaseManager is null");
+            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.error("Cannot register commands: DatabaseManager is null");
             return;
         }
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
@@ -232,7 +231,7 @@ public class CommandRegistration {
                 CommandSourceStack source = context.getSource();
 
                 CompletableFuture.runAsync(() -> {
-                    File logFile = net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve(SSoggySoulsMod.MODID).resolve(AdminLogger.LOG_FILE_NAME).toFile();
+                    File logFile = net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve(org.ssoggy.ssoggysouls.SSoggySoulsMod.MODID).resolve(AdminLogger.LOG_FILE_NAME).toFile();
                     if (!logFile.exists()) {
                         source.sendFailure(Component.literal("No admin logs found."));
                         return;
