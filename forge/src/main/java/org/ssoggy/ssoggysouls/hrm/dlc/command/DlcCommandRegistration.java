@@ -132,7 +132,7 @@ public final class DlcCommandRegistration {
                         .executes(context -> executeTrust(context.getSource(), db, StringArgumentType.getString(context, ACTION), null))
                         .then(Commands.argument(PLAYER, StringArgumentType.word())
                                 .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                                        context.getSource().getServer().getPlayerList().getPlayers().stream().map(ServerPlayer::getScoreboardName),
+                                        context.getSource().getServer().getPlayerNames(),
                                         builder))
                                 .executes(context -> executeTrust(context.getSource(), db,
                                         StringArgumentType.getString(context, ACTION),
@@ -227,7 +227,7 @@ public final class DlcCommandRegistration {
                 })
                 .then(Commands.argument(PLAYER, StringArgumentType.word())
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                                context.getSource().getServer().getPlayerList().getPlayers().stream().map(ServerPlayer::getScoreboardName),
+                                context.getSource().getServer().getPlayerNames(),
                                 builder))
                         .executes(context -> {
                             String targetName = StringArgumentType.getString(context, PLAYER);
