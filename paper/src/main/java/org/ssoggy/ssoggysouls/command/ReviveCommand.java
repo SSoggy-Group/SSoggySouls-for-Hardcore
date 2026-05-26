@@ -31,6 +31,7 @@ public class ReviveCommand implements CommandExecutor, TabCompleter {
         this.db = plugin.getDatabaseManager();
     }
 
+    @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.revive", "&cYou don't have permission to revive players.")) {
@@ -45,7 +46,7 @@ public class ReviveCommand implements CommandExecutor, TabCompleter {
 
         if (args.length != 1) {
             CommandUtil.sendInteractiveUsage(sender, MessageUtil.get("revive-usage"), "/revive ");
-            return false;
+            return true;
         }
 
         String targetName = args[0];
