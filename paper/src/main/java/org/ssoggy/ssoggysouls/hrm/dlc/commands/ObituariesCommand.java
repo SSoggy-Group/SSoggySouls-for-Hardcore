@@ -95,7 +95,10 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        return org.ssoggy.ssoggysouls.util.TabCompleteUtil.getOnlinePlayerNames(args.length > 0 ? args[0] : "");
+        if (args.length < 2) {
+            return org.ssoggy.ssoggysouls.util.TabCompleteUtil.getOnlinePlayerNames(args.length > 0 ? args[0] : "");
+        }
+        return List.of();
     }
 
     private static long getObituaryDelayMinutes(FileConfiguration config, String key, long fallback) {
