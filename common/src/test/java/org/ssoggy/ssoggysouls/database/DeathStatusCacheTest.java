@@ -12,11 +12,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class DeathStatusCacheTest {
 
     private DeathStatusCache cache;
-    private final UUID testUuid = UUID.randomUUID();
+    private UUID testUuid1;
+    private UUID testUuid2;
 
     @BeforeEach
     void setUp() {
         cache = new DeathStatusCache();
+        testUuid1 = UUID.randomUUID();
+        testUuid2 = UUID.randomUUID();
+    }
+
+    @Test
+    void testGetEmpty() {
+        assertNull(cache.get(testUuid1));
     }
 
     @Test
