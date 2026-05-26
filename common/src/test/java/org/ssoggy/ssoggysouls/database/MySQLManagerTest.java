@@ -382,4 +382,107 @@ class MySQLManagerTest {
 
         assertNull(version); // Graceful error handling: returns null
     }
+
+    @Test
+    void testArePlayersDeadEmptyInput() {
+        java.util.Map<UUID, Boolean> result = mySQLManager.arePlayersDead(java.util.Collections.emptySet());
+        assertTrue(result.isEmpty());
+
+        // Passing null should be handled safely by the implementation without throwing exceptions
+        result = mySQLManager.arePlayersDead(null);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testArePlayersDeadAllCached() throws SQLException {
+        // Populate cache first
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(true);
+
+        mySQLManager.isPlayerDead(testUuid);
+        reset(preparedStatement);
+
+        // Now test arePlayersDead
+        java.util.Set<UUID> uuids = new java.util.HashSet<>();
+        uuids.add(testUuid);
+
+        java.util.Map<UUID, Boolean> result = mySQLManager.arePlayersDead(uuids);
+
+        assertEquals(1, result.size());
+        assertTrue(result.get(testUuid));
+        verify(preparedStatement, never()).executeQuery();
+    }
+
+    @Test
+    void testArePlayersDeadMixedCacheAndDb() throws SQLException {
+        UUID uuid2 = UUID.randomUUID();
+
+        // Populate cache for testUuid
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(true);
+
+        mySQLManager.isPlayerDead(testUuid);
+        reset(preparedStatement);
+
+        // Mock DB fetch for uuid2
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        // Only one element to fetch
+        when(resultSet.next()).thenReturn(true).thenReturn(false);
+        when(resultSet.getString("uuid")).thenReturn(uuid2.toString());
+        when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(false);
+
+        java.util.Set<UUID> uuids = new java.util.HashSet<>();
+        uuids.add(testUuid);
+        uuids.add(uuid2);
+
+        java.util.Map<UUID, Boolean> result = mySQLManager.arePlayersDead(uuids);
+
+        assertEquals(2, result.size());
+        assertTrue(result.get(testUuid));
+        assertFalse(result.get(uuid2));
+
+        verify(preparedStatement, times(1)).executeQuery();
+    }
+
+    @Test
+    void testArePlayersDeadAllDb() throws SQLException {
+        UUID uuid1 = UUID.randomUUID();
+        UUID uuid2 = UUID.randomUUID();
+
+        // Mock DB fetch for uuid1 and uuid2
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+        when(resultSet.getString("uuid")).thenReturn(uuid1.toString()).thenReturn(uuid2.toString());
+        when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(true).thenReturn(false);
+
+        java.util.Set<UUID> uuids = new java.util.HashSet<>();
+        uuids.add(uuid1);
+        uuids.add(uuid2);
+
+        java.util.Map<UUID, Boolean> result = mySQLManager.arePlayersDead(uuids);
+
+        assertEquals(2, result.size());
+        assertTrue(result.get(uuid1));
+        assertFalse(result.get(uuid2));
+
+        verify(preparedStatement, times(1)).executeQuery();
+    }
+
+    @Test
+    void testArePlayersDeadDbError() throws SQLException {
+        UUID uuid1 = UUID.randomUUID();
+
+        // Mock DB fetch throwing exception
+        when(preparedStatement.executeQuery()).thenThrow(new SQLException(MOCK_DB_ERROR));
+
+        java.util.Set<UUID> uuids = new java.util.HashSet<>();
+        uuids.add(uuid1);
+
+        java.util.Map<UUID, Boolean> result = mySQLManager.arePlayersDead(uuids);
+
+        assertEquals(1, result.size());
+        assertTrue(result.get(uuid1)); // Fail-safe default is true
+    }
 }

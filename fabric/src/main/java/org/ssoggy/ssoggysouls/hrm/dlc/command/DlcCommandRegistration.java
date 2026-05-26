@@ -132,7 +132,7 @@ public final class DlcCommandRegistration {
                         .executes(context -> executeTrust(context.getSource(), db, StringArgumentType.getString(context, ACTION), null))
                         .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                                 .suggests((context, builder) -> CommandSource.suggestMatching(
-                                        context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(player -> player.getName().getString()),
+                                        context.getSource().getServer().getPlayerNames(),
                                         builder))
                                 .executes(context -> executeTrust(context.getSource(), db,
                                         StringArgumentType.getString(context, ACTION),
@@ -226,7 +226,7 @@ public final class DlcCommandRegistration {
                 })
                 .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                         .suggests((context, builder) -> CommandSource.suggestMatching(
-                                context.getSource().getServer().getPlayerManager().getPlayerList().stream().map(player -> player.getName().getString()),
+                                context.getSource().getServer().getPlayerNames(),
                                 builder))
                         .executes(context -> {
                             String targetName = StringArgumentType.getString(context, PLAYER);
@@ -420,12 +420,7 @@ public final class DlcCommandRegistration {
     }
 
     private static ServerPlayerEntity findOnlinePlayer(MinecraftServer server, String name) {
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            if (player.getName().getString().equalsIgnoreCase(name)) {
-                return player;
-            }
-        }
-        return null;
+        return server.getPlayerManager().getPlayer(name);
     }
 
     private static void sendTrustResult(ServerCommandSource source, DlcTrustService.TrustResult result) {
