@@ -73,7 +73,7 @@ class DeathStatusCacheTest {
     }
 
     @Test
-    void testExpirationTTL() throws Exception {
+    void testExpirationTTL() throws NoSuchFieldException, IllegalAccessException {
         cache.put(testUuid1, true);
 
         Field cacheField = DeathStatusCache.class.getDeclaredField("cache");
