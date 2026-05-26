@@ -201,9 +201,6 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         );
     }
 
-    private static final List<String> TRUST_ACTIONS = Arrays.stream(TRUSTENUM.values())
-            .map(action -> action.name().toLowerCase(Locale.ROOT))
-            .toList();
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
