@@ -22,4 +22,4 @@
 **Action:** Always use `sendInteractiveUsage` with the base command when failing bounds checks or limit constraints on command arguments, rather than regular `sendMessage`.
 ## 2026-05-15 - [Localization in CLI Commands]
 **Learning:** Hardcoded strings in commands (like error messages for console execution) cause inconsistent UX and prevent server owners from localizing the text via config files.
-**Action:** Always replace static text messages with `MessageUtil.get("config-key")` (or the equivalent translation mechanism for the platform) to ensure all user and console-facing text is customizable and consistent.
+**Action:** Always replace static text messages with localized keys (e.g., using `MessageUtil.get("config-key")` for general feedback or `CommandUtil.sendInteractiveUsage()` for usage errors) to ensure all user and console-facing text is customizable and consistent.
