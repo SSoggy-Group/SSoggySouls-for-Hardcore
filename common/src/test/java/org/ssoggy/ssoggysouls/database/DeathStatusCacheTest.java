@@ -29,25 +29,25 @@ class DeathStatusCacheTest {
 
     @Test
     void testPutAndGet() {
-        cache.put(testUuid, true);
-        Boolean status = cache.get(testUuid);
+        cache.put(testUuid1, true);
+        Boolean status = cache.get(testUuid1);
         assertNotNull(status);
         assertTrue(status);
     }
 
     @Test
     void testPutUpdatesExisting() throws Exception {
-        cache.put(testUuid, true);
-        long firstTime = getTimestampFromCache(testUuid);
+        cache.put(testUuid1, true);
+        long firstTime = getTimestampFromCache(testUuid1);
 
         // Wait briefly to ensure timestamp difference, using a loop to avoid Sonar warning java:S2925 (Thread.sleep in tests)
         long waitEnd = System.currentTimeMillis() + 10;
         while(System.currentTimeMillis() < waitEnd) { /* busy wait */ }
 
-        cache.put(testUuid, false);
-        long secondTime = getTimestampFromCache(testUuid);
+        cache.put(testUuid1, false);
+        long secondTime = getTimestampFromCache(testUuid1);
 
-        Boolean status = cache.get(testUuid);
+        Boolean status = cache.get(testUuid1);
         assertNotNull(status);
         assertFalse(status);
         assertTrue(secondTime > firstTime, "Timestamp should be updated on subsequent put");
@@ -61,10 +61,10 @@ class DeathStatusCacheTest {
     @Test
     void testPutUpdatesMapAndTimestamp() throws Exception {
         long beforePut = System.currentTimeMillis();
-        cache.put(testUuid, true);
+        cache.put(testUuid1, true);
         long afterPut = System.currentTimeMillis();
 
-        long entryTimestamp = getTimestampFromCache(testUuid);
+        long entryTimestamp = getTimestampFromCache(testUuid1);
         assertTrue(entryTimestamp >= beforePut && entryTimestamp <= afterPut, "Timestamp should reflect the time of put");
     }
 
