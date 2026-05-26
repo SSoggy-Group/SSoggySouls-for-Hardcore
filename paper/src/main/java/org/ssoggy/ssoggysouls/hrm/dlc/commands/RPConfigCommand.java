@@ -42,6 +42,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
 public class RPConfigCommand implements CommandExecutor, TabCompleter {
+    // ⚡ Bolt: Cache enum string mappings to avoid redundant O(N) array allocations on every tab complete
+    private static final List<String> OPTION_CONFIGS = Arrays.stream(OPTIONCONFIGENUM.values()).map(x -> x.id.toLowerCase(java.util.Locale.ROOT)).toList();
+    private static final List<String> OPTION_EDITS = Arrays.stream(OPTIONEDITENUM.values()).map(x -> x.id).toList();
+
     private static final String OPT_STRUCTURE = "STRUCTURE";
     private static final String OPT_GAMERULE = "GAMERULE";
     private static final String OPT_TIMER = "TIMER";
@@ -287,7 +291,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         String opt1 = cmdKeywords.getOrDefault(plOpt1.toLowerCase(), ""); // opt1 short for option 1
 
         return switch(args.length) {
-            case 1 -> Arrays.stream(OPTIONCONFIGENUM.values()).filter(x -> x.index > 0).map(x -> x.id).toList();
+            case 1 -> org.bukkit.util.StringUtil.copyPartialMatches(args[0], OPTION_CONFIGS, new java.util.ArrayList<>());
             case 2 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
                     yield new java.util.ArrayList<>(RPStatic.BLOCK_TAGS.keySet());
@@ -300,7 +304,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             }
             case 3 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
-                    yield Arrays.stream(OPTIONEDITENUM.values()).map(x -> x.id).toList();
+                    yield org.bukkit.util.StringUtil.copyPartialMatches(args[2], OPTION_EDITS, new java.util.ArrayList<>());
                 } else if (Objects.equals(opt1, OPT_GAMERULE)) {
                     yield LIST_BOOLEAN;
                 }

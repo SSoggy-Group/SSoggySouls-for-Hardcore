@@ -16,3 +16,7 @@
 ## 2026-05-14 - [Optimized MainReviveCheckTask Player Iteration]
 **Learning:** Iterating over `Bukkit.getOnlinePlayers()` and doing a set `.add(uuid)` lookup inside periodic tasks scales linearly O(N) with the number of online players. When tracking a specific subset of players (like `trackedSpectators`), it's significantly faster to iterate the smaller subset O(M) and verify online presence instead of iterating all online players to filter them out.
 **Action:** Iterate over tracking sets directly instead of iterating all online players, drastically reducing time complexity in tasks.
+
+## 2024-05-18 - [Enum Caching for Tab Completions]
+**Learning:** Calling `Enum.values()` inside command `onTabComplete` methods allocates a new array on every keystroke, causing unnecessary garbage collection overhead on highly active paths.
+**Action:** Always pre-compute and cache `Enum.values()` mapping conversions (like `.name().toLowerCase()`) in a `static final List<String>` during class initialization to prevent redundant string and array allocations during tab completion.
