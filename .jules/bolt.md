@@ -19,3 +19,10 @@
 ## 2026-05-17 - [Eliminated String Allocation inside loop in SocialCommand TabComplete]
 **Learning:** Returning a newly created `ArrayList` mapped from Enum string values `.toLowerCase()` inside `onTabComplete` creates unnecessary string allocations every time a user requests tab completions, generating GC pressure and latency spikes since tab complete gets triggered on every keystroke.
 **Action:** Cache the mapped Enum `.toLowerCase()` values in a `private static final List<String>` during class initialization, and then apply `TabCompleteUtil.filterStartsWith()` during `onTabComplete` to avoid redundant string mapping and collection building.
+
+## 2024-05-18 - [Enum Caching for Tab Completions]
+**Learning:** Calling `Enum.values()` inside command `onTabComplete` methods allocates a new array on every keystroke, causing unnecessary garbage collection overhead on highly active paths.
+**Action:** Always pre-compute and cache `Enum.values()` mapping conversions (like `.name().toLowerCase()`) in a `static final List<String>` during class initialization to prevent redundant string and array allocations during tab completion.
+## 2026-05-19 - [Avoided O(N) array allocation on Tab Completion in Brigadier]
+**Learning:** In Fabric and Forge/NeoForge (Brigadier commands), using `server.getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString())` or `server.getPlayerList().getPlayers().stream().map(ServerPlayer::getScoreboardName)` creates streams, mapped string arrays, and redundant lookups on every single tab complete keystroke, iterating over O(N) online players.
+**Action:** Use `server.getPlayerNames()` which directly returns a cached `String[]` array of player names, entirely eliminating the O(N) player iteration stream and string allocation overhead during tab completions.

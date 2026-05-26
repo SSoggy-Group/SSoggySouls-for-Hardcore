@@ -142,7 +142,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
         String action = args[1].toLowerCase();
         String targetName = args[2];
-        int amount = parseIntOrError(sender, args[3]);
+        int amount = parseIntOrError(sender, args[3], "/psadmin lives " + action + " " + targetName + " ");
         if (amount < 0) return;
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
@@ -489,7 +489,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
         String targetName = args[1];
         int livesToRestore = args.length >= 3
-                ? parseIntOrError(sender, args[2])
+                ? parseIntOrError(sender, args[2], "/psadmin revive " + targetName + " ")
                 : plugin.getLivesOnRevive();
         if (livesToRestore < 0) return;
 
@@ -661,11 +661,11 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private static int parseIntOrError(CommandSender sender, String text) {
+    private static int parseIntOrError(CommandSender sender, String text, String suggestCmd) {
         try {
             return Integer.parseInt(text);
         } catch (NumberFormatException e) {
-            sender.sendMessage(MessageUtil.colorize(ERR_NUMBER + text));
+            CommandUtil.sendInteractiveUsage(sender, ERR_NUMBER + text, suggestCmd);
             return -1;
         }
     }
