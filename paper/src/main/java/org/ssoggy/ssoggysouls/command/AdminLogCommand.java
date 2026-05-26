@@ -31,7 +31,7 @@ public class AdminLogCommand implements CommandExecutor {
             return true;
         }
 
-        int linesToRead = parseLineCount(sender, args);
+        int linesToRead = parseLineCount(sender, label, args);
         if (linesToRead < 0) return true; // error already sent
 
         File logFile = new File(plugin.getDataFolder(), org.ssoggy.ssoggysouls.util.AdminLogger.LOG_FILE_NAME);
@@ -60,17 +60,17 @@ public class AdminLogCommand implements CommandExecutor {
     /**
      * Parses the optional line count argument. Returns -1 if invalid (error message already sent).
      */
-    private int parseLineCount(CommandSender sender, String[] args) {
+    private int parseLineCount(CommandSender sender, String label, String[] args) {
         if (args.length == 0) return 15;
         try {
             int count = Integer.parseInt(args[0]);
             if (count <= 0 || count > 100) {
-                org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cPlease specify a number between 1 and 100.", "/adminlog ");
+                org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cPlease specify a number between 1 and 100.", "/" + label + " ");
                 return -1;
             }
             return count;
         } catch (NumberFormatException e) {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[0], "/adminlog ");
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[0], "/" + label + " ");
             return -1;
         }
     }
