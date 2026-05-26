@@ -96,7 +96,7 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+        return org.ssoggy.ssoggysouls.util.TabCompleteUtil.getOnlinePlayerNames(args.length > 0 ? args[0] : "");
     }
 
     private static long getObituaryDelayMinutes(FileConfiguration config, String key, long fallback) {
