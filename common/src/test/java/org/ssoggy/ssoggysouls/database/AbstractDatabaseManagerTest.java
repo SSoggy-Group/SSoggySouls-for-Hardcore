@@ -54,6 +54,10 @@ class AbstractDatabaseManagerTest {
         TestDatabaseManager(PluginContext plugin, DataSource dataSource) {
             super(plugin);
             this.dataSource = dataSource;
+        }
+
+        @Override
+        protected DataSource getDataSource() {
             return dataSource;
         }
 
