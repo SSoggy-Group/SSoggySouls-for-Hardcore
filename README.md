@@ -490,7 +490,7 @@ database:
   port: 3306
   name: "ssoggysouls"
   username: "root"
-  password: "changeme"    # CHANGE THIS!
+  password: ""    # CHANGE THIS!
 
   pool-size: 5
   table-name: "hardcore_players"

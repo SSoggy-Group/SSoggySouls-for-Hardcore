@@ -235,7 +235,7 @@ database:
   port: 3306                     # Database port (default: 3306)
   name: "ssoggysouls"             # Database name
   username: "root"               # MySQL username
-  password: "changeme"           # MySQL password - CHANGE THIS!
+  password: ""           # MySQL password - CHANGE THIS!
   pool-size: 5                   # Connection pool size
   table-name: "hardcore_players" # Table name (default is fine)
 ```
