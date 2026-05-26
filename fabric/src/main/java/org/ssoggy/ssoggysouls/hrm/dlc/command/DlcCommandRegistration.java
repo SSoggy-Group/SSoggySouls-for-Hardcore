@@ -142,7 +142,7 @@ public final class DlcCommandRegistration {
 
     private static int executeTrust(ServerCommandSource source, DatabaseManager db, String rawAction, String targetName) {
         if (!(source.getEntity() instanceof ServerPlayerEntity player)) {
-            sendResult(source, DlcCommandResult.fail(MessageUtil.getRawString("admin-players-only")));
+            sendResult(source, DlcCommandResult.fail(MessageUtil.getFormattedNoPrefix("admin-players-only")));
             return 0;
         }
 
