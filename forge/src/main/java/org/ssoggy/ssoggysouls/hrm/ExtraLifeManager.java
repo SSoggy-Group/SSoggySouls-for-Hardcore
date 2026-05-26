@@ -20,7 +20,6 @@ import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
-import java.util.concurrent.CompletableFuture;
 public class ExtraLifeManager {
 
     private static DatabaseManager db;
