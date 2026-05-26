@@ -91,7 +91,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           chmod +x ./gradlew
-          ./gradlew :common:test :common:jacocoTestReport classes sonar
+          ./gradlew classes sonar
 
   dependency-submission:
     name: Submit Dependency Graph

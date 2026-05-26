@@ -27,6 +27,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.enums.COMMANDOUTPUTENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPCommandOutput;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPSocial;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -205,7 +206,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         return switch (args.length) { // This is just preference
             case 0, 1 -> org.bukkit.util.StringUtil.copyPartialMatches(args.length > 0 ? args[0] : "", TRUST_ACTIONS, new java.util.ArrayList<>());
             case 2 ->
-                    org.ssoggy.ssoggysouls.util.TabCompleteUtil.getOnlinePlayerNames(args[1], sender instanceof Player p ? p.getName() : null);
+                    Bukkit.getOnlinePlayers().stream().filter(x -> !x.getUniqueId().equals(sender instanceof Player p ? p.getUniqueId() : null)).map(Player::getName).toList();
             default -> Collections.emptyList(); // Allowing unnecessary suggestions feels unfinished
         };
     }

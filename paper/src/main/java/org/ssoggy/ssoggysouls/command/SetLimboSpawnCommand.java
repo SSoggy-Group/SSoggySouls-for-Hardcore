@@ -20,11 +20,10 @@ public class SetLimboSpawnCommand implements CommandExecutor {
         this.plugin = plugin;
     }
 
-    @SuppressWarnings("java:S3516") // onCommand always returns true by design (Bukkit CommandExecutor convention)
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender == null) {
-            return true;
+            return false;
         }
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
             return true;
@@ -35,12 +34,12 @@ public class SetLimboSpawnCommand implements CommandExecutor {
             if (msg != null) {
                 sender.sendMessage(msg);
             }
-            return true;
+            return false;
         }
 
         Location loc = player.getLocation();
         if (loc == null) {
-            return true;
+            return false;
         }
 
         plugin.saveLimboSpawn(loc);

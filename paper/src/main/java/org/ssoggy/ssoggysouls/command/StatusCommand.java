@@ -28,10 +28,10 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    @SuppressWarnings({"java:S2259", "java:S3516"}) // colorize() never returns null, onCommand always returns true
+    @SuppressWarnings("java:S2259") // colorize() never returns null
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender == null) {
-            return true;
+            return false;
         }
         String targetName;
 
@@ -41,7 +41,7 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
             targetName = player.getName();
         } else {
             org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /pstatus <player>", "/pstatus ");
-            return true;
+            return false;
         }
 
         final String name = targetName;
