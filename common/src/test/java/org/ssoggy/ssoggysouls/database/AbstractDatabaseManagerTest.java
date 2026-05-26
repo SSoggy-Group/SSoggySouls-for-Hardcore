@@ -1,6 +1,5 @@
 package org.ssoggy.ssoggysouls.database;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ssoggy.ssoggysouls.PluginContext;
@@ -55,24 +54,20 @@ class AbstractDatabaseManagerTest {
         TestDatabaseManager(PluginContext plugin, DataSource dataSource) {
             super(plugin);
             this.dataSource = dataSource;
-        }
-
-        @Override
-        protected DataSource getDataSource() {
             return dataSource;
         }
 
         @Override
-        public void initialize() {}
+        public void initialize() { /* no-op for tests */ }
 
         @Override
-        public void shutdown() {}
+        public void shutdown() { /* no-op for tests */ }
 
         @Override
-        public void savePlayer(PlayerData data) {}
+        public void savePlayer(PlayerData data) { /* no-op for tests */ }
 
         @Override
-        public void savePluginVersion(String key, String version) {}
+        public void savePluginVersion(String key, String version) { /* no-op for tests */ }
 
         @Override
         protected String metadataTableDdl(String metaTable) { return ""; }

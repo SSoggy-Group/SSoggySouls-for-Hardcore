@@ -12,42 +12,42 @@ import static org.junit.jupiter.api.Assertions.*;
 class DeathStatusCacheTest {
 
     private DeathStatusCache cache;
-    private UUID testUuid11;
-    private UUID testUuid12;
+    private UUID testUuid1;
+    private UUID testUuid2;
 
     @BeforeEach
     void setUp() {
         cache = new DeathStatusCache();
-        testUuid11 = UUID.randomUUID();
-        testUuid12 = UUID.randomUUID();
+        testUuid1 = UUID.randomUUID();
+        testUuid2 = UUID.randomUUID();
     }
 
     @Test
     void testGetEmpty() {
-        assertNull(cache.get(testUuid11));
+        assertNull(cache.get(testUuid1));
     }
 
     @Test
     void testPutAndGet() {
-        cache.put(testUuid11, true);
-        Boolean status = cache.get(testUuid11);
+        cache.put(testUuid1, true);
+        Boolean status = cache.get(testUuid1);
         assertNotNull(status);
         assertTrue(status);
     }
 
     @Test
     void testPutUpdatesExisting() throws Exception {
-        cache.put(testUuid11, true);
-        long firstTime = getTimestampFromCache(testUuid11);
+        cache.put(testUuid1, true);
+        long firstTime = getTimestampFromCache(testUuid1);
 
         // Wait briefly to ensure timestamp difference, using a loop to avoid Sonar warning java:S2925 (Thread.sleep in tests)
         long waitEnd = System.currentTimeMillis() + 10;
         while(System.currentTimeMillis() < waitEnd) { /* busy wait */ }
 
-        cache.put(testUuid11, false);
-        long secondTime = getTimestampFromCache(testUuid11);
+        cache.put(testUuid1, false);
+        long secondTime = getTimestampFromCache(testUuid1);
 
-        Boolean status = cache.get(testUuid11);
+        Boolean status = cache.get(testUuid1);
         assertNotNull(status);
         assertFalse(status);
         assertTrue(secondTime > firstTime, "Timestamp should be updated on subsequent put");
@@ -61,10 +61,10 @@ class DeathStatusCacheTest {
     @Test
     void testPutUpdatesMapAndTimestamp() throws Exception {
         long beforePut = System.currentTimeMillis();
-        cache.put(testUuid11, true);
+        cache.put(testUuid1, true);
         long afterPut = System.currentTimeMillis();
 
-        long entryTimestamp = getTimestampFromCache(testUuid11);
+        long entryTimestamp = getTimestampFromCache(testUuid1);
         assertTrue(entryTimestamp >= beforePut && entryTimestamp <= afterPut, "Timestamp should reflect the time of put");
     }
 
