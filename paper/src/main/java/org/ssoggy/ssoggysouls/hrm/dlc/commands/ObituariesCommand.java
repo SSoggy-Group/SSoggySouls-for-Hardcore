@@ -29,7 +29,6 @@ import org.ssoggy.ssoggysouls.hrm.dlc.util.RPSocial;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPUtil;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.Pair;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -96,7 +95,10 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+        if (args.length < 2) {
+            return org.ssoggy.ssoggysouls.util.TabCompleteUtil.getOnlinePlayerNames(args.length > 0 ? args[0] : "");
+        }
+        return List.of();
     }
 
     private static long getObituaryDelayMinutes(FileConfiguration config, String key, long fallback) {
