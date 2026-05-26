@@ -115,7 +115,6 @@ class AbstractDatabaseManagerTest {
 
         assertNull(dbManager.getPlayer(testUuid));
 
-        // Use argument captor or verify with specific level
         verify(logger).log(eq(Level.WARNING), eq(sqlException), any(java.util.function.Supplier.class));
     }
 }
