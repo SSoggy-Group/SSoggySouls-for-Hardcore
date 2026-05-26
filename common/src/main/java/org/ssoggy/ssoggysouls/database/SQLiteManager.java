@@ -41,7 +41,7 @@ public class SQLiteManager extends AbstractDatabaseManager {
     public void initialize() throws DatabaseInitializationException {
         try {
             String configuredTableName = plugin.getConfigString("database.table-name", "hardcore_players");
-            if (!SqlSafety.isIdentifier(configuredTableName)) {
+            if (!SqlSafety.isValidIdentifier(configuredTableName)) {
                 plugin.getLogger().log(Level.SEVERE, "SQLite initialization failed: Invalid database.table-name {0}. Table name must consist only of alphanumeric characters and underscores.", configuredTableName);
                 throw new DatabaseInitializationException("Invalid database.table-name: " + configuredTableName);
             }
