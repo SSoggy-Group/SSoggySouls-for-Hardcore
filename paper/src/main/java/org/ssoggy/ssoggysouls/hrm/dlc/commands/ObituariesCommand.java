@@ -73,11 +73,16 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
                     || (relationship == SOCIALENUM.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfterMin * 60)))) {
                 String username = RPUtil.getUsernameFromCache(uuid);
                 Location deathLocation = deathDetails.getLeft();
-                deathListBuilder.append("\n<gold><bold>").append(username).append("</bold></gold><gray> has died at</gray><gold><bold>")
-                        .append(" X").append(deathLocation.getBlockX())
+                String coords = deathLocation.getBlockX() + " " + deathLocation.getBlockY() + " " + deathLocation.getBlockZ();
+                deathListBuilder.append("\n<gold><bold>").append(username).append("</bold></gold><gray> has died at </gray>")
+                        .append("<click:copy_to_clipboard:'").append(coords).append("'>")
+                        .append("<hover:show_text:'<gray>Click to copy coordinates</gray>'>")
+                        .append("<gold><bold>X").append(deathLocation.getBlockX())
                         .append(" Y").append(deathLocation.getBlockY())
                         .append(" Z").append(deathLocation.getBlockZ())
-                        .append("</bold></gold><gray> in the </gray><gold><bold>")
+                        .append("</bold></gold>")
+                        .append("</hover></click>")
+                        .append("<gray> in the </gray><gold><bold>")
                         .append(deathLocation.getWorld().getName()).append("</bold></gold>");
             }
         }
