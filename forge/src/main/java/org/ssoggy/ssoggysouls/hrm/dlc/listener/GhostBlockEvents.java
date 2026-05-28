@@ -59,7 +59,7 @@ public class GhostBlockEvents {
         CompletableFuture.runAsync(() -> {
             DlcDeaths.setHolder(ownerUuid, holderUuid);
             DlcNames.cache(holderUuid, holderName);
-        });
+        }, IO_EXECUTOR);
     }
 
     @SubscribeEvent
