@@ -504,10 +504,14 @@ public final class DlcCommandRegistration {
         return SharedSuggestionProvider.suggest(List.of(), builder);
     }
 
-    private static List<String> blockSuggestions() {
-        return BuiltInRegistries.BLOCK.keySet().stream()
+    private static class BlockSuggestionsHolder {
+        private static final List<String> INSTANCE = BuiltInRegistries.BLOCK.keySet().stream()
                 .map(id -> id.getPath().toUpperCase(Locale.ROOT))
                 .toList();
+    }
+
+    private static List<String> blockSuggestions() {
+        return BlockSuggestionsHolder.INSTANCE;
     }
 
     private static String normalizeBlock(String raw) {

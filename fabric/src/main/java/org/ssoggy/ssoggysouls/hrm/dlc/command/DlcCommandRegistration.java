@@ -505,10 +505,14 @@ public final class DlcCommandRegistration {
         return CommandSource.suggestMatching(List.of(), builder);
     }
 
-    private static List<String> blockSuggestions() {
-        return Registries.BLOCK.getIds().stream()
+    private static class BlockSuggestionsHolder {
+        private static final List<String> INSTANCE = Registries.BLOCK.getIds().stream()
                 .map(id -> id.getPath().toUpperCase(Locale.ROOT))
                 .toList();
+    }
+
+    private static List<String> blockSuggestions() {
+        return BlockSuggestionsHolder.INSTANCE;
     }
 
     private static String normalizeBlock(String raw) {
