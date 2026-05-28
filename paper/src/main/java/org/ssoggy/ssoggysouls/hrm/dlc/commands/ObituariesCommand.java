@@ -40,6 +40,8 @@ import org.jspecify.annotations.Nullable;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Collections;
+import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
 
 public class ObituariesCommand implements CommandExecutor, TabCompleter {
     private static final long DEFAULT_TRUSTED_OBITUARY_DELAY_MINUTES = 60L;
@@ -73,11 +75,16 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
                     || (relationship == SOCIALENUM.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfterMin * 60)))) {
                 String username = RPUtil.getUsernameFromCache(uuid);
                 Location deathLocation = deathDetails.getLeft();
-                deathListBuilder.append("\n<gold><bold>").append(username).append("</bold></gold><gray> has died at</gray><gold><bold>")
-                        .append(" X").append(deathLocation.getBlockX())
+                String coords = deathLocation.getBlockX() + " " + deathLocation.getBlockY() + " " + deathLocation.getBlockZ();
+                deathListBuilder.append("\n<gold><bold>").append(username).append("</bold></gold><gray> has died at </gray>")
+                        .append("<click:copy_to_clipboard:'").append(coords).append("'>")
+                        .append("<hover:show_text:'<gray>Click to copy coordinates</gray>'>")
+                        .append("<gold><bold>X").append(deathLocation.getBlockX())
                         .append(" Y").append(deathLocation.getBlockY())
                         .append(" Z").append(deathLocation.getBlockZ())
-                        .append("</bold></gold><gray> in the </gray><gold><bold>")
+                        .append("</bold></gold>")
+                        .append("</hover></click>")
+                        .append("<gray> in the </gray><gold><bold>")
                         .append(deathLocation.getWorld().getName()).append("</bold></gold>");
             }
         }
@@ -96,7 +103,10 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+        if (args.length <= 1) {
+            return TabCompleteUtil.getOnlinePlayerNames(args.length > 0 ? args[0] : "");
+        }
+        return Collections.emptyList();
     }
 
     private static long getObituaryDelayMinutes(FileConfiguration config, String key, long fallback) {

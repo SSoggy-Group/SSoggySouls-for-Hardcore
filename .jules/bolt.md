@@ -26,3 +26,12 @@
 ## 2026-05-19 - [Avoided O(N) array allocation on Tab Completion in Brigadier]
 **Learning:** In Fabric and Forge/NeoForge (Brigadier commands), using `server.getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString())` or `server.getPlayerList().getPlayers().stream().map(ServerPlayer::getScoreboardName)` creates streams, mapped string arrays, and redundant lookups on every single tab complete keystroke, iterating over O(N) online players.
 **Action:** Use `server.getPlayerNames()` which directly returns a cached `String[]` array of player names, entirely eliminating the O(N) player iteration stream and string allocation overhead during tab completions.
+## 2024-05-18 - [Avoided Stream allocation on Block Suggestions Tab Completion in Brigadier]
+**Learning:** Calculating a stream of `Registries.BLOCK.getIds()` or `BuiltInRegistries.BLOCK.keySet()` to create string suggestions creates unnecessary stream and string mapping overhead on every tab complete keystroke.
+**Action:** Pre-compute block suggestion IDs into a `private static final List<String>` during class initialization and return the cached list in `blockSuggestions()`.
+## 2024-05-18 - [Lazy Initialization of Registries for Caching]
+**Learning:** Accessing Minecraft registries (like `Registries.BLOCK`) directly in static field initializers can cause class-loading issues if the class is loaded before the registries are fully populated and frozen, leading to empty or missing data.
+**Action:** When caching data derived from registries, use the Initialization-on-demand holder idiom (a private static inner class) to ensure the registry is only queried lazily when the data is first requested, which guarantees it happens after registries are frozen.
+## 2026-05-26 - Tab Completion Performance
+**Learning:** In Bukkit/Paper, `Bukkit.getOnlinePlayers().stream().map(...)` inside `onTabComplete` is an anti-pattern. Tab completion fires on every keystroke, so using Java Streams over the entire player list generates massive amounts of short-lived objects and GC pressure, leading to responsiveness issues during command entry.
+**Action:** Always use `TabCompleteUtil.getOnlinePlayerNames()` which internally uses an allocation-free loop and `String.regionMatches()`, avoiding stream wrappers completely.
