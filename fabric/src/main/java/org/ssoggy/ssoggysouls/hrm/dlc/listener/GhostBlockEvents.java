@@ -132,8 +132,13 @@ public class GhostBlockEvents {
             if (stack.isOf(Items.PLAYER_HEAD)) {
                 ProfileComponent profile = stack.get(DataComponentTypes.PROFILE);
                 if (profile != null && profile.id().isPresent()) {
-                    DlcDeaths.setHolder(profile.id().get(), player.getUuid());
-                    DlcNames.cache(player.getUuid(), player.getName().getString());
+                    java.util.UUID ownerUuid = profile.id().get();
+                    java.util.UUID playerUuid = player.getUuid();
+                    String playerName = player.getName().getString();
+                    CompletableFuture.runAsync(() -> {
+                        DlcDeaths.setHolder(ownerUuid, playerUuid);
+                        DlcNames.cache(playerUuid, playerName);
+                    }, IO_EXECUTOR);
                 }
             }
         }

@@ -32,3 +32,6 @@
 ## 2024-05-18 - [Lazy Initialization of Registries for Caching]
 **Learning:** Accessing Minecraft registries (like `Registries.BLOCK`) directly in static field initializers can cause class-loading issues if the class is loaded before the registries are fully populated and frozen, leading to empty or missing data.
 **Action:** When caching data derived from registries, use the Initialization-on-demand holder idiom (a private static inner class) to ensure the registry is only queried lazily when the data is first requested, which guarantees it happens after registries are frozen.
+## 2026-05-26 - Tab Completion Performance
+**Learning:** In Bukkit/Paper, `Bukkit.getOnlinePlayers().stream().map(...)` inside `onTabComplete` is an anti-pattern. Tab completion fires on every keystroke, so using Java Streams over the entire player list generates massive amounts of short-lived objects and GC pressure, leading to responsiveness issues during command entry.
+**Action:** Always use `TabCompleteUtil.getOnlinePlayerNames()` which internally uses an allocation-free loop and `String.regionMatches()`, avoiding stream wrappers completely.

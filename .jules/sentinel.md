@@ -11,3 +11,7 @@
 **Vulnerability:** Unsanitized user inputs (e.g., `sender`, `action` parameters) were passed directly to `PrintWriter.println()` and `Logger.info()` in `AdminLogger.java` across all module implementations (`paper`, `fabric`, `forge`, `neoforge`).
 **Learning:** This exposes the application to Log Forging (CRLF Injection), where a malicious user could supply inputs containing newline (`\n`) and carriage return (`\r`) characters to insert fake log entries, obscuring legitimate audit trails or tricking log parsing systems.
 **Prevention:** Always implement an input sanitization step—such as replacing `\n` and `\r` with an underscore `_`—before writing user-controlled strings to application or system logs.
+## 2026-05-28 - [Prevent DoS via unbounded array allocation in network payload]
+**Vulnerability:** In `ServerTransferUtil` across `fabric`, `forge`, and `neoforge` modules, `new byte[buf.readableBytes()]` was being called when decoding a custom network payload. A malicious client could send an extremely large payload length, causing the server to allocate a massive byte array and crash with an OutOfMemoryError.
+**Learning:** `buf.readableBytes()` is user-controlled input when decoding packets and must be explicitly validated against a sane maximum limit before being used for memory allocation.
+**Prevention:** Always enforce a strict maximum length (e.g., 1024 bytes) when reading variable-length data structures from network buffers before allocating memory.

@@ -40,6 +40,8 @@ import org.jspecify.annotations.Nullable;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Collections;
+import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
 
 public class ObituariesCommand implements CommandExecutor, TabCompleter {
     private static final long DEFAULT_TRUSTED_OBITUARY_DELAY_MINUTES = 60L;
@@ -101,7 +103,10 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+        if (args.length <= 1) {
+            return TabCompleteUtil.getOnlinePlayerNames(args.length > 0 ? args[0] : "");
+        }
+        return Collections.emptyList();
     }
 
     private static long getObituaryDelayMinutes(FileConfiguration config, String key, long fallback) {
