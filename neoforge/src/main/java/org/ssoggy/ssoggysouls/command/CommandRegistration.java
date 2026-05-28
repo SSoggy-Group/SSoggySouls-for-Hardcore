@@ -157,7 +157,7 @@ public class CommandRegistration {
             ghostState.removeDeathLocation(targetData.getUuid());
             ghostState.removeDeathHolder(targetData.getUuid());
             ghostState.setDirty();
-            org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(targetData.getUuid(), source.getServer());
+            HeadDropListener.removeDroppedHeads(targetData.getUuid(), source.getServer());
             source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
             AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
 
