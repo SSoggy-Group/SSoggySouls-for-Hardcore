@@ -17,3 +17,7 @@
 ## 2026-05-15 - [Interactive CLI Number Parsing Errors]
 **Learning:** Number parsing errors (e.g., NumberFormatException) in legacy command systems often default to static "Invalid number" messages. By refactoring methods like `parseIntOrError` to accept a base `suggestCmd`, these static errors can be upgraded to use `CommandUtil.sendInteractiveUsage`, allowing users to quickly correct invalid numeric inputs via a clickable chat component.
 **Action:** Always provide the base command context when catching input format errors to build actionable auto-fill error suggestions.
+
+## 2026-05-18 - [Interactive CLI Coordinate Copying]
+**Learning:** Players frequently need to share or navigate to coordinates displayed in chat (like death locations in obituaries), but manually transcribing them into waypoints or chat is tedious and error-prone.
+**Action:** When displaying coordinates in chat via MiniMessage, wrap them in `<click:copy_to_clipboard:'X Y Z'>` and a `<hover>` prompt to allow instant, frictionless copying.

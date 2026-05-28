@@ -47,7 +47,10 @@ public class MySQLManager extends AbstractDatabaseManager {
             int port = plugin.getConfigInt("database.port", 3306);
             String dbName = SqlSafety.requireValidJdbcParam(plugin.getConfigString("database.name", "minecraft"), "database.name");
             String user = plugin.getConfigString("database.username", "minecraft");
-            String pass = plugin.getConfigString("database.password", "changeme");
+            String pass = plugin.getConfigString("database.password", "");
+            if (pass.isEmpty()) {
+                plugin.getLogger().log(Level.WARNING, "Database password is empty. Running MySQL without a password is highly insecure in production environments.");
+            }
             int poolSize = plugin.getConfigInt("database.pool-size", 5);
             String configuredTableName = plugin.getConfigString("database.table-name", "hardcore_players");
             String sslMode = SqlSafety.requireValidJdbcParam(plugin.getConfigString("database.ssl-mode", "VERIFY_IDENTITY"), "database.ssl-mode");
