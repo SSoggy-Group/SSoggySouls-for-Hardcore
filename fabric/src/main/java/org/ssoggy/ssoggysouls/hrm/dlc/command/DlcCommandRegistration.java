@@ -102,6 +102,7 @@ public final class DlcCommandRegistration {
             C_REVIVE_GLOW
     );
     private static final List<String> EDIT_ACTIONS = List.of("add", "remove", "reset");
+    private static final List<String> BLOCK_SUGGESTIONS = Registries.BLOCK.getIds().stream().map(id -> id.getPath().toUpperCase(Locale.ROOT)).toList();
     private static final Map<String, List<String>> DEFAULT_STRUCTURE = Map.of(
             C_SOUL_SAND, List.of("CRYING_OBSIDIAN", "OBSIDIAN"),
             C_FLOWER, List.of("SOUL_TORCH", "REDSTONE_TORCH"),
@@ -498,9 +499,7 @@ public final class DlcCommandRegistration {
     }
 
     private static List<String> blockSuggestions() {
-        return Registries.BLOCK.getIds().stream()
-                .map(id -> id.getPath().toUpperCase(Locale.ROOT))
-                .toList();
+        return BLOCK_SUGGESTIONS;
     }
 
     private static String normalizeBlock(String raw) {

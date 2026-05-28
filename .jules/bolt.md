@@ -26,3 +26,6 @@
 ## 2026-05-19 - [Avoided O(N) array allocation on Tab Completion in Brigadier]
 **Learning:** In Fabric and Forge/NeoForge (Brigadier commands), using `server.getPlayerManager().getPlayerList().stream().map(p -> p.getName().getString())` or `server.getPlayerList().getPlayers().stream().map(ServerPlayer::getScoreboardName)` creates streams, mapped string arrays, and redundant lookups on every single tab complete keystroke, iterating over O(N) online players.
 **Action:** Use `server.getPlayerNames()` which directly returns a cached `String[]` array of player names, entirely eliminating the O(N) player iteration stream and string allocation overhead during tab completions.
+## 2024-05-18 - [Avoided Stream allocation on Block Suggestions Tab Completion in Brigadier]
+**Learning:** Calculating a stream of `Registries.BLOCK.getIds()` or `BuiltInRegistries.BLOCK.keySet()` to create string suggestions creates unnecessary stream and string mapping overhead on every tab complete keystroke.
+**Action:** Pre-compute block suggestion IDs into a `private static final List<String>` during class initialization and return the cached list in `blockSuggestions()`.
