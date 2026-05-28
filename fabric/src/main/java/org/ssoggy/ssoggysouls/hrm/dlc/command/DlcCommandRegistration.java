@@ -207,7 +207,7 @@ public final class DlcCommandRegistration {
 
                     sendResult(source, DlcCommandResult.success("Here is a list of all the current public deaths"));
                     for (DlcDeathRecord death : deaths) {
-                        source.sendMessage(Text.literal(formatDeath(death)).styled(style -> style.withColor(Formatting.GOLD)));
+                        source.sendMessage(formatDeathComponent(death));
                     }
                     return 1;
                 }));
@@ -443,10 +443,18 @@ public final class DlcCommandRegistration {
         return Text.literal("[RevivalPlus] " + result.message()).styled(style -> style.withColor(color));
     }
 
-    private static String formatDeath(DlcDeathRecord death) {
+    private static Text formatDeathComponent(DlcDeathRecord death) {
         String username = DlcNames.getOrDefault(death.uuid(), death.username());
-        return username + " died at X" + death.x() + " Y" + death.y() + " Z" + death.z()
-                + " in " + death.worldId() + " (" + formatAge(death.time()) + ")";
+        String coords = death.x() + " " + death.y() + " " + death.z();
+
+        return Text.literal(username).styled(style -> style.withColor(Formatting.GOLD).withBold(true))
+                .append(Text.literal(" has died at ").styled(style -> style.withColor(Formatting.GRAY).withBold(false)))
+                .append(Text.literal("X" + death.x() + " Y" + death.y() + " Z" + death.z()).styled(style -> style.withColor(Formatting.GOLD).withBold(true)
+                        .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.COPY_TO_CLIPBOARD, coords))
+                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to copy coordinates").styled(s -> s.withColor(Formatting.GRAY))))))
+                .append(Text.literal(" in the ").styled(style -> style.withColor(Formatting.GRAY).withBold(false)))
+                .append(Text.literal(death.worldId()).styled(style -> style.withColor(Formatting.GOLD).withBold(true)))
+                .append(Text.literal(" (" + formatAge(death.time()) + ")").styled(style -> style.withColor(Formatting.GRAY).withBold(false)));
     }
 
     private static String formatAge(Instant time) {
