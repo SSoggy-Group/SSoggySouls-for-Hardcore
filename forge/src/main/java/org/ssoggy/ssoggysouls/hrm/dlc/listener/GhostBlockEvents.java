@@ -54,8 +54,12 @@ public class GhostBlockEvents {
         if (profile == null || profile.id().isEmpty()) return;
         UUID ownerUuid = profile.id().get();
 
-        DlcDeaths.setHolder(ownerUuid, player.getUUID());
-        DlcNames.cache(player.getUUID(), player.getScoreboardName());
+        UUID holderUuid = player.getUUID();
+        String holderName = player.getScoreboardName();
+        CompletableFuture.runAsync(() -> {
+            DlcDeaths.setHolder(ownerUuid, holderUuid);
+            DlcNames.cache(holderUuid, holderName);
+        });
     }
 
     @SubscribeEvent

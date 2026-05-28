@@ -13,10 +13,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.bus.api.SubscribeEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames;
@@ -37,30 +38,24 @@ public class GhostBlockEvents {
     }
 
     @SubscribeEvent
-    public static void onItemPickup(ItemEntityPickupEvent event) {
+    public static void onItemPickup(EntityItemPickupEvent event) {
         if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled()) return;
 
-        if (db == null || !(event.getPlayer() instanceof ServerPlayer player)) {
+        if (db == null || !(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
 
-        ItemStack stack = event.getItemEntity().getItem();
+        ItemStack stack = event.getItem().getItem();
         if (!stack.is(Items.PLAYER_HEAD)) {
             return;
         }
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
-        if (profile == null || profile.id().isEmpty()) {
-            return;
-        }
-
+        if (profile == null || profile.id().isEmpty()) return;
         UUID ownerUuid = profile.id().get();
-        UUID holderUuid = player.getUUID();
-        String holderName = player.getScoreboardName();
-        CompletableFuture.runAsync(() -> {
-            DlcDeaths.setHolder(ownerUuid, holderUuid);
-            DlcNames.cache(holderUuid, holderName);
-        });
+
+        DlcDeaths.setHolder(ownerUuid, player.getUUID());
+        DlcNames.cache(player.getUUID(), player.getScoreboardName());
     }
 
     @SubscribeEvent
@@ -73,7 +68,7 @@ public class GhostBlockEvents {
 
         Level world = (Level) event.getLevel();
         BlockState state = event.getState();
-        
+
         if ((state.is(Blocks.PLAYER_HEAD) || state.is(Blocks.PLAYER_WALL_HEAD))) {
             BlockEntity be = world.getBlockEntity(event.getPos());
             if (be instanceof SkullBlockEntity skull) {
@@ -86,7 +81,7 @@ public class GhostBlockEvents {
         ResolvableProfile profile = skull.getOwnerProfile();
         if (profile != null && profile.id().isPresent()) {
             UUID ownerUuid = profile.id().get();
-            
+
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(ownerUuid);
                 if (data != null && data.isDead()) {
@@ -124,7 +119,6 @@ public class GhostBlockEvents {
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
         if (profile == null || profile.id().isEmpty()) return;
-
         UUID ownerUuid = profile.id().get();
         BlockPos targetPos = event.getPos().relative(event.getFace());
 
