@@ -157,6 +157,7 @@ public class CommandRegistration {
             ghostState.removeDeathLocation(targetData.getUuid());
             ghostState.removeDeathHolder(targetData.getUuid());
             ghostState.setDirty();
+            org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(targetData.getUuid(), source.getServer());
             source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
             AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
 
@@ -203,6 +204,7 @@ public class CommandRegistration {
                                     ghostState.removeDeathLocation(data.getUuid());
                                     ghostState.removeDeathHolder(data.getUuid());
                                     ghostState.setDirty();
+                                    org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(data.getUuid(), source.getServer());
                                     if (online != null) {
                                         ServerLifecycleListener.setGhostModeAttributes(online, false);
                                         online.setGameMode(GameType.SURVIVAL);
