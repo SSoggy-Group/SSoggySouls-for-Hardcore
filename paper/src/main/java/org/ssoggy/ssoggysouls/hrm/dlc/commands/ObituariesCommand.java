@@ -41,6 +41,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Collections;
+import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
 
 public class ObituariesCommand implements CommandExecutor, TabCompleter {
     private static final long DEFAULT_TRUSTED_OBITUARY_DELAY_MINUTES = 60L;
