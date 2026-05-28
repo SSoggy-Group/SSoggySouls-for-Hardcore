@@ -29,3 +29,6 @@
 ## 2024-05-18 - [Avoided Stream allocation on Block Suggestions Tab Completion in Brigadier]
 **Learning:** Calculating a stream of `Registries.BLOCK.getIds()` or `BuiltInRegistries.BLOCK.keySet()` to create string suggestions creates unnecessary stream and string mapping overhead on every tab complete keystroke.
 **Action:** Pre-compute block suggestion IDs into a `private static final List<String>` during class initialization and return the cached list in `blockSuggestions()`.
+## 2024-05-18 - [Lazy Initialization of Registries for Caching]
+**Learning:** Accessing Minecraft registries (like `Registries.BLOCK`) directly in static field initializers can cause class-loading issues if the class is loaded before the registries are fully populated and frozen, leading to empty or missing data.
+**Action:** When caching data derived from registries, use the Initialization-on-demand holder idiom (a private static inner class) to ensure the registry is only queried lazily when the data is first requested, which guarantees it happens after registries are frozen.

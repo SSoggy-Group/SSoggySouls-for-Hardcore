@@ -102,7 +102,6 @@ public final class DlcCommandRegistration {
             C_REVIVE_GLOW
     );
     private static final List<String> EDIT_ACTIONS = List.of("add", "remove", "reset");
-    private static final List<String> BLOCK_SUGGESTIONS = BuiltInRegistries.BLOCK.keySet().stream().map(id -> id.getPath().toUpperCase(Locale.ROOT)).toList();
     private static final Map<String, List<String>> DEFAULT_STRUCTURE = Map.of(
             C_SOUL_SAND, List.of("CRYING_OBSIDIAN", "OBSIDIAN"),
             C_FLOWER, List.of("SOUL_TORCH", "REDSTONE_TORCH"),
@@ -495,8 +494,14 @@ public final class DlcCommandRegistration {
         return SharedSuggestionProvider.suggest(List.of(), builder);
     }
 
+    private static class BlockSuggestionsHolder {
+        private static final List<String> INSTANCE = BuiltInRegistries.BLOCK.keySet().stream()
+                .map(id -> id.getPath().toUpperCase(Locale.ROOT))
+                .toList();
+    }
+
     private static List<String> blockSuggestions() {
-        return BLOCK_SUGGESTIONS;
+        return BlockSuggestionsHolder.INSTANCE;
     }
 
     private static String normalizeBlock(String raw) {
