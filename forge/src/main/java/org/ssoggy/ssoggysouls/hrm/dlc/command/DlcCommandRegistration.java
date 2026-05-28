@@ -9,6 +9,8 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
@@ -208,7 +210,7 @@ public final class DlcCommandRegistration {
 
                     sendResult(source, DlcCommandResult.success("Here is a list of all the current public deaths"));
                     for (DlcDeathRecord death : deaths) {
-                        source.sendSystemMessage(Component.literal(formatDeath(death)).withStyle(ChatFormatting.GOLD));
+                        source.sendSystemMessage(formatDeathComponent(death));
                     }
                     return 1;
                 }));
@@ -440,10 +442,18 @@ public final class DlcCommandRegistration {
         return Component.literal("[RevivalPlus] " + result.message()).withStyle(color);
     }
 
-    private static String formatDeath(DlcDeathRecord death) {
+    private static Component formatDeathComponent(DlcDeathRecord death) {
         String username = DlcNames.getOrDefault(death.uuid(), death.username());
-        return username + " died at X" + death.x() + " Y" + death.y() + " Z" + death.z()
-                + " in " + death.worldId() + " (" + formatAge(death.time()) + ")";
+        String coords = death.x() + " " + death.y() + " " + death.z();
+
+        return Component.literal(username).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true))
+                .append(Component.literal(" has died at ").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)))
+                .append(Component.literal("X" + death.x() + " Y" + death.y() + " Z" + death.z()).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, coords))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy coordinates").withStyle(s -> s.withColor(ChatFormatting.GRAY))))))
+                .append(Component.literal(" in the ").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)))
+                .append(Component.literal(death.worldId()).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)))
+                .append(Component.literal(" (" + formatAge(death.time()) + ")").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)));
     }
 
     private static String formatAge(Instant time) {
