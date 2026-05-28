@@ -204,7 +204,7 @@ public class CommandRegistration {
                                     ghostState.removeDeathLocation(data.getUuid());
                                     ghostState.removeDeathHolder(data.getUuid());
                                     ghostState.setDirty();
-                                    org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(data.getUuid(), source.getServer());
+                                    HeadDropListener.removeDroppedHeads(data.getUuid(), source.getServer());
                                     if (online != null) {
                                         ServerLifecycleListener.setGhostModeAttributes(online, false);
                                         online.setGameMode(GameType.SURVIVAL);
