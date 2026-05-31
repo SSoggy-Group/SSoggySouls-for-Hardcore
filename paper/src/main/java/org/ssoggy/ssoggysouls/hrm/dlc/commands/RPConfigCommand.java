@@ -291,22 +291,22 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         String opt1 = cmdKeywords.getOrDefault(plOpt1.toLowerCase(), ""); // opt1 short for option 1
 
         return switch(args.length) {
-            case 1 -> org.bukkit.util.StringUtil.copyPartialMatches(args[0], OPTION_CONFIGS, new java.util.ArrayList<>());
+            case 1 -> org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(OPTION_CONFIGS, args[0]);
             case 2 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
-                    yield new java.util.ArrayList<>(RPStatic.BLOCK_TAGS.keySet());
+                    yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(RPStatic.BLOCK_TAGS.keySet(), args[1]);
                 } else if (Objects.equals(opt1, OPT_GAMERULE)) {
-                    yield new java.util.ArrayList<>(RPStatic.CONFIG_RULES.keySet());
+                    yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(RPStatic.CONFIG_RULES.keySet(), args[1]);
                 } else if (Objects.equals(opt1, OPT_TIMER)) {
-                    yield new java.util.ArrayList<>(RPStatic.CONFIG_TIMERS.keySet());
+                    yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(RPStatic.CONFIG_TIMERS.keySet(), args[1]);
                 }
                 yield Collections.emptyList();
             }
             case 3 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
-                    yield org.bukkit.util.StringUtil.copyPartialMatches(args[2], OPTION_EDITS, new java.util.ArrayList<>());
+                    yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(OPTION_EDITS, args[2]);
                 } else if (Objects.equals(opt1, OPT_GAMERULE)) {
-                    yield LIST_BOOLEAN;
+                    yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(LIST_BOOLEAN, args[2]);
                 }
                 yield Collections.emptyList();
             }
@@ -315,9 +315,17 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     String opt = args[2];
 
                     if (Objects.equals(opt, "add")) {
-                        yield LIST_BLOCKIDS;
+                        yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(LIST_BLOCKIDS, args[3]);
                     } else if (Objects.equals(opt, "remove")) { // calculated at runtime
-                        yield RPStatic.BLOCK_TAGS.getOrDefault(args[1], Set.of()).stream().map(Enum::name).toList();
+                        String prefix = args[3];
+                        java.util.List<String> removals = new java.util.ArrayList<>();
+                        for (Material mat : RPStatic.BLOCK_TAGS.getOrDefault(args[1], Set.of())) {
+                            String name = mat.name();
+                            if (name.regionMatches(true, 0, prefix, 0, prefix.length())) {
+                                removals.add(name);
+                            }
+                        }
+                        yield removals;
                     }
                 }
                 yield Collections.emptyList();

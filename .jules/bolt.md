@@ -35,3 +35,6 @@
 ## 2026-05-26 - Tab Completion Performance
 **Learning:** In Bukkit/Paper, `Bukkit.getOnlinePlayers().stream().map(...)` inside `onTabComplete` is an anti-pattern. Tab completion fires on every keystroke, so using Java Streams over the entire player list generates massive amounts of short-lived objects and GC pressure, leading to responsiveness issues during command entry.
 **Action:** Always use `TabCompleteUtil.getOnlinePlayerNames()` which internally uses an allocation-free loop and `String.regionMatches()`, avoiding stream wrappers completely.
+## 2026-05-26 - [Avoided O(N) stream and ArrayList allocation on Tab Completion in RPConfigCommand]
+**Learning:** Returning a `new ArrayList<>(Map.keySet())` or chaining `.stream().map(Enum::name).toList()` on every tab complete keystroke causes redundant object instantiation and high GC overhead.
+**Action:** Utility methods like `TabCompleteUtil.filterStartsWith` should accept `Iterable<String>` instead of `List<String>`, allowing allocation-free filtering directly against sets, and avoiding inline `.stream()` maps where a manual for-loop with `String.regionMatches()` can perform the operation completely allocation-free.
