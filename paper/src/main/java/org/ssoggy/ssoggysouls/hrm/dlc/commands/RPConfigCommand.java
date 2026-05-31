@@ -286,6 +286,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
+    @SuppressWarnings("java:S138") // Large switch block makes refactoring pointless
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         String plOpt1 = args.length == 0 ? "" : args[0];
         String opt1 = cmdKeywords.getOrDefault(plOpt1.toLowerCase(), ""); // opt1 short for option 1
