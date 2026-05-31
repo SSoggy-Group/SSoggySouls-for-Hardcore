@@ -34,7 +34,7 @@ public final class TabCompleteUtil {
      * @param prefix  the prefix to match
      * @return list of matching options
      */
-    public static List<String> filterStartsWith(List<String> options, String prefix) {
+    public static List<String> filterStartsWith(Iterable<String> options, String prefix) {
         List<String> result = new ArrayList<>();
         for (String option : options) {
             if (option.regionMatches(true, 0, prefix, 0, prefix.length())) {
