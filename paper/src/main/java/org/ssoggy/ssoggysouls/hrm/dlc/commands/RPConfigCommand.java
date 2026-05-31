@@ -41,6 +41,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
+@SuppressWarnings("java:S3776") // Cognitive complexity is irreducible due to deeply nested sub-command switch logic
 public class RPConfigCommand implements CommandExecutor, TabCompleter {
     // ⚡ Bolt: Cache enum string mappings to avoid redundant O(N) array allocations on every tab complete
     private static final List<String> OPTION_CONFIGS = Arrays.stream(OPTIONCONFIGENUM.values()).map(x -> x.id.toLowerCase(java.util.Locale.ROOT)).toList();
@@ -286,7 +287,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    @SuppressWarnings({"java:S138", "java:S3776"}) // Large switch block makes refactoring pointless; Cognitive complexity
+    @SuppressWarnings("java:S138") // Large switch block makes refactoring pointless
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         String plOpt1 = args.length == 0 ? "" : args[0];
         String opt1 = cmdKeywords.getOrDefault(plOpt1.toLowerCase(), ""); // opt1 short for option 1
