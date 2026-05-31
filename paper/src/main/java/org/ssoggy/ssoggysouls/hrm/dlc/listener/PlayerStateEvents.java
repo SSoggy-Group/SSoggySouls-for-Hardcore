@@ -66,12 +66,12 @@ public class PlayerStateEvents implements Listener {
         }
         RPCommandOutput deathMessage = new RPCommandOutput();
         deathMessage.success = COMMANDOUTPUTENUM.INFO;
-        deathMessage.message = "<red>--- <bold>You have died!</bold> ---</red>\n<gray>Reclaim your loot at</gray> "
-                + "<click:copy_to_clipboard:'" + deathPos.getBlockX() + " " + deathPos.getBlockY() + " " + deathPos.getBlockZ() + "'>"
-                + "<hover:show_text:'<gray>Click to copy coordinates</gray>'>"
-                + "<gold><bold>X" + deathPos.getBlockX() + " Y" + deathPos.getBlockY() + " Z" + deathPos.getBlockZ() + "</bold></gold>"
-                + "</hover></click> <gray>inside</gray> " + dimensionName[0] + ":<gold><bold>" + dimensionName[1]
-                + "</bold></gold>";
+        deathMessage.message = "<red>--- <bold>You have died!</bold> ---</red>\n<gray>Reclaim your loot at</gray> <click:copy_to_clipboard:'%d %d %d'><hover:show_text:'<gray>Click to copy coordinates</gray>'><gold><bold>X%d Y%d Z%d</bold></gold></hover></click> <gray>inside</gray> %s:<gold><bold>%s</bold></gold>"
+                .formatted(
+                        deathPos.getBlockX(), deathPos.getBlockY(), deathPos.getBlockZ(),
+                        deathPos.getBlockX(), deathPos.getBlockY(), deathPos.getBlockZ(),
+                        dimensionName[0], dimensionName[1]
+                );
         player.sendRichMessage(deathMessage.toString());
         world.playSound(deathPos, Sound.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS, 2, -2);
         world.playSound(deathPos, Sound.ENTITY_PIGLIN_DEATH, SoundCategory.PLAYERS, 2, -2);
