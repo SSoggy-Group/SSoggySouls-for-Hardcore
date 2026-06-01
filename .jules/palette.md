@@ -24,3 +24,6 @@
 ## 2026-05-29 - [Interactive CLI Coordinate Copying]
 **Learning:** Players frequently need to navigate to locations displayed in chat (like death locations in death messages), but manually transcribing coordinates is tedious and error-prone.
 **Action:** When displaying coordinates in chat via MiniMessage, wrap them in `<click:copy_to_clipboard:'X Y Z'>` and a `<hover>` prompt to allow instant, frictionless copying for players.
+## 2026-05-30 - [Interactive CLI Coordinate Copying]
+**Learning:** Players frequently need to navigate to locations displayed in chat (like death locations in death messages), but manually transcribing coordinates is tedious and error-prone.
+**Action:** When displaying coordinates in chat via MiniMessage, wrap them in `<click:copy_to_clipboard:'X Y Z'>` and a `<hover>` prompt to allow instant, frictionless copying for players.

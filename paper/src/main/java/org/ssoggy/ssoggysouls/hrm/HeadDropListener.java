@@ -75,9 +75,11 @@ public class HeadDropListener implements Listener {
 
     private void sendDeathLocationMessage(Player player, Location deathLoc, World world) {
         if (plugin.isHrmDeathLocationMsg()) {
-            player.sendRichMessage("<gray><italic>You died at " + deathLoc.getBlockX() + ", "
-                    + deathLoc.getBlockY() + ", " + deathLoc.getBlockZ()
-                    + " in " + world.getName() + "</italic></gray>");
+            String coords = deathLoc.getBlockX() + " " + deathLoc.getBlockY() + " " + deathLoc.getBlockZ();
+            player.sendRichMessage("<gray><italic>You died at <click:copy_to_clipboard:'" + coords + "'>"
+                    + "<hover:show_text:'<gray>Click to copy coordinates</gray>'>"
+                    + deathLoc.getBlockX() + ", " + deathLoc.getBlockY() + ", " + deathLoc.getBlockZ()
+                    + "</hover></click> in " + world.getName() + "</italic></gray>");
         }
     }
 
