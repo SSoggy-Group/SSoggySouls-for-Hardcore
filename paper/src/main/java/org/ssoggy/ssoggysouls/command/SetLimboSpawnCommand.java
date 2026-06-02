@@ -31,7 +31,7 @@ public class SetLimboSpawnCommand implements CommandExecutor {
         }
 
         if (!(sender instanceof Player player)) {
-            String msg = MessageUtil.colorize("&cThis command can only be used in-game.");
+            String msg = MessageUtil.get("command-only-players");
             if (msg != null) {
                 sender.sendMessage(msg);
             }

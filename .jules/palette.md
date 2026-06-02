@@ -27,3 +27,6 @@
 ## 2026-05-30 - [Interactive CLI Coordinate Copying]
 **Learning:** Players frequently need to navigate to locations displayed in chat (like death locations in death messages), but manually transcribing coordinates is tedious and error-prone.
 **Action:** When displaying coordinates in chat via MiniMessage, wrap them in `<click:copy_to_clipboard:'X Y Z'>` and a `<hover>` prompt to allow instant, frictionless copying for players.
+## 2026-06-02 - [Configurable Console Error Messages]
+**Learning:** Hardcoding standard API error strings (like "Only players can use this command") breaks consistency for server administrators running commands via console. Not checking for null when substituting configuration strings causes plugin-breaking exceptions in Bukkit/Paper APIs.
+**Action:** When migrating hardcoded console-only rejection messages, always use `MessageUtil.get("command-only-players")` to allow localization and ALWAYS add a null check before calling `sendMessage` to prevent runtime crashes.
