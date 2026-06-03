@@ -29,3 +29,6 @@
 **Action:** When displaying coordinates in chat via MiniMessage, wrap them in `<click:copy_to_clipboard:'X Y Z'>` and a `<hover>` prompt to allow instant, frictionless copying for players.
 ## 2026-06-02 - [Configurable Console Error Messages]
 **Learning:** Hardcoding standard API error strings (like "Only players can use this command") breaks consistency for server administrators running commands via console.\n**Action:** When migrating hardcoded console-only rejection messages, always use MessageUtil.get("command-only-players") to allow localization.
+## 2026-06-03 - [Interactive CLI Number Parsing Errors with RPCommandOutput]
+**Learning:** In the `RPConfigCommand` class, number parsing errors (e.g., `NumberFormatException` when parsing timer values) fall back to static error messages. Since this command uses Kyori Adventure MiniMessage implicitly by resolving custom UI strings via `RPCommandOutput`, we can't use the standard `CommandUtil.sendInteractiveUsage` method, which assumes Legacy (`&`) codes and Bukkit CommandSender execution immediately.
+**Action:** Replace static error assignments in `RPCommandOutput.message` directly with MiniMessage-compatible `<click:suggest_command:...>` and `<hover:show_text:...>` components so that players can interactively recover from invalid timer setups without re-typing.

@@ -87,7 +87,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         result.details = "Supposed to do some crazy reload logic but it's not implemented yet."; //Optional
     }
 
-    private void executeTimerCMD(String who, String where, RPCommandOutput result) {
+    private void executeTimerCMD(String who, String where, RPCommandOutput result, String label) {
         if (!RPStatic.CONFIG_TIMERS.containsKey(where)) {
             result.success = COMMANDOUTPUTENUM.FALSE;
             result.message = "Invalid timer: " + where;
@@ -100,7 +100,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             result.message = (status == 1) ? "Set " + where + " to " + whoInt : "Failed to update configuration.";
         } catch (NumberFormatException e) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Timer value must be a number.";
+            result.message = "Timer value must be a number. Click to fix: <click:suggest_command:'/" + label + " timer " + where + " '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/" + label + " timer " + where + " </gray></hover></click>";
         }
     }
 
@@ -191,7 +191,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             switch (option) {
                 case OPTIONCONFIGENUM.STRUCTURE -> handleStructure(args, result);
                 case OPTIONCONFIGENUM.GAMERULE -> handleGamerule(args, result);
-                case OPTIONCONFIGENUM.TIMER -> handleTimer(args, result);
+                case OPTIONCONFIGENUM.TIMER -> handleTimer(args, result, label);
                 case OPTIONCONFIGENUM.RELOAD -> executeReloadCMD(result);
                 default -> {
                     result.success = COMMANDOUTPUTENUM.FALSE;
@@ -264,7 +264,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void handleTimer(String[] args, RPCommandOutput result) {
+    private void handleTimer(String[] args, RPCommandOutput result, String label) {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
@@ -281,7 +281,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                 result.message = "<aqua>" + args[1] + AQUA_LABEL_SUFFIX + (RPStatic.CONFIG_TIMERS.get(args[1])).toString() + "s";
                 break;
             default:
-                executeTimerCMD(args[2], args[1], result);
+                executeTimerCMD(args[2], args[1], result, label);
                 break;
         }
     }
