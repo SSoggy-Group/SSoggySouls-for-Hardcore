@@ -17,13 +17,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class HeadDropListener {
 
@@ -31,7 +32,7 @@ public class HeadDropListener {
         // Utility class
     }
 
-    private static final Map<UUID, List<GlobalPos>> headBlockLocations = new ConcurrentHashMap<>();
+    private static final Map<UUID, List<UUID>> headItemEntityUuids = new HashMap<>();
 
     public static void register() {
         // Head drop is triggered from ServerLifecycleListener
@@ -58,9 +59,7 @@ public class HeadDropListener {
                 skull.setChanged();
             }
 
-            headBlockLocations
-                    .computeIfAbsent(player.getUUID(), k -> new ArrayList<>())
-                    .add(GlobalPos.of(world.dimension(), headPos));
+            GhostState.getServerState(player.getServer()).addHeadBlockLocation(player.getUUID(), GlobalPos.of(world.dimension(), headPos));
             SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getScoreboardName(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
             ItemStack head = new ItemStack(Items.PLAYER_HEAD);
@@ -79,6 +78,9 @@ public class HeadDropListener {
             }
 
             world.addFreshEntity(itemEntity);
+            headItemEntityUuids
+                    .computeIfAbsent(player.getUUID(), k -> new ArrayList<>())
+                    .add(itemEntity.getUUID());
             SSoggySoulsMod.LOGGER.info("Dropped {}'s head at {} {} {}", player.getScoreboardName(), pos.getX(), pos.getY(), pos.getZ());
         }
     }
@@ -93,11 +95,11 @@ public class HeadDropListener {
     }
 
     public static void removeDroppedHeads(UUID ownerUuid, MinecraftServer server) {
-        List<GlobalPos> knownLocations = headBlockLocations.remove(ownerUuid);
+        List<GlobalPos> knownLocations = GhostState.getServerState(server).consumeHeadBlockLocations(ownerUuid);
         if (knownLocations != null) {
             removeTrackedHeadBlocks(ownerUuid, server, knownLocations);
         }
-        scanWorldForItemEntities(ownerUuid, server);
+        removeTrackedItemEntities(ownerUuid, server);
     }
 
     private static void removeTrackedHeadBlocks(UUID ownerUuid, MinecraftServer server, List<GlobalPos> knownLocations) {
@@ -106,9 +108,7 @@ public class HeadDropListener {
             if (world == null) continue;
 
             BlockPos blockPos = pos.pos();
-            if (!world.isLoaded(blockPos)) {
-                continue;
-            }
+            world.getChunk(blockPos);
 
             if (world.getBlockState(blockPos).getBlock() == Blocks.PLAYER_HEAD ||
                 world.getBlockState(blockPos).getBlock() == Blocks.PLAYER_WALL_HEAD) {
@@ -123,17 +123,17 @@ public class HeadDropListener {
         }
     }
 
-    private static void scanWorldForItemEntities(UUID ownerUuid, MinecraftServer server) {
-        for (ServerLevel world : server.getAllLevels()) {
-            for (net.minecraft.world.entity.Entity entity : world.getAllEntities()) {
+    private static void removeTrackedItemEntities(UUID ownerUuid, MinecraftServer server) {
+        List<UUID> entityUuids = headItemEntityUuids.remove(ownerUuid);
+        if (entityUuids == null) {
+            return;
+        }
+        for (UUID entityUuid : entityUuids) {
+            for (ServerLevel world : server.getAllLevels()) {
+                net.minecraft.world.entity.Entity entity = world.getEntity(entityUuid);
                 if (entity instanceof ItemEntity itemEntity) {
-                    ItemStack stack = itemEntity.getItem();
-                    if (stack.is(Items.PLAYER_HEAD) && stack.has(DataComponents.PROFILE)) {
-                        ResolvableProfile profile = stack.get(DataComponents.PROFILE);
-                        if (profile != null && profile.id().isPresent() && profile.id().get().equals(ownerUuid)) {
-                            itemEntity.discard();
-                        }
-                    }
+                    itemEntity.discard();
+                    break;
                 }
             }
         }

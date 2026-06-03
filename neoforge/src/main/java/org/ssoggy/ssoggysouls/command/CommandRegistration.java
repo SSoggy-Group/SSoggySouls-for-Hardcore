@@ -13,6 +13,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
 import org.ssoggy.ssoggysouls.hrm.dlc.command.DlcCommandRegistration;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
@@ -157,7 +158,7 @@ public class CommandRegistration {
             ghostState.removeDeathLocation(targetData.getUuid());
             ghostState.removeDeathHolder(targetData.getUuid());
             ghostState.setDirty();
-            org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(targetData.getUuid(), source.getServer());
+            HeadDropListener.removeDroppedHeads(targetData.getUuid(), source.getServer());
             source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
             AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
 
@@ -204,7 +205,7 @@ public class CommandRegistration {
                                     ghostState.removeDeathLocation(data.getUuid());
                                     ghostState.removeDeathHolder(data.getUuid());
                                     ghostState.setDirty();
-                                    org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(data.getUuid(), source.getServer());
+                                    HeadDropListener.removeDroppedHeads(data.getUuid(), source.getServer());
                                     if (online != null) {
                                         ServerLifecycleListener.setGhostModeAttributes(online, false);
                                         online.setGameMode(GameType.SURVIVAL);

@@ -21,3 +21,11 @@
 ## 2026-05-18 - [Interactive CLI Coordinate Copying]
 **Learning:** Players frequently need to share or navigate to coordinates displayed in chat (like death locations in obituaries), but manually transcribing them into waypoints or chat is tedious and error-prone.
 **Action:** When displaying coordinates in chat via MiniMessage, wrap them in `<click:copy_to_clipboard:'X Y Z'>` and a `<hover>` prompt to allow instant, frictionless copying.
+## 2026-05-29 - [Interactive CLI Coordinate Copying]
+**Learning:** Players frequently need to navigate to locations displayed in chat (like death locations in death messages), but manually transcribing coordinates is tedious and error-prone.
+**Action:** When displaying coordinates in chat via MiniMessage, wrap them in `<click:copy_to_clipboard:'X Y Z'>` and a `<hover>` prompt to allow instant, frictionless copying for players.
+## 2026-05-30 - [Interactive CLI Coordinate Copying]
+**Learning:** Players frequently need to navigate to locations displayed in chat (like death locations in death messages), but manually transcribing coordinates is tedious and error-prone.
+**Action:** When displaying coordinates in chat via MiniMessage, wrap them in `<click:copy_to_clipboard:'X Y Z'>` and a `<hover>` prompt to allow instant, frictionless copying for players.
+## 2026-06-02 - [Configurable Console Error Messages]
+**Learning:** Hardcoding standard API error strings (like "Only players can use this command") breaks consistency for server administrators running commands via console.\n**Action:** When migrating hardcoded console-only rejection messages, always use MessageUtil.get("command-only-players") to allow localization.
