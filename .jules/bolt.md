@@ -38,3 +38,6 @@
 ## 2026-05-26 - [Avoided O(N) stream and ArrayList allocation on Tab Completion in RPConfigCommand]
 **Learning:** Returning a `new ArrayList<>(Map.keySet())` or chaining `.stream().map(Enum::name).toList()` on every tab complete keystroke causes redundant object instantiation and high GC overhead.
 **Action:** Utility methods like `TabCompleteUtil.filterStartsWith` should accept `Iterable<String>` instead of `List<String>`, allowing allocation-free filtering directly against sets, and avoiding inline `.stream()` maps where a manual for-loop with `String.regionMatches()` can perform the operation completely allocation-free.
+## 2026-06-03 - [Eliminated redundant synchronized disk I/O when updating state]
+**Learning:** Calling synchronized save methods (like `DlcStorage.save()`) during frequent events (e.g., ticking inventory checks for player heads) causes severe performance bottlenecks if the state hasn't actually changed. Overwriting the exact same value to disk redundantly stalls the main thread.
+**Action:** When updating state that triggers synchronized disk I/O operations, always verify that the state has actually changed (e.g., using `Objects.equals`) before proceeding with the update to avoid redundant and expensive disk writes.
