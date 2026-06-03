@@ -90,13 +90,13 @@ public final class DlcDeaths {
 
     public static void setHolder(UUID deadUuid, UUID holderUuid) {
         DlcDeathRecord deathRecord = DEATHS.get(deadUuid);
-        if (deathRecord != null) {
-            // Early return to prevent redundant map updates and unnecessary disk I/O save() calls
-            if (Objects.equals(deathRecord.holder(), holderUuid)) {
-                return;
-            }
-            DEATHS.put(deadUuid, deathRecord.withHolder(holderUuid));
+        if (deathRecord == null) {
+            return;
         }
+        if (Objects.equals(deathRecord.holder(), holderUuid)) {
+            return;
+        }
+        DEATHS.put(deadUuid, deathRecord.withHolder(holderUuid));
         if (holderUuid == null) {
             DlcServices.deathStorage().removeValue(deadUuid.toString(), KEY_HOLDER);
         } else {
