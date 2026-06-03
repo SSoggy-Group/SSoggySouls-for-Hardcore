@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class DlcDeaths {
@@ -90,6 +91,10 @@ public final class DlcDeaths {
     public static void setHolder(UUID deadUuid, UUID holderUuid) {
         DlcDeathRecord deathRecord = DEATHS.get(deadUuid);
         if (deathRecord != null) {
+            // Early return to prevent redundant map updates and unnecessary disk I/O save() calls
+            if (Objects.equals(deathRecord.holder(), holderUuid)) {
+                return;
+            }
             DEATHS.put(deadUuid, deathRecord.withHolder(holderUuid));
         }
         if (holderUuid == null) {
