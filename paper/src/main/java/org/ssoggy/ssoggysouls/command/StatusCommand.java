@@ -13,6 +13,7 @@ import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.CommandUtil;
 import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
 
 public class StatusCommand implements CommandExecutor, TabCompleter {
@@ -40,7 +41,7 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
         } else if (sender instanceof org.bukkit.entity.Player player) {
             targetName = player.getName();
         } else {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /pstatus <player>", "/pstatus ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /pstatus <player>", "/pstatus ");
             return false;
         }
 

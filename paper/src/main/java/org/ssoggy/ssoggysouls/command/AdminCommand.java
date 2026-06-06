@@ -190,7 +190,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleGrace(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin grace <set|remove> <player> [time]", "/psadmin grace ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin grace <set|remove> <player> [time]", "/psadmin grace ");
             return;
         }
 
@@ -234,7 +234,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void applyGraceSet(CommandSender sender, String[] args, PlayerData data) {
         if (args.length < 4) {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin grace set <player> <time> (e.g., 1h30m, 2h, 90m)", "/psadmin grace set " + data.getUsername() + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin grace set <player> <time> (e.g., 1h30m, 2h, 90m)", "/psadmin grace set " + data.getUsername() + " ");
             return;
         }
         String timeStr = args[3];
@@ -308,7 +308,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleGraceConfirm(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin confirm <overwrite|stack|cancel>", "/psadmin confirm ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin confirm <overwrite|stack|cancel>", "/psadmin confirm ");
             return;
         }
 
@@ -389,7 +389,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleKill(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin kill <player>", "/psadmin kill ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin kill <player>", "/psadmin kill ");
             return;
         }
 
@@ -484,7 +484,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleRevive(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin revive <player> [lives]", "/psadmin revive ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin revive <player> [lives]", "/psadmin revive ");
             return;
         }
 
@@ -530,7 +530,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleReset(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin reset <player>", "/psadmin reset ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin reset <player>", "/psadmin reset ");
             return;
         }
 
@@ -561,7 +561,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void handleInfo(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin info <player>", "/psadmin info ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin info <player>", "/psadmin info ");
             return;
         }
 
