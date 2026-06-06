@@ -13,6 +13,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 import org.ssoggy.ssoggysouls.SSoggySouls;
+import org.ssoggy.ssoggysouls.util.CommandUtil;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 public class AdminLogCommand implements CommandExecutor {
@@ -65,12 +66,12 @@ public class AdminLogCommand implements CommandExecutor {
         try {
             int count = Integer.parseInt(args[0]);
             if (count <= 0 || count > 100) {
-                org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cPlease specify a number between 1 and 100.", "/" + label + " ");
+                CommandUtil.sendInteractiveUsage(sender, "&cPlease specify a number between 1 and 100.", "/" + label + " ");
                 return -1;
             }
             return count;
         } catch (NumberFormatException e) {
-            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[0], "/" + label + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cInvalid number: " + args[0], "/" + label + " ");
             return -1;
         }
     }
