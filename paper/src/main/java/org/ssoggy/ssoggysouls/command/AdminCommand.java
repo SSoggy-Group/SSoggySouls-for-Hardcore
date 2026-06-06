@@ -241,8 +241,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         long millis = TimeUtil.parseTimeToMillis(timeStr);
         
         if (millis < 0) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cInvalid time format: " + timeStr + ". Use formats like: 1h30m, 2h, 90m"));
+            org.ssoggy.ssoggysouls.util.CommandUtil.sendInteractiveUsage(sender, "&cInvalid time format: " + timeStr + ". Use formats like: 1h30m, 2h, 90m", "/psadmin grace set " + data.getUsername() + " ");
             return;
         }
 
