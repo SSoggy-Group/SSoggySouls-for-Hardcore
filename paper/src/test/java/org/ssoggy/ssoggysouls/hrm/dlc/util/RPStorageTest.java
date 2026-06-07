@@ -39,7 +39,7 @@ class RPStorageTest {
     }
 
     @Test
-    public void testSetValueIfChanged() {
+    void testSetValueIfChanged() {
         // Test insert
         assertTrue(storage.setValueIfChanged("table", "key", "value1"));
         assertEquals("value1", storage.getValue("table", "key"));
