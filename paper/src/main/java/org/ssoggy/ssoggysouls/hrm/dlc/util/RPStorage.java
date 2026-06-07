@@ -96,6 +96,16 @@ public class RPStorage {
         config.set(path, value);
     }
 
+    public synchronized boolean setValueIfChanged(String table, String key, Object value) {
+        String path = table + "." + key;
+        Object currentValue = config.get(path);
+        if (Objects.equals(currentValue, value)) {
+            return false;
+        }
+        config.set(path, value);
+        return true;
+    }
+
     public synchronized void removeValue(String table, String key) {
         String path = table + "." + key;
         config.set(path, null);

@@ -44,8 +44,9 @@ public class RPStats {
     }
 
     public void overrideStat(STATSENUM option, Object value) {
-        storage.setValue(this.table, option.name(), value);
-        storage.saveConfig();
+        if (storage.setValueIfChanged(this.table, option.name(), value)) {
+            storage.saveConfig();
+        }
     }
 
     public double incrementStat(STATSENUM option, double increment) {

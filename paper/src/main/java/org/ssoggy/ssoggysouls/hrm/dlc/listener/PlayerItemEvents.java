@@ -43,8 +43,9 @@ public class PlayerItemEvents implements Listener {
                 UUID playerUuid = player.getUniqueId();
 
                 RPStatic.DEAD_HOLDERS.put(skullUuid, playerUuid);
-                RPStatic.DEAD_STORAGE.setValue(skullUuid.toString(), "deathholder", playerUuid.toString());
-                RPStatic.DEAD_STORAGE.saveConfig();
+                if (RPStatic.DEAD_STORAGE.setValueIfChanged(skullUuid.toString(), "deathholder", playerUuid.toString())) {
+                    RPStatic.DEAD_STORAGE.saveConfig();
+                }
             }
         }
 

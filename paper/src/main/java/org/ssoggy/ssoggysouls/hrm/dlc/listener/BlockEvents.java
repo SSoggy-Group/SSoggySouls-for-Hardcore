@@ -59,8 +59,9 @@ public class BlockEvents implements Listener {
                 RPStatic.DEAD_LOCATIONS.remove(uuid); // Instead I'll track them by DEAD_HOLDER
                 RPStatic.DEAD_HOLDERS.put(uuid, destroyer.getUniqueId());
                 RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHPOS);
-                RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHHOLDER, destroyer.getUniqueId().toString());
-                RPStatic.DEAD_STORAGE.saveConfig();
+                if (RPStatic.DEAD_STORAGE.setValueIfChanged(uuid.toString(), KEY_DEATHHOLDER, destroyer.getUniqueId().toString())) {
+                    RPStatic.DEAD_STORAGE.saveConfig();
+                }
 
                 world.spawnParticle(Particle.SOUL, event.getBlock().getLocation().add(0.5, 1 , 0.5), 1, 0, 0, 0, 0.01);
 
