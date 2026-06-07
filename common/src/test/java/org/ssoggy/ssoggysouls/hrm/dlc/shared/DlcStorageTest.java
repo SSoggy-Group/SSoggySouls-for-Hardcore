@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,18 +14,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-public class DlcStorageTest {
+class DlcStorageTest {
     private DlcStorage storage;
     private File tempFolder;
 
     @BeforeEach
-    public void setup() throws IOException {
+    void setup() throws IOException {
         tempFolder = Files.createTempDirectory("dlcstorage").toFile();
         storage = new DlcStorage(tempFolder, "test.properties", mock(Logger.class));
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         for (File f : tempFolder.listFiles()) {
             f.delete();
         }
@@ -34,7 +33,7 @@ public class DlcStorageTest {
     }
 
     @Test
-    public void testSetValueIfChanged() {
+    void testSetValueIfChanged() {
         // Test insert
         assertTrue(storage.setValueIfChanged("table", "key", "value1"));
         assertEquals("value1", storage.getValue("table", "key"));

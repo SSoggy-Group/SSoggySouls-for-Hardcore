@@ -4,8 +4,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,12 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class RPStorageTest {
+class RPStorageTest {
     private RPStorage storage;
     private File tempFolder;
 
     @BeforeEach
-    public void setup() throws IOException {
+    void setup() throws IOException {
         tempFolder = Files.createTempDirectory("rpstorage").toFile();
         JavaPlugin mockPlugin = mock(JavaPlugin.class);
         when(mockPlugin.getDataFolder()).thenReturn(tempFolder);
@@ -32,7 +30,7 @@ public class RPStorageTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         storage.shutdown();
         for (File f : tempFolder.listFiles()) {
             f.delete();
