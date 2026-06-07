@@ -91,11 +91,13 @@ public class PlayerStateEvents implements Listener {
         Instant now = Instant.now();
         UUID uuid = player.getUniqueId();
         RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(deathPos, now));
-        RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHPOS,
+        boolean changed = RPStatic.DEAD_STORAGE.setValueIfChanged(uuid.toString(), KEY_DEATHPOS,
                 deathPos.getBlockX() + "$" + deathPos.getBlockY() + "$" + deathPos.getBlockZ() + "$"
                         + deathPos.getWorld().getName());
-        RPStatic.DEAD_STORAGE.setValue(uuid.toString(), KEY_DEATHTIME, now.toString());
-        RPStatic.DEAD_STORAGE.saveConfig();
+        changed |= RPStatic.DEAD_STORAGE.setValueIfChanged(uuid.toString(), KEY_DEATHTIME, now.toString());
+        if (changed) {
+            RPStatic.DEAD_STORAGE.saveConfig();
+        }
 
         RPStats stats = new RPStats(uuid);
         stats.incrementStat(STATSENUM.DEATHS, 1);
@@ -162,9 +164,13 @@ public class PlayerStateEvents implements Listener {
             GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.SURVIVAL);
             RPStatic.DEAD_LOCATIONS.remove(uuid);
             RPStatic.DEAD_HOLDERS.remove(uuid);
-            RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHPOS);
-            RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHTIME);
-            RPStatic.DEAD_STORAGE.saveConfig();
+            boolean c1 = RPStatic.DEAD_STORAGE.hasValue(uuid.toString(), KEY_DEATHPOS);
+            boolean c2 = RPStatic.DEAD_STORAGE.hasValue(uuid.toString(), KEY_DEATHTIME);
+            if (c1 || c2) {
+                RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHPOS);
+                RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHTIME);
+                RPStatic.DEAD_STORAGE.saveConfig();
+            }
         });
     }
 }

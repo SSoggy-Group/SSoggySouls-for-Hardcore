@@ -41,3 +41,6 @@
 ## 2026-06-03 - [Eliminated redundant synchronized disk I/O when updating state]
 **Learning:** Calling synchronized save methods (like `DlcStorage.save()`) during frequent events (e.g., ticking inventory checks for player heads) causes severe performance bottlenecks if the state hasn't actually changed. Overwriting the exact same value to disk redundantly stalls the main thread.
 **Action:** When updating state that triggers synchronized disk I/O operations, always verify that the state has actually changed (e.g., using `Objects.equals`) before proceeding with the update to avoid redundant and expensive disk writes.
+## 2026-06-03 - [Eliminated redundant synchronized disk I/O when updating state]
+**Learning:** Calling synchronized save methods (like `DlcStorage.save()`) during frequent events (e.g., ticking inventory checks for player heads) causes severe performance bottlenecks if the state hasn't actually changed. Overwriting the exact same value to disk redundantly stalls the main thread.
+**Action:** When updating state that triggers synchronized disk I/O operations, always verify that the state has actually changed (e.g., using `Objects.equals` or checking if the new value is different) before proceeding with the update to avoid redundant and expensive disk writes.

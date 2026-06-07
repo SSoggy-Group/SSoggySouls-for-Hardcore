@@ -82,8 +82,9 @@ public enum GAMEMODESENUM {
         String uuid = player.getUniqueId().toString();
         return switch(gm) {
             case GHOSTMODE -> {
-                storage.setValue(gmTable, uuid, player.getName());
-                storage.saveConfig();
+                if (storage.setValueIfChanged(gmTable, uuid, player.getName())) {
+                    storage.saveConfig();
+                }
                 yield storage.hasValue(gmTable, uuid) ? (byte)1 : (byte)0;
             }
             default -> {

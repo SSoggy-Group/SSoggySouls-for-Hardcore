@@ -58,6 +58,19 @@ public class DlcStorage {
         properties.setProperty(path, String.valueOf(value));
     }
 
+    public synchronized boolean setValueIfChanged(String table, String key, Object value) {
+        String path = path(table, key);
+        if (value == null) {
+            return properties.remove(path) != null;
+        }
+        String strValue = String.valueOf(value);
+        if (Objects.equals(properties.getProperty(path), strValue)) {
+            return false;
+        }
+        properties.setProperty(path, strValue);
+        return true;
+    }
+
     public synchronized void removeValue(String table, String key) {
         properties.remove(path(table, key));
     }

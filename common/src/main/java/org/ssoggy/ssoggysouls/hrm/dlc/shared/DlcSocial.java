@@ -14,9 +14,14 @@ public class DlcSocial {
 
     public void setRelationTo(UUID uuid, DlcRelation relation) {
         if (relation == null) {
-            DlcServices.socialStorage().removeValue(owner.toString(), uuid.toString());
+            if (DlcServices.socialStorage().hasValue(owner.toString(), uuid.toString())) {
+                DlcServices.socialStorage().removeValue(owner.toString(), uuid.toString());
+                DlcServices.socialStorage().save();
+            }
         } else {
-            DlcServices.socialStorage().setValue(owner.toString(), uuid.toString(), relation.name());
+            if (DlcServices.socialStorage().setValueIfChanged(owner.toString(), uuid.toString(), relation.name())) {
+                DlcServices.socialStorage().save();
+            }
         }
     }
 

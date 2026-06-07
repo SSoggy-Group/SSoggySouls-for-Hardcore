@@ -37,7 +37,9 @@ public class RPSocial {
             RPStatic.SOCIAL_STORAGE.removeValue(this.storedUuid.toString(), uuid.toString());
             return;
         }
-        RPStatic.SOCIAL_STORAGE.setValue(this.storedUuid.toString(), uuid.toString(), relationship.name());
+        if (RPStatic.SOCIAL_STORAGE.setValueIfChanged(this.storedUuid.toString(), uuid.toString(), relationship.name())) {
+            RPStatic.SOCIAL_STORAGE.saveConfig();
+        }
     }
 
     private SOCIALENUM riskyOrDefault(String risky, SOCIALENUM def) {

@@ -24,8 +24,9 @@ public class DlcStats {
     }
 
     public void overrideStat(DlcStat stat, Object value) {
-        DlcServices.statsStorage().setValue(table, stat.name(), value);
-        DlcServices.statsStorage().save();
+        if (DlcServices.statsStorage().setValueIfChanged(table, stat.name(), value)) {
+            DlcServices.statsStorage().save();
+        }
     }
 
     public double incrementStat(DlcStat stat, double increment) {

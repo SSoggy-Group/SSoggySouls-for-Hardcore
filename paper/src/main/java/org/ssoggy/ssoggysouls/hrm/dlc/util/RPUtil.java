@@ -43,8 +43,9 @@ public class RPUtil {
         String uuidString = uuid.toString();
         try {
             String username = Bukkit.getOfflinePlayer(uuid).getName();
-            RPStatic.USERNAME_CACHE.setValue(KEY_USERNAME_CACHE, uuidString, username);
-            RPStatic.USERNAME_CACHE.saveConfig();
+            if (RPStatic.USERNAME_CACHE.setValueIfChanged(KEY_USERNAME_CACHE, uuidString, username)) {
+                RPStatic.USERNAME_CACHE.saveConfig();
+            }
             return username;
         } catch (Exception e) {
             return null;

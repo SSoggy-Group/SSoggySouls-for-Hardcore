@@ -98,11 +98,15 @@ public final class DlcDeaths {
         }
         DEATHS.put(deadUuid, deathRecord.withHolder(holderUuid));
         if (holderUuid == null) {
-            DlcServices.deathStorage().removeValue(deadUuid.toString(), KEY_HOLDER);
+            if (DlcServices.deathStorage().hasValue(deadUuid.toString(), KEY_HOLDER)) {
+                DlcServices.deathStorage().removeValue(deadUuid.toString(), KEY_HOLDER);
+                DlcServices.deathStorage().save();
+            }
         } else {
-            DlcServices.deathStorage().setValue(deadUuid.toString(), KEY_HOLDER, holderUuid.toString());
+            if (DlcServices.deathStorage().setValueIfChanged(deadUuid.toString(), KEY_HOLDER, holderUuid.toString())) {
+                DlcServices.deathStorage().save();
+            }
         }
-        DlcServices.deathStorage().save();
     }
 
     public static List<DlcDeathRecord> visibleDeaths(UUID viewerUuid,
