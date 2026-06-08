@@ -16,8 +16,9 @@ public final class DlcNames {
             return;
         }
 
-        DlcServices.usernameStorage().setValue(TABLE, uuid.toString(), username);
-        DlcServices.usernameStorage().save();
+        if (DlcServices.usernameStorage().setValueIfChanged(TABLE, uuid.toString(), username)) {
+            DlcServices.usernameStorage().save();
+        }
     }
 
     public static String get(UUID uuid) {

@@ -44,3 +44,8 @@
 ## 2026-06-03 - [Eliminated redundant synchronized disk I/O when updating state]
 **Learning:** Calling synchronized save methods (like `DlcStorage.save()`) during frequent events (e.g., ticking inventory checks for player heads) causes severe performance bottlenecks if the state hasn't actually changed. Overwriting the exact same value to disk redundantly stalls the main thread.
 **Action:** When updating state that triggers synchronized disk I/O operations, always verify that the state has actually changed (e.g., using `Objects.equals` or checking if the new value is different) before proceeding with the update to avoid redundant and expensive disk writes.
+
+## 2024-05-18 - Safe Disk Writes
+
+**Learning:** When performing optimizations to reduce synchronous disk I/O, you must be extremely careful to ensure the methods you intend to call actually exist on the target objects. An AI-generated automated code review correctly pointed out the risk of using a potentially non-existent method (`setValueIfChanged`).
+**Action:** Always verify the existence of methods via tools like `grep` before utilizing them. In this case, `setValueIfChanged` *was* verified to exist in `DlcStorage.java`, meaning the AI code reviewer's concern was a false positive, but the underlying lesson regarding verification remains critical.
