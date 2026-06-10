@@ -17,6 +17,7 @@ public class SchedulerManager {
         // Utility class
     }
     
+    // ⚡ Bolt: Using ConcurrentHashMap instead of ConcurrentLinkedQueue for O(1) task cancellation lookups
     private static final Map<Integer, ScheduledTask> tasks = new ConcurrentHashMap<>();
     private static final AtomicInteger taskIdCounter = new AtomicInteger(0);
 
@@ -80,6 +81,7 @@ public class SchedulerManager {
      * Cancels a scheduled task by ID.
      */
     public static void cancelTask(int taskId) {
+        // ⚡ Bolt: O(1) cancellation lookup without iterating through entire task list
         ScheduledTask task = tasks.get(taskId);
         if (task != null) {
             task.cancel();
