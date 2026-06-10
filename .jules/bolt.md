@@ -49,3 +49,10 @@
 
 **Learning:** When performing optimizations to reduce synchronous disk I/O, you must be extremely careful to ensure the methods you intend to call actually exist on the target objects. An AI-generated automated code review correctly pointed out the risk of using a potentially non-existent method (`setValueIfChanged`).
 **Action:** Always verify the existence of methods via tools like `grep` before utilizing them. In this case, `setValueIfChanged` *was* verified to exist in `DlcStorage.java`, meaning the AI code reviewer's concern was a false positive, but the underlying lesson regarding verification remains critical.
+## 2024-06-10 - [ConcurrentHashMap vs ConcurrentSkipListMap in Schedulers]
+**Learning:** `ConcurrentHashMap` provides O(1) performance but destroys chronological execution order because its iterator traverses elements in arbitrary hash order. When migrating schedulers from queues to maps, execution order of identical-tick tasks is often critical.
+**Action:** Use `ConcurrentSkipListMap<Integer, Task>` keyed by incremental `taskId` instead of `ConcurrentHashMap`. This maintains FIFO chronological execution order (because IDs increment chronologically) while still providing extremely fast O(log N) lookups for cancellation.
+
+## 2024-06-10 - [Exception Swallowing in tick loops]
+**Learning:** When moving tick execution logic to abstract `common` modules that lack platform-specific loggers, simply swallowing exceptions silently is a critical anti-pattern that breaks observability.
+**Action:** Use functional interfaces like `Consumer<Exception> errorHandler` in the abstract tick method signature so platform-specific callers can inject their local logger securely without swallowing errors.
