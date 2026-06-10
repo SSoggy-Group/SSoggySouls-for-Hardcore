@@ -5,14 +5,16 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class AbstractSchedulerManagerTest {
 
     private static class TestSchedulerManager extends AbstractSchedulerManager {
-        public static void testTick() {
-            tickTasks(null);
+        public static void testTick(Consumer<Exception> handler) {
+            tickTasks(handler);
         }
     }
 
@@ -23,6 +25,11 @@ class AbstractSchedulerManagerTest {
         @SuppressWarnings("unchecked")
         Map<Integer, ScheduledTask> tasks = (Map<Integer, ScheduledTask>) tasksField.get(null);
         tasks.clear();
+
+        Field counterField = AbstractSchedulerManager.class.getDeclaredField("taskIdCounter");
+        counterField.setAccessible(true);
+        AtomicInteger counter = (AtomicInteger) counterField.get(null);
+        counter.set(0);
     }
 
     @Test
@@ -32,6 +39,7 @@ class AbstractSchedulerManagerTest {
 
         assertNotNull(task);
         assertFalse(task.isCancelled());
+        assertEquals(0, task.getTaskId());
     }
 
     @Test
@@ -41,6 +49,7 @@ class AbstractSchedulerManagerTest {
 
         assertNotNull(task);
         assertFalse(task.isCancelled());
+        assertEquals(0, task.getTaskId());
     }
 
     @Test
@@ -51,7 +60,7 @@ class AbstractSchedulerManagerTest {
         AbstractSchedulerManager.cancelTask(task.getTaskId());
 
         assertTrue(task.isCancelled());
-        TestSchedulerManager.testTick();
+        TestSchedulerManager.testTick(null);
 
         try {
             Field tasksField = AbstractSchedulerManager.class.getDeclaredField("tasks");
@@ -70,10 +79,10 @@ class AbstractSchedulerManagerTest {
         Runnable mockRunnable = () -> executed[0] = true;
 
         AbstractSchedulerManager.runLater(mockRunnable, 1);
-        TestSchedulerManager.testTick();
+        TestSchedulerManager.testTick(null);
         assertFalse(executed[0]);
 
-        TestSchedulerManager.testTick();
+        TestSchedulerManager.testTick(null);
         assertTrue(executed[0]);
 
         try {
@@ -94,13 +103,48 @@ class AbstractSchedulerManagerTest {
 
         AbstractSchedulerManager.runTimer(mockRunnable, 0, 2);
 
-        TestSchedulerManager.testTick();
+        TestSchedulerManager.testTick(null);
         assertEquals(1, executionCount[0]);
 
-        TestSchedulerManager.testTick();
+        TestSchedulerManager.testTick(null);
         assertEquals(1, executionCount[0]);
 
-        TestSchedulerManager.testTick();
+        TestSchedulerManager.testTick(null);
         assertEquals(2, executionCount[0]);
+    }
+
+    @Test
+    void testTick_handlesExceptionsWithConsumer() {
+        boolean[] errorHandled = {false};
+        Runnable throwingRunnable = () -> {
+            throw new RuntimeException("Test Exception");
+        };
+
+        AbstractSchedulerManager.runLater(throwingRunnable, 0);
+
+        TestSchedulerManager.testTick(e -> {
+            errorHandled[0] = true;
+            assertEquals("Test Exception", e.getMessage());
+        });
+
+        assertTrue(errorHandled[0]);
+    }
+
+    @Test
+    void testTick_handlesExceptionsWhenConsumerIsNull() {
+        Runnable throwingRunnable = () -> {
+            throw new RuntimeException("Test Exception");
+        };
+
+        AbstractSchedulerManager.runLater(throwingRunnable, 0);
+
+        // Should not throw an exception out of tickTasks
+        assertDoesNotThrow(() -> TestSchedulerManager.testTick(null));
+    }
+
+    @Test
+    void testCancelTask_invalidIdDoesNothing() {
+        // Just checking it doesn't crash when passing an invalid ID
+        assertDoesNotThrow(() -> AbstractSchedulerManager.cancelTask(999));
     }
 }
