@@ -5,8 +5,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
 import java.util.Iterator;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SchedulerManager {
     
@@ -14,13 +15,13 @@ public class SchedulerManager {
         // Utility class
     }
     
-    private static final Queue<ScheduledTask> tasks = new ConcurrentLinkedQueue<>();
-    private static int taskIdCounter = 0;
+    private static final Map<Integer, ScheduledTask> tasks = new ConcurrentHashMap<>();
+    private static final AtomicInteger taskIdCounter = new AtomicInteger(0);
 
     @SubscribeEvent
     @SuppressWarnings("unused")
     public static void onServerTick(ServerTickEvent.Post event) {
-        Iterator<ScheduledTask> iterator = tasks.iterator();
+        Iterator<ScheduledTask> iterator = tasks.values().iterator();
         while (iterator.hasNext()) {
             ScheduledTask task = iterator.next();
             
@@ -54,8 +55,9 @@ public class SchedulerManager {
      * @return The scheduled task instance.
      */
     public static ScheduledTask runLater(Runnable runnable, int delayTicks) {
-        ScheduledTask task = new ScheduledTask(taskIdCounter++, runnable, delayTicks, 0);
-        tasks.add(task);
+        int id = taskIdCounter.getAndIncrement();
+        ScheduledTask task = new ScheduledTask(id, runnable, delayTicks, 0);
+        tasks.put(id, task);
         return task;
     }
 
@@ -67,8 +69,9 @@ public class SchedulerManager {
      * @return The scheduled task instance.
      */
     public static ScheduledTask runTimer(Runnable runnable, int delayTicks, int periodTicks) {
-        ScheduledTask task = new ScheduledTask(taskIdCounter++, runnable, delayTicks, periodTicks);
-        tasks.add(task);
+        int id = taskIdCounter.getAndIncrement();
+        ScheduledTask task = new ScheduledTask(id, runnable, delayTicks, periodTicks);
+        tasks.put(id, task);
         return task;
     }
     
@@ -76,11 +79,9 @@ public class SchedulerManager {
      * Cancels a scheduled task by ID.
      */
     public static void cancelTask(int taskId) {
-        for (ScheduledTask task : tasks) {
-            if (task.taskId == taskId) {
-                task.cancel();
-                break;
-            }
+        ScheduledTask task = tasks.get(taskId);
+        if (task != null) {
+            task.cancel();
         }
     }
 
