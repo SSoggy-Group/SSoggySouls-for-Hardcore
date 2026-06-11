@@ -353,7 +353,15 @@ public final class DlcCommandRegistration {
         try {
             parsed = Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            sendResult(source, DlcCommandResult.fail("Timer value must be a number."));
+            Component interactive = Component.literal("/revivalconfig timer " + key + " ")
+                    .withStyle(style -> style.withColor(ChatFormatting.GRAY)
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
+                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
+                    );
+            Component message = Component.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
+                    .withStyle(ChatFormatting.RED)
+                    .append(interactive);
+            source.sendSystemMessage(message);
             return 0;
         }
         setTimer(key, parsed);
