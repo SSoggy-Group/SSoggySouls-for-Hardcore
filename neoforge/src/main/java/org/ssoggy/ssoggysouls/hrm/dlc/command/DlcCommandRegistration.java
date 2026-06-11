@@ -353,15 +353,15 @@ public final class DlcCommandRegistration {
         try {
             parsed = Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            net.minecraft.network.chat.Component interactive = net.minecraft.network.chat.Component.literal("/revivalconfig timer " + key + " ")
-                    .withStyle(style -> style.withColor(net.minecraft.ChatFormatting.GRAY)
-                            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
-                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, net.minecraft.network.chat.Component.literal("Click to auto-fill this command").withStyle(net.minecraft.ChatFormatting.GRAY)))
+            Component interactive = Component.literal("/revivalconfig timer " + key + " ")
+                    .withStyle(style -> style.withColor(ChatFormatting.GRAY)
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
+                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
                     );
-            net.minecraft.network.chat.MutableComponent mutableBase = net.minecraft.network.chat.Component.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
-                    .withStyle(net.minecraft.ChatFormatting.RED);
-            mutableBase.append(interactive);
-            source.sendSystemMessage(mutableBase);
+            Component message = Component.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
+                    .withStyle(ChatFormatting.RED)
+                    .append(interactive);
+            source.sendSystemMessage(message);
             return 0;
         }
         setTimer(key, parsed);
