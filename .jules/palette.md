@@ -35,3 +35,6 @@
 ## 2026-06-03 - [Interactive CLI Time Formatting Errors]
 **Learning:** Static time format parsing errors force users to completely re-type complex commands (like `/psadmin grace set <player> <time>`). By replacing `sendMessage` with `CommandUtil.sendInteractiveUsage()` for these errors, users can click the error message to auto-fill the command with the context pre-filled, significantly reducing friction.
 **Action:** When validating time format arguments and catching invalid inputs, use `sendInteractiveUsage()` with a pre-filled suggestion (e.g. `/psadmin grace set <player> `) to create a helpful recovery path instead of a static frustration point.
+## 2026-06-11 - [MiniMessage Literal Bracket Escaping]
+**Learning:** When converting static command usage strings (e.g., `/command <arg>`) to Kyori Adventure MiniMessage format for interactive error messages, literal angle brackets must be escaped (e.g., `\\<arg\\>`). Failing to do so causes the strict MiniMessage parser to treat them as invalid formatting tags, resulting in a `ComponentParseException` and crashing the command at runtime.
+**Action:** Always verify and escape literal angle brackets when embedding command syntax strings inside MiniMessage tags.
