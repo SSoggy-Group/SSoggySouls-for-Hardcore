@@ -23,14 +23,14 @@ dependencies {
 
     // Fabric API modules
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "me.lucko:fabric-permissions-api:0.3.1"
+    modImplementation "me.lucko:fabric-permissions-api:0.7.0"
 
     // Database dependencies bundled via Jar-in-Jar so Fabric Loader
     // unpacks them at runtime — plug-and-play, no manual installation needed.
     include implementation("com.zaxxer:HikariCP:7.0.2")
-    include implementation("com.mysql:mysql-connector-j:8.0.33")
-    include group: 'org.xerial', name: 'sqlite-jdbc', version: '3.45.3.0'
-    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.45.3.0'
+    include implementation("com.mysql:mysql-connector-j:9.7.0")
+    include group: 'org.xerial', name: 'sqlite-jdbc', version: '3.53.2.0'
+    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.53.2.0'
 
     // Mod Menu API (compile only, provided by Mod Menu mod at runtime)
     modCompileOnlyApi "com.terraformersmc:modmenu:11.0.4"
