@@ -15,3 +15,7 @@
 **Vulnerability:** In `ServerTransferUtil` across `fabric`, `forge`, and `neoforge` modules, `new byte[buf.readableBytes()]` was being called when decoding a custom network payload. A malicious client could send an extremely large payload length, causing the server to allocate a massive byte array and crash with an OutOfMemoryError.
 **Learning:** `buf.readableBytes()` is user-controlled input when decoding packets and must be explicitly validated against a sane maximum limit before being used for memory allocation.
 **Prevention:** Always enforce a strict maximum length (e.g., 1024 bytes) when reading variable-length data structures from network buffers before allocating memory.
+## 2026-06-10 - [Prevent sensitive file path exposure in error messages]
+**Vulnerability:** In `CommandRegistration.java` across `fabric`, `forge`, and `neoforge` modules, if an `IOException` occurred when reading the admin log file, the exception message (which includes the absolute file path) was concatenated and sent directly to the command sender. This exposes internal server directory structures to users.
+**Learning:** Sending raw exception messages (like `e.getMessage()`) to user-facing outputs can leak sensitive information such as absolute file paths, database schemas, or infrastructure details.
+**Prevention:** Catch the exception, log the full exception details safely to the server console (using `LOGGER.error`), and send only a generic error message (e.g., "Error reading admin log. Check console for details.") back to the user.
