@@ -247,7 +247,7 @@ public class CommandRegistration {
                         });
                     } catch (java.io.IOException e) {
                         SSoggySoulsMod.LOGGER.error("Error reading admin log", e);
-                        source.getServer().execute(() -> source.sendFailure(Component.literal("Error reading admin log. Check console for details.")));
+                        source.getServer().execute(() -> source.sendFailure(MessageUtil.get("admin-log-read-error")));
                     }
                 });
 
