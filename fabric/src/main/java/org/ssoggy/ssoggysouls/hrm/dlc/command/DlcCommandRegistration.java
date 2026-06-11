@@ -350,7 +350,7 @@ public final class DlcCommandRegistration {
         try {
             parsed = Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            sendResult(source, DlcCommandResult.fail("Timer value must be a number."));
+            sendResult(source, DlcCommandResult.interactiveTimerError(key));
             return 0;
         }
         setTimer(key, parsed);
@@ -434,11 +434,23 @@ public final class DlcCommandRegistration {
     }
 
     private static Text format(DlcCommandResult result) {
+        if (result.status() == DlcCommandResult.Status.INTERACTIVE_TIMER_ERROR) {
+            net.minecraft.text.Text base = net.minecraft.text.Text.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
+                    .formatted(net.minecraft.util.Formatting.RED);
+            net.minecraft.text.Text interactive = net.minecraft.text.Text.literal("/revivalconfig timer " + result.message() + " ")
+                    .styled(style -> style.withColor(net.minecraft.util.Formatting.GRAY)
+                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + result.message() + " "))
+                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to auto-fill this command").formatted(net.minecraft.util.Formatting.GRAY)))
+                    );
+            return base.copy().append(interactive);
+        }
+
         Formatting color = switch (result.status()) {
             case TRUE -> Formatting.GREEN;
             case FALSE -> Formatting.RED;
             case INFO -> Formatting.GRAY;
             case RAW -> Formatting.GOLD;
+            default -> Formatting.GRAY;
         };
         return Text.literal("[RevivalPlus] " + result.message()).styled(style -> style.withColor(color));
     }

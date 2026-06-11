@@ -6,11 +6,16 @@ public record DlcCommandResult(Status status, String message, String details) {
         FALSE,
         TRUE,
         INFO,
-        RAW
+        RAW,
+        INTERACTIVE_TIMER_ERROR
     }
 
     public static DlcCommandResult success(String message) {
         return new DlcCommandResult(Status.TRUE, message, null);
+    }
+
+    public static DlcCommandResult interactiveTimerError(String key) {
+        return new DlcCommandResult(Status.INTERACTIVE_TIMER_ERROR, key, null);
     }
 
     public static DlcCommandResult fail(String message) {

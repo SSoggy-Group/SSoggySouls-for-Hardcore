@@ -353,7 +353,7 @@ public final class DlcCommandRegistration {
         try {
             parsed = Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            sendResult(source, DlcCommandResult.fail("Timer value must be a number."));
+            sendResult(source, DlcCommandResult.interactiveTimerError(key));
             return 0;
         }
         setTimer(key, parsed);
@@ -433,11 +433,24 @@ public final class DlcCommandRegistration {
     }
 
     private static Component format(DlcCommandResult result) {
+        if (result.status() == DlcCommandResult.Status.INTERACTIVE_TIMER_ERROR) {
+            net.minecraft.network.chat.Component interactive = net.minecraft.network.chat.Component.literal("/revivalconfig timer " + result.message() + " ")
+                    .withStyle(style -> style.withColor(net.minecraft.ChatFormatting.GRAY)
+                            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + result.message() + " "))
+                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, net.minecraft.network.chat.Component.literal("Click to auto-fill this command").withStyle(net.minecraft.ChatFormatting.GRAY)))
+                    );
+            net.minecraft.network.chat.MutableComponent mutableBase = net.minecraft.network.chat.Component.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
+                    .withStyle(net.minecraft.ChatFormatting.RED);
+            mutableBase.append(interactive);
+            return mutableBase;
+        }
+
         ChatFormatting color = switch (result.status()) {
             case TRUE -> ChatFormatting.GREEN;
             case FALSE -> ChatFormatting.RED;
             case INFO -> ChatFormatting.GRAY;
             case RAW -> ChatFormatting.GOLD;
+            default -> ChatFormatting.GRAY;
         };
         return Component.literal("[RevivalPlus] " + result.message()).withStyle(color);
     }
