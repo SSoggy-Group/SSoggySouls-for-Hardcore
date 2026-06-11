@@ -44,7 +44,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
 
     public void executeFail(CommandSender cmdSender, RPCommandOutput cmdOutput) {
         cmdOutput.success = COMMANDOUTPUTENUM.FALSE;
-        cmdOutput.message = "Please use <click:suggest_command:'/trust '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/trust <action> [player]</gray></hover></click>";
+        cmdOutput.message = "Please use <click:suggest_command:'/trust '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/trust \\<action\\> [player]</gray></hover></click>";
         cmdSender.sendRichMessage(cmdOutput.toString());
     }
 
