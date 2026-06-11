@@ -33,7 +33,7 @@ public class GhostState extends PersistentState {
     private final Map<UUID, List<GlobalPos>> headBlockLocations = new HashMap<>();
 
     public void addHeadBlockLocation(UUID playerId, GlobalPos location) {
-        headBlockLocations.computeIfAbsent(playerId, key -> new ArrayList<>()).add(location);
+        headBlockLocations.computeIfAbsent(playerId, ignored -> new ArrayList<>()).add(location);
         markDirty();
     }
 
