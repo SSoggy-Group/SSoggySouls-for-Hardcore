@@ -115,10 +115,12 @@ public class BlockEvents implements Listener {
                 RPStatic.DEAD_STORAGE.removeValue(uuidString, KEY_DEATHHOLDER);
                 RPStatic.DEAD_HOLDERS.remove(uuid);
                 RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(location, now));
-                RPStatic.DEAD_STORAGE.setValue(uuidString, KEY_DEATHPOS,
+                boolean changed = RPStatic.DEAD_STORAGE.setValueIfChanged(uuidString, KEY_DEATHPOS,
                         location.getBlockX() + "$" + location.getBlockY() + "$" + location.getBlockZ() + "$" + world.getName());
-                RPStatic.DEAD_STORAGE.setValue(uuidString, KEY_DEATHTIME, now.toString());
-                RPStatic.DEAD_STORAGE.saveConfig();
+                changed |= RPStatic.DEAD_STORAGE.setValueIfChanged(uuidString, KEY_DEATHTIME, now.toString());
+                if (changed) {
+                    RPStatic.DEAD_STORAGE.saveConfig();
+                }
             }, 1L);
 
         }
