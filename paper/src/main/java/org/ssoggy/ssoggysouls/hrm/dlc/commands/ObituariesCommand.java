@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.Collections;
 import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
+import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 public class ObituariesCommand implements CommandExecutor, TabCompleter {
     private static final long DEFAULT_TRUSTED_OBITUARY_DELAY_MINUTES = 60L;
@@ -50,7 +51,10 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender cmdSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(cmdSender instanceof Player)) return true;
+        if (!(cmdSender instanceof Player)) {
+            cmdSender.sendMessage(MessageUtil.get("command-only-players"));
+            return true;
+        }
         Player player = (Player) cmdSender;
 
         RPCommandOutput result = new RPCommandOutput();

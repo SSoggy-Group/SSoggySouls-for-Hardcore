@@ -186,7 +186,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         OPTIONCONFIGENUM option = OPTIONCONFIGENUM.getEnumFromVal(opt1);
         if (option == null) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Please use /revivalconfig <structure|gamerule|timer|reload>";
+            result.message = "Please use <click:suggest_command:'/revivalconfig '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/revivalconfig <structure|gamerule|timer|reload></gray></hover></click>";
         } else {
             switch (option) {
                 case OPTIONCONFIGENUM.STRUCTURE -> handleStructure(args, result);

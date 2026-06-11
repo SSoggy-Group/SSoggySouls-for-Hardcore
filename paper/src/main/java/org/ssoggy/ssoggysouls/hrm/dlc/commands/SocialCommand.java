@@ -34,6 +34,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
+import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 import java.util.*;
 
@@ -43,7 +44,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
 
     public void executeFail(CommandSender cmdSender, RPCommandOutput cmdOutput) {
         cmdOutput.success = COMMANDOUTPUTENUM.FALSE;
-        cmdOutput.message = "Please use /trust <action> [player]";
+        cmdOutput.message = "Please use <click:suggest_command:'/trust '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/trust <action> [player]</gray></hover></click>";
         cmdSender.sendRichMessage(cmdOutput.toString());
     }
 
@@ -66,7 +67,10 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
 
         Entity player = cmdSender instanceof Entity entity ? entity : null;
         OfflinePlayer targetPlayer = failArgs ? null : cmdSender.getServer().getOfflinePlayer(args[1].toLowerCase(Locale.ROOT).trim());
-        if (!(player instanceof Player)) return true;
+        if (!(player instanceof Player)) {
+            cmdSender.sendMessage(MessageUtil.get("command-only-players"));
+            return true;
+        }
         UUID playerUUID = player.getUniqueId();
         if (targetPlayer == null) return true;
         UUID targetPlayerUUID = targetPlayer.getUniqueId();
