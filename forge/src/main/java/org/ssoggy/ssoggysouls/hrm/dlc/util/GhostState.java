@@ -31,7 +31,7 @@ public class GhostState extends SavedData {
 
     private final Map<UUID, BlockPos> deathLocations = new ConcurrentHashMap<>();
     private final Map<UUID, UUID> deathHolders = new ConcurrentHashMap<>();
-    private final Map<UUID, List<GlobalPos>> headBlockLocations = new HashMap<>();
+    private final Map<UUID, List<GlobalPos>> headBlockLocations = new ConcurrentHashMap<>();
 
     public BlockPos getDeathLocation(UUID ghostId) {
         return deathLocations.get(ghostId);
