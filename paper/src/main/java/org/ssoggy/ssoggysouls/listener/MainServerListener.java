@@ -1,6 +1,5 @@
 package org.ssoggy.ssoggysouls.listener;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -45,7 +44,7 @@ public class MainServerListener implements Listener {
     private final Set<UUID> pendingSurvivalRestore = ConcurrentHashMap.newKeySet();
     private final Set<UUID> expectedGamemodeChanges = ConcurrentHashMap.newKeySet();
     private final Set<UUID> hybridWindowUsed = ConcurrentHashMap.newKeySet();
-    private final Map<UUID, BukkitTask> hybridPendingTransfers = new HashMap<>();
+    private final Map<UUID, BukkitTask> hybridPendingTransfers = new ConcurrentHashMap<>();
     private final Map<UUID, Long> reviveCooldowns = new ConcurrentHashMap<>();
 
     public MainServerListener(SSoggySouls plugin, MainReviveCheckTask mainReviveCheckTask) {
