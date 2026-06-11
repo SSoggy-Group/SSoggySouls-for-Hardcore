@@ -308,7 +308,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             }
             case 3 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
-                    yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(LIST_EDIT_OPTIONS, args[2]);
+                    yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(OPTION_EDITS, args[2]);
                 } else if (Objects.equals(opt1, OPT_GAMERULE)) {
                     yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(LIST_BOOLEAN, args[2]);
                 }
