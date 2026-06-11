@@ -6,19 +6,31 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class HeadDropListener {
 
     private HeadDropListener() {
         // Utility class
     }
+
+    private static final Map<UUID, List<UUID>> headItemEntityUuids = new HashMap<>();
 
     public static void register() {
         // Head drop is now triggered from MainServerListener.handleDeathSync
@@ -50,6 +62,8 @@ public class HeadDropListener {
                 skull.setOwner(new ProfileComponent(player.getGameProfile()));
                 skull.markDirty();
             }
+
+            GhostState.getServerState(player.server).addHeadBlockLocation(player.getUuid(), GlobalPos.create(world.getRegistryKey(), headPos));
             SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getName().getString(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
             // Create player head item
@@ -70,6 +84,9 @@ public class HeadDropListener {
             }
 
             world.spawnEntity(itemEntity);
+            headItemEntityUuids
+                    .computeIfAbsent(player.getUuid(), k -> new ArrayList<>())
+                    .add(itemEntity.getUuid());
             SSoggySoulsMod.LOGGER.info("Dropped {}'s head at {} {} {}", player.getName().getString(), pos.getX(), pos.getY(), pos.getZ());
         }
     }
@@ -82,5 +99,50 @@ public class HeadDropListener {
             mutable.move(0, 1, 0);
         }
         return origin;
+    }
+
+    public static void removeDroppedHeads(UUID ownerUuid, MinecraftServer server) {
+        List<GlobalPos> knownLocations = GhostState.getServerState(server).consumeHeadBlockLocations(ownerUuid);
+        if (knownLocations != null) {
+            removeTrackedHeadBlocks(ownerUuid, server, knownLocations);
+        }
+        removeTrackedItemEntities(ownerUuid, server);
+    }
+
+    private static void removeTrackedHeadBlocks(UUID ownerUuid, MinecraftServer server, List<GlobalPos> knownLocations) {
+        for (GlobalPos pos : knownLocations) {
+            ServerWorld world = server.getWorld(pos.dimension());
+            if (world == null) continue;
+
+            BlockPos blockPos = pos.pos();
+            world.getChunk(blockPos);
+
+            if (world.getBlockState(blockPos).getBlock() == net.minecraft.block.Blocks.PLAYER_HEAD ||
+                world.getBlockState(blockPos).getBlock() == net.minecraft.block.Blocks.PLAYER_WALL_HEAD) {
+                net.minecraft.block.entity.BlockEntity be = world.getBlockEntity(blockPos);
+                if (be instanceof net.minecraft.block.entity.SkullBlockEntity skull) {
+                    ProfileComponent ownerProfile = skull.getOwner();
+                    if (ownerProfile != null && ownerProfile.id().isPresent() && ownerProfile.id().get().equals(ownerUuid)) {
+                        world.setBlockState(blockPos, net.minecraft.block.Blocks.AIR.getDefaultState());
+                    }
+                }
+            }
+        }
+    }
+
+    private static void removeTrackedItemEntities(UUID ownerUuid, MinecraftServer server) {
+        List<UUID> entityUuids = headItemEntityUuids.remove(ownerUuid);
+        if (entityUuids == null) {
+            return;
+        }
+        for (UUID entityUuid : entityUuids) {
+            for (ServerWorld world : server.getWorlds()) {
+                net.minecraft.entity.Entity entity = world.getEntity(entityUuid);
+                if (entity instanceof ItemEntity itemEntity) {
+                    itemEntity.discard();
+                    break;
+                }
+            }
+        }
     }
 }
