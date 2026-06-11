@@ -37,4 +37,4 @@
 **Action:** When validating time format arguments and catching invalid inputs, use `sendInteractiveUsage()` with a pre-filled suggestion (e.g. `/psadmin grace set <player> `) to create a helpful recovery path instead of a static frustration point.
 ## 2026-06-11 - [MiniMessage Literal Bracket Escaping]
 **Learning:** When converting static command usage strings (e.g., `/command <arg>`) to Kyori Adventure MiniMessage format for interactive error messages, literal opening angle brackets must be escaped (e.g., `\\<arg>`). Failing to do so causes the strict MiniMessage parser to treat them as invalid formatting tags, resulting in a `ComponentParseException` and crashing the command at runtime. Note that the closing angle bracket `>` does not need to be escaped, as escaping it with `\\>` will render a literal backslash.
-**Action:** Always verify and escape literal angle brackets when embedding command syntax strings inside MiniMessage tags.
+**Action:** Always verify and escape literal opening angle brackets when embedding command syntax strings inside MiniMessage tags.
