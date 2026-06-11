@@ -56,3 +56,11 @@
 ## 2024-06-10 - [Exception Swallowing in tick loops]
 **Learning:** When moving tick execution logic to abstract `common` modules that lack platform-specific loggers, simply swallowing exceptions silently is a critical anti-pattern that breaks observability.
 **Action:** Use functional interfaces like `Consumer<Exception> errorHandler` in the abstract tick method signature so platform-specific callers can inject their local logger securely without swallowing errors.
+
+## 2026-06-11 - [Replaced HashMap with ConcurrentHashMap to prevent ConcurrentModificationException]
+**Learning:** Using `HashMap` in asynchronous/event-listener environments (like `MainServerListener` or `GhostState` tracking active elements) can lead to `ConcurrentModificationException` when threads modify the maps at the same time. Since `GhostState` processes block placement (often async or tick-based) and `MainServerListener` manages scheduled cross-world actions, using basic `HashMap` is unsafe.
+**Action:** Always replace basic `HashMap` with `ConcurrentHashMap` in frequently-accessed listener classes tracking game state asynchronously.
+
+## 2026-06-11 - [Eliminated String Allocation inside loops in RPConfigCommand TabComplete]
+**Learning:** Returning a newly created `ArrayList` mapped from Enum string values inside `onTabComplete` creates unnecessary string allocations every time a user requests tab completions, generating GC pressure and latency spikes since tab complete gets triggered on every keystroke.
+**Action:** Cache the mapped Enum values in a `private static final List<String>` during class initialization, and then apply `TabCompleteUtil.filterStartsWith()` during `onTabComplete` to avoid redundant string mapping and collection building.

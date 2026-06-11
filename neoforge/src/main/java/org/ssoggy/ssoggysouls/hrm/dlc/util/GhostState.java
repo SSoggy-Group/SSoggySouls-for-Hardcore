@@ -15,7 +15,6 @@ import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,7 +30,7 @@ public class GhostState extends SavedData {
 
     private final Map<UUID, BlockPos> deathLocations = new ConcurrentHashMap<>();
     private final Map<UUID, UUID> deathHolders = new ConcurrentHashMap<>();
-    private final Map<UUID, List<GlobalPos>> headBlockLocations = new HashMap<>();
+    private final Map<UUID, List<GlobalPos>> headBlockLocations = new ConcurrentHashMap<>();
 
     public BlockPos getDeathLocation(UUID ghostId) {
         return deathLocations.get(ghostId);

@@ -7,7 +7,7 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,8 +16,8 @@ public class GhostState extends PersistentState {
     private static final String DEATH_LOCATIONS = "deathLocations";
     private static final String DEATH_HOLDERS = "deathHolders";
 
-    public final Map<UUID, BlockPos> deathLocations = new HashMap<>();
-    public final Map<UUID, UUID> deathHolders = new HashMap<>();
+    public final Map<UUID, BlockPos> deathLocations = new ConcurrentHashMap<>();
+    public final Map<UUID, UUID> deathHolders = new ConcurrentHashMap<>();
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
