@@ -350,7 +350,12 @@ public final class DlcCommandRegistration {
         try {
             parsed = Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            sendResult(source, DlcCommandResult.fail("Timer value must be a number."));
+            source.sendError(net.minecraft.text.Text.literal("Timer value must be a number. Click to fix: ")
+                    .append(net.minecraft.text.Text.literal("/revivalconfig timer " + key + " ")
+                            .styled(style -> style
+                                    .withColor(net.minecraft.util.Formatting.GRAY)
+                                    .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
+                                    .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to auto-fill this command").formatted(net.minecraft.util.Formatting.GRAY))))));
             return 0;
         }
         setTimer(key, parsed);
