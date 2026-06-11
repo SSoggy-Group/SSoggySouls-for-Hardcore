@@ -295,7 +295,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         String opt1 = cmdKeywords.getOrDefault(plOpt1.toLowerCase(), ""); // opt1 short for option 1
 
         return switch(args.length) {
-            case 1 -> org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(OPTION_CONFIGS, args[0]);
+            case 1 -> org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(LIST_CONFIG_OPTIONS, args[0]);
             case 2 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
                     yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(RPStatic.BLOCK_TAGS.keySet(), args[1]);
@@ -308,7 +308,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             }
             case 3 -> {
                 if (Objects.equals(opt1, OPT_STRUCTURE)) {
-                    yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(OPTION_EDITS, args[2]);
+                    yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(LIST_EDIT_OPTIONS, args[2]);
                 } else if (Objects.equals(opt1, OPT_GAMERULE)) {
                     yield org.ssoggy.ssoggysouls.util.TabCompleteUtil.filterStartsWith(LIST_BOOLEAN, args[2]);
                 }
