@@ -1,9 +1,12 @@
 package org.ssoggy.ssoggysouls.hrm;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -14,13 +17,22 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class HeadDropListener {
 
     private HeadDropListener() {
         // Utility class
     }
+
+    private static final Map<UUID, List<UUID>> headItemEntityUuids = new HashMap<>();
 
     public static void register() {
         // Head drop is triggered from ServerLifecycleListener
@@ -46,6 +58,8 @@ public class HeadDropListener {
                 skull.setOwner(new ResolvableProfile(player.getGameProfile()));
                 skull.setChanged();
             }
+
+            GhostState.getServerState(player.server).addHeadBlockLocation(player.getUUID(), GlobalPos.of(world.dimension(), headPos));
             SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getScoreboardName(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
             ItemStack head = new ItemStack(Items.PLAYER_HEAD);
@@ -64,6 +78,9 @@ public class HeadDropListener {
             }
 
             world.addFreshEntity(itemEntity);
+            headItemEntityUuids
+                    .computeIfAbsent(player.getUUID(), k -> new ArrayList<>())
+                    .add(itemEntity.getUUID());
             SSoggySoulsMod.LOGGER.info("Dropped {}'s head at {} {} {}", player.getScoreboardName(), pos.getX(), pos.getY(), pos.getZ());
         }
     }
@@ -75,5 +92,50 @@ public class HeadDropListener {
             mutable.move(0, 1, 0);
         }
         return origin;
+    }
+
+    public static void removeDroppedHeads(UUID ownerUuid, MinecraftServer server) {
+        List<GlobalPos> knownLocations = GhostState.getServerState(server).consumeHeadBlockLocations(ownerUuid);
+        if (knownLocations != null) {
+            removeTrackedHeadBlocks(ownerUuid, server, knownLocations);
+        }
+        removeTrackedItemEntities(ownerUuid, server);
+    }
+
+    private static void removeTrackedHeadBlocks(UUID ownerUuid, MinecraftServer server, List<GlobalPos> knownLocations) {
+        for (GlobalPos pos : knownLocations) {
+            ServerLevel world = server.getLevel(pos.dimension());
+            if (world == null) continue;
+
+            BlockPos blockPos = pos.pos();
+            world.getChunk(blockPos);
+
+            if (world.getBlockState(blockPos).getBlock() == Blocks.PLAYER_HEAD ||
+                world.getBlockState(blockPos).getBlock() == Blocks.PLAYER_WALL_HEAD) {
+                BlockEntity be = world.getBlockEntity(blockPos);
+                if (be instanceof SkullBlockEntity skull) {
+                    ResolvableProfile ownerProfile = skull.getOwnerProfile();
+                    if (ownerProfile != null && ownerProfile.id().isPresent() && ownerProfile.id().get().equals(ownerUuid)) {
+                        world.setBlock(blockPos, Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void removeTrackedItemEntities(UUID ownerUuid, MinecraftServer server) {
+        List<UUID> entityUuids = headItemEntityUuids.remove(ownerUuid);
+        if (entityUuids == null) {
+            return;
+        }
+        for (UUID entityUuid : entityUuids) {
+            for (ServerLevel world : server.getAllLevels()) {
+                net.minecraft.world.entity.Entity entity = world.getEntity(entityUuid);
+                if (entity instanceof ItemEntity itemEntity) {
+                    itemEntity.discard();
+                    break;
+                }
+            }
+        }
     }
 }
