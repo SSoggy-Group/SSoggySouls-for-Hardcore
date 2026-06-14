@@ -38,3 +38,6 @@
 ## 2026-06-11 - [Interactive CLI MiniMessage Errors]
 **Learning:** Legacy CLI systems often fail silently when commands are executed from the console but meant only for players. Hardcoded strings for error messages (like `cmdSender.sendMessage("This command can only be run by a player.")`) break consistency across localized servers. Furthermore, when users misconfigure arguments, standard static usage errors force complete retyping of the command, increasing friction.
 **Action:** When commands are restricted to players, always fallback to localized strings like `MessageUtil.get("command-only-players")`. For static usage errors (like `/trust <action> [player]`), leverage Kyori Adventure MiniMessage components (`<click:suggest_command:'...'><hover:show_text:'...'>`) to provide clickable auto-fill recovery paths.
+## 2024-06-14 - [Interactive Admin Logs]
+**Learning:** Server administrators frequently need to copy log entries for reports or sharing. Presenting these logs as plain text forces them to manually highlight and copy text from the chat window.
+**Action:** When displaying logs or records in chat via the Paper module, deserialize the legacy colored text into a Kyori Adventure `Component` and add `clickEvent(copyToClipboard(line))` and `hoverEvent` to make copying frictionless.

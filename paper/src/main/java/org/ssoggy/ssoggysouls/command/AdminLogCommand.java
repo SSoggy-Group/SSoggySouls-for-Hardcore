@@ -92,13 +92,24 @@ public class AdminLogCommand implements CommandExecutor {
         });
     }
 
-    private void displayLogEntries(CommandSender sender, Deque<String> lastLines) {
+    void displayLogEntries(CommandSender sender, Deque<String> lastLines) {
         sender.sendMessage(MessageUtil.colorize("&6&l══ Admin Action Log ══"));
         if (lastLines.isEmpty()) {
             sender.sendMessage(MessageUtil.colorize("&7(Empty)"));
         } else {
-            for (String line : lastLines) {
-                sender.sendMessage(MessageUtil.colorize(formatLogLine(line)));
+            if (sender instanceof org.bukkit.entity.Player player) {
+                for (String line : lastLines) {
+                    String coloredLine = MessageUtil.colorize(formatLogLine(line));
+                    net.kyori.adventure.text.Component message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
+                            .deserialize(coloredLine)
+                            .clickEvent(net.kyori.adventure.text.event.ClickEvent.copyToClipboard(line))
+                            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to copy log entry", net.kyori.adventure.text.format.NamedTextColor.GRAY)));
+                    player.sendMessage(message);
+                }
+            } else {
+                for (String line : lastLines) {
+                    sender.sendMessage(MessageUtil.colorize(formatLogLine(line)));
+                }
             }
         }
         sender.sendMessage(MessageUtil.colorize("&6&l══════════════════════"));
