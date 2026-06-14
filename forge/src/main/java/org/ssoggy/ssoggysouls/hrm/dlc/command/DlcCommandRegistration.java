@@ -273,7 +273,13 @@ public final class DlcCommandRegistration {
         dispatcher.register(Commands.literal("revivalconfig")
                 .requires(source -> source.hasPermission(2))
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.fail("Please use /revivalconfig <structure|gamerule|timer|reload>"));
+                    net.minecraft.network.chat.MutableComponent base = Component.literal("[RevivalPlus] Please use ").withStyle(ChatFormatting.RED);
+                    net.minecraft.network.chat.MutableComponent interactive = Component.literal("/revivalconfig <structure|gamerule|timer|reload>")
+                            .withStyle(style -> style.withColor(ChatFormatting.GRAY)
+                                    .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
+                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
+                            );
+                    context.getSource().sendSystemMessage(base.append(interactive));
                     return 0;
                 })
                 .then(Commands.argument(GROUP, StringArgumentType.word())
