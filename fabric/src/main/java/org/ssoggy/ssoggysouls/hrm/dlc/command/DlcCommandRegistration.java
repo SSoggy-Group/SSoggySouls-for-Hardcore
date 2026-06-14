@@ -270,7 +270,7 @@ public final class DlcCommandRegistration {
         dispatcher.register(CommandManager.literal("revivalconfig")
                 .requires(source -> source.hasPermissionLevel(2))
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.fail("Please use /revivalconfig <structure|gamerule|timer|reload>"));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use "));
                     return 0;
                 })
                 .then(CommandManager.argument(GROUP, StringArgumentType.word())
@@ -350,9 +350,9 @@ public final class DlcCommandRegistration {
         try {
             parsed = Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            Text base = Text.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
+            net.minecraft.text.MutableText base = Text.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
                     .formatted(Formatting.RED);
-            Text interactive = Text.literal("/revivalconfig timer " + key + " ")
+            net.minecraft.text.MutableText interactive = Text.literal("/revivalconfig timer " + key + " ")
                     .styled(style -> style.withColor(Formatting.GRAY)
                             .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
                             .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to auto-fill this command").formatted(Formatting.GRAY)))
@@ -441,11 +441,20 @@ public final class DlcCommandRegistration {
     }
 
     private static Text format(DlcCommandResult result) {
+        if (result.status() == DlcCommandResult.Status.MISSING_ARGS) {
+            net.minecraft.text.MutableText base = Text.literal("[RevivalPlus] " + result.message()).formatted(Formatting.RED);
+            net.minecraft.text.MutableText interactive = Text.literal("/revivalconfig <structure|gamerule|timer|reload>")
+                    .styled(style -> style.withColor(Formatting.GRAY)
+                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
+                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to auto-fill this command").formatted(Formatting.GRAY))));
+            return base.append(interactive);
+        }
         Formatting color = switch (result.status()) {
             case TRUE -> Formatting.GREEN;
             case FALSE -> Formatting.RED;
             case INFO -> Formatting.GRAY;
             case RAW -> Formatting.GOLD;
+            case MISSING_ARGS -> Formatting.RED;
         };
         return Text.literal("[RevivalPlus] " + result.message()).styled(style -> style.withColor(color));
     }
