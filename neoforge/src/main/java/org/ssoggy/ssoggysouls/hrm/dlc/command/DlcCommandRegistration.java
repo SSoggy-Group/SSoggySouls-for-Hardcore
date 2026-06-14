@@ -273,13 +273,7 @@ public final class DlcCommandRegistration {
         dispatcher.register(Commands.literal("revivalconfig")
                 .requires(source -> source.hasPermission(2))
                 .executes(context -> {
-                    net.minecraft.network.chat.MutableComponent base = Component.literal("[RevivalPlus] Please use ").withStyle(ChatFormatting.RED);
-                    net.minecraft.network.chat.MutableComponent interactive = Component.literal("/revivalconfig <structure|gamerule|timer|reload>")
-                            .withStyle(style -> style.withColor(ChatFormatting.GRAY)
-                                    .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
-                                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
-                            );
-                    context.getSource().sendSystemMessage(base.append(interactive));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use "));
                     return 0;
                 })
                 .then(Commands.argument(GROUP, StringArgumentType.word())
@@ -447,11 +441,21 @@ public final class DlcCommandRegistration {
     }
 
     private static Component format(DlcCommandResult result) {
+        if (result.status() == DlcCommandResult.Status.MISSING_ARGS) {
+            net.minecraft.network.chat.MutableComponent base = Component.literal("[RevivalPlus] " + result.message()).withStyle(ChatFormatting.RED);
+            net.minecraft.network.chat.MutableComponent interactive = Component.literal("/revivalconfig <structure|gamerule|timer|reload>")
+                    .withStyle(style -> style.withColor(ChatFormatting.GRAY)
+                            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
+                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
+                    );
+            return base.append(interactive);
+        }
         ChatFormatting color = switch (result.status()) {
             case TRUE -> ChatFormatting.GREEN;
             case FALSE -> ChatFormatting.RED;
             case INFO -> ChatFormatting.GRAY;
             case RAW -> ChatFormatting.GOLD;
+            case MISSING_ARGS -> ChatFormatting.RED;
         };
         return Component.literal("[RevivalPlus] " + result.message()).withStyle(color);
     }

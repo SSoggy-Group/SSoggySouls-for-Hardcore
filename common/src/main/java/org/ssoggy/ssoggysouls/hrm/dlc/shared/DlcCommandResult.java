@@ -6,7 +6,12 @@ public record DlcCommandResult(Status status, String message, String details) {
         FALSE,
         TRUE,
         INFO,
-        RAW
+        RAW,
+        MISSING_ARGS
+    }
+
+    public static DlcCommandResult missingArgs(String message) {
+        return new DlcCommandResult(Status.MISSING_ARGS, message, null);
     }
 
     public static DlcCommandResult success(String message) {
