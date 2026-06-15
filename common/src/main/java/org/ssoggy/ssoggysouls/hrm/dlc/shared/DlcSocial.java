@@ -12,16 +12,15 @@ public class DlcSocial {
         this.owner = owner;
     }
 
-    public void setRelationTo(UUID uuid, DlcRelation relation) {
+    public boolean setRelationTo(UUID uuid, DlcRelation relation) {
         if (relation == null) {
-            if (DlcServices.socialStorage().hasValue(owner.toString(), uuid.toString())) {
+            boolean changed = DlcServices.socialStorage().hasValue(owner.toString(), uuid.toString());
+            if (changed) {
                 DlcServices.socialStorage().removeValue(owner.toString(), uuid.toString());
-                DlcServices.socialStorage().save();
             }
+            return changed;
         } else {
-            if (DlcServices.socialStorage().setValueIfChanged(owner.toString(), uuid.toString(), relation.name())) {
-                DlcServices.socialStorage().save();
-            }
+            return DlcServices.socialStorage().setValueIfChanged(owner.toString(), uuid.toString(), relation.name());
         }
     }
 

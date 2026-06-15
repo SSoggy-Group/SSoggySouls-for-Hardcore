@@ -56,3 +56,7 @@
 ## 2024-06-10 - [Exception Swallowing in tick loops]
 **Learning:** When moving tick execution logic to abstract `common` modules that lack platform-specific loggers, simply swallowing exceptions silently is a critical anti-pattern that breaks observability.
 **Action:** Use functional interfaces like `Consumer<Exception> errorHandler` in the abstract tick method signature so platform-specific callers can inject their local logger securely without swallowing errors.
+
+## 2026-06-15 - [Batch synchronized disk I/O when updating multiple states]
+**Learning:** When executing a complex command or service action that updates multiple configurations or relationships simultaneously, calling a `save()` method inside the individual `set()` operations leads to multiple expensive synchronous disk I/O operations (e.g., saving twice during a single trust grant).
+**Action:** Change `set` methods to return a boolean indicating if the state actually changed. In the caller, accumulate these results (e.g., using `changed |= setMethod()`) and perform exactly one `save()` operation at the end if any change occurred.

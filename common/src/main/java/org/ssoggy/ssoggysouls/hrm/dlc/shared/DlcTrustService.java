@@ -56,11 +56,15 @@ public final class DlcTrustService {
             return new TrustResult(DlcCommandResult.info("You already blocked " + targetName), null);
         }
 
-        social.setRelationTo(targetUuid, DlcRelation.BLOCKED);
-        social.saveChanges();
+        boolean changed = social.setRelationTo(targetUuid, DlcRelation.BLOCKED);
+        if (changed) {
+            social.saveChanges();
+        }
         if (theirRelation.isTrustworthy()) {
-            targetSocial.setRelationTo(playerUuid, DlcRelation.UNTRUSTED);
-            targetSocial.saveChanges();
+            boolean targetChanged = targetSocial.setRelationTo(playerUuid, DlcRelation.UNTRUSTED);
+            if (targetChanged) {
+                targetSocial.saveChanges();
+            }
         }
         return new TrustResult(DlcCommandResult.success("You have blocked " + targetName), null);
     }
@@ -73,8 +77,10 @@ public final class DlcTrustService {
             return new TrustResult(DlcCommandResult.info("You have no relations with " + targetName), null);
         }
 
-        social.setRelationTo(targetUuid, null);
-        social.saveChanges();
+        boolean changed = social.setRelationTo(targetUuid, null);
+        if (changed) {
+            social.saveChanges();
+        }
         return new TrustResult(DlcCommandResult.success("You no longer trust " + targetName), null);
     }
 
@@ -94,18 +100,21 @@ public final class DlcTrustService {
             return new TrustResult(DlcCommandResult.fail("Player has you blocked."), null);
         }
         if (theirRelation == DlcRelation.TRUSTED) {
-            social.setRelationTo(targetUuid, DlcRelation.FRIENDS);
-            targetSocial.setRelationTo(playerUuid, DlcRelation.FRIENDS);
-            social.saveChanges();
-            targetSocial.saveChanges();
+            boolean changed = social.setRelationTo(targetUuid, DlcRelation.FRIENDS);
+            boolean targetChanged = targetSocial.setRelationTo(playerUuid, DlcRelation.FRIENDS);
+            if (changed || targetChanged) {
+                social.saveChanges();
+            }
             return new TrustResult(
                     DlcCommandResult.success("You are now friends with " + targetName),
                     "You are now friends with " + playerName
             );
         }
 
-        social.setRelationTo(targetUuid, DlcRelation.TRUSTED);
-        social.saveChanges();
+        boolean changed = social.setRelationTo(targetUuid, DlcRelation.TRUSTED);
+        if (changed) {
+            social.saveChanges();
+        }
         return new TrustResult(DlcCommandResult.success("You have now entrusted " + targetName), null);
     }
 
