@@ -101,12 +101,9 @@ public final class DlcTrustService {
         }
         if (theirRelation == DlcRelation.TRUSTED) {
             boolean changed = social.setRelationTo(targetUuid, DlcRelation.FRIENDS);
-            if (changed) {
-                social.saveChanges();
-            }
             boolean targetChanged = targetSocial.setRelationTo(playerUuid, DlcRelation.FRIENDS);
-            if (targetChanged) {
-                targetSocial.saveChanges();
+            if (changed || targetChanged) {
+                social.saveChanges();
             }
             return new TrustResult(
                     DlcCommandResult.success("You are now friends with " + targetName),
