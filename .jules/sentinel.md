@@ -19,3 +19,7 @@
 **Vulnerability:** In `CommandRegistration.java` across `fabric`, `forge`, and `neoforge` modules, if an `IOException` occurred when reading the admin log file, the exception message (which includes the absolute file path) was concatenated and sent directly to the command sender. This exposes internal server directory structures to users.
 **Learning:** Sending raw exception messages (like `e.getMessage()`) to user-facing outputs can leak sensitive information such as absolute file paths, database schemas, or infrastructure details.
 **Prevention:** Catch the exception, log the full exception details safely to the server console (using `LOGGER.error`), and send only a generic error message (e.g., "Error reading admin log. Check console for details.") back to the user.
+## 2024-03-20 - [Hardcoded Database Password Exposure]
+**Vulnerability:** MySQL configuration defaults with empty or default passwords in code/documentation.
+**Learning:** Default configurations can lead to insecure deployments if users don't change them.
+**Prevention:** Ensure configurations force explicit password setup or use environment variables, and avoid hardcoding fallback passwords.
