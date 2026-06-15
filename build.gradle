@@ -13,15 +13,36 @@ plugins {
     id "org.sonarqube" version "7.3.0.8198"
 }
 
+allprojects {
+    apply plugin: 'jacoco'
+    jacoco {
+        toolVersion = "0.8.12"
+    }
+}
+
 sonar {
     properties {
         property "sonar.projectKey", "SSoggy-Group_SSoggySouls-for-Hardcore"
         property "sonar.organization", "ssoggy-group"
+        property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml,${project.rootDir}/common/build/reports/jacoco/test/jacocoTestReport.xml,${project.rootDir}/fabric/build/reports/jacoco/test/jacocoTestReport.xml,${project.rootDir}/forge/build/reports/jacoco/test/jacocoTestReport.xml,${project.rootDir}/neoforge/build/reports/jacoco/test/jacocoTestReport.xml,${project.rootDir}/paper/build/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
 
 subprojects {
     apply plugin: 'java'
+
+    test {
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        dependsOn test
+        reports {
+            xml.required = true
+            csv.required = false
+            html.required = true
+        }
+    }
 
     configurations.all {
         resolutionStrategy {
