@@ -75,17 +75,19 @@ public class AdminLogCommand implements CommandExecutor {
 
     private void readAndDisplayLogAsync(CommandSender sender, File logFile, int linesToRead) {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            try {
-                Deque<String> lastLines = org.ssoggy.ssoggysouls.util.LogReaderUtil.readLastLines(logFile, linesToRead);
-                plugin.getServer().getScheduler().runTask(plugin, () ->
-                    displayLogEntries(sender, lastLines)
-                );
-            } catch (IOException e) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to read admin log", e);
-                plugin.getServer().getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MessageUtil.colorize("&cFailed to read admin logs. Check console."))
-                );
-            }
+            org.ssoggy.ssoggysouls.command.action.AdminLogAction.AdminLogResult result =
+                org.ssoggy.ssoggysouls.command.action.AdminLogAction.execute(logFile, linesToRead);
+
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                switch (result.type) {
+                    case FILE_NOT_FOUND -> sender.sendMessage(MessageUtil.colorize("&eNo admin log file found. No admin actions have been recorded yet."));
+                    case READ_ERROR -> {
+                        plugin.getLogger().log(Level.SEVERE, "Failed to read admin log");
+                        sender.sendMessage(MessageUtil.colorize("&cFailed to read admin logs. Check console."));
+                    }
+                    case SUCCESS -> displayLogEntries(sender, result.lines);
+                }
+            });
         });
     }
 

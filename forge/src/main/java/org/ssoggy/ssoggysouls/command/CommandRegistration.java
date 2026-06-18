@@ -233,33 +233,34 @@ public class CommandRegistration {
 
                 CompletableFuture.runAsync(() -> {
                     File logFile = net.minecraftforge.fml.loading.FMLPaths.CONFIGDIR.get().resolve(SSoggySoulsMod.MODID).resolve(AdminLogger.LOG_FILE_NAME).toFile();
-                    if (!logFile.exists()) {
-                        source.sendFailure(Component.literal("No admin logs found."));
-                        return;
-                    }
+                    org.ssoggy.ssoggysouls.command.action.AdminLogAction.AdminLogResult result =
+                        org.ssoggy.ssoggysouls.command.action.AdminLogAction.execute(logFile, 15);
 
-                    try {
-                        java.util.Deque<String> lines = org.ssoggy.ssoggysouls.util.LogReaderUtil.readLastLines(logFile, 15);
-                        source.getServer().execute(() -> {
-                            source.sendSystemMessage(Component.literal("--- Recent Admin Logs ---").withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD));
-                            if (source.isPlayer()) {
-                                for (String line : lines) {
-                                    source.sendSystemMessage(Component.literal(line).withStyle(s ->
-                                        s.withColor(net.minecraft.ChatFormatting.GRAY)
-                                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
-                                         .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy log entry").withStyle(net.minecraft.ChatFormatting.GRAY)))
-                                    ));
-                                }
-                            } else {
-                                for (String line : lines) {
-                                    source.sendSystemMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY));
+                    source.getServer().execute(() -> {
+                        switch (result.type) {
+                            case FILE_NOT_FOUND -> source.sendFailure(Component.literal("No admin logs found."));
+                            case READ_ERROR -> {
+                                SSoggySoulsMod.LOGGER.error("Error reading admin log");
+                                source.sendFailure(MessageUtil.get("admin-log-read-error"));
+                            }
+                            case SUCCESS -> {
+                                source.sendSystemMessage(Component.literal("--- Recent Admin Logs ---").withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD));
+                                if (source.isPlayer()) {
+                                    for (String line : result.lines) {
+                                        source.sendSystemMessage(Component.literal(line).withStyle(s ->
+                                            s.withColor(net.minecraft.ChatFormatting.GRAY)
+                                             .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
+                                             .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy log entry").withStyle(net.minecraft.ChatFormatting.GRAY)))
+                                        ));
+                                    }
+                                } else {
+                                    for (String line : result.lines) {
+                                        source.sendSystemMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY));
+                                    }
                                 }
                             }
-                        });
-                    } catch (java.io.IOException e) {
-                        SSoggySoulsMod.LOGGER.error("Error reading admin log", e);
-                        source.getServer().execute(() -> source.sendFailure(MessageUtil.get("admin-log-read-error")));
-                    }
+                        }
+                    });
                 });
 
                 return 1;
