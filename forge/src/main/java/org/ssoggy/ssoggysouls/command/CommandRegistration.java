@@ -25,7 +25,6 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.PermissionUtil;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
