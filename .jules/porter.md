@@ -4,3 +4,6 @@
 ## 2026-06-09 - Porting Head Tracking to Fabric/Forge
 **Learning:** When porting entity and block tracking logic from NeoForge to Fabric/Forge (specifically tracking dropped items and block locations via `GlobalPos`), we must adapt to loader-specific save formats and registries. In Fabric, `GlobalPos` dimension keys are serialized using `dimension.getValue().toString()` and resolved via `RegistryKey.of(RegistryKeys.WORLD, Identifier)`. In Forge/NeoForge, it uses `dimension.location().toString()` and `ResourceKey.create(Registries.DIMENSION, ResourceLocation)`.
 **Action:** When porting NBT serialization/deserialization logic involving custom dimensions or worlds across loaders, check the platform's specific registry identification classes (`Identifier` vs `ResourceLocation`) to ensure correct world reconstruction.
+## 2026-06-16 - Porting click-to-copy admin logs
+**Learning:** When porting click-to-copy log components from Paper to Fabric/Forge command responses, you must check if the source is a player (`isExecutedByPlayer()` in Fabric, `isPlayer()` in Forge/NeoForge) before attaching click/hover events to the components, while keeping the console output simple.
+**Action:** Always provide fallback simple text responses for console execution when returning rich interactive UI elements in command outputs.

@@ -223,8 +223,18 @@ public class CommandRegistration {
                         java.util.Deque<String> lines = readLastLines(logFile, 15);
                         source.getServer().execute(() -> {
                             source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
-                            for (String line : lines) {
-                                source.sendMessage(net.minecraft.text.Text.literal(line).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
+                            if (source.isExecutedByPlayer()) {
+                                for (String line : lines) {
+                                    source.sendMessage(net.minecraft.text.Text.literal(line).styled(s ->
+                                        s.withColor(net.minecraft.util.Formatting.GRAY)
+                                         .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
+                                         .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to copy log entry").styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))
+                                    ));
+                                }
+                            } else {
+                                for (String line : lines) {
+                                    source.sendMessage(net.minecraft.text.Text.literal(line).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
+                                }
                             }
                         });
                     } catch (java.io.IOException e) {

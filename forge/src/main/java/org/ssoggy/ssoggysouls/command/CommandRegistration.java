@@ -243,8 +243,18 @@ public class CommandRegistration {
                         java.util.Deque<String> lines = readLastLines(logFile, 15);
                         source.getServer().execute(() -> {
                             source.sendSystemMessage(Component.literal("--- Recent Admin Logs ---").withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD));
-                            for (String line : lines) {
-                                source.sendSystemMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY));
+                            if (source.isPlayer()) {
+                                for (String line : lines) {
+                                    source.sendSystemMessage(Component.literal(line).withStyle(s ->
+                                        s.withColor(net.minecraft.ChatFormatting.GRAY)
+                                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
+                                         .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy log entry").withStyle(net.minecraft.ChatFormatting.GRAY)))
+                                    ));
+                                }
+                            } else {
+                                for (String line : lines) {
+                                    source.sendSystemMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY));
+                                }
                             }
                         });
                     } catch (java.io.IOException e) {
