@@ -214,23 +214,34 @@ public class CommandRegistration {
 
                 CompletableFuture.runAsync(() -> {
                     java.io.File logFile = new java.io.File(plugin.getDataFolder(), AdminLogger.LOG_FILE_NAME);
-                    if (!logFile.exists()) {
-                        source.sendError(net.minecraft.text.Text.literal("No admin logs found."));
-                        return;
-                    }
+                    org.ssoggy.ssoggysouls.command.action.AdminLogAction.AdminLogResult result =
+                        org.ssoggy.ssoggysouls.command.action.AdminLogAction.execute(logFile, 15);
 
-                    try {
-                        java.util.Deque<String> lines = readLastLines(logFile, 15);
-                        source.getServer().execute(() -> {
-                            source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
-                            for (String line : lines) {
-                                source.sendMessage(net.minecraft.text.Text.literal(line).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
+                    source.getServer().execute(() -> {
+                        switch (result.type) {
+                            case FILE_NOT_FOUND -> source.sendError(net.minecraft.text.Text.literal("No admin logs found."));
+                            case READ_ERROR -> {
+                                SSoggySoulsMod.LOGGER.error("Error reading admin log");
+                                source.sendError(MessageUtil.get("admin-log-read-error"));
                             }
-                        });
-                    } catch (java.io.IOException e) {
-                        SSoggySoulsMod.LOGGER.error("Error reading admin log", e);
-                        source.getServer().execute(() -> source.sendError(MessageUtil.get("admin-log-read-error")));
-                    }
+                            case SUCCESS -> {
+                                source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
+                                if (source.isExecutedByPlayer()) {
+                                    for (String line : result.lines) {
+                                        source.sendMessage(net.minecraft.text.Text.literal(line).styled(s ->
+                                            s.withColor(net.minecraft.util.Formatting.GRAY)
+                                             .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
+                                             .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to copy log entry").styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))
+                                        ));
+                                    }
+                                } else {
+                                    for (String line : result.lines) {
+                                        source.sendMessage(net.minecraft.text.Text.literal(line).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
+                                    }
+                                }
+                            }
+                        }
+                    });
                 });
 
                 return 1;
@@ -238,17 +249,4 @@ public class CommandRegistration {
         );
     }
 
-    private static java.util.Deque<String> readLastLines(java.io.File file, int maxLines) throws java.io.IOException {
-        if (maxLines <= 0) return new java.util.ArrayDeque<>();
-        java.util.Deque<String> lastLines = new java.util.ArrayDeque<>(maxLines);
-        try (java.util.stream.Stream<String> lines = java.nio.file.Files.lines(file.toPath())) {
-            lines.forEach(line -> {
-                if (lastLines.size() >= maxLines) {
-                    lastLines.pollFirst();
-                }
-                lastLines.addLast(line);
-            });
-        }
-        return lastLines;
-    }
 }
