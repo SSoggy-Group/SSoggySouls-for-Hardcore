@@ -60,3 +60,7 @@
 ## 2026-06-15 - [Batch synchronized disk I/O when updating multiple states]
 **Learning:** When executing a complex command or service action that updates multiple configurations or relationships simultaneously, calling a `save()` method inside the individual `set()` operations leads to multiple expensive synchronous disk I/O operations (e.g., saving twice during a single trust grant).
 **Action:** Change `set` methods to return a boolean indicating if the state actually changed. In the caller, accumulate these results (e.g., using `changed |= setMethod()`) and perform exactly one `save()` operation at the end if any change occurred.
+
+## 2024-05-18 - [Eliminate redundant save when setting relations]
+**Learning:** Returning `void` from configuration setter functions in Bukkit commands causes redundant and synchronous I/O operations if the setting has not actually changed. Accumulating `boolean changed = function(...)` calls and wrapping the final save inside an `if(changed)` condition eliminates this problem.
+**Action:** Always return a boolean indicating whether a change actually occurred inside of config property setters. Then accumulate these into a single flag with `changed |= function(...)` in the caller.
