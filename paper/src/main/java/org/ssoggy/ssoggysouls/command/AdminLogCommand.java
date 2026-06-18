@@ -79,7 +79,7 @@ public class AdminLogCommand implements CommandExecutor {
     private void readAndDisplayLogAsync(CommandSender sender, File logFile, int linesToRead) {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                Deque<String> lastLines = readLastLines(logFile, linesToRead);
+                Deque<String> lastLines = org.ssoggy.ssoggysouls.util.LogReaderUtil.readLastLines(logFile, linesToRead);
                 plugin.getServer().getScheduler().runTask(plugin, () ->
                     displayLogEntries(sender, lastLines)
                 );
@@ -117,20 +117,4 @@ public class AdminLogCommand implements CommandExecutor {
         return "&7" + line;
     }
 
-    /**
-     * Reads only the last N lines from a file using a streaming approach.
-     * This avoids loading the entire file into memory, preventing OOM issues.
-     */
-    private Deque<String> readLastLines(File file, int maxLines) throws IOException {
-        Deque<String> lastLines = new ArrayDeque<>(maxLines);
-        try (Stream<String> lines = Files.lines(file.toPath())) {
-            lines.forEach(line -> {
-                if (lastLines.size() >= maxLines) {
-                    lastLines.pollFirst();
-                }
-                lastLines.addLast(line);
-            });
-        }
-        return lastLines;
-    }
 }

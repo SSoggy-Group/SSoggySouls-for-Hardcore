@@ -220,7 +220,7 @@ public class CommandRegistration {
                     }
 
                     try {
-                        java.util.Deque<String> lines = readLastLines(logFile, 15);
+                        java.util.Deque<String> lines = org.ssoggy.ssoggysouls.util.LogReaderUtil.readLastLines(logFile, 15);
                         source.getServer().execute(() -> {
                             source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
                             if (source.isExecutedByPlayer()) {
@@ -248,17 +248,4 @@ public class CommandRegistration {
         );
     }
 
-    private static java.util.Deque<String> readLastLines(java.io.File file, int maxLines) throws java.io.IOException {
-        if (maxLines <= 0) return new java.util.ArrayDeque<>();
-        java.util.Deque<String> lastLines = new java.util.ArrayDeque<>(maxLines);
-        try (java.util.stream.Stream<String> lines = java.nio.file.Files.lines(file.toPath())) {
-            lines.forEach(line -> {
-                if (lastLines.size() >= maxLines) {
-                    lastLines.pollFirst();
-                }
-                lastLines.addLast(line);
-            });
-        }
-        return lastLines;
-    }
 }
