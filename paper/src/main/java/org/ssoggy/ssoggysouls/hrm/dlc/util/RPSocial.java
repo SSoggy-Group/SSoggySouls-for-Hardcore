@@ -32,14 +32,15 @@ public class RPSocial {
         this.storedUuid = uuid;
     }
 
-    public void setRelationTo(UUID uuid, @Nullable SOCIALENUM relationship) {
+    public boolean setRelationTo(UUID uuid, @Nullable SOCIALENUM relationship) {
         if (relationship == null) { // technically could be another function but I enjoy flexible code
-            RPStatic.SOCIAL_STORAGE.removeValue(this.storedUuid.toString(), uuid.toString());
-            return;
+            boolean changed = RPStatic.SOCIAL_STORAGE.hasValue(this.storedUuid.toString(), uuid.toString());
+            if (changed) {
+                RPStatic.SOCIAL_STORAGE.removeValue(this.storedUuid.toString(), uuid.toString());
+            }
+            return changed;
         }
-        if (RPStatic.SOCIAL_STORAGE.setValueIfChanged(this.storedUuid.toString(), uuid.toString(), relationship.name())) {
-            RPStatic.SOCIAL_STORAGE.saveConfig();
-        }
+        return RPStatic.SOCIAL_STORAGE.setValueIfChanged(this.storedUuid.toString(), uuid.toString(), relationship.name());
     }
 
     private SOCIALENUM riskyOrDefault(String risky, SOCIALENUM def) {
