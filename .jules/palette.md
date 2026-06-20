@@ -41,3 +41,6 @@
 ## 2024-06-14 - [Interactive CLI Base Command Errors]
 **Learning:** When users execute base commands with complex sub-argument trees (like `/revivalconfig`) without any arguments, standard static usage errors force them to completely retype the command. In Brigadier, the `.executes()` block on the literal node itself is the perfect place to inject interactive recovery.
 **Action:** Replace static `sendResult(..., fail("..."))` calls in base command `.executes()` blocks with native interactive components (`MutableComponent.append()`) containing `.withClickEvent(SUGGEST_COMMAND)` to instantly provide users with a pre-filled chat bar.
+## 2024-05-10 - [Interactive CLI Log Copying]
+**Learning:** Displaying administrative logs or records in chat via the Paper module as legacy colored text makes it difficult for users to copy them.
+**Action:** When displaying administrative logs or records in chat, convert legacy colored text into a Kyori Adventure `Component` with a `clickEvent` (`copyToClipboard`) and a `hoverEvent` to allow frictionless copying of log entries without manual highlighting.
