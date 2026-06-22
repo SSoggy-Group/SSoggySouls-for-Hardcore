@@ -44,3 +44,6 @@
 ## 2024-05-10 - [Interactive CLI Log Copying]
 **Learning:** Displaying administrative logs or records in chat via the Paper module as legacy colored text makes it difficult for users to copy them.
 **Action:** When displaying administrative logs or records in chat, convert legacy colored text into a Kyori Adventure `Component` with a `clickEvent` (`copyToClipboard`) and a `hoverEvent` to allow frictionless copying of log entries without manual highlighting.
+## 2024-06-22 - [Interactive CLI UUID Copying]
+**Learning:** Displaying player UUIDs in chat as legacy colored text makes copying difficult for admins.
+**Action:** Convert legacy colored text into a Kyori Adventure Component with a clickEvent (copyToClipboard) and hoverEvent.
