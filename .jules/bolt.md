@@ -64,3 +64,6 @@
 ## 2024-05-18 - [Eliminate redundant save when setting relations]
 **Learning:** Returning `void` from configuration setter functions in Bukkit commands causes redundant and synchronous I/O operations if the setting has not actually changed. Accumulating `boolean changed = function(...)` calls and wrapping the final save inside an `if(changed)` condition eliminates this problem.
 **Action:** Always return a boolean indicating whether a change actually occurred inside of config property setters. Then accumulate these into a single flag with `changed |= function(...)` in the caller.
+## 2026-06-22 - [Batch synchronized disk I/O when updating multiple states]
+**Learning:** When updating multiple states or configurations simultaneously, avoid calling synchronous disk write methods (e.g., `save()`) inside the individual helper or setter methods if they are called in a loop or sequential block. In `SocialCommand`, an inner save inside `tryRelationship()` resulted in redundant disk writes because the caller also saved the state.
+**Action:** Design helpers and setters to return a boolean indicating if a change occurred, accumulate the results in the caller, and perform exactly one `save()` operation at the end to eliminate redundant disk I/O.
