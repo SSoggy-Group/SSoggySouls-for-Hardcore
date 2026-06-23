@@ -24,5 +24,5 @@ public enum TRUSTENUM {
     INFO,
     BLOCK;
 
-    public static final TRUSTENUM[] VALUES = values();
+    public static final java.util.List<TRUSTENUM> VALUES = java.util.List.of(values());
 }

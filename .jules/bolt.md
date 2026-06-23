@@ -67,3 +67,6 @@
 ## 2024-06-25 - [Cache `Enum.values()` to avoid redundant array allocations]
 **Learning:** In Java, calling `Enum.values()` defensively clones the underlying array on every invocation. When this is used inside frequently called utility methods (like `getEnumFromVal`) or frequently accessed data points like looping over stats or tab complete suggestions, it generates massive numbers of short-lived objects leading to significant Garbage Collection pressure and performance degradation.
 **Action:** Always pre-compute and cache the enum array using `public static final EnumType[] VALUES = values();` directly within the enum class, and then iterate or map over `.VALUES` instead of calling `.values()`.
+## 2024-06-25 - [Cache `Enum.values()` safely and with tests]
+**Learning:** Exposing a `public static final EnumType[] VALUES = values();` triggers a SonarCloud maintainability violation (java:S2386) because arrays are mutable, allowing elements to be overwritten. Additionally, adding static fields to Enums triggers '0.0% Coverage on New Code' failures in CI.
+**Action:** When caching `Enum.values()`, use an immutable list: `public static final java.util.List<EnumType> VALUES = java.util.List.of(values());`. Always write a basic unit test verifying the cached list size to satisfy SonarCloud coverage requirements.

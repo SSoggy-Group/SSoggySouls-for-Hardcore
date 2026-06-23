@@ -30,5 +30,5 @@ public enum STATSENUM {
     BOUNTY_PLACED,
     TOTAL_BOUNTY;
 
-    public static final STATSENUM[] VALUES = values();
+    public static final java.util.List<STATSENUM> VALUES = java.util.List.of(values());
 }

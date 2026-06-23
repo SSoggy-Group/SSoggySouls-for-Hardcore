@@ -25,7 +25,7 @@ public enum OPTIONEDITENUM {
     REMOVE("remove", (byte)1),
     RESET("reset", (byte)2);
 
-    public static final OPTIONEDITENUM[] VALUES = values();
+    public static final java.util.List<OPTIONEDITENUM> VALUES = java.util.List.of(values());
 
     public final String id;
     public final byte index;
