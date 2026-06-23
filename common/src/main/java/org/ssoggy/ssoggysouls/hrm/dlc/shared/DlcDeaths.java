@@ -64,28 +64,32 @@ public final class DlcDeaths {
 
         DlcStorage storage = DlcServices.deathStorage();
         String table = uuid.toString();
-        storage.setValue(table, KEY_USERNAME, username);
-        storage.setValue(table, KEY_WORLD, worldId);
-        storage.setValue(table, KEY_X, x);
-        storage.setValue(table, KEY_Y, y);
-        storage.setValue(table, KEY_Z, z);
-        storage.setValue(table, KEY_TIME, deathRecord.time().toString());
-        storage.removeValue(table, KEY_HOLDER);
-        storage.save();
+        boolean changed = storage.setValueIfChanged(table, KEY_USERNAME, username);
+        changed |= storage.setValueIfChanged(table, KEY_WORLD, worldId);
+        changed |= storage.setValueIfChanged(table, KEY_X, x);
+        changed |= storage.setValueIfChanged(table, KEY_Y, y);
+        changed |= storage.setValueIfChanged(table, KEY_Z, z);
+        changed |= storage.setValueIfChanged(table, KEY_TIME, deathRecord.time().toString());
+        changed |= storage.setValueIfChanged(table, KEY_HOLDER, null);
+        if (changed) {
+            storage.save();
+        }
     }
 
     public static void clearDeath(UUID uuid) {
         DEATHS.remove(uuid);
         DlcStorage storage = DlcServices.deathStorage();
         String table = uuid.toString();
-        storage.removeValue(table, KEY_USERNAME);
-        storage.removeValue(table, KEY_WORLD);
-        storage.removeValue(table, KEY_X);
-        storage.removeValue(table, KEY_Y);
-        storage.removeValue(table, KEY_Z);
-        storage.removeValue(table, KEY_TIME);
-        storage.removeValue(table, KEY_HOLDER);
-        storage.save();
+        boolean changed = storage.setValueIfChanged(table, KEY_USERNAME, null);
+        changed |= storage.setValueIfChanged(table, KEY_WORLD, null);
+        changed |= storage.setValueIfChanged(table, KEY_X, null);
+        changed |= storage.setValueIfChanged(table, KEY_Y, null);
+        changed |= storage.setValueIfChanged(table, KEY_Z, null);
+        changed |= storage.setValueIfChanged(table, KEY_TIME, null);
+        changed |= storage.setValueIfChanged(table, KEY_HOLDER, null);
+        if (changed) {
+            storage.save();
+        }
     }
 
     public static void setHolder(UUID deadUuid, UUID holderUuid) {
