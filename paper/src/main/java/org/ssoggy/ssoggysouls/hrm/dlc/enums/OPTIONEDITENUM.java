@@ -25,6 +25,8 @@ public enum OPTIONEDITENUM {
     REMOVE("remove", (byte)1),
     RESET("reset", (byte)2);
 
+    public static final java.util.List<OPTIONEDITENUM> VALUES = java.util.Collections.unmodifiableList(java.util.Arrays.asList(values()));
+
     public final String id;
     public final byte index;
 
@@ -34,7 +36,7 @@ public enum OPTIONEDITENUM {
     }
 
     public static byte getIndex(String opt) {
-        for (OPTIONEDITENUM n : OPTIONEDITENUM.values()) {
+        for (OPTIONEDITENUM n : VALUES) {
             if (Objects.equals(n.id, opt)) {
                 return n.index;
             }
@@ -43,7 +45,7 @@ public enum OPTIONEDITENUM {
     }
 
     public static OPTIONEDITENUM getEnumFromVal(String opt) {
-        for (OPTIONEDITENUM n : OPTIONEDITENUM.values()) {
+        for (OPTIONEDITENUM n : VALUES) {
             if (Objects.equals(n.id, opt)) {
                 return n;
             }
@@ -52,7 +54,7 @@ public enum OPTIONEDITENUM {
     }
 
     public static String getValue(byte i) {
-        for (OPTIONEDITENUM n : OPTIONEDITENUM.values()) {
+        for (OPTIONEDITENUM n : VALUES) {
             if (n.index == i) {
                 return n.id;
             }

@@ -44,8 +44,8 @@ import org.jspecify.annotations.Nullable;
 @SuppressWarnings("java:S3776") // Cognitive complexity is irreducible due to deeply nested sub-command switch logic
 public class RPConfigCommand implements CommandExecutor, TabCompleter {
     // ⚡ Bolt: Cache enum string mappings to avoid redundant O(N) array allocations on every tab complete
-    private static final List<String> OPTION_CONFIGS = Arrays.stream(OPTIONCONFIGENUM.values()).map(x -> x.id.toLowerCase(java.util.Locale.ROOT)).toList();
-    private static final List<String> OPTION_EDITS = Arrays.stream(OPTIONEDITENUM.values()).map(x -> x.id).toList();
+    private static final List<String> OPTION_CONFIGS = OPTIONCONFIGENUM.VALUES.stream().map(x -> x.id.toLowerCase(java.util.Locale.ROOT)).toList();
+    private static final List<String> OPTION_EDITS = OPTIONEDITENUM.VALUES.stream().map(x -> x.id).toList();
 
     private static final String OPT_STRUCTURE = "STRUCTURE";
     private static final String OPT_GAMERULE = "GAMERULE";

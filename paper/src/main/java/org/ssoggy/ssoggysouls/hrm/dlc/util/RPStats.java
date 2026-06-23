@@ -34,7 +34,7 @@ public class RPStats {
 
     public Map<STATSENUM, String> getAllStats() {
         Map<STATSENUM, String> map = new EnumMap<>(STATSENUM.class);
-        for (STATSENUM num : STATSENUM.values())
+        for (STATSENUM num : STATSENUM.VALUES)
             map.put(num, this.storage.getValue(this.table, num.name()));
         return map;
     }
