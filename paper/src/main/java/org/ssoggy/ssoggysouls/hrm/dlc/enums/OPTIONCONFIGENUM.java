@@ -26,6 +26,8 @@ public enum OPTIONCONFIGENUM {
     TIMER("TIMER", (byte)3),
     RELOAD("RELOAD", (byte)0);
 
+    public static final OPTIONCONFIGENUM[] VALUES = values();
+
     public final String id;
     public final byte index;
 
@@ -35,7 +37,7 @@ public enum OPTIONCONFIGENUM {
     }
 
     public static byte getIndex(String opt) {
-        for (OPTIONCONFIGENUM n : OPTIONCONFIGENUM.values()) {
+        for (OPTIONCONFIGENUM n : VALUES) {
             if (Objects.equals(n.id, opt)) {
                 return n.index;
             }
@@ -44,7 +46,7 @@ public enum OPTIONCONFIGENUM {
     }
 
     public static OPTIONCONFIGENUM getEnumFromVal(String opt) {
-        for (OPTIONCONFIGENUM n : OPTIONCONFIGENUM.values()) {
+        for (OPTIONCONFIGENUM n : VALUES) {
             if (Objects.equals(n.id, opt)) {
                 return n;
             }
@@ -53,7 +55,7 @@ public enum OPTIONCONFIGENUM {
     }
 
     public static String getValue(byte i) {
-        for (OPTIONCONFIGENUM n : OPTIONCONFIGENUM.values()) {
+        for (OPTIONCONFIGENUM n : VALUES) {
             if (n.index == i) {
                 return n.id;
             }

@@ -28,5 +28,7 @@ public enum STATSENUM {
     FRIEND_COUNT,
     BOUNTY_CLAIMED,
     BOUNTY_PLACED,
-    TOTAL_BOUNTY,
+    TOTAL_BOUNTY;
+
+    public static final STATSENUM[] VALUES = values();
 }

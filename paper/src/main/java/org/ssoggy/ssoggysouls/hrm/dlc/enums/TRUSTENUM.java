@@ -22,5 +22,7 @@ public enum TRUSTENUM {
     GRANT,
     REVOKE,
     INFO,
-    BLOCK
+    BLOCK;
+
+    public static final TRUSTENUM[] VALUES = values();
 }

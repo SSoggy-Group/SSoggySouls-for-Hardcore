@@ -40,7 +40,7 @@ import java.util.*;
 
 public class SocialCommand implements CommandExecutor, TabCompleter {
     // ⚡ Bolt: Cache enum string mappings to avoid redundant O(N) array allocations and .toLowerCase() calls on every tab complete
-    private static final List<String> TRUST_ACTIONS = Arrays.stream(TRUSTENUM.values()).map(x -> x.name().toLowerCase(Locale.ROOT)).toList();
+    private static final List<String> TRUST_ACTIONS = Arrays.stream(TRUSTENUM.VALUES).map(x -> x.name().toLowerCase(Locale.ROOT)).toList();
 
     public void executeFail(CommandSender cmdSender, RPCommandOutput cmdOutput) {
         cmdOutput.success = COMMANDOUTPUTENUM.FALSE;

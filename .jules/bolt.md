@@ -64,3 +64,6 @@
 ## 2024-05-18 - [Eliminate redundant save when setting relations]
 **Learning:** Returning `void` from configuration setter functions in Bukkit commands causes redundant and synchronous I/O operations if the setting has not actually changed. Accumulating `boolean changed = function(...)` calls and wrapping the final save inside an `if(changed)` condition eliminates this problem.
 **Action:** Always return a boolean indicating whether a change actually occurred inside of config property setters. Then accumulate these into a single flag with `changed |= function(...)` in the caller.
+## 2024-06-25 - [Cache `Enum.values()` to avoid redundant array allocations]
+**Learning:** In Java, calling `Enum.values()` defensively clones the underlying array on every invocation. When this is used inside frequently called utility methods (like `getEnumFromVal`) or frequently accessed data points like looping over stats or tab complete suggestions, it generates massive numbers of short-lived objects leading to significant Garbage Collection pressure and performance degradation.
+**Action:** Always pre-compute and cache the enum array using `public static final EnumType[] VALUES = values();` directly within the enum class, and then iterate or map over `.VALUES` instead of calling `.values()`.
