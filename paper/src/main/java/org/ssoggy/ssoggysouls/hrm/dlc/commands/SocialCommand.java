@@ -134,9 +134,10 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
                 default:
                     break;
             }
-            if (changed) {
-                ctx.social.saveChanges();
-            }
+            // ⚡ Bolt: Eliminated redundant synchronized disk I/O here.
+            // When updating states, avoid calling synchronized save methods inside the individual
+            // property setters. The caller in onCommand() already accumulates the result and
+            // performs exactly one save() operation, preventing a duplicate write.
             return true;
         } catch (IllegalArgumentException ignore) {
             return false;
