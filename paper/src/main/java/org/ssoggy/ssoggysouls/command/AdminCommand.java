@@ -586,7 +586,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessageUtil.colorize("&6&l══ Player Info ══"));
         sender.sendMessage(MessageUtil.colorize("&7Player: &f" + data.getUsername()));
 
-        if (sender instanceof org.bukkit.entity.Player player) {
+        if (sender instanceof Player player) {
             net.kyori.adventure.text.Component interactiveUuid = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize("&7UUID: &f" + data.getUuid())
                     .clickEvent(net.kyori.adventure.text.event.ClickEvent.copyToClipboard(data.getUuid().toString()))
                     .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to copy UUID", net.kyori.adventure.text.format.NamedTextColor.GRAY)));
