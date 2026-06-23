@@ -47,3 +47,6 @@
 ## 2026-06-21 - [Interactive CLI UUID Copying]
 **Learning:** Displaying player UUIDs in chat as static text in administrative commands makes copying them difficult and error-prone.
 **Action:** Replace static UUID text with Kyori Adventure Components (`copyToClipboard` and `showText`) to allow server administrators to click and copy the UUID instantly.
+## 2024-06-22 - [Interactive CLI UUID Copying]
+**Learning:** Displaying player UUIDs in chat as legacy colored text makes copying difficult for admins.
+**Action:** Convert legacy colored text into a Kyori Adventure Component with a clickEvent (copyToClipboard) and hoverEvent.

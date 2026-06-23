@@ -587,10 +587,12 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessageUtil.colorize("&7Player: &f" + data.getUsername()));
 
         if (sender instanceof Player player) {
-            net.kyori.adventure.text.Component interactiveUuid = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize("&7UUID: &f" + data.getUuid())
-                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.copyToClipboard(data.getUuid().toString()))
-                    .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to copy UUID", net.kyori.adventure.text.format.NamedTextColor.GRAY)));
-            player.sendMessage(interactiveUuid);
+            String uuidStr = data.getUuid().toString();
+            net.kyori.adventure.text.Component uuidComponent = net.kyori.adventure.text.Component.text("UUID: ", net.kyori.adventure.text.format.NamedTextColor.GRAY)
+                .append(net.kyori.adventure.text.Component.text(uuidStr, net.kyori.adventure.text.format.NamedTextColor.WHITE))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.copyToClipboard(uuidStr))
+                .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to copy UUID", net.kyori.adventure.text.format.NamedTextColor.GRAY)));
+            player.sendMessage(uuidComponent);
         } else {
             sender.sendMessage(MessageUtil.colorize("&7UUID: &f" + data.getUuid()));
         }

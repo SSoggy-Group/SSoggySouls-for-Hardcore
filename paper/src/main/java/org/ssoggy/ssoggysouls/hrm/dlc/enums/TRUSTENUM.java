@@ -22,5 +22,7 @@ public enum TRUSTENUM {
     GRANT,
     REVOKE,
     INFO,
-    BLOCK
+    BLOCK;
+
+    public static final java.util.List<TRUSTENUM> VALUES = java.util.Collections.unmodifiableList(java.util.Arrays.asList(values()));
 }
