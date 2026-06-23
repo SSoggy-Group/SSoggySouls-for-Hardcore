@@ -88,8 +88,7 @@ public enum GAMEMODESENUM {
                 yield storage.hasValue(gmTable, uuid) ? (byte)1 : (byte)0;
             }
             default -> {
-                if (storage.hasValue(gmTable, uuid)) {
-                    storage.setValue(gmTable, uuid, null);
+                if (storage.setValueIfChanged(gmTable, uuid, null)) {
                     storage.saveConfig();
                 }
                 yield player.getGameMode() == gm.fallback ? (byte) 1 : (byte) 0;
