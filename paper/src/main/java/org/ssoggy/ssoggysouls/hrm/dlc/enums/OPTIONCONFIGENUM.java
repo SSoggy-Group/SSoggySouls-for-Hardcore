@@ -26,7 +26,7 @@ public enum OPTIONCONFIGENUM {
     TIMER("TIMER", (byte)3),
     RELOAD("RELOAD", (byte)0);
 
-    public static final java.util.List<OPTIONCONFIGENUM> VALUES = java.util.List.of(values());
+    public static final java.util.List<OPTIONCONFIGENUM> VALUES = java.util.Collections.unmodifiableList(java.util.Arrays.asList(values()));
 
     public final String id;
     public final byte index;

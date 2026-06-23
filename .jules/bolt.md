@@ -70,3 +70,6 @@
 ## 2024-06-25 - [Cache `Enum.values()` safely and with tests]
 **Learning:** Exposing a `public static final EnumType[] VALUES = values();` triggers a SonarCloud maintainability violation (java:S2386) because arrays are mutable, allowing elements to be overwritten. Additionally, adding static fields to Enums triggers '0.0% Coverage on New Code' failures in CI.
 **Action:** When caching `Enum.values()`, use an immutable list: `public static final java.util.List<EnumType> VALUES = java.util.List.of(values());`. Always write a basic unit test verifying the cached list size to satisfy SonarCloud coverage requirements.
+## 2024-06-25 - [SonarCloud S2386 false positive with List.of]
+**Learning:** Even if `List.of()` is used (which returns an immutable list), SonarCloud's S2386 rule ("Mutable fields should not be public static") often fails to recognize it and still complains because the type is `List`, which exposes mutating interface methods.
+**Action:** When creating immutable collections to satisfy SonarCloud's S2386 rule for `public static final` fields, explicitly wrap the list with `Collections.unmodifiableList(...)` instead of or in addition to `List.of(...)` to guarantee the static analyzer acknowledges the immutability.

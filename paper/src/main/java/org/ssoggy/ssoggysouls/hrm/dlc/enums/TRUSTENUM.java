@@ -24,5 +24,5 @@ public enum TRUSTENUM {
     INFO,
     BLOCK;
 
-    public static final java.util.List<TRUSTENUM> VALUES = java.util.List.of(values());
+    public static final java.util.List<TRUSTENUM> VALUES = java.util.Collections.unmodifiableList(java.util.Arrays.asList(values()));
 }
