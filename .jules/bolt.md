@@ -73,3 +73,6 @@
 ## 2024-06-25 - [SonarCloud S2386 false positive with List.of]
 **Learning:** Even if `List.of()` is used (which returns an immutable list), SonarCloud's S2386 rule ("Mutable fields should not be public static") often fails to recognize it and still complains because the type is `List`, which exposes mutating interface methods.
 **Action:** When creating immutable collections to satisfy SonarCloud's S2386 rule for `public static final` fields, explicitly wrap the list with `Collections.unmodifiableList(...)` instead of or in addition to `List.of(...)` to guarantee the static analyzer acknowledges the immutability.
+## 2024-05-23 - Avoid Enum.values() hidden allocations in frequent code
+**Learning:** Calling .values() on an enum in Java defensively clones the underlying array every single time. This causes hidden O(N) array allocations, which is especially wasteful during frequent operations like tick loops or Bukkit tab completions.
+**Action:** Cache the values in a `public static final List<EnumType> VALUES = Collections.unmodifiableList(Arrays.asList(values()));` field. Always add a basic unit test asserting the list size to satisfy SonarCloud's 0.0% coverage requirement for the new static initialization.
