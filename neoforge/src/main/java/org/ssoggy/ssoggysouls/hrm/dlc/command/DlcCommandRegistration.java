@@ -73,7 +73,7 @@ public final class DlcCommandRegistration {
     private static final String C_REVIVE_RESIST = "revive-resistance-ticks";
     private static final String C_REVIVE_GLOW = "revive-glowing-ticks";
 
-    private static final List<String> TRUST_ACTIONS = Arrays.stream(DlcTrustAction.values())
+    private static final List<String> TRUST_ACTIONS = DlcTrustAction.VALUES.stream()
             .map(action -> action.name().toLowerCase(Locale.ROOT))
             .toList();
     private static final List<String> CONFIG_GROUPS = List.of(C_STRUCTURE, C_GAMERULE, C_TIMER, C_RELOAD);
