@@ -13,7 +13,7 @@ public class DlcStats {
 
     public Map<DlcStat, String> getAllStats() {
         Map<DlcStat, String> map = new EnumMap<>(DlcStat.class);
-        for (DlcStat stat : DlcStat.values()) {
+        for (DlcStat stat : DlcStat.VALUES) {
             map.put(stat, getStat(stat));
         }
         return map;

@@ -9,6 +9,8 @@ public enum DlcTrustAction {
     INFO,
     BLOCK;
 
+    public static final java.util.List<DlcTrustAction> VALUES = java.util.Collections.unmodifiableList(java.util.Arrays.asList(values()));
+
     public static Optional<DlcTrustAction> fromInput(String input) {
         if (input == null || input.isBlank()) {
             return Optional.empty();
