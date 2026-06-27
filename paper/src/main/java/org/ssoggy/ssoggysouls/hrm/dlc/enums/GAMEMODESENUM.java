@@ -40,6 +40,7 @@ public enum GAMEMODESENUM {
     private static final Map<Integer, GAMEMODESENUM> BY_ID = Maps.newHashMap(); // Required: enum-level lookup + persistent storage state
     private static final String gmTable; // NOSONAR: initialized in static block
     private static final RPStorage storage;
+    private static final java.util.Map<java.util.UUID, Boolean> GHOST_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
 
 
     GAMEMODESENUM(final int id, GameMode def) {
@@ -54,7 +55,7 @@ public enum GAMEMODESENUM {
         return gm.fallback;
     }
     public static GAMEMODESENUM getPlayerGameMode(Player player) {
-        if (storage.hasValue(gmTable, player.getUniqueId().toString())) { // slow
+        if (GHOST_CACHE.computeIfAbsent(player.getUniqueId(), k -> storage.hasValue(gmTable, k.toString()))) { // cached to avoid slow synchronized YAML I/O
             return GAMEMODESENUM.GHOSTMODE;
         }
         return gmCast(player.getGameMode());
@@ -82,12 +83,14 @@ public enum GAMEMODESENUM {
         String uuid = player.getUniqueId().toString();
         return switch(gm) {
             case GHOSTMODE -> {
+                GHOST_CACHE.put(player.getUniqueId(), true);
                 if (storage.setValueIfChanged(gmTable, uuid, player.getName())) {
                     storage.saveConfig();
                 }
                 yield storage.hasValue(gmTable, uuid) ? (byte)1 : (byte)0;
             }
             default -> {
+                GHOST_CACHE.put(player.getUniqueId(), false);
                 if (storage.hasValue(gmTable, uuid)) {
                     storage.setValue(gmTable, uuid, null);
                     storage.saveConfig();
