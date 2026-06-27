@@ -76,3 +76,6 @@
 ## 2024-05-23 - Avoid Enum.values() hidden allocations in frequent code
 **Learning:** Calling .values() on an enum in Java defensively clones the underlying array every single time. This causes hidden O(N) array allocations, which is especially wasteful during frequent operations like tick loops or Bukkit tab completions.
 **Action:** Cache the values in a `public static final List<EnumType> VALUES = Collections.unmodifiableList(Arrays.asList(values()));` field. Always add a basic unit test asserting the list size to satisfy SonarCloud's 0.0% coverage requirement for the new static initialization.
+## 2024-05-24 - [Cache ghost mode state to avoid slow synchronized YAML I/O]
+**Learning:** Frequent calls to `storage.hasValue()` inside `getPlayerGameMode` create synchronized blocking during frequent game mode checks, slowing down operations.
+**Action:** Cache the ghost state of players in a `ConcurrentHashMap` upon entering/exiting ghost mode to avoid slow file I/O operations and blocking reads.
