@@ -136,7 +136,8 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                         break;
                     }
 
-                    whoSet = Stream.concat(RPStatic.BLOCK_TAGS.getOrDefault(where, Set.of()).stream(), Stream.of(whoMat)).collect(Collectors.toSet());
+                    whoSet = new java.util.HashSet<>(RPStatic.BLOCK_TAGS.getOrDefault(where, Set.of()));
+                    whoSet.add(whoMat);
                     result.success = COMMANDOUTPUTENUM.valueOf(RPConfig.setBlockTag(where, whoSet));
                     whoName = whoMat.name();
                     result.message = "Added " + whoName + " to " + where;
@@ -225,7 +226,11 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
-                result.message = "Contents inside of <aqua>" + args[1] + AQUA_LABEL_SUFFIX + RPStatic.BLOCK_TAGS.getOrDefault(args[1], Set.of()).stream().map(Enum::name).toList();
+                java.util.List<String> names = new java.util.ArrayList<>();
+                for (Material mat : RPStatic.BLOCK_TAGS.getOrDefault(args[1], Set.of())) {
+                    names.add(mat.name());
+                }
+                result.message = "Contents inside of <aqua>" + args[1] + AQUA_LABEL_SUFFIX + names;
                 break;
             case 3:
                 if (!Objects.equals(args[2], "reset")) {

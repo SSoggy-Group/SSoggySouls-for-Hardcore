@@ -76,3 +76,6 @@
 ## 2024-05-23 - Avoid Enum.values() hidden allocations in frequent code
 **Learning:** Calling .values() on an enum in Java defensively clones the underlying array every single time. This causes hidden O(N) array allocations, which is especially wasteful during frequent operations like tick loops or Bukkit tab completions.
 **Action:** Cache the values in a `public static final List<EnumType> VALUES = Collections.unmodifiableList(Arrays.asList(values()));` field. Always add a basic unit test asserting the list size to satisfy SonarCloud's 0.0% coverage requirement for the new static initialization.
+## 2026-06-15 - [Avoid Stream.concat and map in config commands]
+**Learning:** Using `Stream.concat(set.stream(), Stream.of(value)).collect(Collectors.toSet())` or `.stream().map(Enum::name).toList()` in Bukkit command feedback and configuration setters creates unnecessary stream object wrappers and lambdas during command execution, increasing GC pressure for operations that can be done with simple list iteration or HashSet adds.
+**Action:** Use direct collection manipulation (`new HashSet<>(existing); set.add(value)`) and manual for-loops for mapping values to strings.
