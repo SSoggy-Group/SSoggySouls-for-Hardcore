@@ -226,8 +226,9 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
-                java.util.List<String> names = new java.util.ArrayList<>();
-                for (Material mat : RPStatic.BLOCK_TAGS.getOrDefault(args[1], Set.of())) {
+                Set<Material> materials = RPStatic.BLOCK_TAGS.getOrDefault(args[1], Set.of());
+                java.util.List<String> names = new java.util.ArrayList<>(materials.size());
+                for (Material mat : materials) {
                     names.add(mat.name());
                 }
                 result.message = "Contents inside of <aqua>" + args[1] + AQUA_LABEL_SUFFIX + names;
