@@ -27,6 +27,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public enum GAMEMODESENUM {
     CREATIVE(1, GameMode.CREATIVE),
@@ -41,6 +44,8 @@ public enum GAMEMODESENUM {
     private static final String gmTable; // NOSONAR: initialized in static block
     private static final RPStorage storage;
 
+    // ⚡ Bolt: Cache ghost mode states in memory to prevent synchronized disk lookups during high-frequency events (like PlayerMoveEvent)
+    private static final Set<UUID> GHOST_CACHE = ConcurrentHashMap.newKeySet();
 
     GAMEMODESENUM(final int id, GameMode def) {
         this.id = id;
@@ -54,7 +59,7 @@ public enum GAMEMODESENUM {
         return gm.fallback;
     }
     public static GAMEMODESENUM getPlayerGameMode(Player player) {
-        if (storage.hasValue(gmTable, player.getUniqueId().toString())) { // slow
+        if (GHOST_CACHE.contains(player.getUniqueId())) {
             return GAMEMODESENUM.GHOSTMODE;
         }
         return gmCast(player.getGameMode());
@@ -82,12 +87,14 @@ public enum GAMEMODESENUM {
         String uuid = player.getUniqueId().toString();
         return switch(gm) {
             case GHOSTMODE -> {
+                GHOST_CACHE.add(player.getUniqueId());
                 if (storage.setValueIfChanged(gmTable, uuid, player.getName())) {
                     storage.saveConfig();
                 }
                 yield storage.hasValue(gmTable, uuid) ? (byte)1 : (byte)0;
             }
             default -> {
+                GHOST_CACHE.remove(player.getUniqueId());
                 if (storage.hasValue(gmTable, uuid)) {
                     storage.setValue(gmTable, uuid, null);
                     storage.saveConfig();
@@ -134,5 +141,25 @@ public enum GAMEMODESENUM {
         for (GAMEMODESENUM mode : values()) {
             BY_ID.put(mode.id, mode);
         }
+        try {
+            Map<String, Object> tableData = storage.getTable(gmTable);
+            for (String key : tableData.keySet()) {
+                addGhostToCacheSafely(key);
+            }
+        } catch (NullPointerException ignored) {
+            // Table doesn't exist yet
+        }
+    }
+
+    static void addGhostToCacheSafely(String key) {
+        try {
+            GHOST_CACHE.add(UUID.fromString(key));
+        } catch (IllegalArgumentException ignored) {
+            RPStatic.LOGGER.warning("Invalid UUID format in ghost cache config: " + key);
+        }
+    }
+
+    static Set<UUID> getGhostCache() {
+        return GHOST_CACHE;
     }
 }
