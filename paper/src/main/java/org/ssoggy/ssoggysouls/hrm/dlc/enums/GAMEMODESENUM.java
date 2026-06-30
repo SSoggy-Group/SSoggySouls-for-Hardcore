@@ -144,12 +144,18 @@ public enum GAMEMODESENUM {
         try {
             Map<String, Object> tableData = storage.getTable(gmTable);
             for (String key : tableData.keySet()) {
-                try {
-                    GHOST_CACHE.add(UUID.fromString(key));
-                } catch (IllegalArgumentException ignored) {}
+                addGhostToCacheSafely(key);
             }
         } catch (NullPointerException ignored) {
             // Table doesn't exist yet
+        }
+    }
+
+    private static void addGhostToCacheSafely(String key) {
+        try {
+            GHOST_CACHE.add(UUID.fromString(key));
+        } catch (IllegalArgumentException ignored) {
+            RPStatic.LOGGER.warning("Invalid UUID format in ghost cache config: " + key);
         }
     }
 }
