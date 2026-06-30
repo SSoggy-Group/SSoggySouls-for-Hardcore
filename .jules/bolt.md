@@ -79,3 +79,6 @@
 ## 2026-06-15 - [Avoid Stream.concat and map in config commands]
 **Learning:** Using `Stream.concat(set.stream(), Stream.of(value)).collect(Collectors.toSet())` or `.stream().map(Enum::name).toList()` in Bukkit command feedback and configuration setters creates unnecessary stream object wrappers and lambdas during command execution, increasing GC pressure for operations that can be done with simple list iteration or HashSet adds.
 **Action:** Use direct collection manipulation (`new HashSet<>(existing); set.add(value)`) and manual for-loops for mapping values to strings.
+## 2024-06-30 - [Eliminated synchronized disk I/O in PlayerGameMode getter]
+**Learning:** When checking configuration states (like YAML checks via `hasValue()`) frequently within high-frequency event listeners (e.g., `PlayerMoveEvent`, `PlayerInteractEvent`), avoid synchronized or disk-backed lookups. The `GAMEMODESENUM.getPlayerGameMode(Player)` method was executing a synchronized `storage.hasValue()` check on every call, creating a severe performance bottleneck during player movement.
+**Action:** Cache these boolean/state checks in memory using thread-safe collections like `ConcurrentHashMap` to eliminate blocking reads. Ensure the cache is initialized properly and updated alongside the disk state.
