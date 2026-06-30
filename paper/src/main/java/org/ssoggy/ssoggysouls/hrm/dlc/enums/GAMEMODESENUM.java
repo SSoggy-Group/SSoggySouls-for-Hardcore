@@ -151,11 +151,15 @@ public enum GAMEMODESENUM {
         }
     }
 
-    private static void addGhostToCacheSafely(String key) {
+    static void addGhostToCacheSafely(String key) {
         try {
             GHOST_CACHE.add(UUID.fromString(key));
         } catch (IllegalArgumentException ignored) {
             RPStatic.LOGGER.warning("Invalid UUID format in ghost cache config: " + key);
         }
+    }
+
+    static Set<UUID> getGhostCache() {
+        return GHOST_CACHE;
     }
 }
