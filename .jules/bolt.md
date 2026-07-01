@@ -79,3 +79,7 @@
 ## 2026-06-15 - [Avoid Stream.concat and map in config commands]
 **Learning:** Using `Stream.concat(set.stream(), Stream.of(value)).collect(Collectors.toSet())` or `.stream().map(Enum::name).toList()` in Bukkit command feedback and configuration setters creates unnecessary stream object wrappers and lambdas during command execution, increasing GC pressure for operations that can be done with simple list iteration or HashSet adds.
 **Action:** Use direct collection manipulation (`new HashSet<>(existing); set.add(value)`) and manual for-loops for mapping values to strings.
+
+## 2026-06-21 - [Optimize High-Frequency Configuration Checks with Concurrent Sets]
+**Learning:** Checking configuration state synchronously (e.g., `storage.hasValue(...)`) inside high-frequency event listeners like Bukkit's `PlayerMoveEvent` causes severe performance bottlenecks because it performs blocking string lookups.
+**Action:** When maintaining boolean/presence state needed frequently (like whether a player is in Ghost Mode), cache the identifiers (UUIDs) in a memory structure like `Set<UUID> GHOST_PLAYERS = ConcurrentHashMap.newKeySet()`. Populate the cache on server startup from persistent storage and keep it synchronized when the state is modified (e.g., in `setPlayerGameMode`), then check `GHOST_PLAYERS.contains(...)` in hot loops instead of reading the config directly.
