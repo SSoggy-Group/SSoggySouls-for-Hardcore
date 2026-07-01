@@ -40,6 +40,7 @@ public enum GAMEMODESENUM {
     private static final Map<Integer, GAMEMODESENUM> BY_ID = Maps.newHashMap(); // Required: enum-level lookup + persistent storage state
     private static final String gmTable; // NOSONAR: initialized in static block
     private static final RPStorage storage;
+    private static final java.util.Set<java.util.UUID> GHOST_PLAYERS = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
 
     GAMEMODESENUM(final int id, GameMode def) {
@@ -54,7 +55,7 @@ public enum GAMEMODESENUM {
         return gm.fallback;
     }
     public static GAMEMODESENUM getPlayerGameMode(Player player) {
-        if (storage.hasValue(gmTable, player.getUniqueId().toString())) { // slow
+        if (GHOST_PLAYERS.contains(player.getUniqueId())) {
             return GAMEMODESENUM.GHOSTMODE;
         }
         return gmCast(player.getGameMode());
@@ -79,17 +80,20 @@ public enum GAMEMODESENUM {
             player.setViewDistance(player.getWorld().getViewDistance());
         }
 
-        String uuid = player.getUniqueId().toString();
+        java.util.UUID playerUuid = player.getUniqueId();
+        String uuidStr = playerUuid.toString();
         return switch(gm) {
             case GHOSTMODE -> {
-                if (storage.setValueIfChanged(gmTable, uuid, player.getName())) {
+                GHOST_PLAYERS.add(playerUuid);
+                if (storage.setValueIfChanged(gmTable, uuidStr, player.getName())) {
                     storage.saveConfig();
                 }
-                yield storage.hasValue(gmTable, uuid) ? (byte)1 : (byte)0;
+                yield (byte) 1;
             }
             default -> {
-                if (storage.hasValue(gmTable, uuid)) {
-                    storage.setValue(gmTable, uuid, null);
+                GHOST_PLAYERS.remove(playerUuid);
+                if (storage.hasValue(gmTable, uuidStr)) {
+                    storage.setValue(gmTable, uuidStr, null);
                     storage.saveConfig();
                 }
                 yield player.getGameMode() == gm.fallback ? (byte) 1 : (byte) 0;
@@ -133,6 +137,18 @@ public enum GAMEMODESENUM {
         storage = new RPStorage(RPStatic.CLIENT, gmTable + ".yml");
         for (GAMEMODESENUM mode : values()) {
             BY_ID.put(mode.id, mode);
+        }
+        try {
+            Map<String, Object> table = storage.getTable(gmTable);
+            if (table != null) {
+                for (String key : table.keySet()) {
+                    try {
+                        GHOST_PLAYERS.add(java.util.UUID.fromString(key));
+                    } catch (IllegalArgumentException ignored) {}
+                }
+            }
+        } catch (Exception ignored) {
+            // section might not exist yet
         }
     }
 }
