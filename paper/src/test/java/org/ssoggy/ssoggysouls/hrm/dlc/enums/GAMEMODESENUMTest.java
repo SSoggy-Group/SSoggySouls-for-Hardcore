@@ -1,13 +1,12 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.enums;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,7 +22,10 @@ class GAMEMODESENUMTest {
         // Trigger class loading to execute static block
         GAMEMODESENUM gm = GAMEMODESENUM.SURVIVAL;
         assertNotNull(gm);
-        // By running this in the test context, the static initializer block is executed,
-        // covering lines 145-147 where it attempts to catch Exceptions during UUID parsing from config.
+
+        // Let's actually test some functionality so coverage hits the lines
+        // We know GHOSTMODE has ID 4
+        assertEquals(4, GAMEMODESENUM.GHOSTMODE.getGameModeID());
+        assertEquals(org.bukkit.GameMode.ADVENTURE, GAMEMODESENUM.GHOSTMODE.getGameModeFallback());
     }
 }

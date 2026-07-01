@@ -144,7 +144,9 @@ public enum GAMEMODESENUM {
                 for (String key : table.keySet()) {
                     try {
                         GHOST_PLAYERS.add(java.util.UUID.fromString(key));
-                    } catch (IllegalArgumentException ignored) {}
+                    } catch (IllegalArgumentException ignored) {
+                        // ignored: not a valid UUID string in config
+                    }
                 }
             }
         } catch (Exception ignored) {
