@@ -65,16 +65,16 @@ public final class PermissionUtil {
      */
     public static void sendSecurityBlockMessage(CommandSender sender) {
         sender.sendMessage(MessageUtil.colorize("&cSecurity Error: On the Limbo server, OP status cannot be used to execute this command."));
-        if (sender instanceof org.bukkit.entity.Player player) {
+        if (sender instanceof Player player) {
             net.kyori.adventure.text.Component message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize("&7Either ")
                     .append(net.kyori.adventure.text.Component.text("/deop", net.kyori.adventure.text.format.NamedTextColor.YELLOW)
                             .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand("/deop " + player.getName()))
                             .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to prepare /deop", net.kyori.adventure.text.format.NamedTextColor.GRAY))))
-                    .append(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize("&7 yourself on Limbo, ask an administrator to add you to the trusted admins list, or have them grant you the bypass permission "))
+                    .append(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize("&7 yourself on Limbo, ask an administrator to add you to the trusted admins list, or have them grant you the bypass permission &e("))
                     .append(net.kyori.adventure.text.Component.text("ssoggysouls.bypass-limbo-op-security", net.kyori.adventure.text.format.NamedTextColor.YELLOW)
                             .clickEvent(net.kyori.adventure.text.event.ClickEvent.copyToClipboard("ssoggysouls.bypass-limbo-op-security"))
                             .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to copy permission node", net.kyori.adventure.text.format.NamedTextColor.GRAY))))
-                    .append(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize("&7."));
+                    .append(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize("&e)&7."));
             player.sendMessage(message);
         } else {
             sender.sendMessage(MessageUtil.colorize("&7Either /deop yourself on Limbo, ask an administrator to add you to the trusted admins list, or have them grant you the bypass permission &e(ssoggysouls.bypass-limbo-op-security)&7."));
