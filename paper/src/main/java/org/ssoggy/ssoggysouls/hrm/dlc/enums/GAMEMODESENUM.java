@@ -93,7 +93,7 @@ public enum GAMEMODESENUM {
             default -> {
                 GHOST_PLAYERS.remove(playerUuid);
                 if (storage.hasValue(gmTable, uuidStr)) {
-                    storage.setValue(gmTable, uuidStr, null);
+                    storage.removeValue(gmTable, uuidStr);
                     storage.saveConfig();
                 }
                 yield player.getGameMode() == gm.fallback ? (byte) 1 : (byte) 0;
