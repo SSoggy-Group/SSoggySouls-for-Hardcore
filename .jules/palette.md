@@ -50,3 +50,6 @@
 ## 2024-06-22 - [Interactive CLI UUID Copying]
 **Learning:** Displaying player UUIDs in chat as legacy colored text makes copying difficult for admins.
 **Action:** Convert legacy colored text into a Kyori Adventure Component with a clickEvent (copyToClipboard) and hoverEvent.
+## 2024-06-25 - [Interactive CLI Security Recovery]
+**Learning:** Security error messages that provide resolution steps (like permission nodes or commands) as plain text force users to manually type them out, causing friction.
+**Action:** Replace plain text resolution steps in security block messages with interactive Kyori components (e.g., `suggestCommand` for `/deop`, `copyToClipboard` for permission nodes) to allow quick, single-click recovery.
