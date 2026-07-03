@@ -6,7 +6,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.ChatFormatting;
 
-public final class PermissionUtil {
+public final class PermissionUtil extends PermissionHelper {
     private PermissionUtil() {}
 
     public static boolean isBlockedByLimboOpSecurity(CommandSourceStack source) {
@@ -19,13 +19,8 @@ public final class PermissionUtil {
         ServerPlayer player = source.getPlayer();
         if (player == null) return false;
 
-        java.util.List<String> trustedAdmins = config.getLimboTrustedAdmins();
-        if (!trustedAdmins.isEmpty()) {
-            String uuid = player.getUUID().toString();
-            String name = player.getScoreboardName().toLowerCase(java.util.Locale.ROOT);
-            if (trustedAdmins.contains(uuid) || trustedAdmins.contains(name)) {
-                return false;
-            }
+        if (isTrustedAdmin(player.getUUID().toString(), player.getScoreboardName().toLowerCase(java.util.Locale.ROOT), config.getLimboTrustedAdmins())) {
+            return false;
         }
 
         return true;

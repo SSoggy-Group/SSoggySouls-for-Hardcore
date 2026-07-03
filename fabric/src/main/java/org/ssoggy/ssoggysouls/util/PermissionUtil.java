@@ -9,7 +9,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 
-public final class PermissionUtil {
+public final class PermissionUtil extends PermissionHelper {
     private PermissionUtil() {}
 
     public static boolean isBlockedByLimboOpSecurity(ServerCommandSource source) {
@@ -22,13 +22,8 @@ public final class PermissionUtil {
         ServerPlayerEntity player = source.getPlayer();
         if (player == null) return false;
 
-        java.util.List<String> trustedAdmins = config.getLimboTrustedAdmins();
-        if (!trustedAdmins.isEmpty()) {
-            String uuid = player.getUuid().toString();
-            String name = player.getName().getString().toLowerCase(java.util.Locale.ROOT);
-            if (trustedAdmins.contains(uuid) || trustedAdmins.contains(name)) {
-                return false;
-            }
+        if (isTrustedAdmin(player.getUuid().toString(), player.getName().getString().toLowerCase(java.util.Locale.ROOT), config.getLimboTrustedAdmins())) {
+            return false;
         }
 
         try {
