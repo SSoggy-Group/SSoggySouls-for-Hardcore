@@ -7,3 +7,6 @@
 ## 2026-06-16 - Porting click-to-copy admin logs
 **Learning:** When porting click-to-copy log components from Paper to Fabric/Forge command responses, you must check if the source is a player (`isExecutedByPlayer()` in Fabric, `isPlayer()` in Forge/NeoForge) before attaching click/hover events to the components, while keeping the console output simple.
 **Action:** Always provide fallback simple text responses for console execution when returning rich interactive UI elements in command outputs.
+## 2026-07-03 - Interactive Security Block Parity
+**Learning:** When porting interactive command responses across platforms, explicitly check if the command source is a player (`isExecutedByPlayer()` in Fabric, `isPlayer()` in Forge/NeoForge) before attaching rich text events (e.g. click/hover), providing a simple fallback text for console execution.
+**Action:** Always verify command source context for interactive parity to prevent exceptions on headless environments.
