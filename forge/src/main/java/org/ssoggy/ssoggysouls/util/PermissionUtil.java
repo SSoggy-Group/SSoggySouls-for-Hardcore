@@ -34,14 +34,14 @@ public final class PermissionUtil {
     }
 
     public static void sendSecurityBlockMessage(CommandSourceStack source) {
-        source.sendFailure(Component.literal("Security Error: On the Limbo server, OP status cannot be used to execute this command.").withStyle(ChatFormatting.RED));
+        source.sendFailure(Component.literal(PermissionConstants.SECURITY_ERROR_HEADER).withStyle(ChatFormatting.RED));
         if (source.isPlayer() && source.getPlayer() != null) {
             ServerPlayer player = source.getPlayer();
-            MutableComponent message = Component.literal("Either ").withStyle(ChatFormatting.GRAY)
-                .append(Component.literal("/deop").withStyle(ChatFormatting.YELLOW)
+            MutableComponent message = Component.literal(PermissionConstants.SECURITY_ERROR_SUGGESTION_START).withStyle(ChatFormatting.GRAY)
+                .append(Component.literal(PermissionConstants.SECURITY_ERROR_SUGGESTION_COMMAND).withStyle(ChatFormatting.YELLOW)
                     .withStyle(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/deop " + player.getScoreboardName()))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to prepare /deop").withStyle(ChatFormatting.GRAY)))))
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, PermissionConstants.SECURITY_ERROR_SUGGESTION_COMMAND + " " + player.getScoreboardName()))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(PermissionConstants.HOVER_DEOP).withStyle(ChatFormatting.GRAY)))))
                 .append(Component.literal(" yourself on Limbo, or ask an administrator to add you to the whitelist (limboTrustedAdmins).").withStyle(ChatFormatting.GRAY));
             source.sendFailure(message);
         } else {

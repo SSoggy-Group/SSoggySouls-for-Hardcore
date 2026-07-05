@@ -32,7 +32,7 @@ public final class PermissionUtil {
         }
 
         try {
-            if (Permissions.check(source, "ssoggysouls.bypass-limbo-op-security", false)) {
+            if (Permissions.check(source, PermissionConstants.SECURITY_ERROR_SUGGESTION_NODE, false)) {
                 return false;
             }
         } catch (Throwable t) {
@@ -43,23 +43,23 @@ public final class PermissionUtil {
     }
 
     public static void sendSecurityBlockMessage(ServerCommandSource source) {
-        source.sendError(Text.literal("Security Error: On the Limbo server, OP status cannot be used to execute this command.").formatted(Formatting.RED));
+        source.sendError(Text.literal(PermissionConstants.SECURITY_ERROR_HEADER).formatted(Formatting.RED));
         if (source.isExecutedByPlayer() && source.getPlayer() != null) {
             ServerPlayerEntity player = source.getPlayer();
-            MutableText message = Text.literal("Either ").formatted(Formatting.GRAY)
-                .append(Text.literal("/deop").formatted(Formatting.YELLOW)
+            MutableText message = Text.literal(PermissionConstants.SECURITY_ERROR_SUGGESTION_START).formatted(Formatting.GRAY)
+                .append(Text.literal(PermissionConstants.SECURITY_ERROR_SUGGESTION_COMMAND).formatted(Formatting.YELLOW)
                     .styled(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/deop " + player.getName().getString()))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to prepare /deop").formatted(Formatting.GRAY)))))
-                .append(Text.literal(" yourself on Limbo, ask an administrator to add you to the whitelist, or have them grant you the bypass permission ").formatted(Formatting.GRAY))
-                .append(Text.literal("(ssoggysouls.bypass-limbo-op-security)").formatted(Formatting.YELLOW)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, PermissionConstants.SECURITY_ERROR_SUGGESTION_COMMAND + " " + player.getName().getString()))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(PermissionConstants.HOVER_DEOP).formatted(Formatting.GRAY)))))
+                .append(Text.literal(PermissionConstants.SECURITY_ERROR_SUGGESTION_MIDDLE).formatted(Formatting.GRAY))
+                .append(Text.literal("(" + PermissionConstants.SECURITY_ERROR_SUGGESTION_NODE + ")").formatted(Formatting.YELLOW)
                     .styled(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "ssoggysouls.bypass-limbo-op-security"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to copy permission node").formatted(Formatting.GRAY)))))
-                .append(Text.literal(".").formatted(Formatting.GRAY));
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, PermissionConstants.SECURITY_ERROR_SUGGESTION_NODE))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(PermissionConstants.HOVER_COPY).formatted(Formatting.GRAY)))))
+                .append(Text.literal(PermissionConstants.SECURITY_ERROR_SUGGESTION_END).formatted(Formatting.GRAY));
             source.sendError(message);
         } else {
-            source.sendError(Text.literal("Either /deop yourself on Limbo, ask an administrator to add you to the whitelist, or have them grant you the bypass permission (ssoggysouls.bypass-limbo-op-security).").formatted(Formatting.GRAY));
+            source.sendError(Text.literal(PermissionConstants.SECURITY_ERROR_FALLBACK).formatted(Formatting.GRAY));
         }
     }
 }
