@@ -83,7 +83,7 @@ class PermissionUtilTest {
     @Test
     void testIsBlockedByLimboOpSecurityBypassPermission() {
         when(player.isOp()).thenReturn(true);
-        when(player.hasPermission("ssoggysouls.bypass-limbo-op-security")).thenReturn(true);
+        when(player.hasPermission(PermissionConstants.SECURITY_ERROR_SUGGESTION_NODE)).thenReturn(true);
 
         assertFalse(PermissionUtil.isBlockedByLimboOpSecurity(player, plugin));
     }
@@ -92,7 +92,7 @@ class PermissionUtilTest {
     void testIsBlockedByLimboOpSecurityBlocked() {
         when(player.isOp()).thenReturn(true);
         when(player.getName()).thenReturn("BlockedPlayer");
-        when(player.hasPermission("ssoggysouls.bypass-limbo-op-security")).thenReturn(false);
+        when(player.hasPermission(PermissionConstants.SECURITY_ERROR_SUGGESTION_NODE)).thenReturn(false);
 
         assertTrue(PermissionUtil.isBlockedByLimboOpSecurity(player, plugin));
     }
@@ -101,7 +101,7 @@ class PermissionUtilTest {
     void testSendSecurityBlockMessage() {
         PermissionUtil.sendSecurityBlockMessage(sender);
 
-        verify(sender).sendMessage(MessageUtil.colorize("&cSecurity Error: On the Limbo server, OP status cannot be used to execute this command."));
-        verify(sender).sendMessage(MessageUtil.colorize("&7Either /deop yourself on Limbo, ask an administrator to add you to the trusted admins list, or have them grant you the bypass permission &e(ssoggysouls.bypass-limbo-op-security)&7."));
+        verify(sender).sendMessage(MessageUtil.colorize("&c" + PermissionConstants.SECURITY_ERROR_HEADER));
+        verify(sender).sendMessage(MessageUtil.colorize("&7" + PermissionConstants.SECURITY_ERROR_FALLBACK));
     }
 }
