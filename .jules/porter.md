@@ -7,3 +7,6 @@
 ## 2026-06-16 - Porting click-to-copy admin logs
 **Learning:** When porting click-to-copy log components from Paper to Fabric/Forge command responses, you must check if the source is a player (`isExecutedByPlayer()` in Fabric, `isPlayer()` in Forge/NeoForge) before attaching click/hover events to the components, while keeping the console output simple.
 **Action:** Always provide fallback simple text responses for console execution when returning rich interactive UI elements in command outputs.
+## 2026-06-23 - Porting Interactive Block Message
+**Learning:** When porting interactive text components from Bukkit/Paper to Fabric/Forge, you must manually construct the click and hover events using `Text.literal` (Fabric) or `Component.literal` (Forge/NeoForge) and attach `HoverEvent` and `ClickEvent` using the platform-specific classes.
+**Action:** Be aware of `net.minecraft.text.HoverEvent`/`ClickEvent` for Fabric, and `net.minecraft.network.chat.HoverEvent`/`ClickEvent` for Forge/NeoForge.
