@@ -151,7 +151,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     break;
                 }
 
-                whoSet = new java.util.HashSet<>(SET_BLOCKS);
+                whoSet = new java.util.LinkedHashSet<>(SET_BLOCKS);
                 result.success = COMMANDOUTPUTENUM.valueOf(RPConfig.setBlockTag(where, whoSet));
                 result.message = "Added everything to " + where;
                 break;
