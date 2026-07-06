@@ -62,7 +62,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     // from Material.values() during frequent command execution and tab completions.
     // Use LinkedHashSet to preserve deterministic enum declaration order for tab completion.
     private static final Set<Material> SET_BLOCKS = Collections.unmodifiableSet(
-            (Set<Material>) Arrays.stream(Material.values()).filter(Material::isBlock)
+            Arrays.stream(Material.values()).filter(Material::isBlock)
                     .collect(Collectors.toCollection(java.util.LinkedHashSet::new)));
     private static final List<String> LIST_BLOCKIDS = SET_BLOCKS.stream().map(Enum::name).toList();
     private static final Map<String, String> cmdKeywords = Map.ofEntries( // Keyword shortcuts used in the command
