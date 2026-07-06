@@ -83,3 +83,6 @@
 ## 2026-06-21 - [Optimize High-Frequency Configuration Checks with Concurrent Sets]
 **Learning:** Checking configuration state synchronously (e.g., `storage.hasValue(...)`) inside high-frequency event listeners like Bukkit's `PlayerMoveEvent` causes severe performance bottlenecks because it performs blocking string lookups.
 **Action:** When maintaining boolean/presence state needed frequently (like whether a player is in Ghost Mode), cache the identifiers (UUIDs) in a memory structure like `Set<UUID> GHOST_PLAYERS = ConcurrentHashMap.newKeySet()`. Populate the cache on server startup from persistent storage and keep it synchronized when the state is modified (e.g., in `setPlayerGameMode`), then check `GHOST_PLAYERS.contains(...)` in hot loops instead of reading the config directly.
+## 2024-07-02 - [Preserve Enum Order when Caching]
+**Learning:** When caching `Enum.values()` into a `Set` to prevent `O(N)` allocations during frequent operations like tab completions, using a standard `HashSet` destroys the original enum declaration order, which can cause tab completions to appear randomly sorted to the user.
+**Action:** Use `java.util.LinkedHashSet` (e.g. `Collectors.toCollection(LinkedHashSet::new)`) when collecting cached enum elements. This maintains `O(1)` lookups while preserving insertion order for deterministic UI and tab completion results.

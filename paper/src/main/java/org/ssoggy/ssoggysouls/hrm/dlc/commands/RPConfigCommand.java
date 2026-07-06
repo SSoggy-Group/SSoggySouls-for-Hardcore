@@ -58,7 +58,13 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     private static final String AQUA_LABEL_SUFFIX = ":</aqua> ";
 
     private static final List<String> LIST_BOOLEAN = List.of("true", "false");
-    private static final List<String> LIST_BLOCKIDS = Arrays.stream(Material.values()).filter(Material::isBlock).map(Enum::name).toList();
+    // Optimization: Pre-compute and cache block materials to prevent O(N) array allocation
+    // from Material.values() during frequent command execution and tab completions.
+    // Use LinkedHashSet to preserve deterministic enum declaration order for tab completion.
+    private static final Set<Material> SET_BLOCKS = Collections.unmodifiableSet(
+            Arrays.stream(Material.values()).filter(Material::isBlock)
+                    .collect(Collectors.toCollection(java.util.LinkedHashSet::new)));
+    private static final List<String> LIST_BLOCKIDS = SET_BLOCKS.stream().map(Enum::name).toList();
     private static final Map<String, String> cmdKeywords = Map.ofEntries( // Keyword shortcuts used in the command
             Map.entry("structure", OPT_STRUCTURE),
             Map.entry("1", OPT_STRUCTURE),
@@ -145,7 +151,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     break;
                 }
 
-                whoSet = Arrays.stream(Material.values()).filter(Material::isBlock).collect(Collectors.toSet());
+                whoSet = new java.util.LinkedHashSet<>(SET_BLOCKS);
                 result.success = COMMANDOUTPUTENUM.valueOf(RPConfig.setBlockTag(where, whoSet));
                 result.message = "Added everything to " + where;
                 break;
