@@ -199,7 +199,8 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                 case OPTIONCONFIGENUM.RELOAD -> executeReloadCMD(result);
                 default -> {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = "<red>Command Failed: </red><click:suggest_command:'/" + label + " '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/" + label + " " + plOpt1 + "</gray></hover></click>";
+                    String escapedPlOpt1 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(plOpt1).replace("'", "\\\\");
+                    result.message = "<red>Command Failed: </red><click:suggest_command:'/" + label + " '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/" + label + " " + escapedPlOpt1 + "</gray></hover></click>";
                     cmdSender.sendRichMessage(result.toString());
                     return true;
                 }
