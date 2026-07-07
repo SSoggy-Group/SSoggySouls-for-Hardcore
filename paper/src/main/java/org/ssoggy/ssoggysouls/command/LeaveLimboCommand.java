@@ -65,11 +65,9 @@ public class LeaveLimboCommand implements CommandExecutor {
     }
 
     private void handleDatabaseError(Player player, Exception e) {
-        plugin.getLogger().severe(
+        plugin.getLogger().log(java.util.logging.Level.SEVERE,
                 "Failed to check limbo status for player "
-                        + player.getUniqueId()
-                        + ": "
-                        + e.getMessage());
+                        + player.getUniqueId(), e);
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (player.isOnline()) {
                 player.sendMessage(MessageUtil.get("command-error-database"));

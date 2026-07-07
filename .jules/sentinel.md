@@ -23,3 +23,7 @@
 **Vulnerability:** MySQL configuration defaults with empty or default passwords in code/documentation.
 **Learning:** Default configurations can lead to insecure deployments if users don't change them.
 **Prevention:** Ensure configurations force explicit password setup or use environment variables, and avoid hardcoding fallback passwords.
+## 2026-06-25 - [Prevent potential sensitive information leakage in logs]
+**Vulnerability:** In `LeaveLimboCommand.java`, `RPConfig.java`, and `UpdateChecker.java`, exception messages (`e.getMessage()`) were directly appended to error logs using `logger.severe()` or `logger.warning()`.
+**Learning:** Appending `e.getMessage()` manually instead of passing the entire Exception object can leak sensitive information to the logs without providing a full stack trace, reducing debuggability and posing a potential security risk.
+**Prevention:** Always use `logger.log(Level.SEVERE, "context message", exception)` or equivalent to properly log the context message and the full stack trace securely.

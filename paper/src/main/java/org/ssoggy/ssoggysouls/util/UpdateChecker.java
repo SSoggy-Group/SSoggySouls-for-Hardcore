@@ -44,7 +44,7 @@ public class UpdateChecker {
         HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .whenComplete((response, throwable) -> {
                     if (throwable != null) {
-                        plugin.getLogger().log(Level.WARNING, "Failed to check for updates: {0}", throwable.getMessage());
+                        plugin.getLogger().log(Level.WARNING, "Failed to check for updates", throwable);
                         return;
                     }
 
@@ -69,7 +69,7 @@ public class UpdateChecker {
                             plugin.getLogger().info("You are running the latest version!");
                         }
                     } catch (Exception e) {
-                        plugin.getLogger().log(Level.WARNING, "Failed to parse update response: {0}", e.getMessage());
+                        plugin.getLogger().log(Level.WARNING, "Failed to parse update response", e);
                     }
                 });
     }
