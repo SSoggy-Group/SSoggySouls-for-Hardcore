@@ -60,7 +60,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     // Use LinkedHashSet to preserve deterministic enum declaration order for tab completion.
     private static final Set<Material> SET_BLOCKS = Collections.unmodifiableSet(
             Arrays.stream(Material.values()).filter(Material::isBlock)
-                    .collect(Collectors.toCollection(java.util.LinkedHashSet::new)));
+                    .collect(Collectors.toSet()));
     private static final List<String> LIST_BLOCKIDS = SET_BLOCKS.stream().map(Enum::name).toList();
     private static final Map<String, String> cmdKeywords = Map.ofEntries( // Keyword shortcuts used in the command
             Map.entry("structure", OPT_STRUCTURE),
@@ -199,8 +199,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                 case OPTIONCONFIGENUM.RELOAD -> executeReloadCMD(result);
                 default -> {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    String escapedPlOpt1 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(plOpt1).replace("'", "\\\\");
-                    result.message = "<red>Command Failed: </red><click:suggest_command:'/" + label + " '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/" + label + " " + escapedPlOpt1 + "</gray></hover></click>";
+                    result.message = "<red>Command Failed: </red><click:suggest_command:'/" + label + " '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/" + label + " " + plOpt1 + "</gray></hover></click>";
                     cmdSender.sendRichMessage(result.toString());
                     return true;
                 }
@@ -221,17 +220,14 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                String rawArg0 = args.length > 0 ? args[0] : "structure";
-                String escapedArg0 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(rawArg0).replace("'", "\\\\");
-                String baseCmd1 = "/" + label + " " + escapedArg0 + " ";
-                result.message = "Missing structure name. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\\\<structure\\\\></gray></hover></click>";
+                String baseCmd1 = "/" + label + " " + (args.length > 0 ? args[0] : "structure") + " ";
+                result.message = "Missing structure name. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\<structure\\></gray></hover></click>";
                 break;
             case 2:
                 if (!RPStatic.BLOCK_TAGS.containsKey(args[1])) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    String escapedArg0 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(args[0]).replace("'", "\\\\");
-                    String baseCmd2 = "/" + label + " " + escapedArg0 + " ";
-                    result.message = "Unknown structure. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\\\<structure\\\\></gray></hover></click>";
+                    String baseCmd2 = "/" + label + " " + args[0] + " ";
+                    result.message = "Unknown structure. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\<structure\\></gray></hover></click>";
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
@@ -262,18 +258,15 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                String rawArg0 = args.length > 0 ? args[0] : "gamerule";
-                String escapedArg0 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(rawArg0).replace("'", "\\\\");
-                String baseCmd1 = "/" + label + " " + escapedArg0 + " ";
-                result.message = "Missing gamerule. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\\\<gamerule\\\\></gray></hover></click>";
+                String baseCmd1 = "/" + label + " " + (args.length > 0 ? args[0] : "gamerule") + " ";
+                result.message = "Missing gamerule. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\<gamerule\\></gray></hover></click>";
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:
                 if (!RPStatic.CONFIG_RULES.containsKey(args[1])) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    String escapedArg0 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(args[0]).replace("'", "\\\\");
-                    String baseCmd2 = "/" + label + " " + escapedArg0 + " ";
-                    result.message = "Unknown gamerule. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\\\<gamerule\\\\></gray></hover></click>";
+                    String baseCmd2 = "/" + label + " " + args[0] + " ";
+                    result.message = "Unknown gamerule. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\<gamerule\\></gray></hover></click>";
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
@@ -289,18 +282,15 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                String rawArg0 = args.length > 0 ? args[0] : "timer";
-                String escapedArg0 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(rawArg0).replace("'", "\\\\");
-                String baseCmd1 = "/" + label + " " + escapedArg0 + " ";
-                result.message = "Missing timer name. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\\\<timer\\\\></gray></hover></click>";
+                String baseCmd1 = "/" + label + " " + (args.length > 0 ? args[0] : "timer") + " ";
+                result.message = "Missing timer name. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\<timer\\></gray></hover></click>";
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:
                 if (!RPStatic.CONFIG_TIMERS.containsKey(args[1])) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    String escapedArg0 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(args[0]).replace("'", "\\\\");
-                    String baseCmd2 = "/" + label + " " + escapedArg0 + " ";
-                    result.message = "Unknown timer. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\\\<timer\\\\></gray></hover></click>";
+                    String baseCmd2 = "/" + label + " " + args[0] + " ";
+                    result.message = "Unknown timer. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\<timer\\></gray></hover></click>";
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
