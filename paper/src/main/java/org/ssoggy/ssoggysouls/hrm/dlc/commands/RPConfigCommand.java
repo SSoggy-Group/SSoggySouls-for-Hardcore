@@ -229,8 +229,9 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             case 2:
                 if (!RPStatic.BLOCK_TAGS.containsKey(args[1])) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    String baseCmd2 = "/" + label + " " + args[0] + " ";
-                    result.message = "Unknown structure. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\<structure\\></gray></hover></click>";
+                    String escapedArg0 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(args[0]).replace("'", "\\\\");
+                    String baseCmd2 = "/" + label + " " + escapedArg0 + " ";
+                    result.message = "Unknown structure. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\\\<structure\\\\></gray></hover></click>";
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
