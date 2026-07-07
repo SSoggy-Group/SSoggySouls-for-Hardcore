@@ -104,7 +104,7 @@ public class RPConfig {
             RPStatic.BLOCK_TAGS.put(where, who);
             return 1;
         } catch (Exception e) {
-            RPStatic.LOGGER.severe(e.getMessage());
+            RPStatic.LOGGER.log(java.util.logging.Level.SEVERE, "Configuration error", e);
             return 0;
         }
     }
@@ -117,7 +117,7 @@ public class RPConfig {
             RPStatic.CONFIG_RULES.put(where, who);
             return 1;
         } catch (Exception e) {
-            RPStatic.LOGGER.severe(e.getMessage());
+            RPStatic.LOGGER.log(java.util.logging.Level.SEVERE, "Configuration error", e);
             return 0;
         }
     }
@@ -130,7 +130,7 @@ public class RPConfig {
             RPStatic.CONFIG_TIMERS.put(where, who);
             return 1;
         } catch (Exception e) {
-            RPStatic.LOGGER.severe(e.getMessage());
+            RPStatic.LOGGER.log(java.util.logging.Level.SEVERE, "Configuration error", e);
             return 0;
         }
     }
