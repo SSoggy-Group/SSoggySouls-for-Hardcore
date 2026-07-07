@@ -52,9 +52,6 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     private static final String OPT_TIMER = "TIMER";
     private static final String OPT_RELOAD = "RELOAD";
     private static final String CMD_PREFIX = "/revivalconfig ";
-    private static final String ERR_MARKER_OPEN = " >>";
-    private static final String ERR_MARKER_CLOSE = "<<";
-    private static final String ERR_MARKER_EMPTY = " >><<";
     private static final String AQUA_LABEL_SUFFIX = ":</aqua> ";
 
     private static final List<String> LIST_BOOLEAN = List.of("true", "false");
@@ -62,7 +59,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     // from Material.values() during frequent command execution and tab completions.
     // Use LinkedHashSet to preserve deterministic enum declaration order for tab completion.
     private static final Set<Material> SET_BLOCKS = Collections.unmodifiableSet(
-            Arrays.stream(Material.values()).filter(Material::isBlock)
+            (Set<Material>) Arrays.stream(Material.values()).filter(Material::isBlock)
                     .collect(Collectors.toCollection(java.util.LinkedHashSet::new)));
     private static final List<String> LIST_BLOCKIDS = SET_BLOCKS.stream().map(Enum::name).toList();
     private static final Map<String, String> cmdKeywords = Map.ofEntries( // Keyword shortcuts used in the command
@@ -193,16 +190,16 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         OPTIONCONFIGENUM option = OPTIONCONFIGENUM.getEnumFromVal(opt1);
         if (option == null) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Please use <click:suggest_command:'/revivalconfig '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/revivalconfig \\<structure|gamerule|timer|reload\\></gray></hover></click>";
+            result.message = "Please use <click:suggest_command:'/" + label + " '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/" + label + " \\<structure|gamerule|timer|reload\\></gray></hover></click>";
         } else {
             switch (option) {
-                case OPTIONCONFIGENUM.STRUCTURE -> handleStructure(args, result);
-                case OPTIONCONFIGENUM.GAMERULE -> handleGamerule(args, result);
+                case OPTIONCONFIGENUM.STRUCTURE -> handleStructure(args, result, label);
+                case OPTIONCONFIGENUM.GAMERULE -> handleGamerule(args, result, label);
                 case OPTIONCONFIGENUM.TIMER -> handleTimer(args, result, label);
                 case OPTIONCONFIGENUM.RELOAD -> executeReloadCMD(result);
                 default -> {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = "<red>Command Failed: " + CMD_PREFIX + ">>" + plOpt1 + "<</red>";
+                    result.message = "<red>Command Failed: </red><click:suggest_command:'/" + label + " '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/" + label + " " + plOpt1 + "</gray></hover></click>";
                     cmdSender.sendRichMessage(result.toString());
                     return true;
                 }
@@ -219,16 +216,18 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    private void handleStructure(String[] args, RPCommandOutput result) {
+    private void handleStructure(String[] args, RPCommandOutput result, String label) {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
+                String baseCmd1 = "/" + label + " " + (args.length > 0 ? args[0] : "structure") + " ";
+                result.message = "Missing structure name. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\<structure\\></gray></hover></click>";
                 break;
             case 2:
                 if (!RPStatic.BLOCK_TAGS.containsKey(args[1])) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = CMD_PREFIX + args[0] + ERR_MARKER_OPEN + args[1] + ERR_MARKER_CLOSE;
+                    String baseCmd2 = "/" + label + " " + args[0] + " ";
+                    result.message = "Unknown structure. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\<structure\\></gray></hover></click>";
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
@@ -242,7 +241,8 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             case 3:
                 if (!Objects.equals(args[2], "reset")) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = CMD_PREFIX + args[0] + " " + args[1] + ERR_MARKER_OPEN + args[2] + ERR_MARKER_CLOSE;
+                    String baseCmd3 = "/" + label + " " + args[0] + " " + args[1] + " ";
+                    result.message = "Missing material. Click to fix: <click:suggest_command:'" + baseCmd3 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd3 + "\\<material\\></gray></hover></click>";
                     break;
                 }
                 // reset action has exactly 3 args, so no material argument is available
@@ -254,17 +254,19 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void handleGamerule(String[] args, RPCommandOutput result) {
+    private void handleGamerule(String[] args, RPCommandOutput result, String label) {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
+                String baseCmd1 = "/" + label + " " + (args.length > 0 ? args[0] : "gamerule") + " ";
+                result.message = "Missing gamerule. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\<gamerule\\></gray></hover></click>";
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:
                 if (!RPStatic.CONFIG_RULES.containsKey(args[1])) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = CMD_PREFIX + args[0] + ERR_MARKER_OPEN + args[1] + ERR_MARKER_CLOSE;
+                    String baseCmd2 = "/" + label + " " + args[0] + " ";
+                    result.message = "Unknown gamerule. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\<gamerule\\></gray></hover></click>";
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
@@ -280,13 +282,15 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
+                String baseCmd1 = "/" + label + " " + (args.length > 0 ? args[0] : "timer") + " ";
+                result.message = "Missing timer name. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\<timer\\></gray></hover></click>";
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:
                 if (!RPStatic.CONFIG_TIMERS.containsKey(args[1])) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = CMD_PREFIX + args[0] + ERR_MARKER_OPEN + args[1] + ERR_MARKER_CLOSE;
+                    String baseCmd2 = "/" + label + " " + args[0] + " ";
+                    result.message = "Unknown timer. Click to fix: <click:suggest_command:'" + baseCmd2 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd2 + "\\<timer\\></gray></hover></click>";
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
