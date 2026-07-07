@@ -221,8 +221,10 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                String baseCmd1 = "/" + label + " " + (args.length > 0 ? args[0] : "structure") + " ";
-                result.message = "Missing structure name. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\<structure\\></gray></hover></click>";
+                String rawArg0 = args.length > 0 ? args[0] : "structure";
+                String escapedArg0 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(rawArg0).replace("'", "\\\\");
+                String baseCmd1 = "/" + label + " " + escapedArg0 + " ";
+                result.message = "Missing structure name. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\\\<structure\\\\></gray></hover></click>";
                 break;
             case 2:
                 if (!RPStatic.BLOCK_TAGS.containsKey(args[1])) {
