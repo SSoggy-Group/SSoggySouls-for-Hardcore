@@ -289,8 +289,10 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                String baseCmd1 = "/" + label + " " + (args.length > 0 ? args[0] : "timer") + " ";
-                result.message = "Missing timer name. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\<timer\\></gray></hover></click>";
+                String rawArg0 = args.length > 0 ? args[0] : "timer";
+                String escapedArg0 = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(rawArg0).replace("'", "\\\\");
+                String baseCmd1 = "/" + label + " " + escapedArg0 + " ";
+                result.message = "Missing timer name. Click to fix: <click:suggest_command:'" + baseCmd1 + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>" + baseCmd1 + "\\\\<timer\\\\></gray></hover></click>";
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:
