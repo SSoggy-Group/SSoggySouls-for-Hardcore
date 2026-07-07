@@ -53,3 +53,7 @@
 ## 2024-06-25 - [Interactive CLI Security Recovery]
 **Learning:** Security error messages that provide resolution steps (like permission nodes or commands) as plain text force users to manually type them out, causing friction.
 **Action:** Replace plain text resolution steps in security block messages with interactive Kyori components (e.g., `suggestCommand` for `/deop`, `copyToClipboard` for permission nodes) to allow quick, single-click recovery.
+
+## 2024-06-25 - [Interactive CLI Config Component Errors]
+**Learning:** Static argument validation error messages in complex command trees (like `/revivalconfig`) typically display raw config string formatting markers (e.g. `>><<`) because they assume standard string appending. When upgrading these legacy Bukkit static strings to use Kyori Adventure MiniMessage components directly in output payloads (e.g., in `RPCommandOutput`), these static markers (`<`, `>`) cause strict MiniMessage parser exceptions. Furthermore, static messages force complete retyping for config command errors.
+**Action:** Replace unescaped static error markers (`>>`, `<<`) with native MiniMessage interactive components (`<click:suggest_command:'...'><hover:show_text:'...'>`) inside the command's message assignment block. This provides users with a pre-filled suggestion to immediately correct their mistakes and ensures valid MiniMessage parsing.
