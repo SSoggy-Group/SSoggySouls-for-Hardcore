@@ -95,6 +95,13 @@ public class CommandRegistration {
         dispatcher.register(CommandManager.literal("revive")
             // Require op level 2 or higher for now (since no permissions api is installed yet)
             .requires(source -> source.hasPermissionLevel(2))
+            .executes(context -> {
+                context.getSource().sendError(net.minecraft.text.Text.literal("Usage: /revive <player>")
+                    .styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
+                        .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
+                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to auto-fill command").styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
+                return 0;
+            })
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> CommandSource.suggestMatching(
                         context.getSource().getServer().getPlayerNames(), builder))
@@ -155,9 +162,24 @@ public class CommandRegistration {
     private static void registerSetLivesCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
         dispatcher.register(CommandManager.literal("psetlives")
             .requires(source -> source.hasPermissionLevel(2))
+            .executes(context -> {
+                context.getSource().sendError(net.minecraft.text.Text.literal("Usage: /psetlives <player> <lives>")
+                    .styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
+                        .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives "))
+                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to auto-fill command").styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
+                return 0;
+            })
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
                 .suggests((context, builder) -> CommandSource.suggestMatching(
                         context.getSource().getServer().getPlayerNames(), builder))
+                .executes(context -> {
+                    String targetName = StringArgumentType.getString(context, PLAYER);
+                    context.getSource().sendError(net.minecraft.text.Text.literal("Usage: /psetlives " + targetName + " <lives>")
+                        .styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
+                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives " + targetName + " "))
+                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to auto-fill command").styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
+                    return 0;
+                })
                 .then(CommandManager.argument(LIVES, IntegerArgumentType.integer(0))
                     .executes(context -> {
                         String targetName = StringArgumentType.getString(context, PLAYER);
