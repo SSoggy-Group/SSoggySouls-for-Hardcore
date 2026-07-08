@@ -96,10 +96,10 @@ public class CommandRegistration {
             // Require op level 2 or higher for now (since no permissions api is installed yet)
             .requires(source -> source.hasPermissionLevel(2))
             .executes(context -> {
-                context.getSource().sendError(net.minecraft.text.Text.literal("Usage: /revive <player>")
+                context.getSource().sendError(MessageUtil.get("usage-revive")
                     .styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
                         .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
-                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to auto-fill command").styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
+                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
                 return 0;
             })
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
