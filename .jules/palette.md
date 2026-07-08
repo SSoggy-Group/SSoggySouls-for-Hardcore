@@ -53,3 +53,6 @@
 ## 2024-06-25 - [Interactive CLI Security Recovery]
 **Learning:** Security error messages that provide resolution steps (like permission nodes or commands) as plain text force users to manually type them out, causing friction.
 **Action:** Replace plain text resolution steps in security block messages with interactive Kyori components (e.g., `suggestCommand` for `/deop`, `copyToClipboard` for permission nodes) to allow quick, single-click recovery.
+## 2026-06-25 - [Interactive CLI Base Command Errors]
+**Learning:** When users execute base commands with sub-argument trees (like `/revive`) without any arguments, standard static usage errors force them to completely retype the command. In Brigadier, the `.executes()` block on the literal node itself is the perfect place to inject interactive recovery.
+**Action:** Replace static `sendFailure(...)` calls in base command `.executes()` blocks with native interactive components containing `SUGGEST_COMMAND` click events to instantly provide users with a pre-filled chat bar.
