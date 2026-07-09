@@ -52,10 +52,15 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     private static final String OPT_TIMER = "TIMER";
     private static final String OPT_RELOAD = "RELOAD";
     private static final String CMD_PREFIX = "/revivalconfig ";
-    private static final String ERR_MARKER_OPEN = " >>";
-    private static final String ERR_MARKER_CLOSE = "<<";
-    private static final String ERR_MARKER_EMPTY = " >><<";
     private static final String AQUA_LABEL_SUFFIX = ":</aqua> ";
+
+    private static String buildErrorComponent(String baseCommand, String invalidArg) {
+        String safeBase = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(baseCommand);
+        String safeInvalid = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(invalidArg);
+
+        return "<click:suggest_command:'" + baseCommand + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'>" +
+               safeBase + " >><red>" + safeInvalid + "</red><<</hover></click>";
+    }
 
     private static final List<String> LIST_BOOLEAN = List.of("true", "false");
     // Optimization: Pre-compute and cache block materials to prevent O(N) array allocation
@@ -202,7 +207,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                 case OPTIONCONFIGENUM.RELOAD -> executeReloadCMD(result);
                 default -> {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = "<red>Command Failed: " + CMD_PREFIX + ">>" + plOpt1 + "<</red>";
+                    result.message = buildErrorComponent(CMD_PREFIX, plOpt1);
                     cmdSender.sendRichMessage(result.toString());
                     return true;
                 }
@@ -223,12 +228,12 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
+                result.message = buildErrorComponent(CMD_PREFIX + (args.length > 0 ? args[0] + " " : ""), "");
                 break;
             case 2:
                 if (!RPStatic.BLOCK_TAGS.containsKey(args[1])) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = CMD_PREFIX + args[0] + ERR_MARKER_OPEN + args[1] + ERR_MARKER_CLOSE;
+                    result.message = buildErrorComponent(CMD_PREFIX + args[0] + " ", args[1]);
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
@@ -242,7 +247,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             case 3:
                 if (!Objects.equals(args[2], "reset")) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = CMD_PREFIX + args[0] + " " + args[1] + ERR_MARKER_OPEN + args[2] + ERR_MARKER_CLOSE;
+                    result.message = buildErrorComponent(CMD_PREFIX + args[0] + " " + args[1] + " ", args[2]);
                     break;
                 }
                 // reset action has exactly 3 args, so no material argument is available
@@ -258,13 +263,13 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
+                result.message = buildErrorComponent(CMD_PREFIX + (args.length > 0 ? args[0] + " " : ""), "");
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:
                 if (!RPStatic.CONFIG_RULES.containsKey(args[1])) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = CMD_PREFIX + args[0] + ERR_MARKER_OPEN + args[1] + ERR_MARKER_CLOSE;
+                    result.message = buildErrorComponent(CMD_PREFIX + args[0] + " ", args[1]);
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
@@ -280,13 +285,13 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
-                result.message = CMD_PREFIX + (args.length > 0 ? args[0] : "") + ERR_MARKER_EMPTY;
+                result.message = buildErrorComponent(CMD_PREFIX + (args.length > 0 ? args[0] + " " : ""), "");
                 result.details = "Command is incomplete."; // Optional
                 break;
             case 2:
                 if (!RPStatic.CONFIG_TIMERS.containsKey(args[1])) {
                     result.success = COMMANDOUTPUTENUM.FALSE;
-                    result.message = CMD_PREFIX + args[0] + ERR_MARKER_OPEN + args[1] + ERR_MARKER_CLOSE;
+                    result.message = buildErrorComponent(CMD_PREFIX + args[0] + " ", args[1]);
                     break;
                 }
                 result.success = COMMANDOUTPUTENUM.INFO;
