@@ -56,3 +56,6 @@
 ## 2026-06-25 - [Interactive CLI Base Command Errors]
 **Learning:** When users execute base commands with sub-argument trees (like `/revive`) without any arguments, standard static usage errors force them to completely retype the command. In Brigadier, the `.executes()` block on the literal node itself is the perfect place to inject interactive recovery.
 **Action:** Replace static `sendFailure(...)` calls in base command `.executes()` blocks with native interactive components containing `SUGGEST_COMMAND` click events to instantly provide users with a pre-filled chat bar.
+## 2026-06-25 - [Interactive CLI Number Parsing Errors with RPCommandOutput]
+**Learning:** In the `RPConfigCommand` class, legacy error messages used static `>>...<<` markers which were not interactive. By swapping these out for a helper method that escapes `<` and `>` input and uses `<click:suggest_command:'...'><hover:show_text:'...'>...`, players can now click errors to have the command auto-filled in their chat bar, preventing them from needing to type it all out again.
+**Action:** Replace unescaped static error markers with Kyori Adventure MiniMessage clickable recovery paths when catching syntax or config-related argument failures.
