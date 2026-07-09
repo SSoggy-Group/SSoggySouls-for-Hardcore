@@ -59,3 +59,6 @@
 ## 2026-06-25 - [Interactive CLI Number Parsing Errors with RPCommandOutput]
 **Learning:** In the `RPConfigCommand` class, legacy error messages used static `>>...<<` markers which were not interactive. By swapping these out for a helper method that escapes `<` and `>` input and uses `<click:suggest_command:'...'><hover:show_text:'...'>...`, players can now click errors to have the command auto-filled in their chat bar, preventing them from needing to type it all out again.
 **Action:** Replace unescaped static error markers with Kyori Adventure MiniMessage clickable recovery paths when catching syntax or config-related argument failures.
+## 2026-06-25 - [Interactive CLI Number Parsing Errors with RPCommandOutput] (Fabric CI Fix)
+**Learning:** When trying to update the legacy error markers to use Kyori Adventure MiniMessage components and applying hover/click styles in the Fabric implementation, calling `.styled(...)` directly on the interface `net.minecraft.text.Text` causes compilation errors because the modern Fabric API treats `Text` as immutable. You must call `.copy()` first to get a `MutableText`.
+**Action:** When porting chat interactivity or applying `.styled(...)` to an existing `Text` object in Fabric, always insert `.copy()` first.
