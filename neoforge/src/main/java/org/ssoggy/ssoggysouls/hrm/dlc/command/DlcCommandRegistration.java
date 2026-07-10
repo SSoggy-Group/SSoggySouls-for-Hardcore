@@ -464,7 +464,9 @@ public final class DlcCommandRegistration {
         String username = DlcNames.getOrDefault(death.uuid(), death.username());
         String coords = death.x() + " " + death.y() + " " + death.z();
 
-        return Component.literal(username).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true))
+        return Component.literal(username).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pstatus " + username))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to check player status").withStyle(s -> s.withColor(ChatFormatting.GRAY)))))
                 .append(Component.literal(" has died at ").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)))
                 .append(Component.literal("X" + death.x() + " Y" + death.y() + " Z" + death.z()).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)
                         .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, coords))
