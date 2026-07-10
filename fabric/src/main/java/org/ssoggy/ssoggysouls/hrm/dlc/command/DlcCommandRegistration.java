@@ -463,7 +463,9 @@ public final class DlcCommandRegistration {
         String username = DlcNames.getOrDefault(death.uuid(), death.username());
         String coords = death.x() + " " + death.y() + " " + death.z();
 
-        return Text.literal(username).styled(style -> style.withColor(Formatting.GOLD).withBold(true))
+        return Text.literal(username).styled(style -> style.withColor(Formatting.GOLD).withBold(true)
+                        .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/pstatus " + username))
+                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to check player status").styled(s -> s.withColor(Formatting.GRAY)))))
                 .append(Text.literal(" has died at ").styled(style -> style.withColor(Formatting.GRAY).withBold(false)))
                 .append(Text.literal("X" + death.x() + " Y" + death.y() + " Z" + death.z()).styled(style -> style.withColor(Formatting.GOLD).withBold(true)
                         .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.COPY_TO_CLIPBOARD, coords))
