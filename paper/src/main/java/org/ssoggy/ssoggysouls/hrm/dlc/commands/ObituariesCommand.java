@@ -80,7 +80,12 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
                 String username = RPUtil.getUsernameFromCache(uuid);
                 Location deathLocation = deathDetails.getLeft();
                 String coords = deathLocation.getBlockX() + " " + deathLocation.getBlockY() + " " + deathLocation.getBlockZ();
-                deathListBuilder.append("\n<gold><bold>").append(username).append("</bold></gold><gray> has died at </gray>")
+                String escapedUsername = username != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(username) : "Unknown";
+                deathListBuilder.append("\n<click:suggest_command:'/pstatus ").append(escapedUsername).append("'>")
+                        .append("<hover:show_text:'<gray>Click to check player status</gray>'>")
+                        .append("<gold><bold>").append(escapedUsername).append("</bold></gold>")
+                        .append("</hover></click>")
+                        .append("<gray> has died at </gray>")
                         .append("<click:copy_to_clipboard:'").append(coords).append("'>")
                         .append("<hover:show_text:'<gray>Click to copy coordinates</gray>'>")
                         .append("<gold><bold>X").append(deathLocation.getBlockX())

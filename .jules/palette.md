@@ -62,3 +62,6 @@
 ## 2026-06-25 - [Interactive CLI Number Parsing Errors with RPCommandOutput] (Fabric CI Fix)
 **Learning:** When trying to update the legacy error markers to use Kyori Adventure MiniMessage components and applying hover/click styles in the Fabric implementation, calling `.styled(...)` directly on the interface `net.minecraft.text.Text` causes compilation errors because the modern Fabric API treats `Text` as immutable. You must call `.copy()` first to get a `MutableText`.
 **Action:** When porting chat interactivity or applying `.styled(...)` to an existing `Text` object in Fabric, always insert `.copy()` first.
+## 2026-07-10 - [Interactive CLI Name Linking]
+**Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
+**Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
