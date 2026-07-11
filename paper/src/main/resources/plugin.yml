@@ -76,6 +76,7 @@ commands:
     description: Shows the avaliable public death locations on the server.
     permission: 'bukkit.command.plugins'
     usage: /deathlist [target:player]
+    aliases: [obituaries]
   
   ghostmode:
     description: Updates player gamemode to ghostmode.
