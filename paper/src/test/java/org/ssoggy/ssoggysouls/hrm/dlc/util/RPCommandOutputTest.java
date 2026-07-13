@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class RPCommandOutputTest {
 
     @Test
-    void testToString() {
+    void testToStringTrue() {
         RPCommandOutput output = new RPCommandOutput();
         output.success = COMMANDOUTPUTENUM.TRUE;
         output.message = "Test message";
