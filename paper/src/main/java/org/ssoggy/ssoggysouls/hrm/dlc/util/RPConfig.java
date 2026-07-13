@@ -106,7 +106,7 @@ public class RPConfig {
             }
             instance.getConfig().set("hrm." + where, names);
             instance.saveConfig();
-            RPStatic.BLOCK_TAGS.put(where, who);
+            RPStatic.BLOCK_TAGS.put(where, java.util.Set.copyOf(who));
             return 1;
         } catch (Exception e) {
             RPStatic.LOGGER.log(java.util.logging.Level.SEVERE, "Configuration error", e);
