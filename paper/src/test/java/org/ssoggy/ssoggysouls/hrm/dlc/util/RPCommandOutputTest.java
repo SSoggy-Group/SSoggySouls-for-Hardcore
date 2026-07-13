@@ -30,4 +30,12 @@ class RPCommandOutputTest {
         output.message = "Test message";
         assertEquals("\n" + RPStatic.PREFIX + " <gray>Test message</gray>\n", output.toString());
     }
+
+    @Test
+    void testToStringRaw() {
+        RPCommandOutput output = new RPCommandOutput();
+        output.success = COMMANDOUTPUTENUM.RAW;
+        output.message = "Test message";
+        assertEquals("<gray>Test message</gray>", output.toString());
+    }
 }
