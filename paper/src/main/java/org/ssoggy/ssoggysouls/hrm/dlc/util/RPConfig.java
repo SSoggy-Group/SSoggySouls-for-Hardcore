@@ -97,9 +97,14 @@ public class RPConfig {
     }
 
     public static byte setBlockTag(String where, Set<Material> who) {
+        if (Objects.equals(RPStatic.BLOCK_TAGS.get(where), who)) return 1;
         try {
             JavaPlugin instance = RPStatic.CLIENT;
-            instance.getConfig().set("hrm." + where, who.stream().map(Enum::name).toList());
+            List<String> names = new java.util.ArrayList<>(who.size());
+            for (Material mat : who) {
+                names.add(mat.name());
+            }
+            instance.getConfig().set("hrm." + where, names);
             instance.saveConfig();
             RPStatic.BLOCK_TAGS.put(where, who);
             return 1;
@@ -110,6 +115,7 @@ public class RPConfig {
     }
 
     public static byte setConfigRule(String where, boolean who) {
+        if (Objects.equals(RPStatic.CONFIG_RULES.get(where), who)) return 1;
         try {
             JavaPlugin instance = RPStatic.CLIENT;
             instance.getConfig().set("hrm." + where, who);
@@ -123,6 +129,7 @@ public class RPConfig {
     }
 
     public static byte setConfigTimer(String where, int who) {
+        if (Objects.equals(RPStatic.CONFIG_TIMERS.get(where), who)) return 1;
         try {
             JavaPlugin instance = RPStatic.CLIENT;
             instance.getConfig().set("hrm." + where, who);
@@ -136,6 +143,13 @@ public class RPConfig {
     }
 
     private static Set<Material> parseMaterials(List<String> values) {
-        return values.stream().map(Material::matchMaterial).filter(Objects::nonNull).collect(Collectors.toSet());
+        Set<Material> materials = new java.util.HashSet<>(values.size());
+        for (String val : values) {
+            Material mat = Material.matchMaterial(val);
+            if (mat != null) {
+                materials.add(mat);
+            }
+        }
+        return materials;
     }
 }
