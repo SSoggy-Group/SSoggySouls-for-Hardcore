@@ -86,3 +86,6 @@
 ## 2024-07-02 - [Preserve Enum Order when Caching]
 **Learning:** When caching `Enum.values()` into a `Set` to prevent `O(N)` allocations during frequent operations like tab completions, using a standard `HashSet` destroys the original enum declaration order, which can cause tab completions to appear randomly sorted to the user.
 **Action:** Use `java.util.LinkedHashSet` (e.g. `Collectors.toCollection(LinkedHashSet::new)`) when collecting cached enum elements. This maintains `O(1)` lookups while preserving insertion order for deterministic UI and tab completion results.
+## 2026-07-13 - [Early Returns in Config Setters should signal success]
+**Learning:** When implementing early returns to optimize configuration setters (e.g., short-circuiting to prevent redundant disk I/O when a value hasn't changed), returning the failure status (like `0` or `false`) causes downstream callers (like command feedback) to misinterpret the optimization as a genuine execution failure.
+**Action:** Always return the function's success status (e.g., `1` or `true`) during an early return if the desired state is already met.

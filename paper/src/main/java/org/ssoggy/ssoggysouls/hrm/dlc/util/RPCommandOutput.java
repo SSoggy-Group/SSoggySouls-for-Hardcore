@@ -50,6 +50,12 @@ public class RPCommandOutput {
         };
 
         if (this.success == COMMANDOUTPUTENUM.RAW) { return result; }
-        return "\n" + Arrays.stream(result.split("\n")).map(x -> RPStatic.PREFIX + " " + x + "\n").collect(Collectors.joining());
+
+        String[] lines = result.split("\n");
+        StringBuilder sb = new StringBuilder("\n");
+        for (String line : lines) {
+            sb.append(RPStatic.PREFIX).append(" ").append(line).append("\n");
+        }
+        return sb.toString();
     }
 }
