@@ -150,6 +150,6 @@ public class RPConfig {
                 materials.add(mat);
             }
         }
-        return materials;
+        return java.util.Set.copyOf(materials);
     }
 }
