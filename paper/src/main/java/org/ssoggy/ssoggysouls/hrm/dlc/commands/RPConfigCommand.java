@@ -169,7 +169,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                         return;
                     }
 
-                    whoSet = new java.util.HashSet<>(RPStatic.BLOCK_TAGS.getOrDefault(where, Set.of()));
+                    whoSet = RPStatic.BLOCK_TAGS.getOrDefault(where, Set.of());
                     whoSet.remove(whoMat);
                     result.success = COMMANDOUTPUTENUM.valueOf(RPConfig.setBlockTag(where, whoSet));
                     whoName = whoMat.name();

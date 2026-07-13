@@ -89,3 +89,6 @@
 ## 2026-07-13 - [Early Returns in Config Setters should signal success]
 **Learning:** When implementing early returns to optimize configuration setters (e.g., short-circuiting to prevent redundant disk I/O when a value hasn't changed), returning the failure status (like `0` or `false`) causes downstream callers (like command feedback) to misinterpret the optimization as a genuine execution failure.
 **Action:** Always return the function's success status (e.g., `1` or `true`) during an early return if the desired state is already met.
+## 2026-07-13 - [MutableComponent over Component for Forge/NeoForge Chat API]
+**Learning:** In Forge and NeoForge mappings, the base `net.minecraft.network.chat.Component` interface is immutable and does not natively support chaining style methods like `.withStyle(...)`. Attempting to style it causes compilation errors.
+**Action:** When returning components from utility methods that will be styled later, ensure the return type is explicitly `net.minecraft.network.chat.MutableComponent`, and use `.copy()` on empty components to make them mutable.
