@@ -266,20 +266,26 @@ public class CommandRegistration {
                                 source.sendFailure(MessageUtil.get("admin-log-read-error"));
                             }
                             case SUCCESS -> {
-                                source.sendSystemMessage(Component.literal("--- Recent Admin Logs ---").withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD));
-                                if (source.isPlayer()) {
-                                    for (String line : result.lines) {
-                                        source.sendSystemMessage(Component.literal(line).withStyle(s ->
-                                            s.withColor(net.minecraft.ChatFormatting.GRAY)
-                                             .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
-                                             .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy log entry").withStyle(net.minecraft.ChatFormatting.GRAY)))
-                                        ));
-                                    }
+                                source.sendSystemMessage(MessageUtil.colorizeComponent("&6&l══ Admin Action Log ══"));
+                                if (result.lines.isEmpty()) {
+                                    source.sendSystemMessage(MessageUtil.colorizeComponent("&7(Empty)"));
                                 } else {
-                                    for (String line : result.lines) {
-                                        source.sendSystemMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY));
+                                    if (source.isPlayer()) {
+                                        for (String line : result.lines) {
+                                            String formatted = org.ssoggy.ssoggysouls.command.action.AdminLogAction.formatLogLine(line);
+                                            source.sendSystemMessage(MessageUtil.colorizeComponent(formatted).withStyle(s ->
+                                                 s.withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
+                                                 .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy log entry").withStyle(net.minecraft.ChatFormatting.GRAY)))
+                                            ));
+                                        }
+                                    } else {
+                                        for (String line : result.lines) {
+                                            String formatted = org.ssoggy.ssoggysouls.command.action.AdminLogAction.formatLogLine(line);
+                                            source.sendSystemMessage(MessageUtil.colorizeComponent(formatted));
+                                        }
                                     }
                                 }
+                                source.sendSystemMessage(MessageUtil.colorizeComponent("&6&l══════════════════════"));
                             }
                         }
                     });

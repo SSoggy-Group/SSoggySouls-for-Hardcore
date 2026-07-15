@@ -13,3 +13,6 @@
 ## 2026-07-11 - Command Aliases
 **Learning:** In Bukkit/Paper, command aliases must be declaratively defined in the `plugin.yml` configuration using the `aliases: [alias_name]` property under the root command definition, rather than duplicating the Java executor registration as is done in Forge, NeoForge, and Fabric environments.
 **Action:** When porting command aliases from mod loaders to Paper, directly edit `plugin.yml` instead of modifying Java command registration logic.
+## 2026-07-15 - Interactive Admin Logs Component Styling in Forge/NeoForge
+**Learning:** When generating interactive UI elements in Forge/NeoForge, `Component.literal()` returns a `MutableComponent`. If wrapping strings through a utility method like `colorizeComponent`, ensure the utility explicitly returns `MutableComponent` so that interactive styling (e.g., `.withStyle(HoverEvent...)`) can be applied securely.
+**Action:** When porting interactive text components from Fabric to Forge/NeoForge, explicitly update any intermediary formatting methods to return `MutableComponent` rather than the immutable `Component` interface.

@@ -40,4 +40,17 @@ public class AdminLogAction {
             return new AdminLogResult(ResultType.READ_ERROR, null);
         }
     }
+
+    public static String formatLogLine(String line) {
+        if (!line.contains("ADMIN ACTION - ")) {
+            return "&7" + line;
+        }
+        String[] parts = line.split("ADMIN ACTION - ", 2);
+        String timestamp = parts[0].replace("[", "&8[").replace("]", "&8]");
+        String[] detailParts = parts[1].split(":", 2);
+        if (detailParts.length == 2) {
+            return timestamp + " &c" + detailParts[0].trim() + " &7- &e" + detailParts[1].trim();
+        }
+        return "&7" + line;
+    }
 }
