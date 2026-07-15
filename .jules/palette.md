@@ -65,6 +65,3 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
-## 2026-07-15 - [Interactive CLI Base Command Errors] (Forge/NeoForge CI Fix)
-**Learning:** When applying `.withStyle(...)` to an existing `Component` object returned by utility methods (like `MessageUtil.get(...)`) in Forge and NeoForge implementations, it causes compilation errors because the modern base `Component` interface is immutable. You must explicitly return or cast to `MutableComponent` first, or use `.copy()` if available, to apply styles.
-**Action:** When porting chat interactivity or applying `.withStyle(...)` to an existing `Component` object in Forge/NeoForge, always ensure the component is cast to or returned as `MutableComponent` first, or explicitly call `.copy().withStyle(...)`.
