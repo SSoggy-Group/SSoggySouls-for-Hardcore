@@ -586,7 +586,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(MessageUtil.colorize("&6&l══ Player Info ══"));
 
         if (sender instanceof Player player) {
-            String username = data.getUsername();
+            String username = data.getUsername() != null ? data.getUsername() : "Unknown";
             net.kyori.adventure.text.Component playerComponent = net.kyori.adventure.text.Component.text("Player: ", net.kyori.adventure.text.format.NamedTextColor.GRAY)
                 .append(net.kyori.adventure.text.Component.text(username, net.kyori.adventure.text.format.NamedTextColor.WHITE))
                 .clickEvent(net.kyori.adventure.text.event.ClickEvent.copyToClipboard(username))
