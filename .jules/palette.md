@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2024-05-18 - Interactive Admin Info
+**Learning:** In Paper plugin commands (like `AdminCommand`), replacing plain text administrative data (like player usernames) with interactive Kyori Adventure Components (using `ClickEvent.copyToClipboard`) significantly reduces friction for server admins who frequently need to copy this data for use in other commands.
+**Action:** Always scan admin or info commands for plain text identifiers (UUIDs, Usernames, Coordinates) and convert them to interactive components where applicable.
