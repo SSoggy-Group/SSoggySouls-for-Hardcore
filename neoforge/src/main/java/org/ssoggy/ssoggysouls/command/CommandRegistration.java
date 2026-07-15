@@ -269,19 +269,16 @@ public class CommandRegistration {
                                 if (result.lines.isEmpty()) {
                                     source.sendSystemMessage(MessageUtil.colorizeComponent("&7(Empty)"));
                                 } else {
-                                    if (source.isPlayer()) {
-                                        for (String line : result.lines) {
-                                            String formatted = org.ssoggy.ssoggysouls.command.action.AdminLogAction.formatLogLine(line);
-                                            source.sendSystemMessage(MessageUtil.colorizeComponent(formatted).withStyle(s ->
+                                    for (String line : result.lines) {
+                                        String formatted = org.ssoggy.ssoggysouls.command.action.AdminLogAction.formatLogLine(line);
+                                        net.minecraft.network.chat.MutableComponent component = MessageUtil.colorizeComponent(formatted);
+                                        if (source.isPlayer()) {
+                                            component = component.withStyle(s ->
                                                  s.withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
                                                  .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy log entry").withStyle(net.minecraft.ChatFormatting.GRAY)))
-                                            ));
+                                            );
                                         }
-                                    } else {
-                                        for (String line : result.lines) {
-                                            String formatted = org.ssoggy.ssoggysouls.command.action.AdminLogAction.formatLogLine(line);
-                                            source.sendSystemMessage(MessageUtil.colorizeComponent(formatted));
-                                        }
+                                        source.sendSystemMessage(component);
                                     }
                                 }
                                 source.sendSystemMessage(MessageUtil.colorizeComponent("&6&l══════════════════════"));

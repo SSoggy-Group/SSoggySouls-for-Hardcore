@@ -251,19 +251,16 @@ public class CommandRegistration {
                                 if (result.lines.isEmpty()) {
                                     source.sendMessage(MessageUtil.colorizeText("&7(Empty)").copy());
                                 } else {
-                                    if (source.isExecutedByPlayer()) {
-                                        for (String line : result.lines) {
-                                            String formatted = org.ssoggy.ssoggysouls.command.action.AdminLogAction.formatLogLine(line);
-                                            source.sendMessage(MessageUtil.colorizeText(formatted).copy().styled(s ->
-                                                 s.withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
-                                                 .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to copy log entry").copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))
-                                            ));
+                                    for (String line : result.lines) {
+                                        String formatted = org.ssoggy.ssoggysouls.command.action.AdminLogAction.formatLogLine(line);
+                                        net.minecraft.text.MutableText component = MessageUtil.colorizeText(formatted).copy();
+                                        if (source.isExecutedByPlayer()) {
+                                            component = component.styled(s ->
+                                                s.withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
+                                                .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to copy log entry").copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))
+                                            );
                                         }
-                                    } else {
-                                        for (String line : result.lines) {
-                                            String formatted = org.ssoggy.ssoggysouls.command.action.AdminLogAction.formatLogLine(line);
-                                            source.sendMessage(MessageUtil.colorizeText(formatted).copy());
-                                        }
+                                        source.sendMessage(component);
                                     }
                                 }
                                 source.sendMessage(MessageUtil.colorizeText("&6&l══════════════════════").copy());

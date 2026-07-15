@@ -50,4 +50,19 @@ class AdminLogActionTest {
         assertEquals(AdminLogAction.ResultType.READ_ERROR, result.type);
         assertNull(result.lines);
     }
+
+    @Test
+    void testFormatLogLine() {
+        // Standard matching line
+        String result = AdminLogAction.formatLogLine("[12:34:56] ADMIN ACTION - TEST_ACTION : Test detail");
+        assertEquals("&8[12:34:56&8]  &cTEST_ACTION &7- &eTest detail", result);
+
+        // Missing details (no colon)
+        String noColon = AdminLogAction.formatLogLine("[12:34:56] ADMIN ACTION - TEST_ACTION");
+        assertEquals("&7[12:34:56] ADMIN ACTION - TEST_ACTION", noColon);
+
+        // Not an admin action
+        String notAction = AdminLogAction.formatLogLine("[12:34:56] SYSTEM - Startup");
+        assertEquals("&7[12:34:56] SYSTEM - Startup", notAction);
+    }
 }
