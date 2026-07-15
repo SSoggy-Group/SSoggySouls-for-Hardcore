@@ -65,6 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
-## 2024-05-18 - Interactive Admin Info
-**Learning:** In Paper plugin commands (like `AdminCommand`), replacing plain text administrative data (like player usernames) with interactive Kyori Adventure Components (using `ClickEvent.copyToClipboard`) significantly reduces friction for server admins who frequently need to copy this data for use in other commands.
-**Action:** Always scan admin or info commands for plain text identifiers (UUIDs, Usernames, Coordinates) and convert them to interactive components where applicable.
+## 2026-07-15 - [Interactive CLI Base Command Errors] (Forge/NeoForge CI Fix)
+**Learning:** When applying `.withStyle(...)` to an existing `Component` object returned by utility methods (like `MessageUtil.get(...)`) in Forge and NeoForge implementations, it causes compilation errors because the modern base `Component` interface is immutable. You must explicitly return or cast to `MutableComponent` first, or use `.copy()` if available, to apply styles.
+**Action:** When porting chat interactivity or applying `.withStyle(...)` to an existing `Component` object in Forge/NeoForge, always ensure the component is cast to or returned as `MutableComponent` first, or explicitly call `.copy().withStyle(...)`.

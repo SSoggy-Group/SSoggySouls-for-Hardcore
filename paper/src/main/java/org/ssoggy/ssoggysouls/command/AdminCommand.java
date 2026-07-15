@@ -584,15 +584,9 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void sendInfoHeader(CommandSender sender, PlayerData data) {
         sender.sendMessage(MessageUtil.colorize("&6&l══ Player Info ══"));
+        sender.sendMessage(MessageUtil.colorize("&7Player: &f" + data.getUsername()));
 
         if (sender instanceof Player player) {
-            String username = data.getUsername() != null ? data.getUsername() : "Unknown";
-            net.kyori.adventure.text.Component playerComponent = net.kyori.adventure.text.Component.text("Player: ", net.kyori.adventure.text.format.NamedTextColor.GRAY)
-                .append(net.kyori.adventure.text.Component.text(username, net.kyori.adventure.text.format.NamedTextColor.WHITE))
-                .clickEvent(net.kyori.adventure.text.event.ClickEvent.copyToClipboard(username))
-                .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to copy username", net.kyori.adventure.text.format.NamedTextColor.GRAY)));
-            player.sendMessage(playerComponent);
-
             String uuidStr = data.getUuid().toString();
             net.kyori.adventure.text.Component uuidComponent = net.kyori.adventure.text.Component.text("UUID: ", net.kyori.adventure.text.format.NamedTextColor.GRAY)
                 .append(net.kyori.adventure.text.Component.text(uuidStr, net.kyori.adventure.text.format.NamedTextColor.WHITE))
@@ -600,7 +594,6 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("Click to copy UUID", net.kyori.adventure.text.format.NamedTextColor.GRAY)));
             player.sendMessage(uuidComponent);
         } else {
-            sender.sendMessage(MessageUtil.colorize("&7Player: &f" + data.getUsername()));
             sender.sendMessage(MessageUtil.colorize("&7UUID: &f" + data.getUuid()));
         }
 
