@@ -65,3 +65,12 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-07-25 - [Interactive CLI Trust List Validation]
+**Learning:** When adding interactive hover/click events to dynamic lists based on functional predicates (like lambda filters), blindly returning  when a parameter is missing can cause s if the underlying API isn't built to handle null predicates. In a UX task, it is critical not to introduce functional bugs while adding visual flair.
+**Action:** When filtering maps or collections conditionally to add UX features, always use a safe fallback predicate (e.g., ) or verify the underlying method's null-handling before modifying the condition logic.
+## 2026-07-25 - [Interactive CLI Trust List Validation]
+**Learning:** When adding interactive hover/click events to dynamic lists based on functional predicates (like lambda filters), blindly returning `null` when a parameter is missing can cause `NullPointerException`s if the underlying API isn't built to handle null predicates. In a UX task, it is critical not to introduce functional bugs while adding visual flair.
+**Action:** When filtering maps or collections conditionally to add UX features, always use a safe fallback predicate (e.g., `(k, v) -> true`) or verify the underlying method's null-handling before modifying the condition logic.
+## 2026-07-25 - [Interactive CLI Trust List Display]
+**Learning:** Displaying long lists of usernames in chat commands (like `/trust info`) forces users to manually re-type those names if they want to check the player's status or modify their relation later.
+**Action:** When printing player usernames in custom list outputs, wrap them in Kyori Adventure MiniMessage components (`<click:suggest_command:'/pstatus [name]'><hover>...`) so users can interact with them directly in the chat interface.
