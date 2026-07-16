@@ -86,3 +86,7 @@
 ## 2024-07-02 - [Preserve Enum Order when Caching]
 **Learning:** When caching `Enum.values()` into a `Set` to prevent `O(N)` allocations during frequent operations like tab completions, using a standard `HashSet` destroys the original enum declaration order, which can cause tab completions to appear randomly sorted to the user.
 **Action:** Use `java.util.LinkedHashSet` (e.g. `Collectors.toCollection(LinkedHashSet::new)`) when collecting cached enum elements. This maintains `O(1)` lookups while preserving insertion order for deterministic UI and tab completion results.
+
+## 2026-07-16 - [Avoid `.toLowerCase().split()` on full chat messages]
+**Learning:** Using `rawMessage.toLowerCase().split(" ")[0]` inside high-frequency listeners like `PlayerCommandPreprocessEvent` unnecessarily allocates a string array and lowercases the entire message (which could be long) just to extract the first word.
+**Action:** Use `indexOf(' ')` to find the first space and `substring()` to isolate the command before calling `.toLowerCase()`, preventing wasteful allocations and CPU cycles on large strings.
