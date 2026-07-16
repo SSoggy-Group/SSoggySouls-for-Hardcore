@@ -4,13 +4,13 @@ buildscript {
     }
     configurations.all {
         resolutionStrategy {
-            force 'de.siegmar:fastcsv:2.0.0'
+            force 'de.siegmar:fastcsv:4.3.1'
         }
     }
 }
 
 plugins {
-    id "org.sonarqube" version "7.3.0.8198"
+    id "org.sonarqube" version "7.3.1.8318"
 }
 
 allprojects {
@@ -46,7 +46,7 @@ subprojects {
 
     configurations.all {
         resolutionStrategy {
-            force 'de.siegmar:fastcsv:2.0.0'
+            force 'de.siegmar:fastcsv:4.3.1'
         }
     }
 
