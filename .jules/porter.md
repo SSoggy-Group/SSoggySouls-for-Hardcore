@@ -13,3 +13,7 @@
 ## 2026-07-11 - Command Aliases
 **Learning:** In Bukkit/Paper, command aliases must be declaratively defined in the `plugin.yml` configuration using the `aliases: [alias_name]` property under the root command definition, rather than duplicating the Java executor registration as is done in Forge, NeoForge, and Fabric environments.
 **Action:** When porting command aliases from mod loaders to Paper, directly edit `plugin.yml` instead of modifying Java command registration logic.
+
+## 2024-07-17 - ChatComponent Immutability in Forge/NeoForge
+**Learning:** In newer Forge/NeoForge mappings, the base `Component` interface is immutable and lacks chaining methods like `withStyle`. When returning base text components from utility methods that will be styled later, the return type must explicitly be `MutableComponent`.
+**Action:** Always return `MutableComponent` from `MessageUtil` and similar formatting methods when targeting Forge/NeoForge.
