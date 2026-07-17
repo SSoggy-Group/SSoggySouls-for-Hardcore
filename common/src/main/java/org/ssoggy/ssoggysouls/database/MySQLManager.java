@@ -2,6 +2,7 @@ package org.ssoggy.ssoggysouls.database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -155,10 +156,18 @@ public class MySQLManager extends AbstractDatabaseManager {
             throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + normalizedDefinition);
         }
 
-        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + safeColumnName + " " + normalizedDefinition;
-        try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-            ps.executeUpdate();
-            plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
+        try {
+            try (ResultSet rs = conn.getMetaData().getColumns(null, null, tableName, safeColumnName)) {
+                if (rs.next()) {
+                    return; // Column already exists
+                }
+            }
+
+            String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + safeColumnName + " " + normalizedDefinition;
+            try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+                ps.executeUpdate();
+                plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
+            }
         } catch (SQLException e) {
             String sqlState = e.getSQLState();
             boolean duplicateColumn = e.getErrorCode() == MYSQL_DUPLICATE_COLUMN

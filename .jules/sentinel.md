@@ -27,3 +27,8 @@
 **Vulnerability:** In `LeaveLimboCommand.java`, `RPConfig.java`, and `UpdateChecker.java`, exception messages (`e.getMessage()`) were directly appended to error logs using `logger.severe()` or `logger.warning()`.
 **Learning:** Appending `e.getMessage()` manually instead of passing the entire Exception object can leak sensitive information to the logs without providing a full stack trace, reducing debuggability and posing a potential security risk.
 **Prevention:** Always use `logger.log(Level.SEVERE, "context message", exception)` or equivalent to properly log the context message and the full stack trace securely.
+
+## 2024-07-17 - Prevent Database Schema/Driver Details Leakage
+**Vulnerability:** Database metadata (like column existence) was being inferred by catching SQLExceptions and matching the error message text or vendor-specific error codes.
+**Learning:** This exposes underlying schema details and driver-specific error patterns. Error message text is fragile.
+**Prevention:** Always use `Connection.getMetaData().getColumns(...)` to explicitly query the schema for column existence before making DDL changes, avoiding exceptions entirely.
