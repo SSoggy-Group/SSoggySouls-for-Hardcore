@@ -139,16 +139,21 @@ public class SQLiteManager extends AbstractDatabaseManager {
             throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + normalizedDefinition);
         }
 
+        try (java.sql.ResultSet rs = conn.getMetaData().getColumns(null, null, tableName, safeColumnName)) {
+            if (rs.next()) {
+                return; // Column already exists
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to check if " + columnName + " column exists");
+            return;
+        }
+
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + safeColumnName + " " + normalizedDefinition;
         try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.executeUpdate();
             plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
         } catch (SQLException e) {
-            boolean duplicateColumn = e.getMessage() != null
-                    && e.getMessage().toLowerCase().contains("duplicate column name");
-            if (!duplicateColumn) {
-                plugin.getLogger().log(Level.WARNING, e, () -> "Failed to ensure " + columnName + " column");
-            }
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to ensure " + columnName + " column");
         }
     }
 

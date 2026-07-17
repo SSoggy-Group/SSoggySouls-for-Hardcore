@@ -1,12 +1,13 @@
 package org.ssoggy.ssoggysouls.util;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 /**
  * Forge-specific MessageUtil.
  * <p>
  * Delegates raw substitution to the common {@link MessageHelper} and wraps
- * results in Minecraft {@link Component} for use with Forge's chat API.
+ * results in Minecraft {@link MutableComponent} for use with Forge's chat API.
  */
 public final class MessageUtil extends MessageHelper {
 
@@ -24,15 +25,15 @@ public final class MessageUtil extends MessageHelper {
         return getRaw(key, replacements);
     }
 
-    public static Component get(String key, Object... replacements) {
+    public static MutableComponent get(String key, Object... replacements) {
         return colorizeComponent(prefix + getRaw(key, replacements));
     }
 
-    public static Component getNoPrefix(String key, Object... replacements) {
+    public static MutableComponent getNoPrefix(String key, Object... replacements) {
         return colorizeComponent(getRaw(key, replacements));
     }
 
-    public static Component colorizeComponent(String text) {
+    public static MutableComponent colorizeComponent(String text) {
         if (text == null) return Component.empty();
         return Component.literal(text.replace('&', '\u00a7'));
     }
