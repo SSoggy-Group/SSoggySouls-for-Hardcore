@@ -22,22 +22,19 @@ public class LimboServerListener {
 
     private static DatabaseManager db;
 
-    private static final java.util.Set<String> WHITELISTED_COMMANDS = java.util.Set.of(
-            "/msg", "/tell", "/r", "/reply", "/help", "/list",
-            "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
-    );
-
     private LimboServerListener() {}
 
     public static void setDatabase(DatabaseManager database) {
         db = database;
     }
 
-    private static boolean isWhitelistedCommand(String fullCommand) {
-        String clean = fullCommand.trim().toLowerCase(java.util.Locale.ROOT);
-        String[] tokens = clean.split("\\s+");
-        String command = tokens.length > 0 ? tokens[0] : "";
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
+    private static boolean isWhitelistedCommand(String command) {
+        return "/msg".equals(command) || "/tell".equals(command)
+                || "/r".equals(command) || "/reply".equals(command)
+                || "/help".equals(command) || "/list".equals(command)
+                || "/pstatus".equals(command)
+                || "/psadmin".equals(command) || "/psa".equals(command)
+                || "/revive".equals(command) || "/psetlives".equals(command);
     }
 
     @SubscribeEvent
@@ -66,11 +63,14 @@ public class LimboServerListener {
 
         net.minecraft.commands.CommandSourceStack source = event.getParseResults().getContext().getSource();
         if (source.getEntity() instanceof ServerPlayer player) {
-            String fullCommand = event.getParseResults().getReader().getString();
-
             if (db.isPlayerDead(player.getUUID())) {
-                String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
-                if (!isWhitelistedCommand(cmdToCheck)) {
+                String fullCommand = event.getParseResults().getReader().getString();
+                String cmdToCheck = (fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand).trim();
+
+                int spaceIdx = cmdToCheck.indexOf(' ');
+                String alias = (spaceIdx == -1 ? cmdToCheck : cmdToCheck.substring(0, spaceIdx)).toLowerCase(java.util.Locale.ROOT);
+
+                if (!isWhitelistedCommand(alias)) {
                     event.setCanceled(true);
                     player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
                 }

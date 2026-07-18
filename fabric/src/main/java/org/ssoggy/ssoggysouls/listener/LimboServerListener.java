@@ -18,7 +18,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 
 import java.util.UUID;
-import java.util.Set;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,11 +26,6 @@ public class LimboServerListener {
     private static DatabaseManager db;
 
     private static final String LIMBO_CANNOT_LEAVE_MESSAGE = "limbo-cannot-leave";
-
-    private static final Set<String> WHITELISTED_COMMANDS = Set.of(
-            "/msg", "/tell", "/r", "/reply", "/help", "/list",
-            "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
-    );
 
     private LimboServerListener() {
         registerJoinEvent();
@@ -98,19 +92,26 @@ public class LimboServerListener {
         });
     }
 
-    private static boolean isWhitelistedCommand(String message) {
-        String[] tokens = message.trim().split("\\s+");
-        String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
+    private static boolean isWhitelistedCommand(String command) {
+        return "/msg".equals(command) || "/tell".equals(command)
+                || "/r".equals(command) || "/reply".equals(command)
+                || "/help".equals(command) || "/list".equals(command)
+                || "/pstatus".equals(command)
+                || "/psadmin".equals(command) || "/psa".equals(command)
+                || "/revive".equals(command) || "/psetlives".equals(command);
     }
 
     public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {
         if (db == null) return false;
         
-        String fullCmd = "/" + command;
-        if (db.isPlayerDead(player.getUuid()) && !isWhitelistedCommand(fullCmd)) {
-            player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
-            return true;
+        if (db.isPlayerDead(player.getUuid())) {
+            String fullCmd = "/" + command.trim();
+            int spaceIdx = fullCmd.indexOf(' ');
+            String alias = (spaceIdx == -1 ? fullCmd : fullCmd.substring(0, spaceIdx)).toLowerCase(Locale.ROOT);
+            if (!isWhitelistedCommand(alias)) {
+                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
+                return true;
+            }
         }
         return false;
     }
