@@ -24,16 +24,16 @@ public final class MessageUtil extends MessageHelper {
         return getRaw(key, replacements);
     }
 
-    public static net.minecraft.network.chat.MutableComponent get(String key, Object... replacements) {
+    public static Component get(String key, Object... replacements) {
         return colorizeComponent(prefix + getRaw(key, replacements));
     }
 
-    public static net.minecraft.network.chat.MutableComponent getNoPrefix(String key, Object... replacements) {
+    public static Component getNoPrefix(String key, Object... replacements) {
         return colorizeComponent(getRaw(key, replacements));
     }
 
-    public static net.minecraft.network.chat.MutableComponent colorizeComponent(String text) {
-        if (text == null) return Component.empty().copy();
+    public static Component colorizeComponent(String text) {
+        if (text == null) return Component.empty();
         return Component.literal(text.replace('&', '\u00a7'));
     }
 }
