@@ -7,7 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CommandRegistrationTest {
 
     @Test
-    void testDummy() {
+    void testCommandRegistration() {
+        CommandRegistration.register(null);
         assertTrue(true);
     }
 }
