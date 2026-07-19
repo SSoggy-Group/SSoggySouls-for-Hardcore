@@ -13,3 +13,6 @@
 ## 2026-07-11 - Command Aliases
 **Learning:** In Bukkit/Paper, command aliases must be declaratively defined in the `plugin.yml` configuration using the `aliases: [alias_name]` property under the root command definition, rather than duplicating the Java executor registration as is done in Forge, NeoForge, and Fabric environments.
 **Action:** When porting command aliases from mod loaders to Paper, directly edit `plugin.yml` instead of modifying Java command registration logic.
+## 2026-07-19 - Trust List Interactivity Port
+**Learning:** When porting interactive list components (like trust lists) that use `MiniMessage` in Paper, we must map them directly to `net.minecraft.text.Text` (Fabric) and `net.minecraft.network.chat.Component` (Forge/NeoForge), explicitly appending literal components and events recursively while retaining platform-specific style resets.
+**Action:** Use the loader-specific `Component/Text.literal().styled()` structures with `ClickEvent` and `HoverEvent` to mirror Bukkit/Paper string-based tags when iterating over collections.

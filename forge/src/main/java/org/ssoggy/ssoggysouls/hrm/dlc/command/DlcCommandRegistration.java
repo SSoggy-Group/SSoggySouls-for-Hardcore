@@ -155,7 +155,24 @@ public final class DlcCommandRegistration {
 
         ServerPlayer player = source.getPlayer();
         if (action.get() == DlcTrustAction.INFO && targetName == null) {
-            sendTrustResult(source, DlcTrustService.execute(player.getUUID(), player.getScoreboardName(), null, null, DlcTrustAction.INFO));
+            if (source.isPlayer()) {
+                source.sendSystemMessage(net.minecraft.network.chat.Component.literal("\n--- Trust List ---").withStyle(style -> style.withColor(net.minecraft.ChatFormatting.GREEN)));
+                java.util.Map<java.util.UUID, org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcRelation> relations = DlcTrustService.getTrustRelations(player.getUUID());
+                if (relations.isEmpty()) {
+                    source.sendSystemMessage(net.minecraft.network.chat.Component.literal("Your trust list is empty.").withStyle(style -> style.withColor(net.minecraft.ChatFormatting.GRAY)));
+                } else {
+                    relations.forEach((uuid, relation) -> {
+                        String username = org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames.getOrDefault(uuid, uuid.toString());
+                        source.sendSystemMessage(net.minecraft.network.chat.Component.literal("- ").withStyle(style -> style.withColor(net.minecraft.ChatFormatting.WHITE))
+                                .append(net.minecraft.network.chat.Component.literal(username).withStyle(style -> style.withColor(net.minecraft.ChatFormatting.WHITE)
+                                        .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/pstatus " + username))
+                                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, net.minecraft.network.chat.Component.literal("Click to check player status").withStyle(s -> s.withColor(net.minecraft.ChatFormatting.GRAY))))))
+                                .append(net.minecraft.network.chat.Component.literal(": " + relation).withStyle(style -> style.withColor(net.minecraft.ChatFormatting.WHITE).withBold(false))));
+                    });
+                }
+            } else {
+                sendTrustResult(source, DlcTrustService.execute(player.getUUID(), player.getScoreboardName(), null, null, DlcTrustAction.INFO));
+            }
             return 1;
         }
 

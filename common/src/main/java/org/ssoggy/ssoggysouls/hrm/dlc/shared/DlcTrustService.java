@@ -118,9 +118,13 @@ public final class DlcTrustService {
         return new TrustResult(DlcCommandResult.success("You have now entrusted " + targetName), null);
     }
 
+    public static Map<UUID, DlcRelation> getTrustRelations(UUID playerUuid) {
+        return new DlcSocial(playerUuid).getRelationsToAll((uuid, relation) -> relation != DlcRelation.UNTRUSTED);
+    }
+
     private static DlcCommandResult showTrustList(UUID playerUuid) {
         StringBuilder builder = new StringBuilder("--- Trust List ---");
-        Map<UUID, DlcRelation> relations = new DlcSocial(playerUuid).getRelationsToAll((uuid, relation) -> relation != DlcRelation.UNTRUSTED);
+        Map<UUID, DlcRelation> relations = getTrustRelations(playerUuid);
         if (relations.isEmpty()) {
             return DlcCommandResult.info("Your trust list is empty.");
         }
