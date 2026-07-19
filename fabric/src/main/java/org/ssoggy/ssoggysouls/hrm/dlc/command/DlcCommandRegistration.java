@@ -152,7 +152,24 @@ public final class DlcCommandRegistration {
         }
 
         if (action.get() == DlcTrustAction.INFO && targetName == null) {
-            sendTrustResult(source, DlcTrustService.execute(player.getUuid(), player.getName().getString(), null, null, DlcTrustAction.INFO));
+            if (source.isExecutedByPlayer()) {
+                source.sendMessage(net.minecraft.text.Text.literal("\n--- Trust List ---").styled(style -> style.withColor(net.minecraft.util.Formatting.GREEN)));
+                java.util.Map<java.util.UUID, org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcRelation> relations = DlcTrustService.getTrustRelations(player.getUuid());
+                if (relations.isEmpty()) {
+                    source.sendMessage(net.minecraft.text.Text.literal("Your trust list is empty.").styled(style -> style.withColor(net.minecraft.util.Formatting.GRAY)));
+                } else {
+                    relations.forEach((uuid, relation) -> {
+                        String username = org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames.getOrDefault(uuid, uuid.toString());
+                        source.sendMessage(net.minecraft.text.Text.literal("- ").styled(style -> style.withColor(net.minecraft.util.Formatting.WHITE))
+                                .append(net.minecraft.text.Text.literal(username).styled(style -> style.withColor(net.minecraft.util.Formatting.WHITE)
+                                        .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/pstatus " + username))
+                                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to check player status").styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY))))))
+                                .append(net.minecraft.text.Text.literal(": " + relation).styled(style -> style.withColor(net.minecraft.util.Formatting.WHITE).withBold(false))));
+                    });
+                }
+            } else {
+                sendTrustResult(source, DlcTrustService.execute(player.getUuid(), player.getName().getString(), null, null, DlcTrustAction.INFO));
+            }
             return 1;
         }
 
