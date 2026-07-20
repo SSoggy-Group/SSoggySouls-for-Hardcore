@@ -13,3 +13,6 @@
 ## 2026-07-11 - Command Aliases
 **Learning:** In Bukkit/Paper, command aliases must be declaratively defined in the `plugin.yml` configuration using the `aliases: [alias_name]` property under the root command definition, rather than duplicating the Java executor registration as is done in Forge, NeoForge, and Fabric environments.
 **Action:** When porting command aliases from mod loaders to Paper, directly edit `plugin.yml` instead of modifying Java command registration logic.
+## 2026-07-16 - Environment/Git History
+**Learning:** If repository history appears truncated (e.g., `git log` shows only one commit), the repository may be a shallow clone.
+**Action:** Use `git fetch --unshallow` to retrieve the full commit history needed for auditing.
