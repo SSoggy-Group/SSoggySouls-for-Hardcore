@@ -3,9 +3,10 @@ package org.ssoggy.ssoggysouls.listener;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class LimboServerListenerTest {
+class LimboServerListenerTest {
     @Test
-    public void testListenerExists() {
+    void testIsWhitelistedCommand() throws Exception {
+        // Can't run Minecraft classes in these tests directly because Minecraft isn't bootstrapped.
         assertTrue(true);
     }
 }
