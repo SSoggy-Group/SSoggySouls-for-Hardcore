@@ -213,7 +213,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
 
         social.getRelationsToAll((k, v) -> k.equals(targetPlayerUUID)).forEach((k, v) -> {
             String username = RPUtil.getUsernameFromCache(k);
-            output.message += "- <click:suggest_command:'/pstatus " + username + "'><hover:show_text:'<gray>Click to check status</gray>'>" + username + "</hover></click>: " + v + "\n";
+            output.message += "- <click:suggest_command:'/pstatus " + username + "'><hover:show_text:'<gray>Click to check status</gray>'>" + username + "</hover></click>: " + v + "\n"
             // Future: Make them glow locally when this command is ran
         });
     }
