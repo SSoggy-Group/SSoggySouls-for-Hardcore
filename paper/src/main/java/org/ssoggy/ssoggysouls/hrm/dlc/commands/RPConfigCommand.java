@@ -101,7 +101,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     private void executeTimerCMD(String who, String where, RPCommandOutput result, String label) {
         if (!RPStatic.CONFIG_TIMERS.containsKey(where)) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Invalid timer: " + where;
+            result.message = buildErrorComponent(CMD_PREFIX + "timer ", where);
             return;
         }
         try {
@@ -128,12 +128,12 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         OPTIONEDITENUM action = OPTIONEDITENUM.getEnumFromVal(what);
         if (!RPStatic.BLOCK_TAGS.containsKey(where)) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Invalid structure: " + where;
+            result.message = buildErrorComponent(CMD_PREFIX + "structure ", where);
             return;
         }
         if (action == null) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Use add, remove, or reset.";
+            result.message = "Use add, remove, or reset. " + buildErrorComponent(CMD_PREFIX + "structure " + where + " ", what);
             return;
         }
 
@@ -143,7 +143,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     whoMat = Material.getMaterial(who);
                     if (whoMat == null) {
                         result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = "Invalid BlockMaterial entered";
+                        result.message = buildErrorComponent(CMD_PREFIX + "structure " + where + " " + action.name().toLowerCase(java.util.Locale.ROOT) + " ", who);
                         break;
                     }
 
@@ -165,7 +165,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     whoMat = Material.getMaterial(who);
                     if (whoMat == null) {
                         result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = "Invalid BlockMaterial entered";
+                        result.message = buildErrorComponent(CMD_PREFIX + "structure " + where + " " + action.name().toLowerCase(java.util.Locale.ROOT) + " ", who);
                         return;
                     }
 
