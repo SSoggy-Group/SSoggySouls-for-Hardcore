@@ -10,6 +10,3 @@
 ## 2026-07-03 - Interactive Security Block Parity
 **Learning:** When porting interactive command responses across platforms, explicitly check if the command source is a player (`isExecutedByPlayer()` in Fabric, `isPlayer()` in Forge/NeoForge) before attaching rich text events (e.g. click/hover), providing a simple fallback text for console execution.
 **Action:** Always verify command source context for interactive parity to prevent exceptions on headless environments.
-## 2026-07-11 - Command Aliases
-**Learning:** In Bukkit/Paper, command aliases must be declaratively defined in the `plugin.yml` configuration using the `aliases: [alias_name]` property under the root command definition, rather than duplicating the Java executor registration as is done in Forge, NeoForge, and Fabric environments.
-**Action:** When porting command aliases from mod loaders to Paper, directly edit `plugin.yml` instead of modifying Java command registration logic.
