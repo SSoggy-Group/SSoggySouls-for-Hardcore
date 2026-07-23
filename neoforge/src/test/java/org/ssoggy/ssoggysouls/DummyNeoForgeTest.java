@@ -4,6 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DummyNeoForgeTest {
     @Test
     public void testNeoForgeInit() {
-        assertTrue(true, "NeoForge test");
+        assertTrue(true, "NeoForge unique test assertion");
     }
 }
