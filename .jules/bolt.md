@@ -86,3 +86,6 @@
 ## 2024-07-02 - [Preserve Enum Order when Caching]
 **Learning:** When caching `Enum.values()` into a `Set` to prevent `O(N)` allocations during frequent operations like tab completions, using a standard `HashSet` destroys the original enum declaration order, which can cause tab completions to appear randomly sorted to the user.
 **Action:** Use `java.util.LinkedHashSet` (e.g. `Collectors.toCollection(LinkedHashSet::new)`) when collecting cached enum elements. This maintains `O(1)` lookups while preserving insertion order for deterministic UI and tab completion results.
+## 2026-07-23 - [Component literal mutation]
+**Learning:**  in Forge and NeoForge returns a mutable  instance that is *not* shared globally unless it is explicitly cached. While it is good practice to call  when styling components retrieved from translation caches to prevent global mutation, calling  on a freshly instantiated  is redundant and unnecessary, though it does not cause errors.
+**Action:** Do not append  when styling . Only use  when applying styles to cached component instances.
