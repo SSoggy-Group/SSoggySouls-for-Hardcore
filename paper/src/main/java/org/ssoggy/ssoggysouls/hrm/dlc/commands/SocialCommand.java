@@ -42,6 +42,12 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     // ⚡ Bolt: Cache enum string mappings to avoid redundant O(N) array allocations and .toLowerCase() calls on every tab complete
     private static final List<String> TRUST_ACTIONS = TRUSTENUM.VALUES.stream().map(x -> x.name().toLowerCase(Locale.ROOT)).toList();
 
+
+    private String getInteractiveBlockError(OfflinePlayer targetPlayer) {
+        String name = targetPlayer != null && targetPlayer.getName() != null ? targetPlayer.getName() : "Unknown";
+        return "Player has you blocked. <click:suggest_command:'/trust block " + name + "'><hover:show_text:'<gray>Click to block them back</gray>'><gray>[Block Back]</gray></hover></click>";
+    }
+
     public void executeFail(CommandSender cmdSender, RPCommandOutput cmdOutput) {
         cmdOutput.success = COMMANDOUTPUTENUM.FALSE;
         cmdOutput.message = "Please use <click:suggest_command:'/trust '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/trust \\<action\\> [player]</gray></hover></click>";
@@ -146,7 +152,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     private boolean handleBlock(SocialContext ctx, RPSocial targetSocial,
                              SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
         if (ctx.playerUUID.equals(ctx.targetPlayerUUID)) {
-            executeFail(ctx.sender, ctx.output, "Player has you blocked. <click:suggest_command:'/trust block " + ctx.targetPlayer.getName() + "'><hover:show_text:'<gray>Click to block them back</gray>'><gray>[Block Back]</gray></hover></click>");
+            executeFail(ctx.sender, ctx.output, getInteractiveBlockError(ctx.targetPlayer));
             return false;
         }
         boolean changed = false;
@@ -179,7 +185,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     private boolean handleGrant(SocialContext ctx, RPSocial targetSocial,
                              SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
         if (ctx.playerUUID.equals(ctx.targetPlayerUUID)) {
-            executeFail(ctx.sender, ctx.output, "Player has you blocked. <click:suggest_command:'/trust block " + ctx.targetPlayer.getName() + "'><hover:show_text:'<gray>Click to block them back</gray>'><gray>[Block Back]</gray></hover></click>");
+            executeFail(ctx.sender, ctx.output, getInteractiveBlockError(ctx.targetPlayer));
             return false;
         }
 
@@ -188,7 +194,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
             ctx.output.success = COMMANDOUTPUTENUM.INFO;
             ctx.output.message = "You have already entrusted " + ctx.targetPlayer.getName();
         } else if (theirRelation == SOCIALENUM.BLOCKED) { // They Blocked you
-            executeFail(ctx.sender, ctx.output, "Player has you blocked. <click:suggest_command:'/trust block " + ctx.targetPlayer.getName() + "'><hover:show_text:'<gray>Click to block them back</gray>'><gray>[Block Back]</gray></hover></click>");
+            executeFail(ctx.sender, ctx.output, getInteractiveBlockError(ctx.targetPlayer));
         } else if (theirRelation == SOCIALENUM.TRUSTED) { // Make Players Allies
             changed |= ctx.social.setRelationTo(ctx.targetPlayerUUID, SOCIALENUM.FRIENDS);
             changed |= targetSocial.setRelationTo(ctx.playerUUID, SOCIALENUM.FRIENDS);

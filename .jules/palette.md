@@ -71,3 +71,6 @@
 ## 2026-07-28 - [Interactive CLI Number Parsing Errors with RPCommandOutput] (Forge CI Fix)
 **Learning:** When trying to update the legacy error markers to use Kyori Adventure MiniMessage components and applying hover/click styles in the Forge/NeoForge implementation, calling `.withStyle(...)` directly on the component returned from `MessageUtil.get(...)` can cause compilation errors if the component instance is cached or shared across invocations. The compiler requires you to `.copy()` the component first.
 **Action:** When porting chat interactivity or applying `.withStyle(...)` to an existing `Component` object returned from `MessageUtil` in Forge/NeoForge, always insert `.copy()` first.
+## 2026-07-28 - [Interactive CLI Number Parsing Errors with RPCommandOutput] (SonarQube Fix)
+**Learning:** When using repeated Kyori Adventure components like `HoverEvent` or duplicated text strings for interactive errors, it can cause SonarQube quality gate failures. Refactoring interactive elements into helper methods satisfies maintainability requirements while preserving the UX enhancements.
+**Action:** Extract repeated Kyori MiniMessage error strings or `HoverEvent` instantiation logic into reusable helper methods to keep the codebase clean and satisfy static code analysis.
