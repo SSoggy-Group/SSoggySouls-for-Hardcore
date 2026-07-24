@@ -68,3 +68,6 @@
 ## 2026-07-28 - [Interactive CLI Block Back Action]
 **Learning:** When users attempt to interact with another player (e.g. `/trust`) and are rejected with a static "Player has you blocked" message, they often want to retaliate or block that user back. A plain text error forces them to type out the block command manually.
 **Action:** When sending a "Player has you blocked" error message, append an interactive MiniMessage component (like `<click:suggest_command:'/trust block ...'>[Block Back]</click>`) to allow single-click retaliation or recovery, significantly reducing friction in social commands.
+## 2026-07-28 - [Interactive CLI Number Parsing Errors with RPCommandOutput] (Forge CI Fix)
+**Learning:** When trying to update the legacy error markers to use Kyori Adventure MiniMessage components and applying hover/click styles in the Forge/NeoForge implementation, calling `.withStyle(...)` directly on the component returned from `MessageUtil.get(...)` can cause compilation errors if the component instance is cached or shared across invocations. The compiler requires you to `.copy()` the component first.
+**Action:** When porting chat interactivity or applying `.withStyle(...)` to an existing `Component` object returned from `MessageUtil` in Forge/NeoForge, always insert `.copy()` first.
