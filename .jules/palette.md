@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-07-28 - [Interactive CLI Block Back Action]
+**Learning:** When users attempt to interact with another player (e.g. `/trust`) and are rejected with a static "Player has you blocked" message, they often want to retaliate or block that user back. A plain text error forces them to type out the block command manually.
+**Action:** When sending a "Player has you blocked" error message, append an interactive MiniMessage component (like `<click:suggest_command:'/trust block ...'>[Block Back]</click>`) to allow single-click retaliation or recovery, significantly reducing friction in social commands.

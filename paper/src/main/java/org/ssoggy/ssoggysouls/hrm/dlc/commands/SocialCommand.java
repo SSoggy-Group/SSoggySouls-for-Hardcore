@@ -146,7 +146,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     private boolean handleBlock(SocialContext ctx, RPSocial targetSocial,
                              SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
         if (ctx.playerUUID.equals(ctx.targetPlayerUUID)) {
-            executeFail(ctx.sender, ctx.output, "Player has you blocked");
+            executeFail(ctx.sender, ctx.output, "Player has you blocked. <click:suggest_command:'/trust block " + ctx.targetPlayer.getName() + "'><hover:show_text:'<gray>Click to block them back</gray>'><gray>[Block Back]</gray></hover></click>");
             return false;
         }
         boolean changed = false;
@@ -179,7 +179,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     private boolean handleGrant(SocialContext ctx, RPSocial targetSocial,
                              SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
         if (ctx.playerUUID.equals(ctx.targetPlayerUUID)) {
-            executeFail(ctx.sender, ctx.output, "Player has you blocked");
+            executeFail(ctx.sender, ctx.output, "Player has you blocked. <click:suggest_command:'/trust block " + ctx.targetPlayer.getName() + "'><hover:show_text:'<gray>Click to block them back</gray>'><gray>[Block Back]</gray></hover></click>");
             return false;
         }
 
@@ -188,7 +188,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
             ctx.output.success = COMMANDOUTPUTENUM.INFO;
             ctx.output.message = "You have already entrusted " + ctx.targetPlayer.getName();
         } else if (theirRelation == SOCIALENUM.BLOCKED) { // They Blocked you
-            executeFail(ctx.sender, ctx.output, "Player has you blocked.");
+            executeFail(ctx.sender, ctx.output, "Player has you blocked. <click:suggest_command:'/trust block " + ctx.targetPlayer.getName() + "'><hover:show_text:'<gray>Click to block them back</gray>'><gray>[Block Back]</gray></hover></click>");
         } else if (theirRelation == SOCIALENUM.TRUSTED) { // Make Players Allies
             changed |= ctx.social.setRelationTo(ctx.targetPlayerUUID, SOCIALENUM.FRIENDS);
             changed |= targetSocial.setRelationTo(ctx.playerUUID, SOCIALENUM.FRIENDS);
