@@ -27,3 +27,7 @@
 **Vulnerability:** In `LeaveLimboCommand.java`, `RPConfig.java`, and `UpdateChecker.java`, exception messages (`e.getMessage()`) were directly appended to error logs using `logger.severe()` or `logger.warning()`.
 **Learning:** Appending `e.getMessage()` manually instead of passing the entire Exception object can leak sensitive information to the logs without providing a full stack trace, reducing debuggability and posing a potential security risk.
 **Prevention:** Always use `logger.log(Level.SEVERE, "context message", exception)` or equivalent to properly log the context message and the full stack trace securely.
+## 2026-07-25 - [Check for column existence before DDL execution]
+**Vulnerability:** Adding columns via `ALTER TABLE` DDL without checking if they exist can rely purely on `SQLException` handling. If DDL metadata operations are repeatedly failing or cause errors due to unique database implementations, this can cause hidden instability or leak trace data in less controlled environments.
+**Learning:** Relying purely on `SQLException` duplicate handling is less robust and defensively secure than explicitly checking database metadata.
+**Prevention:** When checking for database metadata states (like column existence) inside JDBC logic, explicitly use `Connection.getMetaData().getColumns(...)` before executing the DDL query, while retaining the exception parsing as a fallback.
