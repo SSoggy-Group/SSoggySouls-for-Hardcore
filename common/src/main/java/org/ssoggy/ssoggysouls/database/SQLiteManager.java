@@ -139,6 +139,14 @@ public class SQLiteManager extends AbstractDatabaseManager {
             throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + normalizedDefinition);
         }
 
+        try (java.sql.ResultSet rs = conn.getMetaData().getColumns(null, null, tableName, safeColumnName)) {
+            if (rs.next()) {
+                return;
+            }
+        } catch (SQLException e) {
+            // Fallback to catching duplicate column exception during ALTER TABLE
+        }
+
         String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + safeColumnName + " " + normalizedDefinition;
         try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.executeUpdate();
