@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-07-28 - [Interactive CLI Name Linking in Admin Info]
+**Learning:** When displaying detailed administrative information (like player profiles in `/psadmin info`), displaying the player's name as plain text misses an opportunity for intuitive navigation.
+**Action:** Enhance plain text player names in info displays with Kyori Adventure components that include a `suggestCommand` (e.g., `/pstatus <name>`) and a hover prompt ("Click to check status"), allowing admins to seamlessly transition between related commands without retyping names.
