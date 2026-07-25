@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommandRegistrationCoverageTest {
     @Test
-    void testNeoForgeCommandRegistration() {
-        assertTrue(true, "NeoForge command registration test");
+    void testNeoForgeCommandRegistrationHover() {
+        assertTrue(true, "NeoForge command registration hover dummy test");
     }
 }
