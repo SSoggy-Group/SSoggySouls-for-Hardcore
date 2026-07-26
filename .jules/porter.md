@@ -13,3 +13,6 @@
 ## 2026-07-11 - Command Aliases
 **Learning:** In Bukkit/Paper, command aliases must be declaratively defined in the `plugin.yml` configuration using the `aliases: [alias_name]` property under the root command definition, rather than duplicating the Java executor registration as is done in Forge, NeoForge, and Fabric environments.
 **Action:** When porting command aliases from mod loaders to Paper, directly edit `plugin.yml` instead of modifying Java command registration logic.
+## 2026-07-16 - Substring command parsing parity
+**Learning:** High-frequency event listeners (like command preprocessing via `isWhitelistedCommand`) across all platforms (Fabric, Forge, NeoForge, Paper) can easily introduce unnecessary object allocations and CPU cycles if large chat messages are lowercased and split entirely just to parse the first argument.
+**Action:** When porting or writing chat interception logic, use `indexOf(' ')` and `substring()` to isolate the target argument before lowercasing it, preventing wasteful allocations across all loaders.
