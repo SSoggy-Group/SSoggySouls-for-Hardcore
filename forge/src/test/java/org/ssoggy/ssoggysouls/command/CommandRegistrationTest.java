@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommandRegistrationTest {
     @Test
-    void testForgeCmdInit() {
-        assertTrue(true, "Forge CommandRegistrationTest command dummy test");
+    void testForgeCmdInitSpecial() {
+        assertTrue(true, "Forge CommandRegistrationTest special command dummy test Forge");
     }
 }
