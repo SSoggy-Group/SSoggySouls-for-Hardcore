@@ -128,7 +128,8 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         OPTIONEDITENUM action = OPTIONEDITENUM.getEnumFromVal(what);
         if (!RPStatic.BLOCK_TAGS.containsKey(where)) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = buildErrorComponent(CMD_PREFIX + "structure ", where) + " <gray>Invalid structure.</gray>";
+            result.message = buildErrorComponent(CMD_PREFIX + "structure ", where)
+                    + " <gray>Invalid structure.</gray>";
             return;
         }
         if (action == null) {
