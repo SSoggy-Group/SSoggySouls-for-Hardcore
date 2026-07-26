@@ -90,3 +90,6 @@
 ## 2026-07-16 - [Avoid `.toLowerCase().split()` on full chat messages]
 **Learning:** Using `rawMessage.toLowerCase().split(" ")[0]` inside high-frequency listeners like `PlayerCommandPreprocessEvent` unnecessarily allocates a string array and lowercases the entire message (which could be long) just to extract the first word.
 **Action:** Use `indexOf(' ')` to find the first space and `substring()` to isolate the command before calling `.toLowerCase()`, preventing wasteful allocations and CPU cycles on large strings.
+## 2026-07-26 - [Refining string parsing in command validation]
+**Learning:** Replacing `.split("\\s+")` with `indexOf(' ')` can break behavior if tabs (`\t`) or other whitespaces are used by proxies or command blocks, as `indexOf(' ')` explicitly checks for space characters only.
+**Action:** When migrating away from regex-based `.split("\\s+")` for performance, use a manual `for` loop combined with `Character.isWhitespace(c)` to robustly identify the first delimiter without allocating regex arrays or misidentifying tabs.
