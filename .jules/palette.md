@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-06-26 - [Interactive CLI Config Parsing Errors]
+**Learning:** When validating string inputs (like structures, timers, and enum parsing) in configuration commands, outputting static "Invalid X" messages forces users to completely re-type lengthy command strings. Replacing these static assignments with the `buildErrorComponent` utility method provides users an interactive `<click:suggest_command:...>` component that restores their previous typing context while preserving explicit instructional text (like "Use add, remove, or reset.") alongside it.
+**Action:** When migrating static error strings in command argument validation, replace them with interactive MiniMessage builders that preserve explicit context/instructions alongside the auto-fill.

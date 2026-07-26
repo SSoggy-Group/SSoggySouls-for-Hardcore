@@ -101,7 +101,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     private void executeTimerCMD(String who, String where, RPCommandOutput result, String label) {
         if (!RPStatic.CONFIG_TIMERS.containsKey(where)) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Invalid timer: " + where;
+            result.message = buildErrorComponent(CMD_PREFIX + "timer ", where) + " <gray>Invalid timer.</gray>";
             return;
         }
         try {
@@ -128,12 +128,13 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         OPTIONEDITENUM action = OPTIONEDITENUM.getEnumFromVal(what);
         if (!RPStatic.BLOCK_TAGS.containsKey(where)) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Invalid structure: " + where;
+            result.message = buildErrorComponent(CMD_PREFIX + "structure ", where)
+                    + " <gray>Invalid structure.</gray>";
             return;
         }
         if (action == null) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Use add, remove, or reset.";
+            result.message = buildErrorComponent(CMD_PREFIX + "structure " + where + " ", what) + " <gray>Use add, remove, or reset.</gray>";
             return;
         }
 
@@ -143,7 +144,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     whoMat = Material.getMaterial(who);
                     if (whoMat == null) {
                         result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = "Invalid BlockMaterial entered";
+                        result.message = buildErrorComponent(CMD_PREFIX + "structure " + where + " " + what + " ", who) + " <gray>Invalid BlockMaterial entered.</gray>";
                         break;
                     }
 
@@ -165,7 +166,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     whoMat = Material.getMaterial(who);
                     if (whoMat == null) {
                         result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = "Invalid BlockMaterial entered";
+                        result.message = buildErrorComponent(CMD_PREFIX + "structure " + where + " " + what + " ", who) + " <gray>Invalid BlockMaterial entered.</gray>";
                         return;
                     }
 
