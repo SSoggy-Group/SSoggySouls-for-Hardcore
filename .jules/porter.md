@@ -17,3 +17,7 @@
 ## 2026-07-16 - [Universal Command String Parsing]
 **Learning:** High-frequency event listeners (like command preprocessing) benefit greatly from simple allocation-free string parsing. Bukkit allows simple substring logic natively on `event.getMessage()`. Fabric, Forge, and NeoForge, however, require preserving their initial `.trim()` behavior when capturing generic chat strings before iterating to find the whitespace delimiter to ensure identical behavior.
 **Action:** When porting string parsing optimization across platforms, don't blindly copy `indexOf(' ')`. Preserve any necessary `.trim()` operations on the client mod side and iterate manually with `Character.isWhitespace()` to safely find delimiters without allocating array objects.
+
+## 2026-07-27 - [Component Mutability Fix]
+**Learning:** In NeoForge/Forge 1.21.1, the base `Component` interface is immutable and does not have the `.withStyle(UnaryOperator<Style>)` method natively like `MutableComponent` does. If you try to style a component returned by a generic utility method (like `MessageUtil.get()`) without making it mutable, you will get a "cannot find symbol" error for `withStyle((s)->s...)`.
+**Action:** Always append `.copy()` to generic `Component` instances to explicitly convert them to `MutableComponent` before applying lambda-based `.withStyle()` modifications.
