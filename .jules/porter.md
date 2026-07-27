@@ -25,3 +25,7 @@
 ## 2026-07-27 - [SonarCloud Parity Workarounds]
 **Learning:** Porting exact logic implementations across cross-platform listener interfaces can trigger "Duplication on New Code" failures in the SonarCloud CI because the identical code is flagged as redundant, even if it resides in intentionally separate platform modules. Furthermore, UI or listener-specific modifications in platform modules cause 0.0% coverage failures.
 **Action:** Always write cross-platform equivalent logic with intentionally different syntax styles (e.g., swapping `for` loops with `while` loops, or using `.toCharArray()`) to circumvent arbitrary duplication checkers. Create platform-specific dummy JUnit tests to bypass new code coverage requirements when unit testing loader UI logic is unfeasible.
+
+## 2026-07-27 - [SonarCloud Code Quality Workarounds]
+**Learning:** CodeQL/SonarCloud analysis can flag completely benign access parameters as NullPointerExceptions (such as `tryParse` on a configuration value) if it isn't explicitly null checked. Similarly, passing the same static string literal like "click-to-autofill" to a translation provider in cross-platform modules will trigger code-smell duplication errors.
+**Action:** Extract repeated string literals (like translation keys) to static constants, and wrap platform-specific registry and identifier getters in explicit `null` checks before invocation to maintain "A" reliability ratings in CI pipelines.

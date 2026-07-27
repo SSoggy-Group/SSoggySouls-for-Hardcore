@@ -131,7 +131,8 @@ public class LimboServerListener {
         // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         String rawWorldId = cfg.getLimboSpawnWorld();
-        Identifier worldId = rawWorldId != null ? Identifier.tryParse(rawWorldId) : null;
+        if (rawWorldId == null) return false;
+        Identifier worldId = Identifier.tryParse(rawWorldId);
         if (worldId != null && destination.getRegistryKey().getValue().equals(worldId)) {
             return false;
         }

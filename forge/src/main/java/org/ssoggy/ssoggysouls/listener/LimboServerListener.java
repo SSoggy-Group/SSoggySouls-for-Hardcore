@@ -99,7 +99,8 @@ public class LimboServerListener {
             // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
             String spawnWorld = cfg.getLimboSpawnWorld();
-            ResourceLocation limboId = spawnWorld != null ? ResourceLocation.tryParse(spawnWorld) : null;
+            if (spawnWorld == null) return;
+            ResourceLocation limboId = ResourceLocation.tryParse(spawnWorld);
             if (limboId != null && event.getDimension().toString().contains(limboId.toString())) return;
 
             // Check for bypass permission (parity with Fabric)
@@ -122,7 +123,9 @@ public class LimboServerListener {
         player.getFoodData().setSaturation(20f);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        ResourceLocation worldId = cfg.getLimboSpawnWorld() != null ? ResourceLocation.parse(cfg.getLimboSpawnWorld()) : null;
+        String sw = cfg.getLimboSpawnWorld();
+        if (sw == null) return;
+        ResourceLocation worldId = ResourceLocation.tryParse(sw);
         if (worldId == null) return;
         net.minecraft.server.level.ServerLevel world = player.server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, worldId));
         if (world != null) {
