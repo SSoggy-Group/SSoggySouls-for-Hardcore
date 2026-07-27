@@ -13,3 +13,7 @@
 ## 2026-07-11 - Command Aliases
 **Learning:** In Bukkit/Paper, command aliases must be declaratively defined in the `plugin.yml` configuration using the `aliases: [alias_name]` property under the root command definition, rather than duplicating the Java executor registration as is done in Forge, NeoForge, and Fabric environments.
 **Action:** When porting command aliases from mod loaders to Paper, directly edit `plugin.yml` instead of modifying Java command registration logic.
+
+## 2026-07-16 - [Universal Command String Parsing]
+**Learning:** High-frequency event listeners (like command preprocessing) benefit greatly from simple allocation-free string parsing. Bukkit allows simple substring logic natively on `event.getMessage()`. Fabric, Forge, and NeoForge, however, require preserving their initial `.trim()` behavior when capturing generic chat strings before iterating to find the whitespace delimiter to ensure identical behavior.
+**Action:** When porting string parsing optimization across platforms, don't blindly copy `indexOf(' ')`. Preserve any necessary `.trim()` operations on the client mod side and iterate manually with `Character.isWhitespace()` to safely find delimiters without allocating array objects.
