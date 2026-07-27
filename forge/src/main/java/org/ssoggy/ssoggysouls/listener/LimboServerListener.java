@@ -35,14 +35,15 @@ public class LimboServerListener {
 
     private static boolean isWhitelistedCommand(String fullCommand) {
         String clean = fullCommand.trim();
-        int spaceIdx = -1;
-        for (int i = 0; i < clean.length(); i++) {
-            if (Character.isWhitespace(clean.charAt(i))) {
-                spaceIdx = i;
+        int whitespacePos = -1;
+        char[] chars = clean.toCharArray();
+        for (int k = 0; k < chars.length; k++) {
+            if (Character.isWhitespace(chars[k])) {
+                whitespacePos = k;
                 break;
             }
         }
-        String command = (spaceIdx == -1 ? clean : clean.substring(0, spaceIdx)).toLowerCase(java.util.Locale.ROOT);
+        String command = (whitespacePos == -1 ? clean : clean.substring(0, whitespacePos)).toLowerCase(java.util.Locale.ROOT);
         return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
@@ -97,7 +98,8 @@ public class LimboServerListener {
         if (event.getEntity() instanceof ServerPlayer player) {
             // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
+            String spawnWorld = cfg.getLimboSpawnWorld();
+            ResourceLocation limboId = spawnWorld != null ? ResourceLocation.tryParse(spawnWorld) : null;
             if (limboId != null && event.getDimension().toString().contains(limboId.toString())) return;
 
             // Check for bypass permission (parity with Fabric)
@@ -120,7 +122,8 @@ public class LimboServerListener {
         player.getFoodData().setSaturation(20f);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
+        ResourceLocation worldId = cfg.getLimboSpawnWorld() != null ? ResourceLocation.parse(cfg.getLimboSpawnWorld()) : null;
+        if (worldId == null) return;
         net.minecraft.server.level.ServerLevel world = player.server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, worldId));
         if (world != null) {
             player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), java.util.Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
