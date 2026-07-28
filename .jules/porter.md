@@ -13,3 +13,7 @@
 ## 2026-07-11 - Command Aliases
 **Learning:** In Bukkit/Paper, command aliases must be declaratively defined in the `plugin.yml` configuration using the `aliases: [alias_name]` property under the root command definition, rather than duplicating the Java executor registration as is done in Forge, NeoForge, and Fabric environments.
 **Action:** When porting command aliases from mod loaders to Paper, directly edit `plugin.yml` instead of modifying Java command registration logic.
+
+## 2026-07-16 - [Port Text Component Immutability Fix to Fabric]
+**Learning:** Component mutability crashes (where styling a cached component mutates it globally) happen universally across Forge, NeoForge, and Fabric in 1.19+ versions due to the underlying immutable component APIs. When a fix applies `.copy()` before styling a component in Forge (`Component.literal(...).copy().withStyle(...)`), the exact same `.copy()` pattern must be ported to Fabric (`Text.literal(...).copy().styled(...)`) to prevent parity bugs and bleeding text styles.
+**Action:** When porting chat/component style fixes, always check all loaders for the equivalent component registration (CommandRegistration, etc.) rather than assuming text formatting is loader-specific.

@@ -91,6 +91,14 @@ public class CommandRegistration {
         );
     }
 
+
+    private static net.minecraft.text.Text buildErrorComponent(String messageKey, String suggestCommand, Object... args) {
+        net.minecraft.text.Text base = args.length == 0 ? MessageUtil.get(messageKey) : MessageUtil.get(messageKey, args);
+        return base.copy().styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
+            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, suggestCommand))
+            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY)))));
+    }
+
     private static void registerReviveCommand(CommandDispatcher<ServerCommandSource> dispatcher, SSoggySoulsMod plugin, DatabaseManager db) {
         dispatcher.register(CommandManager.literal("revive")
             // Require op level 2 or higher for now (since no permissions api is installed yet)
@@ -247,18 +255,18 @@ public class CommandRegistration {
                                 source.sendError(MessageUtil.get("admin-log-read-error"));
                             }
                             case SUCCESS -> {
-                                source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").copy().styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
+                                source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
                                 if (source.isExecutedByPlayer()) {
                                     for (String line : result.lines) {
-                                        source.sendMessage(net.minecraft.text.Text.literal(line).copy().styled(s ->
+                                        source.sendMessage(net.minecraft.text.Text.literal(line).styled(s ->
                                             s.withColor(net.minecraft.util.Formatting.GRAY)
                                              .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
-                                             .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to copy log entry").copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))
+                                             .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to copy log entry").styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))
                                         ));
                                     }
                                 } else {
                                     for (String line : result.lines) {
-                                        source.sendMessage(net.minecraft.text.Text.literal(line).copy().styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
+                                        source.sendMessage(net.minecraft.text.Text.literal(line).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
                                     }
                                 }
                             }
