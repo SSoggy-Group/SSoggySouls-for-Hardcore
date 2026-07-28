@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-06-25 - [Interactive CLI Argument Validation Context]
+**Learning:** When updating static error messages (like those catching invalid arguments via `buildErrorComponent`) to use interactive clickable suggestions, completely overwriting the original context with a generic error removes valuable information for the user.
+**Action:** When replacing unescaped static error markers (e.g., `>>` and `<<`) with interactive Kyori Adventure MiniMessage components, ensure that specific instructional context (like 'Use add, remove, or reset.') is explicitly preserved and concatenated alongside the new interactive component.
