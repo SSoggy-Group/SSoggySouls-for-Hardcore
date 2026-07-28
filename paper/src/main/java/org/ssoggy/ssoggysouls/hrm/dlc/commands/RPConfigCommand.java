@@ -59,7 +59,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         String safeInvalid = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(invalidArg);
 
         return "<click:suggest_command:'" + baseCommand + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'>" +
-               safeBase + " >><red>" + safeInvalid + "</red><<</hover></click>";
+               safeBase + " <red><st>" + safeInvalid + "</st></red></hover></click> <gray>Use add, remove, or reset.</gray>";
     }
 
     private static final List<String> LIST_BOOLEAN = List.of("true", "false");
