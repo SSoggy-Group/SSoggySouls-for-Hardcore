@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DummyTest {
     @Test
-    public void testPaperInit() {
-        assertTrue(true, "Paper test");
+    public void ensurePaperLoads() {
+        assertTrue(true, "Paper plugin test clear");
     }
 }

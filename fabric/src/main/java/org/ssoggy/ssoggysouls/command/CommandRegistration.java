@@ -247,18 +247,18 @@ public class CommandRegistration {
                                 source.sendError(MessageUtil.get("admin-log-read-error"));
                             }
                             case SUCCESS -> {
-                                source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").copy().styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
+                                source.sendMessage(net.minecraft.text.Text.literal("--- Recent Admin Logs ---").styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withBold(true)));
                                 if (source.isExecutedByPlayer()) {
                                     for (String line : result.lines) {
-                                        source.sendMessage(net.minecraft.text.Text.literal(line).copy().styled(s ->
+                                        source.sendMessage(net.minecraft.text.Text.literal(line).styled(s ->
                                             s.withColor(net.minecraft.util.Formatting.GRAY)
                                              .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
-                                             .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to copy log entry").copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))
+                                             .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal("Click to copy log entry").styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))
                                         ));
                                     }
                                 } else {
                                     for (String line : result.lines) {
-                                        source.sendMessage(net.minecraft.text.Text.literal(line).copy().styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
+                                        source.sendMessage(net.minecraft.text.Text.literal(line).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY)));
                                     }
                                 }
                             }
