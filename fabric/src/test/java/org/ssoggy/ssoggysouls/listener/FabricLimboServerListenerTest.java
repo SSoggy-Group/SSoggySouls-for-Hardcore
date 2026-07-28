@@ -3,9 +3,9 @@ package org.ssoggy.ssoggysouls.listener;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class LimboServerListenerTest {
+class FabricLimboServerListenerTest {
     @Test
-    void testForgeLimboServerListenerInit() {
-        assertTrue(true, "Forge LimboServerListener test");
+    void testFabricLimboServerListenerInit() {
+        assertTrue(true, "Fabric LimboServerListener test");
     }
 }
