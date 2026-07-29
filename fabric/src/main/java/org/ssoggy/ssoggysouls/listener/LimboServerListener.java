@@ -82,7 +82,8 @@ public class LimboServerListener {
             }
 
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+            String spawnWorld = cfg.getLimboSpawnWorld();
+        Identifier worldId = spawnWorld != null ? Identifier.tryParse(spawnWorld) : null;
             if (worldId == null) {
                 return;
             }
@@ -99,8 +100,15 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String message) {
-        String[] tokens = message.trim().split("\\s+");
-        String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
+        String baseStr = message.trim();
+        int delimiter = -1;
+        for (int k = 0; k < baseStr.length(); k++) {
+            if (Character.isWhitespace(baseStr.charAt(k))) {
+                delimiter = k;
+                break;
+            }
+        }
+        String command = (delimiter == -1 ? baseStr : baseStr.substring(0, delimiter)).toLowerCase(Locale.ROOT);
         return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
@@ -121,7 +129,8 @@ public class LimboServerListener {
 
         // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        String spawnWorld = cfg.getLimboSpawnWorld();
+        Identifier worldId = spawnWorld != null ? Identifier.tryParse(spawnWorld) : null;
         if (worldId != null && destination.getRegistryKey().getValue().equals(worldId)) {
             return false;
         }
@@ -144,7 +153,8 @@ public class LimboServerListener {
                 player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        String spawnWorld = cfg.getLimboSpawnWorld();
+        Identifier worldId = spawnWorld != null ? Identifier.tryParse(spawnWorld) : null;
         if (worldId != null) {
             ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
             if (world != null) {
