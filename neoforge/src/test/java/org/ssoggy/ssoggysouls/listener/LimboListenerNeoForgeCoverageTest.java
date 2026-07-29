@@ -6,6 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class LimboListenerNeoForgeCoverageTest {
     @Test
     void testNeoForgeCoverage() {
-        assertTrue(true, "NeoForge test");
+        assertTrue(true, "NeoForge test coverage");
     }
 }

@@ -6,6 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class LimboListenerFabricCoverageTest {
     @Test
     void testFabricCoverage() {
-        assertTrue(true, "Fabric test");
+        assertTrue(true, "Fabric test coverage");
     }
 }
