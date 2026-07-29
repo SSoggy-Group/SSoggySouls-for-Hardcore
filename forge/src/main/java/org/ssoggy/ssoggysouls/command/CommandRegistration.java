@@ -266,7 +266,7 @@ public class CommandRegistration {
                                 source.sendFailure(MessageUtil.get("admin-log-read-error"));
                             }
                             case SUCCESS -> {
-                                source.sendSystemMessage(Component.literal("--- Recent Admin Logs ---").withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD));
+                                source.sendSystemMessage(Component.literal("--- Recent Admin Logs ---").copy().withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD));
                                 if (source.isPlayer()) {
                                     for (String line : result.lines) {
                                         source.sendSystemMessage(Component.literal(line).withStyle(s ->

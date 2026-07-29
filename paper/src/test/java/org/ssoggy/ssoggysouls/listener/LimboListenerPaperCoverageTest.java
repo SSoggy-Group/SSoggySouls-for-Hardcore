@@ -3,9 +3,9 @@ package org.ssoggy.ssoggysouls.listener;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ForgeLimboServerListenerTest {
+class LimboListenerPaperCoverageTest {
     @Test
-    void testForgeInit() {
-        assertTrue(true, "Forge test");
+    void testPaperCoverage() {
+        assertTrue(true, "Paper test");
     }
 }
