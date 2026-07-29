@@ -100,15 +100,15 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String message) {
-        String clean = message.trim();
-        int spaceIdx = -1;
-        for (int i = 0; i < clean.length(); i++) {
-            if (Character.isWhitespace(clean.charAt(i))) {
-                spaceIdx = i;
+        String baseStr = message.trim();
+        int delimiter = -1;
+        for (int k = 0; k < baseStr.length(); k++) {
+            if (Character.isWhitespace(baseStr.charAt(k))) {
+                delimiter = k;
                 break;
             }
         }
-        String command = (spaceIdx == -1 ? clean : clean.substring(0, spaceIdx)).toLowerCase(Locale.ROOT);
+        String command = (delimiter == -1 ? baseStr : baseStr.substring(0, delimiter)).toLowerCase(Locale.ROOT);
         return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 

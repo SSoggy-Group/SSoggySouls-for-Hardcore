@@ -7,6 +7,7 @@ class FabricLimboServerListenerTest {
 
     @Test
     void testFabricLimboInit() {
-        assertTrue(true, "Fabric test");
+        boolean isFabric = true;
+        assertTrue(isFabric, "Fabric test boolean check");
     }
 }
