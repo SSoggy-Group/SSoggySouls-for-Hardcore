@@ -1,14 +1,20 @@
 package org.ssoggy.ssoggysouls;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import org.ssoggy.ssoggysouls.listener.LimboServerListener;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import org.ssoggy.ssoggysouls.util.CommandParsingUtil;
 
 public class ForgeLimboServerListenerTest {
     @Test
     public void testForgeLimboServerListenerInit() {
-        // Ensure the dummy test is not flagged as "Add at least one assertion" if assertTrue(true) is ignored
-        Object obj = "forge test";
-        assertNotNull(obj);
+        assertTrue(CommandParsingUtil.isWhitelistedCommand("/msg test"));
+        assertTrue(CommandParsingUtil.isWhitelistedCommand("   /msg    test   "));
+        assertTrue(CommandParsingUtil.isWhitelistedCommand("/help"));
+        assertTrue(CommandParsingUtil.isWhitelistedCommand("/revive target"));
+
+        assertFalse(CommandParsingUtil.isWhitelistedCommand("/ban user"));
+        assertFalse(CommandParsingUtil.isWhitelistedCommand("unknowncommand arg"));
+        assertFalse(CommandParsingUtil.isWhitelistedCommand(""));
     }
 }
