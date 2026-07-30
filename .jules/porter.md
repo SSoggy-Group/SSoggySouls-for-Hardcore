@@ -13,3 +13,7 @@
 ## 2026-07-11 - Command Aliases
 **Learning:** In Bukkit/Paper, command aliases must be declaratively defined in the `plugin.yml` configuration using the `aliases: [alias_name]` property under the root command definition, rather than duplicating the Java executor registration as is done in Forge, NeoForge, and Fabric environments.
 **Action:** When porting command aliases from mod loaders to Paper, directly edit `plugin.yml` instead of modifying Java command registration logic.
+
+## 2026-07-16 - [Porting Command Parsing Optimization]
+**Learning:** Using `.split("\\s+")` inside high-frequency listeners like command handlers incurs an unnecessary performance hit due to regex compilation and array allocation.
+**Action:** Replace `.split("\\s+")` with a manual `for` loop utilizing `Character.isWhitespace()` to find the delimiter index, and then use `substring()` to isolate the target string. This optimizes performance without breaking behavior with tabs (`\t`) from proxies.
