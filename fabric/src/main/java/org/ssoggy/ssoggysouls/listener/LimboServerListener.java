@@ -27,12 +27,6 @@ public class LimboServerListener {
     private static DatabaseManager db;
 
     private static final String LIMBO_CANNOT_LEAVE_MESSAGE = "limbo-cannot-leave";
-
-    private static final Set<String> WHITELISTED_COMMANDS = Set.of(
-            "/msg", "/tell", "/r", "/reply", "/help", "/list",
-            "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
-    );
-
     private LimboServerListener() {
         registerJoinEvent();
         registerCancelDamageEvent();
@@ -82,7 +76,7 @@ public class LimboServerListener {
             }
 
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+            Identifier worldId = cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
             if (worldId == null) {
                 return;
             }
@@ -98,24 +92,11 @@ public class LimboServerListener {
         });
     }
 
-    private static boolean isWhitelistedCommand(String message) {
-        String trimmed = message.trim();
-        int spaceIdx = -1;
-        for (int i = 0; i < trimmed.length(); i++) {
-            if (Character.isWhitespace(trimmed.charAt(i))) {
-                spaceIdx = i;
-                break;
-            }
-        }
-        String command = (spaceIdx == -1 ? trimmed : trimmed.substring(0, spaceIdx)).toLowerCase(Locale.ROOT);
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
-    }
-
     public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {
         if (db == null) return false;
         
         String fullCmd = "/" + command;
-        if (db.isPlayerDead(player.getUuid()) && !isWhitelistedCommand(fullCmd)) {
+        if (db.isPlayerDead(player.getUuid()) && !org.ssoggy.ssoggysouls.util.CommandParsingUtil.isWhitelistedCommand(fullCmd)) {
             player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
             return true;
         }
@@ -128,7 +109,7 @@ public class LimboServerListener {
 
         // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        Identifier worldId = cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
         if (worldId != null && destination.getRegistryKey().getValue().equals(worldId)) {
             return false;
         }
@@ -151,7 +132,7 @@ public class LimboServerListener {
                 player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        Identifier worldId = cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
         if (worldId != null) {
             ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
             if (world != null) {
