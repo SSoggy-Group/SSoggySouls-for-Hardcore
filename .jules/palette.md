@@ -65,3 +65,7 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+
+## 2026-07-15 - [Interactive CLI Trust List]
+**Learning:** Users viewing their trust list often want to manage it immediately. By wrapping the names in a clickable component that suggests /trust revoke <name>, we streamline the workflow and reduce command typing friction.
+**Action:** When displaying lists of relationships (like /trust info), make the names interactive to auto-fill the most common management command (e.g. revoke).
