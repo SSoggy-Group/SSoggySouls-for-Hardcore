@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FabricLimboServerListenerDummyTest {
     @Test
-    void testFabricInitLimbo() {
+    void testFabricInitLimboListener123() {
         assertTrue(true, "Fabric Limbo test initialization pass");
     }
 }

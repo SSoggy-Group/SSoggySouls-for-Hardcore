@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ForgeLimboServerListenerDummyTest {
     @Test
-    void testForgeInitLimbo() {
+    void testForgeInitLimboListener123() {
         assertTrue(true, "Forge Limbo test initialization pass");
     }
 }

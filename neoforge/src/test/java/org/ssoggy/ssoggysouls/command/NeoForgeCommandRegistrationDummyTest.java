@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NeoForgeCommandRegistrationDummyTest {
     @Test
-    void testNeoForgeCommandInit() {
+    void testNeoForgeCmdReg123() {
         assertTrue(true, "NeoForge Command test initialization pass");
     }
 }
