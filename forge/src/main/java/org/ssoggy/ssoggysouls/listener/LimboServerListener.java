@@ -22,25 +22,14 @@ public class LimboServerListener {
 
     private static DatabaseManager db;
 
-    private static final java.util.Set<String> WHITELISTED_COMMANDS = java.util.Set.of(
-            "/msg", "/tell", "/r", "/reply", "/help", "/list",
-            "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
-    );
-
     private LimboServerListener() {}
 
     public static void setDatabase(DatabaseManager database) {
         db = database;
     }
 
-    private static boolean isWhitelistedCommand(String fullCommand) {
-        String clean = fullCommand.trim();
-        int endIdx = 0;
-        while (endIdx < clean.length() && !Character.isWhitespace(clean.charAt(endIdx))) {
-            endIdx++;
-        }
-        String command = endIdx > 0 ? clean.substring(0, endIdx).toLowerCase(java.util.Locale.ROOT) : "";
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
+    private static boolean isWhitelistedCommand(String message) {
+        return org.ssoggy.ssoggysouls.util.CommandParser.isWhitelistedCommand(message);
     }
 
     @SubscribeEvent

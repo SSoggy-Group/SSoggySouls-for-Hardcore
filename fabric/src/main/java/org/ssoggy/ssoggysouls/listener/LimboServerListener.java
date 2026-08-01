@@ -28,11 +28,6 @@ public class LimboServerListener {
 
     private static final String LIMBO_CANNOT_LEAVE_MESSAGE = "limbo-cannot-leave";
 
-    private static final Set<String> WHITELISTED_COMMANDS = Set.of(
-            "/msg", "/tell", "/r", "/reply", "/help", "/list",
-            "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
-    );
-
     private LimboServerListener() {
         registerJoinEvent();
         registerCancelDamageEvent();
@@ -99,13 +94,7 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String message) {
-        String clean = message.trim();
-        int endIdx = 0;
-        while (endIdx < clean.length() && !Character.isWhitespace(clean.charAt(endIdx))) {
-            endIdx++;
-        }
-        String command = endIdx > 0 ? clean.substring(0, endIdx).toLowerCase(Locale.ROOT) : "";
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
+        return org.ssoggy.ssoggysouls.util.CommandParser.isWhitelistedCommand(message);
     }
 
     public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {

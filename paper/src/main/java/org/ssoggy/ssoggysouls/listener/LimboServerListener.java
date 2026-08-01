@@ -175,13 +175,8 @@ public class LimboServerListener implements Listener {
         });
     }
 
-    private static boolean isWhitelistedCommand(String command) {
-        return "/msg".equals(command) || "/tell".equals(command)
-                || "/r".equals(command) || "/reply".equals(command)
-                || "/help".equals(command) || "/list".equals(command)
-                || "/pstatus".equals(command)
-                || "/psadmin".equals(command) || "/psa".equals(command)
-                || "/revive".equals(command) || "/psetlives".equals(command);
+    private static boolean isWhitelistedCommand(String message) {
+        return org.ssoggy.ssoggysouls.util.CommandParser.isWhitelistedCommand(message);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
