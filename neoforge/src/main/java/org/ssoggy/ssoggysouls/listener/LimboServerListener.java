@@ -107,9 +107,11 @@ public class LimboServerListener {
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         ResourceLocation worldId = cfg.getLimboSpawnWorld() != null ? ResourceLocation.tryParse(cfg.getLimboSpawnWorld()) : null;
-        ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
-        if (world != null) {
+        if (worldId != null) {
+            ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
+            if (world != null) {
             player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+            }
         }
 
         player.sendSystemMessage(MessageUtil.get("limbo-welcome-dead"));

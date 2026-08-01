@@ -3,7 +3,8 @@ package org.ssoggy.ssoggysouls.util;
 import java.util.Locale;
 import java.util.Set;
 
-public class CommandParser {
+public final class CommandParser {
+    private CommandParser() {}
 
     private static final Set<String> WHITELISTED_COMMANDS = Set.of(
             "/msg", "/tell", "/r", "/reply", "/help", "/list",
