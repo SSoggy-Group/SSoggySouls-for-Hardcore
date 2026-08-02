@@ -99,15 +99,7 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String message) {
-        String trimmed = message.trim();
-        int endIdx = -1;
-        for (int i = 0; i < trimmed.length(); i++) {
-            if (Character.isWhitespace(trimmed.charAt(i))) {
-                endIdx = i;
-                break;
-            }
-        }
-        String command = endIdx == -1 ? trimmed.toLowerCase(Locale.ROOT) : trimmed.substring(0, endIdx).toLowerCase(Locale.ROOT);
+        String command = org.ssoggy.ssoggysouls.util.CommandParserUtil.isolateCommand(message);
         return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
