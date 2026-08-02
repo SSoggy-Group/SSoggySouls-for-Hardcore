@@ -6,6 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ForgeCommandRegistrationTest {
     @Test
     public void testForgeCommandReg() {
-        assertTrue(true, "Forge command reg test");
+        assertTrue(true, "Forge Command Reg Test Unique");
     }
 }

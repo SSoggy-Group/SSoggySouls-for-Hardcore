@@ -6,6 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class FabricCommandRegistrationTest {
     @Test
     public void testFabricCommandReg() {
-        assertTrue(true, "Fabric command reg test");
+        assertTrue(true, "Fabric Command Reg Test Unique");
     }
 }

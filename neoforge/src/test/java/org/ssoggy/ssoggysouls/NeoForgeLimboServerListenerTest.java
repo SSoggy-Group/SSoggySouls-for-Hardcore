@@ -6,6 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class NeoForgeLimboServerListenerTest {
     @Test
     public void testNeoForgeInit() {
-        assertTrue(true, "NeoForge test");
+        assertTrue(true, "NeoForge Limbo Server Listener Test");
     }
 }
