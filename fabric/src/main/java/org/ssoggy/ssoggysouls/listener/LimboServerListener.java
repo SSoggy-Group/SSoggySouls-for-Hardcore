@@ -98,18 +98,13 @@ public class LimboServerListener {
         });
     }
 
-    private static boolean isWhitelistedCommand(String message) {
-        String trimmed = message.trim();
-        int spaceIdx = trimmed.indexOf(' ');
-        String command = (spaceIdx == -1 ? trimmed : trimmed.substring(0, spaceIdx)).toLowerCase(java.util.Locale.ROOT);
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
-    }
+
 
     public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {
         if (db == null) return false;
         
         String fullCmd = "/" + command;
-        if (db.isPlayerDead(player.getUuid()) && !isWhitelistedCommand(fullCmd)) {
+        if (db.isPlayerDead(player.getUuid()) && !org.ssoggy.ssoggysouls.command.CommonCommandUtil.isWhitelistedCommand(fullCmd)) {
             player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
             return true;
         }

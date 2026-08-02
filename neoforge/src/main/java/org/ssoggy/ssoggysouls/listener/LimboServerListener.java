@@ -33,12 +33,7 @@ public class LimboServerListener {
         db = database;
     }
 
-    private static boolean isWhitelistedCommand(String fullCommand) {
-        String trimmed = fullCommand.trim();
-        int spaceIdx = trimmed.indexOf(' ');
-        String command = (spaceIdx == -1 ? trimmed : trimmed.substring(0, spaceIdx)).toLowerCase(java.util.Locale.ROOT);
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
-    }
+
 
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
@@ -70,7 +65,7 @@ public class LimboServerListener {
 
             if (db.isPlayerDead(player.getUUID())) {
                 String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
-                if (!isWhitelistedCommand(cmdToCheck)) {
+                if (!org.ssoggy.ssoggysouls.command.CommonCommandUtil.isWhitelistedCommand(cmdToCheck)) {
                     event.setCanceled(true);
                     player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
                 }
