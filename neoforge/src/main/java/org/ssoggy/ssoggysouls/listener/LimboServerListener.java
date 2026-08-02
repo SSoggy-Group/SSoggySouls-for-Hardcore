@@ -33,8 +33,6 @@ public class LimboServerListener {
         db = database;
     }
 
-
-
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (db == null || !(event.getEntity() instanceof ServerPlayer player)) return;
@@ -86,7 +84,8 @@ public class LimboServerListener {
         if (event.getEntity() instanceof ServerPlayer player) {
             // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
+            String limboStr = cfg.getLimboSpawnWorld();
+            ResourceLocation limboId = limboStr != null ? ResourceLocation.tryParse(limboStr) : null;
             if (limboId != null && event.getDimension().location().equals(limboId)) return;
 
             // Check for bypass permission (parity with Fabric)
