@@ -82,7 +82,7 @@ public class LimboServerListener {
             }
 
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+            Identifier worldId = cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
             if (worldId == null) {
                 return;
             }
@@ -131,7 +131,7 @@ public class LimboServerListener {
 
         // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        Identifier worldId = cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
         if (worldId != null && destination.getRegistryKey().getValue().equals(worldId)) {
             return false;
         }
@@ -154,7 +154,7 @@ public class LimboServerListener {
                 player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        Identifier worldId = cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
         if (worldId != null) {
             ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
             if (world != null) {

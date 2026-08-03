@@ -100,7 +100,7 @@ public class LimboServerListener {
         if (event.getEntity() instanceof ServerPlayer player) {
             // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
+            ResourceLocation limboId = cfg.getLimboSpawnWorld() != null ? ResourceLocation.tryParse(cfg.getLimboSpawnWorld()) : null;
             if (limboId != null && event.getDimension().location().equals(limboId)) return;
 
             // Check for bypass permission (parity with Fabric)
