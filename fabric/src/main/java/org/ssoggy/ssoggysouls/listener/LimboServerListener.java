@@ -1,5 +1,7 @@
 package org.ssoggy.ssoggysouls.listener;
 
+
+
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -18,8 +20,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 
 import java.util.UUID;
-import java.util.Set;
-import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 public class LimboServerListener {
@@ -28,10 +28,6 @@ public class LimboServerListener {
 
     private static final String LIMBO_CANNOT_LEAVE_MESSAGE = "limbo-cannot-leave";
 
-    private static final Set<String> WHITELISTED_COMMANDS = Set.of(
-            "/msg", "/tell", "/r", "/reply", "/help", "/list",
-            "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
-    );
 
     private LimboServerListener() {
         registerJoinEvent();
@@ -99,9 +95,7 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String message) {
-        String[] tokens = message.trim().split("\\s+");
-        String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
+        return org.ssoggy.ssoggysouls.util.CommandParseUtil.isWhitelistedCommand(message);
     }
 
     public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {

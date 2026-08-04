@@ -140,10 +140,8 @@ public class LimboServerListener implements Listener {
         if (player.hasPermission(PERM_BYPASS) || player.hasPermission("ssoggysouls.admin")) return;
 
         String rawMessage = event.getMessage();
-        int spaceIdx = rawMessage.indexOf(' ');
-        String command = (spaceIdx == -1 ? rawMessage : rawMessage.substring(0, spaceIdx)).toLowerCase(java.util.Locale.ROOT);
 
-        if (isWhitelistedCommand(command)) {
+        if (isWhitelistedCommand(rawMessage)) {
             return;
         }
 
@@ -173,12 +171,7 @@ public class LimboServerListener implements Listener {
     }
 
     private static boolean isWhitelistedCommand(String command) {
-        return "/msg".equals(command) || "/tell".equals(command)
-                || "/r".equals(command) || "/reply".equals(command)
-                || "/help".equals(command) || "/list".equals(command)
-                || "/pstatus".equals(command)
-                || "/psadmin".equals(command) || "/psa".equals(command)
-                || "/revive".equals(command) || "/psetlives".equals(command);
+        return org.ssoggy.ssoggysouls.util.CommandParseUtil.isWhitelistedCommand(command);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
