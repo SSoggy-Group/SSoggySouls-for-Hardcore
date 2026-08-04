@@ -1,6 +1,5 @@
 package org.ssoggy.ssoggysouls.listener;
 
-import java.util.Set;
 
 
 import net.minecraft.core.registries.Registries;

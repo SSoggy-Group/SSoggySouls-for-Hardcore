@@ -1,6 +1,5 @@
 package org.ssoggy.ssoggysouls.listener;
 
-import java.util.Set;
 
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
@@ -29,10 +28,6 @@ public class LimboServerListener {
 
     private static final String LIMBO_CANNOT_LEAVE_MESSAGE = "limbo-cannot-leave";
 
-    private static final Set<String> WHITELISTED_COMMANDS = Set.of(
-            "/msg", "/tell", "/r", "/reply", "/help", "/list",
-            "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
-    );
 
     private LimboServerListener() {
         registerJoinEvent();
