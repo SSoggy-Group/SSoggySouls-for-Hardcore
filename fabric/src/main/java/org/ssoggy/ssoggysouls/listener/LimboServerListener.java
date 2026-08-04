@@ -99,17 +99,8 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String message) {
-        int start = 0;
-        int len = message.length();
-        while (start < len && Character.isWhitespace(message.charAt(start))) {
-            start++;
-        }
-        int end = start;
-        while (end < len && !Character.isWhitespace(message.charAt(end))) {
-            end++;
-        }
-        if (start == end) return false;
-        String command = message.substring(start, end).toLowerCase(Locale.ROOT);
+        String[] tokens = message.trim().split("\\s+");
+        String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
         return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
