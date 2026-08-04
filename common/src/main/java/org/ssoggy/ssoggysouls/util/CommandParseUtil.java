@@ -5,6 +5,8 @@ import java.util.Locale;
 
 public class CommandParseUtil {
 
+    private CommandParseUtil() {}
+
     private static final Set<String> WHITELISTED_COMMANDS = Set.of(
             "/msg", "/tell", "/r", "/reply", "/help", "/list",
             "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"

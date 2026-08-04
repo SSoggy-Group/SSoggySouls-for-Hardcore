@@ -1,5 +1,8 @@
 package org.ssoggy.ssoggysouls.listener;
 
+import java.util.Set;
+
+
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -18,8 +21,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 
 import java.util.UUID;
-import java.util.Set;
-import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 public class LimboServerListener {
