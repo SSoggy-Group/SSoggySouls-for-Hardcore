@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-08-05 - [Interactive CLI Grace Confirmation Recovery]
+**Learning:** When multi-step commands (like `/psadmin grace set` -> `/psadmin confirm`) time out or fail state checks, static error messages force users to manually restart the entire workflow from scratch, which is tedious and error-prone.
+**Action:** When catching state expiry or missing context errors in multi-step CLI workflows, use `CommandUtil.sendInteractiveUsage()` to provide a clickable suggestion that auto-fills the initial base command (like `/psadmin grace set `), creating a frictionless recovery loop.
