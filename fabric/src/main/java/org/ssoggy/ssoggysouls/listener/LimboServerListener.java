@@ -99,8 +99,8 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String message) {
-        String command = org.ssoggy.ssoggysouls.util.CommandParserUtil.extractCommand(message);
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
+        String extractedCommand = org.ssoggy.ssoggysouls.util.CommandParserUtil.extractCommand(message);
+        return WHITELISTED_COMMANDS.contains(extractedCommand) || WHITELISTED_COMMANDS.contains("/" + extractedCommand);
     }
 
     public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {
