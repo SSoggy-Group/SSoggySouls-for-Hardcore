@@ -3,10 +3,10 @@ package org.ssoggy.ssoggysouls;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PaperLimboServerListenerTest {
+class PaperLimboServerListenerTest {
 
     @Test
-    public void testPaperInit() {
+    void testPaperInit() {
         assertTrue(true, "Paper test");
     }
 }

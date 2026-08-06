@@ -3,10 +3,10 @@ package org.ssoggy.ssoggysouls;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CommandParserUtilTest {
+class CommandParserUtilTest {
 
     @Test
-    public void testCommonParser() {
+    void testCommonParser() {
         assertTrue(true, "Common test");
     }
 }

@@ -3,10 +3,10 @@ package org.ssoggy.ssoggysouls;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NeoForgeLimboServerListenerTest {
+class NeoForgeLimboServerListenerTest {
 
     @Test
-    public void testNeoForgeInit() {
+    void testNeoForgeInit() {
         assertTrue(true, "NeoForge test");
     }
 }
