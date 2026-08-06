@@ -120,7 +120,7 @@ public class LimboServerListener {
         player.getFoodData().setSaturation(20f);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        ResourceLocation worldId = cfg.getLimboSpawnWorld() != null ? ResourceLocation.parse(cfg.getLimboSpawnWorld()) : null;
+        ResourceLocation worldId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld() != null ? cfg.getLimboSpawnWorld() : "");
         ServerLevel world = worldId != null ? player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId)) : null;
         if (world != null) {
             player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
