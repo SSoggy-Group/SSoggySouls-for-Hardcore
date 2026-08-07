@@ -82,7 +82,7 @@ public class LimboServerListener {
             }
 
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            Identifier worldId = cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
+            Identifier worldId = cfg != null && cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
             if (worldId == null) {
                 return;
             }
@@ -122,8 +122,8 @@ public class LimboServerListener {
 
         // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
-        if (worldId != null && destination.getRegistryKey().getValue().equals(worldId)) {
+        Identifier worldId = cfg != null && cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
+        if (worldId != null && destination != null && destination.getRegistryKey() != null && destination.getRegistryKey().getValue().equals(worldId)) {
             return false;
         }
 
@@ -144,9 +144,9 @@ public class LimboServerListener {
         player.getHungerManager().setFoodLevel(20);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
+        Identifier worldId = cfg != null && cfg.getLimboSpawnWorld() != null ? Identifier.tryParse(cfg.getLimboSpawnWorld()) : null;
         if (worldId != null) {
-            ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
+            ServerWorld world = player.getServer() != null ? player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId)) : null;
             if (world != null) {
                 player.teleport(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
             }
