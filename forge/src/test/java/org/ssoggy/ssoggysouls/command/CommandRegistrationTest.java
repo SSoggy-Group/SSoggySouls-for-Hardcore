@@ -3,9 +3,9 @@ package org.ssoggy.ssoggysouls.command;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CommandRegistrationTest {
+class ForgeCommandRegistrationTest {
     @Test
-    void testForgeCommandRegistration() {
-        assertTrue(true, "Forge test");
+    void testForgeInit() {
+        assertTrue(true, "Forge test command");
     }
 }
