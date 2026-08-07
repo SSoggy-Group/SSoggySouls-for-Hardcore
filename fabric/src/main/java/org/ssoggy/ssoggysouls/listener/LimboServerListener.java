@@ -142,7 +142,6 @@ public class LimboServerListener {
         player.experienceProgress = 0;
         player.setHealth(player.getMaxHealth());
         player.getHungerManager().setFoodLevel(20);
-                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
