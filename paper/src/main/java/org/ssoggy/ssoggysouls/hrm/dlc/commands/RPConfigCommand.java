@@ -98,10 +98,10 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         result.details = "Supposed to do some crazy reload logic but it's not implemented yet."; //Optional
     }
 
-    private void executeTimerCMD(String[] args, String who, String where, RPCommandOutput result) {
+    private void executeTimerCMD(String who, String where, RPCommandOutput result, String label) {
         if (!RPStatic.CONFIG_TIMERS.containsKey(where)) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = buildErrorComponent(CMD_PREFIX + args[0] + " ", args[1]) + " <gray>Invalid timer.</gray>";
+            result.message = "Invalid timer: " + where;
             return;
         }
         try {
@@ -111,34 +111,29 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             result.message = (status == 1) ? "Set " + where + " to " + whoInt : "Failed to update configuration.";
         } catch (NumberFormatException e) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = buildErrorComponent(CMD_PREFIX + args[0] + " " + args[1] + " ", args[2]) + " <gray>Timer value must be a number.</gray>";
+            result.message = "Timer value must be a number. Click to fix: <click:suggest_command:'/" + label + " timer " + where + " '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/" + label + " timer " + where + " </gray></hover></click>";
         }
     }
 
-    private void executeGameruleCMD(String[] args, String who, String where, RPCommandOutput result) {
-        if (!who.equalsIgnoreCase("true") && !who.equalsIgnoreCase("false")) {
-            result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = buildErrorComponent(CMD_PREFIX + args[0] + " " + args[1] + " ", args[2]) + " <gray>Value must be true or false.</gray>";
-            return;
-        }
+    private void executeGameruleCMD(String who, String where, RPCommandOutput result) {
         boolean whoBool = Boolean.parseBoolean(who);
         result.success = COMMANDOUTPUTENUM.valueOf(RPConfig.setConfigRule(where, whoBool));
         result.message = "Set " + where + " to " + whoBool;
     }
 
-    private void executeStructureCMD(String[] args, String who, String what, String where, RPCommandOutput result) {
+    private void executeStructureCMD(String who, String what, String where, RPCommandOutput result) {
         Set<Material> whoSet;
         Material whoMat;
         String whoName;
         OPTIONEDITENUM action = OPTIONEDITENUM.getEnumFromVal(what);
         if (!RPStatic.BLOCK_TAGS.containsKey(where)) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = buildErrorComponent(CMD_PREFIX + args[0] + " ", args[1]) + " <gray>Invalid structure.</gray>";
+            result.message = "Invalid structure: " + where;
             return;
         }
         if (action == null) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = buildErrorComponent(CMD_PREFIX + args[0] + " " + args[1] + " ", args[2]) + " <gray>Use add, remove, or reset.</gray>";
+            result.message = "Use add, remove, or reset.";
             return;
         }
 
@@ -148,7 +143,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     whoMat = Material.getMaterial(who);
                     if (whoMat == null) {
                         result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = buildErrorComponent(CMD_PREFIX + args[0] + " " + args[1] + " " + args[2] + " ", args.length > 3 ? args[3] : "") + " <gray>Invalid BlockMaterial entered.</gray>";
+                        result.message = "Invalid BlockMaterial entered";
                         break;
                     }
 
@@ -170,7 +165,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     whoMat = Material.getMaterial(who);
                     if (whoMat == null) {
                         result.success = COMMANDOUTPUTENUM.FALSE;
-                        result.message = buildErrorComponent(CMD_PREFIX + args[0] + " " + args[1] + " " + args[2] + " ", args.length > 3 ? args[3] : "") + " <gray>Invalid BlockMaterial entered.</gray>";
+                        result.message = "Invalid BlockMaterial entered";
                         return;
                     }
 
@@ -208,7 +203,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
             switch (option) {
                 case OPTIONCONFIGENUM.STRUCTURE -> handleStructure(args, result);
                 case OPTIONCONFIGENUM.GAMERULE -> handleGamerule(args, result);
-                case OPTIONCONFIGENUM.TIMER -> handleTimer(args, result);
+                case OPTIONCONFIGENUM.TIMER -> handleTimer(args, result, label);
                 case OPTIONCONFIGENUM.RELOAD -> executeReloadCMD(result);
                 default -> {
                     result.success = COMMANDOUTPUTENUM.FALSE;
@@ -256,10 +251,10 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     break;
                 }
                 // reset action has exactly 3 args, so no material argument is available
-                executeStructureCMD(args, "", args[2], args[1], result);
+                executeStructureCMD("", args[2], args[1], result);
                 break;
             default:
-                executeStructureCMD(args, args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result); // All params are successfully entered
+                executeStructureCMD(args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result); // All params are successfully entered
                 break;
         }
     }
@@ -281,12 +276,12 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                 result.message = "<aqua>" + args[1] + AQUA_LABEL_SUFFIX + (RPStatic.CONFIG_RULES.get(args[1])).toString();
                 break;
             default:
-                executeGameruleCMD(args, args[2], args[1], result);
+                executeGameruleCMD(args[2], args[1], result);
                 break;
         }
     }
 
-    private void handleTimer(String[] args, RPCommandOutput result) {
+    private void handleTimer(String[] args, RPCommandOutput result, String label) {
         switch (args.length) {
             case 0, 1:
                 result.success = COMMANDOUTPUTENUM.FALSE;
@@ -303,7 +298,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                 result.message = "<aqua>" + args[1] + AQUA_LABEL_SUFFIX + (RPStatic.CONFIG_TIMERS.get(args[1])).toString() + "s";
                 break;
             default:
-                executeTimerCMD(args, args[2], args[1], result);
+                executeTimerCMD(args[2], args[1], result, label);
                 break;
         }
     }
