@@ -28,7 +28,7 @@ import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
 public class CommandRegistration {
-    
+
     private CommandRegistration() {
         // Utility class
     }
@@ -104,6 +104,14 @@ public class CommandRegistration {
                 })
             )
         );
+    }
+
+
+    private static net.minecraft.network.chat.Style getAutofillStyle(String command) {
+        return net.minecraft.network.chat.Style.EMPTY
+                .withColor(net.minecraft.ChatFormatting.RED)
+                .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, command))
+                .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, org.ssoggy.ssoggysouls.util.MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY)));
     }
 
     private static void registerReviveCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
