@@ -140,8 +140,7 @@ public class LimboServerListener implements Listener {
         if (player.hasPermission(PERM_BYPASS) || player.hasPermission("ssoggysouls.admin")) return;
 
         String rawMessage = event.getMessage();
-        int spaceIdx = rawMessage.indexOf(' ');
-        String command = (spaceIdx == -1 ? rawMessage : rawMessage.substring(0, spaceIdx)).toLowerCase(java.util.Locale.ROOT);
+        String command = org.ssoggy.ssoggysouls.util.CommonCommandUtil.extractCommand(rawMessage);
 
         if (isWhitelistedCommand(command)) {
             return;
