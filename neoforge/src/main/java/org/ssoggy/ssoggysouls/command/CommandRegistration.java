@@ -106,7 +106,14 @@ public class CommandRegistration {
         );
     }
 
-    private static void registerReviveCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
+
+    private static net.minecraft.network.chat.Style getAutofillStyle(String command) {
+        return net.minecraft.network.chat.Style.EMPTY
+                .withColor(net.minecraft.ChatFormatting.RED)
+                .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, command))
+                .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, org.ssoggy.ssoggysouls.util.MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY)));
+    }
+\n    private static void registerReviveCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("revive")
             .requires(source -> source.hasPermission(2))
             .executes(context -> {
