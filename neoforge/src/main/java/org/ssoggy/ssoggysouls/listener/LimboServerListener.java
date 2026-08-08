@@ -22,28 +22,11 @@ public class LimboServerListener {
 
     private static DatabaseManager db;
 
-    private static final java.util.Set<String> WHITELISTED_COMMANDS = java.util.Set.of(
-            "/msg", "/tell", "/r", "/reply", "/help", "/list",
-            "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
-    );
 
     private LimboServerListener() {}
 
     public static void setDatabase(DatabaseManager database) {
         db = database;
-    }
-
-    private static boolean isWhitelistedCommand(String fullCommand) {
-        String clean = fullCommand.trim();
-        int spaceIdx = -1;
-        for (int i = 0; i < clean.length(); i++) {
-            if (Character.isWhitespace(clean.charAt(i))) {
-                spaceIdx = i;
-                break;
-            }
-        }
-        String command = (spaceIdx == -1 ? clean : clean.substring(0, spaceIdx)).toLowerCase(java.util.Locale.ROOT);
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
     @SubscribeEvent
@@ -76,7 +59,7 @@ public class LimboServerListener {
 
             if (db.isPlayerDead(player.getUUID())) {
                 String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
-                if (!isWhitelistedCommand(cmdToCheck)) {
+                if (!org.ssoggy.ssoggysouls.util.MessageHelper.isWhitelistedCommand(cmdToCheck)) {
                     event.setCanceled(true);
                     player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
                 }
@@ -121,9 +104,11 @@ public class LimboServerListener {
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         ResourceLocation worldId = cfg.getLimboSpawnWorld() != null ? ResourceLocation.tryParse(cfg.getLimboSpawnWorld()) : null;
-        ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
-        if (world != null) {
-            player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+        if (worldId != null) {
+            ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
+            if (world != null) {
+                player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+            }
         }
 
         player.sendSystemMessage(MessageUtil.get("limbo-welcome-dead"));
