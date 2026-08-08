@@ -118,20 +118,30 @@ public final class DlcDeaths {
                                                      long friendsAfterSeconds,
                                                      long publicAfterSeconds) {
         Instant now = Instant.now();
+        // ⚡ Bolt: Hoist threshold calculations outside the loop to avoid redundant object allocations
+        Instant publicThreshold = now.minusSeconds(publicAfterSeconds);
+        Instant friendsThreshold = now.minusSeconds(friendsAfterSeconds);
+        Instant trustedThreshold = now.minusSeconds(trustedAfterSeconds);
+
         List<DlcDeathRecord> result = new ArrayList<>();
         for (DlcDeathRecord deathRecord : DEATHS.values()) {
             if (deathRecord.uuid().equals(viewerUuid)) {
                 result.add(deathRecord);
-                continue;
-            }
+            } else {
+                Instant deathTime = deathRecord.time();
 
-            DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
-            Instant deathTime = deathRecord.time();
-            boolean visible = deathTime.isBefore(now.minusSeconds(publicAfterSeconds))
-                    || (relationship == DlcRelation.FRIENDS && deathTime.isBefore(now.minusSeconds(friendsAfterSeconds)))
-                    || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfterSeconds)));
-            if (visible) {
-                result.add(deathRecord);
+                // ⚡ Bolt: Short-circuit on cheap time check to completely bypass the expensive DlcSocial lookup for older deaths
+                if (deathTime.isBefore(publicThreshold)) {
+                    result.add(deathRecord);
+                } else {
+                    DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
+                    boolean visible = (relationship == DlcRelation.FRIENDS && deathTime.isBefore(friendsThreshold))
+                            || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(trustedThreshold));
+
+                    if (visible) {
+                        result.add(deathRecord);
+                    }
+                }
             }
         }
         result.sort(Comparator.comparing(DlcDeathRecord::time));
