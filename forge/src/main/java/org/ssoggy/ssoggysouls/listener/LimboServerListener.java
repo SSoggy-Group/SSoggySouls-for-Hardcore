@@ -120,7 +120,8 @@ public class LimboServerListener {
         player.getFoodData().setSaturation(20f);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        ResourceLocation worldId = cfg.getLimboSpawnWorld() != null ? ResourceLocation.tryParse(cfg.getLimboSpawnWorld()) : null;
+        String forgeWorld = cfg.getLimboSpawnWorld();
+        ResourceLocation worldId = (forgeWorld == null) ? null : ResourceLocation.tryParse(forgeWorld);
         if (worldId != null) {
             net.minecraft.server.level.ServerLevel world = player.server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, worldId));
             if (world != null) {
