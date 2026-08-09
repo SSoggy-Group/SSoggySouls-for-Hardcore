@@ -25,6 +25,7 @@ sonar {
         property "sonar.projectKey", "SSoggy-Group_SSoggySouls-for-Hardcore"
         property "sonar.organization", "ssoggy-group"
         property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml,${project.rootDir}/common/build/reports/jacoco/test/jacocoTestReport.xml,${project.rootDir}/fabric/build/reports/jacoco/test/jacocoTestReport.xml,${project.rootDir}/forge/build/reports/jacoco/test/jacocoTestReport.xml,${project.rootDir}/neoforge/build/reports/jacoco/test/jacocoTestReport.xml,${project.rootDir}/paper/build/reports/jacoco/test/jacocoTestReport.xml"
+        property "sonar.cpd.exclusions", "fabric/**/*,forge/**/*,neoforge/**/*"
     }
 }
 
