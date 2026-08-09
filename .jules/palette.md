@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-08-01 - [Interactive CLI MiniMessage Recovery for Missing Players]
+**Learning:** When a command fails because a player is offline or not found, static error messages like "Something went wrong" are unhelpful. By using Kyori Adventure MiniMessage components directly inside formatted string outputs, users can simply click the error message to autofill the base command and fix their typo without retyping everything.
+**Action:** When catching missing player errors in systems supporting MiniMessage, replace generic failure strings with clickable `<click:suggest_command:...>` components to create a frictionless recovery path.

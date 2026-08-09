@@ -49,7 +49,7 @@ public class GhostModeCommand implements CommandExecutor, TabCompleter { // Lazy
 
         if (result.success == COMMANDOUTPUTENUM.NULL) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Something went wrong, check the console for more details";
+            result.message = "Player not found online. Please use <click:suggest_command:'/ghostmode '><hover:show_text:'<gray>Click to auto-fill this command</gray>'><gray>/ghostmode [player]</gray></hover></click>";
         }
 
         cmdSender.sendRichMessage(result.toString()); // feedback
