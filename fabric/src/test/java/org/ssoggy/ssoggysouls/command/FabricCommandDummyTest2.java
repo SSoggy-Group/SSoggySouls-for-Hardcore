@@ -1,19 +1,19 @@
-package org.ssoggy.ssoggysouls.hrm.dlc.command;
+package org.ssoggy.ssoggysouls.command;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ForgeCommandDummyTest {
+class FabricCommandDummyTest {
     @Test
-    void test1() {
-        if ("hello".length() == 5) {
+    void testFab1() {
+        if (1+1 == 2) {
             assertTrue(true);
         }
     }
 
     @Test
-    void test2() {
-        if ("world".substring(0, 5).equals("world")) {
+    void testFab2() {
+        if (2*2 == 4) {
             assertTrue(true);
         }
     }

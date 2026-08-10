@@ -3,10 +3,17 @@ package org.ssoggy.ssoggysouls.hrm.dlc.command;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class DummyTest {
+class FabricCommandDummyTest {
     @Test
-    void test() {
+    void testFab1() {
         if (1+1 == 2) {
+            assertTrue(true);
+        }
+    }
+
+    @Test
+    void testFab2() {
+        if (2*2 == 4) {
             assertTrue(true);
         }
     }

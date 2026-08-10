@@ -1,19 +1,19 @@
-package org.ssoggy.ssoggysouls.hrm.dlc.command;
+package org.ssoggy.ssoggysouls.command;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ForgeCommandDummyTest {
+class NeoForgeCommandDummyTest {
     @Test
-    void test1() {
-        if ("hello".length() == 5) {
+    void testNeo1() {
+        if (Boolean.TRUE.equals(true)) {
             assertTrue(true);
         }
     }
 
     @Test
-    void test2() {
-        if ("world".substring(0, 5).equals("world")) {
+    void testNeo2() {
+        if (Boolean.FALSE.equals(false)) {
             assertTrue(true);
         }
     }
