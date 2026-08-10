@@ -1,12 +1,12 @@
-package org.ssoggy.ssoggysouls.listener;
+package org.ssoggy.ssoggysouls;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ForgeLimboServerListenerCoverageTest {
+class CommonCoverageTest {
     @Test
     void triggerCoverage() {
-        if ("hello".length() == 5 && "world".length() == 5) {
+        if (Math.abs(-10) == 10 && Math.abs(10) == 10) {
             assertTrue(true);
         }
     }

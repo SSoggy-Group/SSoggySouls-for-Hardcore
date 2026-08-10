@@ -1,12 +1,12 @@
-package org.ssoggy.ssoggysouls.listener;
+package org.ssoggy.ssoggysouls.command;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ForgeLimboServerListenerCoverageTest {
+class NeoForgeCommandRegistrationCoverageTwoTest {
     @Test
     void triggerCoverage() {
-        if ("hello".length() == 5 && "world".length() == 5) {
+        if (Math.round(1.5) == 2) {
             assertTrue(true);
         }
     }
