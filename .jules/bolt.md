@@ -90,3 +90,6 @@
 ## 2026-07-16 - [Avoid `.toLowerCase().split()` on full chat messages]
 **Learning:** Using `rawMessage.toLowerCase().split(" ")[0]` inside high-frequency listeners like `PlayerCommandPreprocessEvent` unnecessarily allocates a string array and lowercases the entire message (which could be long) just to extract the first word.
 **Action:** Use `indexOf(' ')` to find the first space and `substring()` to isolate the command before calling `.toLowerCase()`, preventing wasteful allocations and CPU cycles on large strings.
+## 2024-08-10 - [Avoid `.split("\\s+")` for parsing first command argument]
+**Learning:** Using `.split("\\s+")` on command strings in high-frequency event listeners allocates a regex pattern, matcher, and a string array, creating massive GC pressure on busy servers. Simple `trim().toLowerCase().split()` is a major hidden performance sink.
+**Action:** When extracting the base command from a raw chat message, use a manual `while` loop with `Character.isWhitespace()` to find the start and end of the first word, and then call `substring().toLowerCase()`. This avoids regex overhead and array allocation entirely.

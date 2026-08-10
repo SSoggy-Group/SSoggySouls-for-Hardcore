@@ -98,9 +98,18 @@ public class LimboServerListener {
         });
     }
 
+    // ⚡ Bolt: Avoid regex .split("\\s+") to prevent redundant string array allocations and GC overhead on every command.
     private static boolean isWhitelistedCommand(String message) {
-        String[] tokens = message.trim().split("\\s+");
-        String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
+        int len = message.length();
+        int start = 0;
+        while (start < len && Character.isWhitespace(message.charAt(start))) {
+            start++;
+        }
+        int spaceIdx = start;
+        while (spaceIdx < len && !Character.isWhitespace(message.charAt(spaceIdx))) {
+            spaceIdx++;
+        }
+        String command = start < spaceIdx ? message.substring(start, spaceIdx).toLowerCase(Locale.ROOT) : "";
         return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
