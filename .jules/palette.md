@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-07-28 - [Interactive CLI Dynamic Command Auto-Fill]
+**Learning:** Hardcoding interactive command auto-fill components (e.g., hardcoding `/revivalconfig` in `missingArgs` handlers) prevents reuse of the interactive error UI for other commands (like `/trust`).
+**Action:** When creating interactive UI components for missing arguments, dynamically read the required command structure from the error context (e.g., passing a suggestion string into the `details` field) so the clickable `SUGGEST_COMMAND` correctly adapts to any command.
