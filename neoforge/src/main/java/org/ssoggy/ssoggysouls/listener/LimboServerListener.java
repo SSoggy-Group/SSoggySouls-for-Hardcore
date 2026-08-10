@@ -33,10 +33,18 @@ public class LimboServerListener {
         db = database;
     }
 
+    // ⚡ Bolt: Avoid regex .split("\\s+") to prevent redundant string array allocations and GC overhead on every command.
     private static boolean isWhitelistedCommand(String fullCommand) {
-        String clean = fullCommand.trim().toLowerCase(java.util.Locale.ROOT);
-        String[] tokens = clean.split("\\s+");
-        String command = tokens.length > 0 ? tokens[0] : "";
+        int len = fullCommand.length();
+        int start = 0;
+        while (start < len && Character.isWhitespace(fullCommand.charAt(start))) {
+            start++;
+        }
+        int spaceIdx = start;
+        while (spaceIdx < len && !Character.isWhitespace(fullCommand.charAt(spaceIdx))) {
+            spaceIdx++;
+        }
+        String command = start < spaceIdx ? fullCommand.substring(start, spaceIdx).toLowerCase(java.util.Locale.ROOT) : "";
         return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
