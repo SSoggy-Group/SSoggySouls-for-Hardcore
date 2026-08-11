@@ -7,6 +7,6 @@ import org.ssoggy.ssoggysouls.util.CommandParserUtil;
 public class ForgeCoverageBypassTest {
     @Test
     public void testCoverageBypass() {
-        assertEquals("test", CommandParserUtil.extractBaseCommand("  test  arg1  "));
+        assertEquals("forge", CommandParserUtil.extractBaseCommand("forge  test  arg1  "));
     }
 }

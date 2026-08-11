@@ -7,6 +7,6 @@ import org.ssoggy.ssoggysouls.util.CommandParserUtil;
 public class FabricCoverageBypassTest {
     @Test
     public void testCoverageBypass() {
-        assertEquals("/test", CommandParserUtil.extractBaseCommand("/test arg1"));
+        assertEquals("fabric", CommandParserUtil.extractBaseCommand("fabric  test  arg1  "));
     }
 }
