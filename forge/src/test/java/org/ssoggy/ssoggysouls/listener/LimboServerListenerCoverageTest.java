@@ -1,9 +1,10 @@
 package org.ssoggy.ssoggysouls.listener;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 public class LimboServerListenerCoverageTest {
     @Test
-    public void dummyTest() {
-        assertTrue(2 + 2 == 4);
+    public void testSetDatabase() {
+        assertDoesNotThrow(() -> LimboServerListener.setDatabase(null));
     }
 }
