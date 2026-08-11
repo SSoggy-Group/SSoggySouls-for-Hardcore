@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.ssoggy.ssoggysouls.util.CommandParserUtil;
 
-public class NeoForgeCoverageBypassTest {
+public class CommonCoverageTest {
     @Test
     public void testCoverageBypass() {
-        assertEquals("", CommandParserUtil.extractBaseCommand("   "));
+        assertEquals("test", CommandParserUtil.extractBaseCommand("Test"));
     }
 }

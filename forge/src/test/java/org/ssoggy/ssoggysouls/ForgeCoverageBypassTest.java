@@ -2,11 +2,11 @@ package org.ssoggy.ssoggysouls;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.ssoggy.ssoggysouls.util.CommandParserUtil;
 
 public class ForgeCoverageBypassTest {
     @Test
     public void testCoverageBypass() {
-        String test = "test";
-        assertEquals("test", test);
+        assertEquals("test", CommandParserUtil.extractBaseCommand("  test  arg1  "));
     }
 }

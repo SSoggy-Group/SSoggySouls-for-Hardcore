@@ -1,13 +1,12 @@
 package org.ssoggy.ssoggysouls;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.ssoggy.ssoggysouls.util.CommandParserUtil;
 
 public class FabricCoverageBypassTest {
     @Test
     public void testCoverageBypass() {
-        if (1 + 2 == 3) {
-            assertTrue(true);
-        }
+        assertEquals("/test", CommandParserUtil.extractBaseCommand("/test arg1"));
     }
 }
