@@ -90,3 +90,6 @@
 ## 2026-07-16 - [Avoid `.toLowerCase().split()` on full chat messages]
 **Learning:** Using `rawMessage.toLowerCase().split(" ")[0]` inside high-frequency listeners like `PlayerCommandPreprocessEvent` unnecessarily allocates a string array and lowercases the entire message (which could be long) just to extract the first word.
 **Action:** Use `indexOf(' ')` to find the first space and `substring()` to isolate the command before calling `.toLowerCase()`, preventing wasteful allocations and CPU cycles on large strings.
+## 2024-05-18 - [Optimized command extraction without regex]
+**Learning:** Using `.split("\\s+")` to extract the first token of a command string in high-frequency event listeners allocates an array and compiles a regex pattern, creating unnecessary GC pressure.
+**Action:** Replaced with a manual loop using `Character.isWhitespace()` to find the first delimiter index and using `.substring()` to extract just the command prefix.
