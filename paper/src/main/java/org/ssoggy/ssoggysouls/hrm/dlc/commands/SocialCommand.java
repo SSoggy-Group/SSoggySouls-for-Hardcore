@@ -211,10 +211,14 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         output.success = COMMANDOUTPUTENUM.RAW;
         output.message = "\n<green>--- Trust List ---</green>\n";
 
-        social.getRelationsToAll((k, v) -> k.equals(targetPlayerUUID)).forEach((k, v) ->
-            output.message += "- " + RPUtil.getUsernameFromCache(k) + ": " + v + "\n"
+        net.kyori.adventure.text.minimessage.MiniMessage mm = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage();
+
+        social.getRelationsToAll((k, v) -> k.equals(targetPlayerUUID)).forEach((k, v) -> {
+            String rawUsername = RPUtil.getUsernameFromCache(k);
+            String safeUsername = rawUsername != null ? mm.escapeTags(rawUsername) : "Unknown";
+            output.message += "- <click:suggest_command:'/pstatus " + safeUsername + "'><hover:show_text:'<gray>Click to check player status</gray>'>" + safeUsername + "</hover></click>: " + v + "\n";
             // Future: Make them glow locally when this command is ran
-        );
+        });
     }
 
 
