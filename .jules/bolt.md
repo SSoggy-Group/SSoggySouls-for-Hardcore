@@ -90,3 +90,6 @@
 ## 2026-07-16 - [Avoid `.toLowerCase().split()` on full chat messages]
 **Learning:** Using `rawMessage.toLowerCase().split(" ")[0]` inside high-frequency listeners like `PlayerCommandPreprocessEvent` unnecessarily allocates a string array and lowercases the entire message (which could be long) just to extract the first word.
 **Action:** Use `indexOf(' ')` to find the first space and `substring()` to isolate the command before calling `.toLowerCase()`, preventing wasteful allocations and CPU cycles on large strings.
+## 2024-05-24 - [Avoid `.split("\\s+")` for extracting the first word of a command]
+**Learning:** Using `.split("\\s+")` on long strings (like chat messages or full commands) allocates string arrays and iterates over the entire string, introducing unnecessary garbage collection overhead on high-frequency events. Be careful when replacing `trim().split()`, as it trims leading spaces before searching. If replacing with a character search loop, trim the string *before* the loop to match behavior.
+**Action:** Use a manual `for` loop with `Character.isWhitespace()` to find the index of the first space or tab, and then extract only the first word using `substring()`. Always trim the input string first to ensure leading spaces don't incorrectly trigger the delimiter match at index 0.
