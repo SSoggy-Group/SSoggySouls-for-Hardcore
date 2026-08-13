@@ -7,6 +7,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -112,9 +113,9 @@ public class CommandRegistration {
             .requires(source -> source.hasPermission(2))
             .executes(context -> {
                 context.getSource().sendFailure(MessageUtil.get("usage-revive")
-                    .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
+                    .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -183,9 +184,9 @@ public class CommandRegistration {
             .requires(source -> source.hasPermission(2))
             .executes(context -> {
                 context.getSource().sendFailure(MessageUtil.get("usage-psetlives")
-                    .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
+                    .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -194,9 +195,9 @@ public class CommandRegistration {
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     context.getSource().sendFailure(MessageUtil.get("usage-psetlives-player", PLAYER, targetName)
-                        .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
+                        .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                             .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives " + targetName + " "))
-                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                     return 0;
                 })
                 .then(Commands.argument(LIVES, IntegerArgumentType.integer(0))
