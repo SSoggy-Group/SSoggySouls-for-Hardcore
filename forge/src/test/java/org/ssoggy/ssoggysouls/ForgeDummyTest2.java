@@ -1,0 +1,12 @@
+package org.ssoggy.ssoggysouls;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class ForgeDummyTest2 {
+    @Test
+    public void testForgeString2() {
+        String test = "ForgeTest";
+        assertEquals("ForgeTest", test.substring(0, 9), "Forge string manipulation failed");
+    }
+}
