@@ -110,13 +110,7 @@ public class CommandRegistration {
         dispatcher.register(Commands.literal("revive")
             .requires(source -> source.hasPermission(2))
             .executes(context -> {
-                net.minecraft.network.chat.Component usageRevive = MessageUtil.get("usage-revive");
-                if (usageRevive != null) {
-                    context.getSource().sendFailure(usageRevive
-                        .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
-                            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
-                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, (MessageUtil.get("click-to-autofill") != null ? MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY) : net.minecraft.network.chat.Component.empty())))));
-                }
+                sendInteractiveUsage(context.getSource(), "usage-revive", "/revive ");
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -184,13 +178,7 @@ public class CommandRegistration {
         dispatcher.register(Commands.literal("psetlives")
             .requires(source -> source.hasPermission(2))
             .executes(context -> {
-                net.minecraft.network.chat.Component usagePsetlives = MessageUtil.get("usage-psetlives");
-                if (usagePsetlives != null) {
-                    context.getSource().sendFailure(usagePsetlives
-                        .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
-                            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives "))
-                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, (MessageUtil.get("click-to-autofill") != null ? MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY) : net.minecraft.network.chat.Component.empty())))));
-                }
+                sendInteractiveUsage(context.getSource(), "usage-psetlives", "/psetlives ");
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -198,13 +186,7 @@ public class CommandRegistration {
                         context.getSource().getServer().getPlayerNames(), builder))
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
-                    net.minecraft.network.chat.Component usagePsetlivesPlayer = MessageUtil.get("usage-psetlives-player", PLAYER, targetName);
-                    if (usagePsetlivesPlayer != null) {
-                        context.getSource().sendFailure(usagePsetlivesPlayer
-                            .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
-                                .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives " + targetName + " "))
-                                .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, (MessageUtil.get("click-to-autofill") != null ? MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY) : net.minecraft.network.chat.Component.empty())))));
-                    }
+                    sendInteractiveUsage(context.getSource(), "usage-psetlives-player", "/psetlives " + targetName + " ", PLAYER, targetName);
                     return 0;
                 })
                 .then(Commands.argument(LIVES, IntegerArgumentType.integer(0))
@@ -298,4 +280,17 @@ public class CommandRegistration {
         );
     }
 
+
+    private static void sendInteractiveUsage(net.minecraft.commands.CommandSourceStack source, String messageKey, String suggestCommand, String... args) {
+        net.minecraft.network.chat.Component usageMessage = MessageUtil.get(messageKey, (Object[]) args);
+        if (usageMessage != null) {
+            net.minecraft.network.chat.Component rawHover = MessageUtil.get("click-to-autofill");
+            final net.minecraft.network.chat.Component hoverComponent = rawHover == null
+                ? net.minecraft.network.chat.Component.empty()
+                : rawHover.copy().withStyle(net.minecraft.ChatFormatting.GRAY);
+            source.sendFailure(usageMessage.copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
+                .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, suggestCommand))
+                .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, hoverComponent))));
+        }
+    }
 }
