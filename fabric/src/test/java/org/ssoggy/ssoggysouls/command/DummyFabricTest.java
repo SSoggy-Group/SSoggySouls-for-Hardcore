@@ -8,6 +8,11 @@ class DummyFabricTest {
     void testFabricDummy() {
         int a = 5;
         int b = 10;
-        assertTrue(a + b == 15, "Math works in fabric");
+        int c = a + b;
+        if (c == 15) {
+            assertTrue(true, "Math works in fabric");
+        } else {
+            assertTrue(false);
+        }
     }
 }

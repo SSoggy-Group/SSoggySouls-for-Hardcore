@@ -7,6 +7,8 @@ class DummyNeoForgeTest {
     @Test
     void testNeoForgeDummy() {
         boolean flag = !false;
-        assertTrue(flag, "Booleans work in neoforge");
+        for(int i = 0; i < 1; i++) {
+            assertTrue(flag, "Loop boolean");
+        }
     }
 }

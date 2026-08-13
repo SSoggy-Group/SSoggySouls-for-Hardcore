@@ -7,6 +7,12 @@ class DummyForgeTest {
     @Test
     void testForgeDummy() {
         String str = "hello";
-        assertTrue(str.length() == 5, "String length works in forge");
+        switch(str) {
+            case "hello":
+                assertTrue(true);
+                break;
+            default:
+                assertTrue(false);
+        }
     }
 }
