@@ -82,7 +82,8 @@ public class LimboServerListener {
             }
 
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+            String str = cfg != null ? cfg.getLimboSpawnWorld() : null;
+            Identifier worldId = str != null ? Identifier.tryParse(str) : null;
             if (worldId == null) {
                 return;
             }
@@ -99,9 +100,7 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String message) {
-        String[] tokens = message.trim().split("\\s+");
-        String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
+        return org.ssoggy.ssoggysouls.util.CommandUtil.isWhitelistedCommand(message, WHITELISTED_COMMANDS);
     }
 
     public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {
@@ -121,7 +120,8 @@ public class LimboServerListener {
 
         // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        String str = cfg != null ? cfg.getLimboSpawnWorld() : null;
+            Identifier worldId = str != null ? Identifier.tryParse(str) : null;
         if (worldId != null && destination.getRegistryKey().getValue().equals(worldId)) {
             return false;
         }
@@ -144,7 +144,8 @@ public class LimboServerListener {
                 player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+        String str = cfg != null ? cfg.getLimboSpawnWorld() : null;
+            Identifier worldId = str != null ? Identifier.tryParse(str) : null;
         if (worldId != null) {
             ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
             if (world != null) {
