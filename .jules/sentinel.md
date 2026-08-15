@@ -27,3 +27,8 @@
 **Vulnerability:** In `LeaveLimboCommand.java`, `RPConfig.java`, and `UpdateChecker.java`, exception messages (`e.getMessage()`) were directly appended to error logs using `logger.severe()` or `logger.warning()`.
 **Learning:** Appending `e.getMessage()` manually instead of passing the entire Exception object can leak sensitive information to the logs without providing a full stack trace, reducing debuggability and posing a potential security risk.
 **Prevention:** Always use `logger.log(Level.SEVERE, "context message", exception)` or equivalent to properly log the context message and the full stack trace securely.
+
+## 2024-08-15 - Legacy Chat Formatting Injection via Unsanitized Ampersands
+**Vulnerability:** The AdminLogger.sanitize() method allowed '&' characters to be written to disk. When read via Kyori's LegacyComponentSerializer, they were evaluated as formatting codes.
+**Learning:** Internal logs can become formatting spoof vectors if later displayed through rich text serializers without sanitizing legacy format characters.
+**Prevention:** Always sanitize legacy formatting characters (like replacing '&' with '＆') before storage if the data might be parsed by a legacy serializer upon retrieval.
