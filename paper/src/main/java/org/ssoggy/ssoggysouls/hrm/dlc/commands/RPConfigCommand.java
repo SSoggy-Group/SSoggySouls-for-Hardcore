@@ -121,7 +121,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         result.message = "Set " + where + " to " + whoBool;
     }
 
-    private void executeStructureCMD(String who, String what, String where, RPCommandOutput result) {
+    private void executeStructureCMD(String who, String what, String where, RPCommandOutput result, String baseCmd) {
         Set<Material> whoSet;
         Material whoMat;
         String whoName;
@@ -133,7 +133,7 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         }
         if (action == null) {
             result.success = COMMANDOUTPUTENUM.FALSE;
-            result.message = "Use add, remove, or reset.";
+            result.message = buildErrorComponent(baseCmd, what) + " Use add, remove, or reset.";
             return;
         }
 
@@ -251,10 +251,10 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
                     break;
                 }
                 // reset action has exactly 3 args, so no material argument is available
-                executeStructureCMD("", args[2], args[1], result);
+                executeStructureCMD("", args[2], args[1], result, CMD_PREFIX + args[0] + " " + args[1] + " ");
                 break;
             default:
-                executeStructureCMD(args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result); // All params are successfully entered
+                executeStructureCMD(args.length > 3 ? args[3].toUpperCase() : "", args[2], args[1], result, CMD_PREFIX + args[0] + " " + args[1] + " "); // All params are successfully entered
                 break;
         }
     }

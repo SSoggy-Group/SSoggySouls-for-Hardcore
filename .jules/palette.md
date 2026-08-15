@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-08-15 - Interactive Command Errors
+**Learning:** When displaying error messages for invalid command arguments, static text creates friction for users trying to correct typos. Replacing static errors with interactive MiniMessage components (`buildErrorComponent`) allows users to click the error and auto-fill the base command, significantly improving usability. It is also important to preserve instructional context alongside the interactive component.
+**Action:** Always wrap invalid CLI arguments in interactive clickable components and preserve the instructional context text instead of completely overwriting it.
