@@ -32,3 +32,8 @@
 **Vulnerability:** The AdminLogger.sanitize() method allowed '&' characters to be written to disk. When read via Kyori's LegacyComponentSerializer, they were evaluated as formatting codes.
 **Learning:** Internal logs can become formatting spoof vectors if later displayed through rich text serializers without sanitizing legacy format characters.
 **Prevention:** Always sanitize legacy formatting characters (like replacing '&' with '＆') before storage if the data might be parsed by a legacy serializer upon retrieval.
+
+## 2026-08-15 - Forge/NeoForge Chat Component Style Chaining Regression
+**Vulnerability:** A previous commit introduced syntax for `.withStyle()` chaining on `Component` instances. While valid in Paper/Fabric, Forge and NeoForge components are strictly immutable and do not natively support this chained mutation structure, resulting in critical compilation failure across modules.
+**Learning:** Cross-platform multi-loader codebase API equivalences frequently diverge for seemingly universal constructs like text component styling. Directly porting fluent builder syntax between platforms will break builds.
+**Prevention:** In Forge and NeoForge, append `.copy()` to `Component` objects before invoking `.withStyle()` to ensure a mutable component instance is returned and chaining is properly executed.
