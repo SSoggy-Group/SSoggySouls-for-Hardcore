@@ -90,3 +90,6 @@
 ## 2026-07-16 - [Avoid `.toLowerCase().split()` on full chat messages]
 **Learning:** Using `rawMessage.toLowerCase().split(" ")[0]` inside high-frequency listeners like `PlayerCommandPreprocessEvent` unnecessarily allocates a string array and lowercases the entire message (which could be long) just to extract the first word.
 **Action:** Use `indexOf(' ')` to find the first space and `substring()` to isolate the command before calling `.toLowerCase()`, preventing wasteful allocations and CPU cycles on large strings.
+## 2026-08-16 - [Loop Optimization & Short-Circuiting]
+**Learning:** In heavy loops iterating over plugin state, unconditionally performing storage lookups (like `RPSocial` relations) before evaluating simple, cheap time threshold checks causes massive CPU waste. Also, creating new instances of `MiniMessage` per loop iteration or in frequently called static methods generates excessive garbage.
+**Action:** Always hoist invariant object allocations (`Instant` thresholds, `MiniMessage` instances) outside the loop or to static fields. Evaluate cheap conditions (like `Instant.isBefore`) first to short-circuit and bypass expensive operations (like synchronized disk I/O or state lookups).

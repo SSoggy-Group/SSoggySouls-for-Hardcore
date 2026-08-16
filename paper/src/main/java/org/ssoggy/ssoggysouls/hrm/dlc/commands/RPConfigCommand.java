@@ -54,9 +54,11 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
     private static final String CMD_PREFIX = "/revivalconfig ";
     private static final String AQUA_LABEL_SUFFIX = ":</aqua> ";
 
+    private static final net.kyori.adventure.text.minimessage.MiniMessage MINIMESSAGE = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage();
+
     private static String buildErrorComponent(String baseCommand, String invalidArg) {
-        String safeBase = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(baseCommand);
-        String safeInvalid = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(invalidArg);
+        String safeBase = MINIMESSAGE.escapeTags(baseCommand);
+        String safeInvalid = MINIMESSAGE.escapeTags(invalidArg);
 
         return "<click:suggest_command:'" + baseCommand + "'><hover:show_text:'<gray>Click to auto-fill this command</gray>'>" +
                safeBase + " >><red>" + safeInvalid + "</red><<</hover></click>";
