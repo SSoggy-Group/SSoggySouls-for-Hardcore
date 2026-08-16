@@ -66,21 +66,40 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
 
         String headerText = "Here is a list of all the current public deaths";
         StringBuilder deathListBuilder = new StringBuilder(headerText);
+
+        Instant now = Instant.now();
+        Instant publicThreshold = now.minusSeconds(publicAfterMin * 60);
+        Instant friendsThreshold = now.minusSeconds(friendsAfterMin * 60);
+        Instant trustedThreshold = now.minusSeconds(trustedAfterMin * 60);
+
+        net.kyori.adventure.text.minimessage.MiniMessage miniMessage = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage();
+
         for (Map.Entry<UUID, Pair<Location, Instant>> death : RPStatic.DEAD_LOCATIONS.entrySet()) {
             Pair<Location, Instant> deathDetails = death.getValue();
+            Instant deathTime = deathDetails.getRight();
+
+            boolean meetsPublic = deathTime.isBefore(publicThreshold);
+            boolean meetsFriends = deathTime.isBefore(friendsThreshold);
+            boolean meetsTrusted = deathTime.isBefore(trustedThreshold);
+
+            if (!meetsPublic && !meetsFriends && !meetsTrusted) {
+                continue;
+            }
 
             UUID uuid = death.getKey();
-            SOCIALENUM relationship = new RPSocial(uuid).getRelationTo(player.getUniqueId());
+            SOCIALENUM relationship = null;
 
-            Instant deathTime = deathDetails.getRight();
-            Instant now = Instant.now();
-            if (deathTime.isBefore(now.minusSeconds(publicAfterMin * 60))
-                    || (relationship == SOCIALENUM.FRIENDS && deathTime.isBefore(now.minusSeconds(friendsAfterMin * 60)))
-                    || (relationship == SOCIALENUM.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfterMin * 60)))) {
+            if (!meetsPublic) {
+                relationship = new RPSocial(uuid).getRelationTo(player.getUniqueId());
+            }
+
+            if (meetsPublic
+                    || (relationship == SOCIALENUM.FRIENDS && meetsFriends)
+                    || (relationship == SOCIALENUM.TRUSTED && meetsTrusted)) {
                 String username = RPUtil.getUsernameFromCache(uuid);
                 Location deathLocation = deathDetails.getLeft();
                 String coords = deathLocation.getBlockX() + " " + deathLocation.getBlockY() + " " + deathLocation.getBlockZ();
-                String escapedUsername = username != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(username) : "Unknown";
+                String escapedUsername = username != null ? miniMessage.escapeTags(username) : "Unknown";
                 deathListBuilder.append("\n<click:suggest_command:'/pstatus ").append(escapedUsername).append("'>")
                         .append("<hover:show_text:'<gray>Click to check player status</gray>'>")
                         .append("<gold><bold>").append(escapedUsername).append("</bold></gold>")
