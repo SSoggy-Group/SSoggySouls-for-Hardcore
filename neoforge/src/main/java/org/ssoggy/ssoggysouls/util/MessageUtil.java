@@ -24,14 +24,17 @@ public final class MessageUtil extends MessageHelper {
         return getRaw(key, replacements);
     }
 
+    @org.jetbrains.annotations.NotNull
     public static Component get(String key, Object... replacements) {
         return colorizeComponent(prefix + getRaw(key, replacements));
     }
 
+    @org.jetbrains.annotations.NotNull
     public static Component getNoPrefix(String key, Object... replacements) {
         return colorizeComponent(getRaw(key, replacements));
     }
 
+    @org.jetbrains.annotations.NotNull
     public static Component colorizeComponent(String text) {
         if (text == null) return Component.empty();
         return Component.literal(text.replace('&', '\u00a7'));
