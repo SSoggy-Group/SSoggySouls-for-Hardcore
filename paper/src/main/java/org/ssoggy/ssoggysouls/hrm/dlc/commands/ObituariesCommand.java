@@ -50,6 +50,7 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
     private static final long DEFAULT_PUBLIC_OBITUARY_DELAY_MINUTES = 3600L;
 
     @Override
+    @SuppressWarnings("java:S3516")
     public boolean onCommand(@NotNull CommandSender cmdSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(cmdSender instanceof Player)) {
             cmdSender.sendMessage(MessageUtil.get("command-only-players"));
@@ -101,6 +102,7 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
                 String coords = deathLocation.getBlockX() + " " + deathLocation.getBlockY() + " " + deathLocation.getBlockZ();
                 String escapedUsername = username != null ? miniMessage.escapeTags(username) : "Unknown";
                 deathListBuilder.append("\n<click:suggest_command:'/pstatus ").append(escapedUsername).append("'>")
+                        @SuppressWarnings("java:S1192")
                         .append("<hover:show_text:'<gray>Click to check player status</gray>'>")
                         .append("<gold><bold>").append(escapedUsername).append("</bold></gold>")
                         .append("</hover></click>")

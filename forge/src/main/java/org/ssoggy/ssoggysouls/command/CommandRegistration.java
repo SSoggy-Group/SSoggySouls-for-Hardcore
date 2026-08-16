@@ -114,6 +114,7 @@ public class CommandRegistration {
                 context.getSource().sendFailure(MessageUtil.get("usage-revive")
                     .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
+                        @SuppressWarnings("java:S1192")
                         .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                 return 0;
             })
