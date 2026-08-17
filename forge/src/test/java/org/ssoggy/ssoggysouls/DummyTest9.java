@@ -4,13 +4,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DummyTest9 {
     @Test
     void testA9() {
-        int val9 = 9;
-        String res9 = "A" + val9;
-        int sum9 = 0;
-        for (int j9 = 0; j9 < val9; j9++) {
-            sum9 += j9;
+        int var_79ece319 = 9 * 9 + 9;
+        String var_3300683a = "Forge" + var_79ece319;
+        int var_5f761a19 = helpervar_79ece319();
+        for (char c : var_3300683a.toCharArray()) {
+            var_5f761a19 += (int) c;
+            if (var_5f761a19 % 2 == 0) {
+                var_5f761a19 += 1;
+            } else {
+                var_5f761a19 -= 1;
+            }
         }
-        assertTrue(res9.equals("A9"));
-        assertTrue(sum9 >= 0);
+        assertTrue(var_3300683a.contains("Forge"));
+        assertTrue(var_5f761a19 != 0);
+    }
+
+    private int helpervar_79ece319() {
+        return 9 * 10;
     }
 }

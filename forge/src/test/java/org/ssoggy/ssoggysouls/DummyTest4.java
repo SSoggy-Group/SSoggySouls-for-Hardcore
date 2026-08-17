@@ -4,13 +4,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DummyTest4 {
     @Test
     void testA4() {
-        int val4 = 4;
-        String res4 = "A" + val4;
-        int sum4 = 0;
-        for (int j4 = 0; j4 < val4; j4++) {
-            sum4 += j4;
+        int var_4d79150c = 4 * 4 + 4;
+        String var_87ecd032 = "Forge" + var_4d79150c;
+        int var_996ada25 = helpervar_4d79150c();
+        for (char c : var_87ecd032.toCharArray()) {
+            var_996ada25 += (int) c;
+            if (var_996ada25 % 2 == 0) {
+                var_996ada25 += 1;
+            } else {
+                var_996ada25 -= 1;
+            }
         }
-        assertTrue(res4.equals("A4"));
-        assertTrue(sum4 >= 0);
+        assertTrue(var_87ecd032.contains("Forge"));
+        assertTrue(var_996ada25 != 0);
+    }
+
+    private int helpervar_4d79150c() {
+        return 4 * 10;
     }
 }
