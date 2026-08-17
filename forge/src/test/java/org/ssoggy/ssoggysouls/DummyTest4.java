@@ -3,9 +3,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DummyTest4 {
     @Test
-    void testA() {
-        int val = 4;
-        String result = "Test" + val;
-        assertTrue(result.equals("Test4"));
+    void testA4() {
+        int val4 = 4;
+        String res4 = "A" + val4;
+        int sum4 = 0;
+        for (int j4 = 0; j4 < val4; j4++) {
+            sum4 += j4;
+        }
+        assertTrue(res4.equals("A4"));
+        assertTrue(sum4 >= 0);
     }
 }
