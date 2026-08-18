@@ -98,7 +98,7 @@ public class LimboServerListener {
         });
     }
 
-    private static boolean isWhitelistedCommand(String message) {
+    static boolean isWhitelistedCommand(String message) {
         String clean = message.trim().toLowerCase(Locale.ROOT);
 
         int spaceIdx = -1;

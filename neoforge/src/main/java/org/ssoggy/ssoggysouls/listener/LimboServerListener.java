@@ -33,7 +33,7 @@ public class LimboServerListener {
         db = database;
     }
 
-    private static boolean isWhitelistedCommand(String fullCommand) {
+    static boolean isWhitelistedCommand(String fullCommand) {
         String clean = fullCommand.trim().toLowerCase(java.util.Locale.ROOT);
 
         int spaceIdx = -1;
