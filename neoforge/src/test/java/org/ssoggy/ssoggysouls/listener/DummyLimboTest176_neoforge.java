@@ -1,0 +1,12 @@
+package org.ssoggy.ssoggysouls.listener;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DummyLimboTest176_neoforge {
+    @Test
+    void dummyTest176() {
+        int val = 176 * 2;
+        assertTrue(val == 352);
+    }
+}
