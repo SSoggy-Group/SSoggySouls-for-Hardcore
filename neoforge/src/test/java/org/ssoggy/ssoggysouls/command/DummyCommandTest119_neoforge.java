@@ -1,0 +1,12 @@
+package org.ssoggy.ssoggysouls.command;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DummyCommandTest119_neoforge {
+    @Test
+    void dummyTest119() {
+        int val = 119 * 3;
+        assertTrue(val == 357);
+    }
+}

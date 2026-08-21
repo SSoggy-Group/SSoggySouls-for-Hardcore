@@ -1,0 +1,12 @@
+package org.ssoggy.ssoggysouls.command;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DummyCommandTest148_fabric {
+    @Test
+    void dummyTest148() {
+        int val = 148 * 3;
+        assertTrue(val == 444);
+    }
+}
