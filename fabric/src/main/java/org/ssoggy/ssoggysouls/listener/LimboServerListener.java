@@ -18,8 +18,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 
 import java.util.UUID;
-import java.util.Set;
-import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 public class LimboServerListener {
