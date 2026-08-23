@@ -31,3 +31,7 @@
 **Vulnerability:** MySQL database initialization allowed connecting with an empty password despite logging an error, due to a bug in string checking logic `pass.isEmpty()` bypassing if `pass` was empty string with space or null, allowing unauthorized database access.
 **Learning:** Default configurations can lead to insecure deployments, but failing to validate and enforce the check stringently is worse.
 **Prevention:** Always enforce the check with `.trim().isEmpty()` and `null` checking.
+## 2026-08-23 - [Config NullPointerException]
+**Vulnerability:** Empty config json returns null and is not handled properly when getting config.
+**Learning:** Config initialization should handle `null` value when config files are improperly read or corrupted.
+**Prevention:** Always check if `GSON.fromJson` returns `null` when loading configurations.
