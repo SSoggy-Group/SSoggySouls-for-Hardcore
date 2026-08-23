@@ -90,3 +90,6 @@
 ## 2026-07-16 - [Avoid `.toLowerCase().split()` on full chat messages]
 **Learning:** Using `rawMessage.toLowerCase().split(" ")[0]` inside high-frequency listeners like `PlayerCommandPreprocessEvent` unnecessarily allocates a string array and lowercases the entire message (which could be long) just to extract the first word.
 **Action:** Use `indexOf(' ')` to find the first space and `substring()` to isolate the command before calling `.toLowerCase()`, preventing wasteful allocations and CPU cycles on large strings.
+## 2024-05-18 - [Minimize object instantiation inside loops]
+**Learning:** Instantiating `MiniMessage.miniMessage()` inside of high-frequency loops, such as parsing config blocks or processing list map entries, creates massive amounts of unnecessary short-lived objects. This leads to increased garbage collection pressure and overall system slowdown.
+**Action:** Always hoist invariant object allocations (like `MiniMessage` instance creation or threshold calculations) outside of loops to prevent redundant object allocations and to adhere to loop optimization conventions.
