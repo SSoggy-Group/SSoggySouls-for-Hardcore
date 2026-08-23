@@ -444,7 +444,16 @@ public final class DlcCommandRegistration {
         if (result.status() == DlcCommandResult.Status.MISSING_ARGS) {
             net.minecraft.network.chat.MutableComponent base = Component.literal("[RevivalPlus] " + result.message()).withStyle(ChatFormatting.RED);
             String details = result.details();
-            String suggest = details != null && details.contains("<") ? details.substring(0, details.indexOf('<')) : (details != null ? details : "");
+            final String suggest;
+            if (details != null) {
+                if (details.contains("<")) {
+                    suggest = details.substring(0, details.indexOf('<'));
+                } else {
+                    suggest = details;
+                }
+            } else {
+                suggest = "";
+            }
             net.minecraft.network.chat.MutableComponent interactive = Component.literal(details != null ? details : "")
                     .withStyle(style -> style.withColor(ChatFormatting.GRAY)
                             .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, suggest))
