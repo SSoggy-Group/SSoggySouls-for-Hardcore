@@ -185,32 +185,31 @@ public final class DlcCommandRegistration {
     }
 
     private static void registerDeathListCommand(CommandDispatcher<ServerCommandSource> dispatcher, String name) {
-        dispatcher.register(CommandManager.literal(name)
-                .executes(context -> {
-                    ServerCommandSource source = context.getSource();
-                    List<DlcDeathRecord> deaths;
-                    if (source.getEntity() instanceof ServerPlayerEntity player) {
-                        deaths = DlcDeaths.visibleDeaths(
-                                player.getUuid(),
-                                ConfigManager.getConfig().getTrustedObituaryAfter(),
-                                ConfigManager.getConfig().getFriendsObituaryAfter(),
-                                ConfigManager.getConfig().getPublicObituaryAfter()
-                        );
-                    } else {
-                        deaths = DlcDeaths.allDeaths();
-                    }
+        dispatcher.register(CommandManager.literal(name).executes(context -> executeDeathList(context.getSource())));
+    }
 
-                    if (deaths.isEmpty()) {
-                        sendResult(source, DlcCommandResult.fail("There are no public deaths currently."));
-                        return 0;
-                    }
+    private static int executeDeathList(ServerCommandSource source) {
+        List<DlcDeathRecord> deaths;
+        if (source.getEntity() instanceof ServerPlayerEntity player) {
+            ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+            int trusted = cfg != null ? cfg.getTrustedObituaryAfter() : 0;
+            int friends = cfg != null ? cfg.getFriendsObituaryAfter() : 0;
+            int publicObit = cfg != null ? cfg.getPublicObituaryAfter() : 0;
+            deaths = DlcDeaths.visibleDeaths(player.getUuid(), trusted, friends, publicObit);
+        } else {
+            deaths = DlcDeaths.allDeaths();
+        }
 
-                    sendResult(source, DlcCommandResult.success("Here is a list of all the current public deaths"));
-                    for (DlcDeathRecord death : deaths) {
-                        source.sendMessage(formatDeathComponent(death));
-                    }
-                    return 1;
-                }));
+        if (deaths.isEmpty()) {
+            sendResult(source, DlcCommandResult.fail("There are no public deaths currently."));
+            return 0;
+        }
+
+        sendResult(source, DlcCommandResult.success("Here is a list of all the current public deaths"));
+        for (DlcDeathRecord death : deaths) {
+            source.sendMessage(formatDeathComponent(death));
+        }
+        return 1;
     }
 
     private static void registerGhostModeCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
@@ -270,7 +269,7 @@ public final class DlcCommandRegistration {
         dispatcher.register(CommandManager.literal("revivalconfig")
                 .requires(source -> source.hasPermissionLevel(2))
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use "));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use ", "/revivalconfig <structure|gamerule|timer|reload>"));
                     return 0;
                 })
                 .then(CommandManager.argument(GROUP, StringArgumentType.word())
@@ -443,9 +442,20 @@ public final class DlcCommandRegistration {
     private static Text format(DlcCommandResult result) {
         if (result.status() == DlcCommandResult.Status.MISSING_ARGS) {
             net.minecraft.text.MutableText base = Text.literal("[RevivalPlus] " + result.message()).formatted(Formatting.RED);
-            net.minecraft.text.MutableText interactive = Text.literal("/revivalconfig <structure|gamerule|timer|reload>")
+            String details = result.details();
+            final String suggest;
+            if (details != null) {
+                if (details.contains("<")) {
+                    suggest = details.substring(0, details.indexOf('<'));
+                } else {
+                    suggest = details;
+                }
+            } else {
+                suggest = "";
+            }
+            net.minecraft.text.MutableText interactive = Text.literal(details != null ? details : "")
                     .styled(style -> style.withColor(Formatting.GRAY)
-                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
+                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, suggest))
                             .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to auto-fill this command").formatted(Formatting.GRAY))));
             return base.append(interactive);
         }
@@ -551,6 +561,7 @@ public final class DlcCommandRegistration {
 
     private static boolean getRule(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return false;
         return switch (key) {
             case C_LOSE_INV -> config.isLoseInventory();
             case C_RESTRICT_MENU -> config.isRestrictMenuAccess();
@@ -567,6 +578,7 @@ public final class DlcCommandRegistration {
 
     private static void setRule(String key, boolean value) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_LOSE_INV -> config.setLoseInventory(value);
             case C_RESTRICT_MENU -> config.setRestrictMenuAccess(value);
@@ -586,6 +598,7 @@ public final class DlcCommandRegistration {
 
     private static int getTimer(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return 0;
         return switch (key) {
             case C_TRUSTED_OBIT -> config.getTrustedObituaryAfter();
             case C_FRIENDS_OBIT -> config.getFriendsObituaryAfter();
@@ -599,6 +612,7 @@ public final class DlcCommandRegistration {
 
     private static void setTimer(String key, int value) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_TRUSTED_OBIT -> config.setTrustedObituaryAfter(value);
             case C_FRIENDS_OBIT -> config.setFriendsObituaryAfter(value);
@@ -612,6 +626,7 @@ public final class DlcCommandRegistration {
 
     private static List<String> getStructureList(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return List.of();
         return switch (key) {
             case C_SOUL_SAND -> config.getSoulSandBlockTag();
             case C_FLOWER -> config.getFlowerBlockTag();
@@ -624,6 +639,7 @@ public final class DlcCommandRegistration {
 
     private static void setStructureList(String key, Collection<String> values) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_SOUL_SAND -> config.setSoulSandBlocktag(values);
             case C_FLOWER -> config.setFlowerBlocktag(values);

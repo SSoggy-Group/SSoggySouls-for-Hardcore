@@ -10,8 +10,8 @@ public record DlcCommandResult(Status status, String message, String details) {
         MISSING_ARGS
     }
 
-    public static DlcCommandResult missingArgs(String message) {
-        return new DlcCommandResult(Status.MISSING_ARGS, message, null);
+    public static DlcCommandResult missingArgs(String message, String details) {
+        return new DlcCommandResult(Status.MISSING_ARGS, message, details);
     }
 
     public static DlcCommandResult success(String message) {

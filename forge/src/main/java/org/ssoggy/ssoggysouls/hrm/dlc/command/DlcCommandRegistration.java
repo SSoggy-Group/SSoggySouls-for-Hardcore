@@ -273,7 +273,7 @@ public final class DlcCommandRegistration {
         dispatcher.register(Commands.literal("revivalconfig")
                 .requires(source -> source.hasPermission(2))
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use "));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use ", "/revivalconfig <structure|gamerule|timer|reload>"));
                     return 0;
                 })
                 .then(Commands.argument(GROUP, StringArgumentType.word())
@@ -443,9 +443,20 @@ public final class DlcCommandRegistration {
     private static Component format(DlcCommandResult result) {
         if (result.status() == DlcCommandResult.Status.MISSING_ARGS) {
             net.minecraft.network.chat.MutableComponent base = Component.literal("[RevivalPlus] " + result.message()).withStyle(ChatFormatting.RED);
-            net.minecraft.network.chat.MutableComponent interactive = Component.literal("/revivalconfig <structure|gamerule|timer|reload>")
+            String details = result.details();
+            final String suggest;
+            if (details != null) {
+                if (details.contains("<")) {
+                    suggest = details.substring(0, details.indexOf('<'));
+                } else {
+                    suggest = details;
+                }
+            } else {
+                suggest = "";
+            }
+            net.minecraft.network.chat.MutableComponent interactive = Component.literal(details != null ? details : "")
                     .withStyle(style -> style.withColor(ChatFormatting.GRAY)
-                            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
+                            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, suggest))
                             .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
                     );
             return base.append(interactive);
@@ -552,6 +563,7 @@ public final class DlcCommandRegistration {
 
     private static boolean getRule(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return false;
         return switch (key) {
             case C_LOSE_INV -> config.isLoseInventory();
             case C_RESTRICT_MENU -> config.isRestrictMenuAccess();
@@ -568,6 +580,7 @@ public final class DlcCommandRegistration {
 
     private static void setRule(String key, boolean value) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_LOSE_INV -> config.setLoseInventory(value);
             case C_RESTRICT_MENU -> config.setRestrictMenuAccess(value);
@@ -587,6 +600,7 @@ public final class DlcCommandRegistration {
 
     private static int getTimer(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return 0;
         return switch (key) {
             case C_TRUSTED_OBIT -> config.getTrustedObituaryAfter();
             case C_FRIENDS_OBIT -> config.getFriendsObituaryAfter();
@@ -600,6 +614,7 @@ public final class DlcCommandRegistration {
 
     private static void setTimer(String key, int value) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_TRUSTED_OBIT -> config.setTrustedObituaryAfter(value);
             case C_FRIENDS_OBIT -> config.setFriendsObituaryAfter(value);
@@ -613,6 +628,7 @@ public final class DlcCommandRegistration {
 
     private static List<String> getStructureList(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return List.of();
         return switch (key) {
             case C_SOUL_SAND -> config.getSoulSandBlockTag();
             case C_FLOWER -> config.getFlowerBlockTag();
@@ -625,6 +641,7 @@ public final class DlcCommandRegistration {
 
     private static void setStructureList(String key, Collection<String> values) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_SOUL_SAND -> config.setSoulSandBlocktag(values);
             case C_FLOWER -> config.setFlowerBlocktag(values);
