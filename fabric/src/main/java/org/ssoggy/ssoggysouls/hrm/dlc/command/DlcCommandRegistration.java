@@ -190,11 +190,12 @@ public final class DlcCommandRegistration {
                     ServerCommandSource source = context.getSource();
                     List<DlcDeathRecord> deaths;
                     if (source.getEntity() instanceof ServerPlayerEntity player) {
+                        ConfigManager.ModConfig cfg = ConfigManager.getConfig();
                         deaths = DlcDeaths.visibleDeaths(
                                 player.getUuid(),
-                                ConfigManager.getConfig().getTrustedObituaryAfter(),
-                                ConfigManager.getConfig().getFriendsObituaryAfter(),
-                                ConfigManager.getConfig().getPublicObituaryAfter()
+                                cfg != null ? cfg.getTrustedObituaryAfter() : 0,
+                                cfg != null ? cfg.getFriendsObituaryAfter() : 0,
+                                cfg != null ? cfg.getPublicObituaryAfter() : 0
                         );
                     } else {
                         deaths = DlcDeaths.allDeaths();
@@ -553,6 +554,7 @@ public final class DlcCommandRegistration {
 
     private static boolean getRule(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return false;
         return switch (key) {
             case C_LOSE_INV -> config.isLoseInventory();
             case C_RESTRICT_MENU -> config.isRestrictMenuAccess();
@@ -569,6 +571,7 @@ public final class DlcCommandRegistration {
 
     private static void setRule(String key, boolean value) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_LOSE_INV -> config.setLoseInventory(value);
             case C_RESTRICT_MENU -> config.setRestrictMenuAccess(value);
@@ -588,6 +591,7 @@ public final class DlcCommandRegistration {
 
     private static int getTimer(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return 0;
         return switch (key) {
             case C_TRUSTED_OBIT -> config.getTrustedObituaryAfter();
             case C_FRIENDS_OBIT -> config.getFriendsObituaryAfter();
@@ -601,6 +605,7 @@ public final class DlcCommandRegistration {
 
     private static void setTimer(String key, int value) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_TRUSTED_OBIT -> config.setTrustedObituaryAfter(value);
             case C_FRIENDS_OBIT -> config.setFriendsObituaryAfter(value);
@@ -614,6 +619,7 @@ public final class DlcCommandRegistration {
 
     private static List<String> getStructureList(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return List.of();
         return switch (key) {
             case C_SOUL_SAND -> config.getSoulSandBlockTag();
             case C_FLOWER -> config.getFlowerBlockTag();
@@ -626,6 +632,7 @@ public final class DlcCommandRegistration {
 
     private static void setStructureList(String key, Collection<String> values) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_SOUL_SAND -> config.setSoulSandBlocktag(values);
             case C_FLOWER -> config.setFlowerBlocktag(values);
