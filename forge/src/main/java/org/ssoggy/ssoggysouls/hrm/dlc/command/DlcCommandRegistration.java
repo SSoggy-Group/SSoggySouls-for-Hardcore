@@ -273,7 +273,7 @@ public final class DlcCommandRegistration {
         dispatcher.register(Commands.literal("revivalconfig")
                 .requires(source -> source.hasPermission(2))
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use "));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use ", "/revivalconfig <structure|gamerule|timer|reload>"));
                     return 0;
                 })
                 .then(Commands.argument(GROUP, StringArgumentType.word())
@@ -443,9 +443,11 @@ public final class DlcCommandRegistration {
     private static Component format(DlcCommandResult result) {
         if (result.status() == DlcCommandResult.Status.MISSING_ARGS) {
             net.minecraft.network.chat.MutableComponent base = Component.literal("[RevivalPlus] " + result.message()).withStyle(ChatFormatting.RED);
-            net.minecraft.network.chat.MutableComponent interactive = Component.literal("/revivalconfig <structure|gamerule|timer|reload>")
+            String details = result.details();
+            String suggest = details != null && details.contains("<") ? details.substring(0, details.indexOf('<')) : (details != null ? details : "");
+            net.minecraft.network.chat.MutableComponent interactive = Component.literal(details != null ? details : "")
                     .withStyle(style -> style.withColor(ChatFormatting.GRAY)
-                            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
+                            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, suggest))
                             .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
                     );
             return base.append(interactive);

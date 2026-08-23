@@ -270,7 +270,7 @@ public final class DlcCommandRegistration {
         dispatcher.register(CommandManager.literal("revivalconfig")
                 .requires(source -> source.hasPermissionLevel(2))
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use "));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use ", "/revivalconfig <structure|gamerule|timer|reload>"));
                     return 0;
                 })
                 .then(CommandManager.argument(GROUP, StringArgumentType.word())
@@ -443,9 +443,11 @@ public final class DlcCommandRegistration {
     private static Text format(DlcCommandResult result) {
         if (result.status() == DlcCommandResult.Status.MISSING_ARGS) {
             net.minecraft.text.MutableText base = Text.literal("[RevivalPlus] " + result.message()).formatted(Formatting.RED);
-            net.minecraft.text.MutableText interactive = Text.literal("/revivalconfig <structure|gamerule|timer|reload>")
+            String details = result.details();
+            String suggest = details != null && details.contains("<") ? details.substring(0, details.indexOf('<')) : (details != null ? details : "");
+            net.minecraft.text.MutableText interactive = Text.literal(details != null ? details : "")
                     .styled(style -> style.withColor(Formatting.GRAY)
-                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
+                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, suggest))
                             .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to auto-fill this command").formatted(Formatting.GRAY))));
             return base.append(interactive);
         }

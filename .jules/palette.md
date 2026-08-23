@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-07-28 - [Dynamic CLI Auto-Fill Error Messages]
+**Learning:** Hardcoding static command usage errors (e.g., "/revivalconfig <structure|gamerule|timer|reload>") inside the `format()` method prevents the component from being reused for other commands that might have different usage patterns. By updating the `missingArgs` result to accept a `details` string and dynamically extracting the `SUGGEST_COMMAND` string (e.g., cutting off at the first `<`), we adapt automatically to any base command.
+**Action:** When creating interactive UI components for missing arguments or errors, dynamically read the required command structure from the error context rather than hardcoding the recovery command.

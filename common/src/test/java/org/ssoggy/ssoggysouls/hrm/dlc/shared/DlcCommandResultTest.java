@@ -7,10 +7,10 @@ class DlcCommandResultTest {
 
     @Test
     void testMissingArgsStatus() {
-        DlcCommandResult result = DlcCommandResult.missingArgs("test command");
+        DlcCommandResult result = DlcCommandResult.missingArgs("test command", "/cmd");
         assertEquals(DlcCommandResult.Status.MISSING_ARGS, result.status());
         assertEquals("test command", result.message());
-        assertNull(result.details());
+        assertEquals("/cmd", result.details());
     }
 
     @Test
