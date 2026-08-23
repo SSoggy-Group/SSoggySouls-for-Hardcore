@@ -62,7 +62,12 @@ public class ConfigManager {
     }
 
     public static ModConfig getConfig() {
-        if (config == null) load();
+        if (config == null) {
+            load();
+        }
+        if (config == null) {
+            config = new ModConfig();
+        }
         return config;
     }
 
