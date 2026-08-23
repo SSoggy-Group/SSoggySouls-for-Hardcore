@@ -83,9 +83,9 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
                     || (relationship == SOCIALENUM.FRIENDS && deathTime.isBefore(friendsThreshold))
                     || (relationship == SOCIALENUM.TRUSTED && deathTime.isBefore(trustedThreshold))) {
                 String username = RPUtil.getUsernameFromCache(uuid);
-                Location deathLocation = deathDetails.getLeft();
-                String coords = deathLocation.getBlockX() + " " + deathLocation.getBlockY() + " " + deathLocation.getBlockZ();
                 String escapedUsername = username != null ? mm.escapeTags(username) : "Unknown";
+                final Location deathLocation = deathDetails.getLeft();
+                String coords = deathLocation.getBlockX() + " " + deathLocation.getBlockY() + " " + deathLocation.getBlockZ();
                 deathListBuilder.append("\n<click:suggest_command:'/pstatus ").append(escapedUsername).append("'>")
                         .append("<hover:show_text:'<gray>Click to check player status</gray>'>")
                         .append("<gold><bold>").append(escapedUsername).append("</bold></gold>")
