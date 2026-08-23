@@ -23,7 +23,11 @@ public class ConfigManager {
         if (CONFIG_FILE.exists()) {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 config = GSON.fromJson(reader, ModConfig.class);
-            } catch (IOException e) {
+                if (config == null) {
+                    config = new ModConfig();
+                    save();
+                }
+            } catch (Exception e) {
                 org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.error("Failed to load config file", e);
                 config = new ModConfig();
                 save();
@@ -57,7 +61,12 @@ public class ConfigManager {
     }
 
     public static ModConfig getConfig() {
-        if (config == null) load();
+        if (config == null) {
+            load();
+        }
+        if (config == null) {
+            config = new ModConfig();
+        }
         return config;
     }
 

@@ -27,3 +27,11 @@
 **Vulnerability:** In `LeaveLimboCommand.java`, `RPConfig.java`, and `UpdateChecker.java`, exception messages (`e.getMessage()`) were directly appended to error logs using `logger.severe()` or `logger.warning()`.
 **Learning:** Appending `e.getMessage()` manually instead of passing the entire Exception object can leak sensitive information to the logs without providing a full stack trace, reducing debuggability and posing a potential security risk.
 **Prevention:** Always use `logger.log(Level.SEVERE, "context message", exception)` or equivalent to properly log the context message and the full stack trace securely.
+## 2024-03-22 - [Empty Database Password Allowed via config]
+**Vulnerability:** MySQL database initialization allowed connecting with an empty password despite logging an error, due to a bug in string checking logic `pass.isEmpty()` bypassing if `pass` was empty string with space or null, allowing unauthorized database access.
+**Learning:** Default configurations can lead to insecure deployments, but failing to validate and enforce the check stringently is worse.
+**Prevention:** Always enforce the check with `.trim().isEmpty()` and `null` checking.
+## 2026-08-23 - [Config NullPointerException]
+**Vulnerability:** Empty config json returns null and is not handled properly when getting config.
+**Learning:** Config initialization should handle `null` value when config files are improperly read or corrupted.
+**Prevention:** Always check if `GSON.fromJson` returns `null` when loading configurations.
