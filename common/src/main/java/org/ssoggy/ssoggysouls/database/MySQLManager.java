@@ -48,7 +48,7 @@ public class MySQLManager extends AbstractDatabaseManager {
             String dbName = SqlSafety.requireValidJdbcParam(plugin.getConfigString("database.name", "minecraft"), "database.name");
             String user = plugin.getConfigString("database.username", "minecraft");
             String pass = plugin.getConfigString("database.password", "");
-            if (pass.isEmpty()) {
+            if (pass == null || pass.trim().isEmpty()) {
                 plugin.getLogger().log(Level.SEVERE, "Database password cannot be empty. Running MySQL without a password is not allowed.");
                 throw new DatabaseInitializationException("MySQL database password is empty in config.");
             }
