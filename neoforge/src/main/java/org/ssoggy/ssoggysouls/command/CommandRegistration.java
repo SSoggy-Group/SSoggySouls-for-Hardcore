@@ -42,6 +42,14 @@ public class CommandRegistration {
     }
 
     @SubscribeEvent
+
+    private static net.minecraft.network.chat.MutableComponent createAutofillMessage(String command) {
+        String base = command.contains(" ") ? command.split(" ")[0] : command;
+        return MessageUtil.get("usage-" + base).copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
+            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/" + command))
+            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY))));
+    }
+
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         if (db == null) {
             SSoggySoulsMod.LOGGER.error("Cannot register commands: DatabaseManager is null");
@@ -110,10 +118,7 @@ public class CommandRegistration {
         dispatcher.register(Commands.literal("revive")
             .requires(source -> source.hasPermission(2))
             .executes(context -> {
-                context.getSource().sendFailure(MessageUtil.get("usage-revive")
-                    .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
-                        .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                context.getSource().sendFailure(createAutofillMessage("revive "));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
