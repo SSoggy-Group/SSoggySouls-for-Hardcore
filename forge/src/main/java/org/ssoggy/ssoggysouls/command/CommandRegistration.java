@@ -22,6 +22,7 @@ import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.AdminLogger;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.PermissionUtil;
 
 import java.io.File;
@@ -29,6 +30,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class CommandRegistration {
+    private static final String CLICK_TO_AUTOFILL = "click-to-autofill";
     
     private CommandRegistration() {
         // Utility class
@@ -114,7 +116,7 @@ public class CommandRegistration {
                 context.getSource().sendFailure(MessageUtil.get("usage-revive")
                     .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -150,7 +152,7 @@ public class CommandRegistration {
             return;
         }
 
-        int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives();
+        int defaultLives = ConfigManager.getConfig() != null ? ConfigManager.getConfig().getDefaultLives() : 3;
         boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
         if (success) {
             handleReviveSuccess(targetData, source);
@@ -185,7 +187,7 @@ public class CommandRegistration {
                 context.getSource().sendFailure(MessageUtil.get("usage-psetlives")
                     .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -196,7 +198,7 @@ public class CommandRegistration {
                     context.getSource().sendFailure(MessageUtil.get("usage-psetlives-player", PLAYER, targetName)
                         .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                             .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives " + targetName + " "))
-                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                     return 0;
                 })
                 .then(Commands.argument(LIVES, IntegerArgumentType.integer(0))

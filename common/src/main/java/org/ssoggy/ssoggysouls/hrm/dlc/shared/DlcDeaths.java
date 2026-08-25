@@ -125,20 +125,18 @@ public final class DlcDeaths {
         for (DlcDeathRecord deathRecord : DEATHS.values()) {
             if (deathRecord.uuid().equals(viewerUuid)) {
                 result.add(deathRecord);
-                continue;
-            }
-
-            Instant deathTime = deathRecord.time();
-            if (deathTime.isBefore(publicThreshold)) {
-                result.add(deathRecord);
-                continue;
-            }
-
-            DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
-            boolean visible = (relationship == DlcRelation.FRIENDS && deathTime.isBefore(friendsThreshold))
-                    || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(trustedThreshold));
-            if (visible) {
-                result.add(deathRecord);
+            } else {
+                Instant deathTime = deathRecord.time();
+                if (deathTime.isBefore(publicThreshold)) {
+                    result.add(deathRecord);
+                } else {
+                    DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
+                    boolean visible = (relationship == DlcRelation.FRIENDS && deathTime.isBefore(friendsThreshold))
+                            || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(trustedThreshold));
+                    if (visible) {
+                        result.add(deathRecord);
+                    }
+                }
             }
         }
         result.sort(Comparator.comparing(DlcDeathRecord::time));
