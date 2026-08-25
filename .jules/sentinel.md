@@ -27,3 +27,7 @@
 **Vulnerability:** In `LeaveLimboCommand.java`, `RPConfig.java`, and `UpdateChecker.java`, exception messages (`e.getMessage()`) were directly appended to error logs using `logger.severe()` or `logger.warning()`.
 **Learning:** Appending `e.getMessage()` manually instead of passing the entire Exception object can leak sensitive information to the logs without providing a full stack trace, reducing debuggability and posing a potential security risk.
 **Prevention:** Always use `logger.log(Level.SEVERE, "context message", exception)` or equivalent to properly log the context message and the full stack trace securely.
+## 2026-06-26 - [Prevent Legacy Color Code Injection]
+**Vulnerability:** Unsanitized `&` characters in logs were vulnerable to interpretation by Kyori's `LegacyComponentSerializer`.
+**Learning:** If stored logs or strings contain user-generated content and are subsequently rendered back to the user via a legacy ampersand serializer, any user-supplied `&` characters will be processed as color/formatting codes, allowing display spoofing.
+**Prevention:** Explicitly sanitize the `&` character (e.g., by replacing it with a visually similar full-width `＆`) before writing user inputs to strings that will eventually be parsed by `LegacyComponentSerializer`.
