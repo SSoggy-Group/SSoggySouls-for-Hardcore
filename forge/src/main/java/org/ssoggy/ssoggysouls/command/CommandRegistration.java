@@ -30,7 +30,6 @@ import java.util.concurrent.CompletableFuture;
 @Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class CommandRegistration {
 
-    private static final String CLICK_TO_AUTOFILL_KEY = "click-to-autofill";
 
     
     private CommandRegistration() {
@@ -117,7 +116,7 @@ public class CommandRegistration {
                 context.getSource().sendFailure(MessageUtil.get("usage-revive")
                     .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(org.ssoggy.ssoggysouls.util.UIUtil.CLICK_TO_AUTOFILL_KEY).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -188,7 +187,7 @@ public class CommandRegistration {
                 context.getSource().sendFailure(MessageUtil.get("usage-psetlives")
                     .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(org.ssoggy.ssoggysouls.util.UIUtil.CLICK_TO_AUTOFILL_KEY).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -199,7 +198,7 @@ public class CommandRegistration {
                     context.getSource().sendFailure(MessageUtil.get("usage-psetlives-player", PLAYER, targetName)
                         .copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                             .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives " + targetName + " "))
-                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(org.ssoggy.ssoggysouls.util.UIUtil.CLICK_TO_AUTOFILL_KEY).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                     return 0;
                 })
                 .then(Commands.argument(LIVES, IntegerArgumentType.integer(0))
