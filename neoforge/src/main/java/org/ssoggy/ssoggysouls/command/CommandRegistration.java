@@ -143,13 +143,14 @@ public class CommandRegistration {
             return;
         }
 
-        if (!targetData.isDead()) {
+        if (targetData != null && !targetData.isDead()) {
             source.getServer().execute(() ->
                 source.sendFailure(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
             return;
         }
 
-        int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives();
+        org.ssoggy.ssoggysouls.util.ConfigManager.ModConfig cfg = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig();
+        int defaultLives = cfg != null ? cfg.getDefaultLives() : 1;
         boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
         if (success) {
             handleReviveSuccess(targetData, source);

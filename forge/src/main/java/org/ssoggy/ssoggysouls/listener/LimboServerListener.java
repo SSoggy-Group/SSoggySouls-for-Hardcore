@@ -18,7 +18,7 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class LimboServerListener {
+public final class LimboServerListener {
 
     private static DatabaseManager db;
 

@@ -18,7 +18,7 @@ import org.ssoggy.ssoggysouls.util.MessageUtil;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class LimboServerListener {
+public final class LimboServerListener {
 
     private static DatabaseManager db;
 
@@ -120,7 +120,9 @@ public class LimboServerListener {
         player.getFoodData().setSaturation(20f);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
+        if (cfg == null) return;
+        ResourceLocation worldId = cfg.getLimboSpawnWorld() != null ? ResourceLocation.tryParse(cfg.getLimboSpawnWorld()) : null;
+        if (worldId == null) return;
         ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
         if (world != null) {
             player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
