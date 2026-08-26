@@ -27,3 +27,7 @@
 **Vulnerability:** In `LeaveLimboCommand.java`, `RPConfig.java`, and `UpdateChecker.java`, exception messages (`e.getMessage()`) were directly appended to error logs using `logger.severe()` or `logger.warning()`.
 **Learning:** Appending `e.getMessage()` manually instead of passing the entire Exception object can leak sensitive information to the logs without providing a full stack trace, reducing debuggability and posing a potential security risk.
 **Prevention:** Always use `logger.log(Level.SEVERE, "context message", exception)` or equivalent to properly log the context message and the full stack trace securely.
+## 2026-08-26 - Prevent legacy color code injection in admin logs
+**Vulnerability:** User inputs written to admin logs were not sanitized for the `&` character, allowing malicious users to inject legacy color codes into their usernames or actions, which led to chat formatting spoofing when admins view the logs in-game via `LegacyComponentSerializer.legacyAmpersand()`.
+**Learning:** Legacy color code parsing from files read back into chat requires explicit sanitization of formatting characters like `&` before writing user-controlled strings to disk.
+**Prevention:** Always sanitize the `&` character (e.g., replace with full-width `＆`) before writing user inputs to log files that are subsequently displayed in-game.
