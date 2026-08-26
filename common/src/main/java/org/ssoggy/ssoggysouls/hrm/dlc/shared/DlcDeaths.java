@@ -118,6 +118,11 @@ public final class DlcDeaths {
                                                      long friendsAfterSeconds,
                                                      long publicAfterSeconds) {
         Instant now = Instant.now();
+        // ⚡ Bolt: Hoist invariant threshold calculations outside the loop
+        Instant publicThreshold = now.minusSeconds(publicAfterSeconds);
+        Instant friendsThreshold = now.minusSeconds(friendsAfterSeconds);
+        Instant trustedThreshold = now.minusSeconds(trustedAfterSeconds);
+
         List<DlcDeathRecord> result = new ArrayList<>();
         for (DlcDeathRecord deathRecord : DEATHS.values()) {
             if (deathRecord.uuid().equals(viewerUuid)) {
@@ -125,13 +130,21 @@ public final class DlcDeaths {
                 continue;
             }
 
-            DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
             Instant deathTime = deathRecord.time();
-            boolean visible = deathTime.isBefore(now.minusSeconds(publicAfterSeconds))
-                    || (relationship == DlcRelation.FRIENDS && deathTime.isBefore(now.minusSeconds(friendsAfterSeconds)))
-                    || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfterSeconds)));
-            if (visible) {
+
+            // ⚡ Bolt: Evaluate cheap conditions first to short-circuit
+            if (deathTime.isBefore(publicThreshold)) {
                 result.add(deathRecord);
+                continue;
+            }
+
+            // ⚡ Bolt: Only perform expensive state lookup if it might change the outcome
+            if (deathTime.isBefore(friendsThreshold) || deathTime.isBefore(trustedThreshold)) {
+                DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
+                if ((relationship == DlcRelation.FRIENDS && deathTime.isBefore(friendsThreshold))
+                        || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(trustedThreshold))) {
+                    result.add(deathRecord);
+                }
             }
         }
         result.sort(Comparator.comparing(DlcDeathRecord::time));
