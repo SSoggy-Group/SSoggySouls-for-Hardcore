@@ -90,7 +90,3 @@
 ## 2026-07-16 - [Avoid `.toLowerCase().split()` on full chat messages]
 **Learning:** Using `rawMessage.toLowerCase().split(" ")[0]` inside high-frequency listeners like `PlayerCommandPreprocessEvent` unnecessarily allocates a string array and lowercases the entire message (which could be long) just to extract the first word.
 **Action:** Use `indexOf(' ')` to find the first space and `substring()` to isolate the command before calling `.toLowerCase()`, preventing wasteful allocations and CPU cycles on large strings.
-
-## 2024-07-16 - [Optimize loops with invariant extractions and cheap short-circuits]
-**Learning:** Inside iteration over large collections, leaving invariant calculations (like `Instant.now().minusSeconds(...)`) inside the loop triggers O(N) redundant work. Further, evaluating expensive operations (like `DlcSocial` initialization and config lookup) before checking cheap conditions (like time comparisons) causes severe performance degradation when many items would have failed the cheap condition anyway.
-**Action:** Always hoist invariant object allocations outside the loop. Evaluate cheap conditions (like primitive or time comparisons) first to short-circuit, entirely bypassing expensive operations (like disk I/O, new object initialization, or database lookups) unless absolutely necessary.
