@@ -144,7 +144,7 @@ public class CommandRegistration {
             return;
         }
 
-        if (targetData != null && !targetData.isDead()) {
+        if (!targetData.isDead()) {
             source.getServer().execute(() ->
                 source.sendFailure(MessageUtil.get("revive-already-alive", PLAYER, targetData.getUsername())));
             return;
