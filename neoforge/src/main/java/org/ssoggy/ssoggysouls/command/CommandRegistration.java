@@ -35,6 +35,7 @@ public class CommandRegistration {
 
     private static final String PLAYER = "player";
     private static final String LIVES = "lives";
+    private static final net.minecraft.network.chat.Component CLICK_TO_AUTOFILL = MessageUtil.get("click-to-autofill").copy().withStyle(net.minecraft.ChatFormatting.GRAY);
     private static DatabaseManager db;
 
     public static void setDatabase(DatabaseManager database) {
@@ -110,10 +111,10 @@ public class CommandRegistration {
         dispatcher.register(Commands.literal("revive")
             .requires(source -> source.hasPermission(2))
             .executes(context -> {
-                context.getSource().sendFailure(MessageUtil.get("usage-revive")
+                context.getSource().sendFailure(MessageUtil.get("usage-revive").copy()
                     .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, CLICK_TO_AUTOFILL))));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -149,7 +150,8 @@ public class CommandRegistration {
             return;
         }
 
-        int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives();
+        org.ssoggy.ssoggysouls.util.ConfigManager.ModConfig cfg = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig();
+        int defaultLives = cfg != null ? cfg.getDefaultLives() : 1;
         boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
         if (success) {
             handleReviveSuccess(targetData, source);
@@ -181,10 +183,10 @@ public class CommandRegistration {
         dispatcher.register(Commands.literal("psetlives")
             .requires(source -> source.hasPermission(2))
             .executes(context -> {
-                context.getSource().sendFailure(MessageUtil.get("usage-psetlives")
+                context.getSource().sendFailure(MessageUtil.get("usage-psetlives").copy()
                     .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, CLICK_TO_AUTOFILL))));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -192,10 +194,10 @@ public class CommandRegistration {
                         context.getSource().getServer().getPlayerNames(), builder))
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
-                    context.getSource().sendFailure(MessageUtil.get("usage-psetlives-player", PLAYER, targetName)
+                    context.getSource().sendFailure(MessageUtil.get("usage-psetlives-player", PLAYER, targetName).copy()
                         .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                             .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives " + targetName + " "))
-                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, CLICK_TO_AUTOFILL))));
                     return 0;
                 })
                 .then(Commands.argument(LIVES, IntegerArgumentType.integer(0))
