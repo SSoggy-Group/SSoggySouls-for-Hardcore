@@ -112,6 +112,24 @@ public final class DlcCommandRegistration {
             C_STAIR, List.of("MAGMA_BLOCK")
     );
 
+
+    private static final String USAGE_TRUST = "Please use /trust <action> [player]";
+    private static final String USAGE_GHOSTMODE = "Please use /ghostmode <player> from console.";
+    private static final String SUGGEST_GHOSTMODE = "/ghostmode ";
+    private static final String USAGE_TRUST_EXT = "Please use /trust <grant|revoke|block|info> [player]";
+    private static final String SUGGEST_TRUST = "/trust ";
+    private static final String USAGE_CONFIG = "Please use /revivalconfig <structure|gamerule|timer|reload>";
+    private static final String SUGGEST_CONFIG = "/revivalconfig ";
+    private static final String CLICK_AUTOFILL = "Click to auto-fill this command";
+    private static final String CLICK_STATUS = "Click to check player status";
+    private static final String CLICK_COPY = "Click to copy coordinates";
+
+
+    private static final String CMD_REVIVALCONFIG = "/revivalconfig ";
+    private static final String CMD_TRUST = "/trust ";
+    private static final String ERR_PLAYERS_ONLY = "This command can only be run by a player.";
+    private static final String ERR_PLAYER_NOT_FOUND = "Player not found: ";
+
     private DlcCommandRegistration() {
     }
 
@@ -126,7 +144,7 @@ public final class DlcCommandRegistration {
     private static void registerTrustCommand(CommandDispatcher<CommandSourceStack> dispatcher, DatabaseManager db) {
         dispatcher.register(Commands.literal("trust")
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use /trust <action> [player]", "/trust "));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs(USAGE_TRUST, SUGGEST_TRUST));
                     return 0;
                 })
                 .then(Commands.argument(ACTION, StringArgumentType.word())
@@ -143,13 +161,13 @@ public final class DlcCommandRegistration {
 
     private static int executeTrust(CommandSourceStack source, DatabaseManager db, String rawAction, String targetName) {
         if (!source.isPlayer()) {
-            sendResult(source, DlcCommandResult.fail("This command can only be run by a player."));
+            sendResult(source, DlcCommandResult.fail(ERR_PLAYERS_ONLY));
             return 0;
         }
 
         Optional<DlcTrustAction> action = DlcTrustAction.fromInput(rawAction);
         if (action.isEmpty()) {
-            sendResult(source, DlcCommandResult.missingArgs("Please use /trust <grant|revoke|block|info> [player]", "/trust "));
+            sendResult(source, DlcCommandResult.missingArgs(USAGE_TRUST_EXT, SUGGEST_TRUST));
             return 0;
         }
 
@@ -160,7 +178,7 @@ public final class DlcCommandRegistration {
         }
 
         if (targetName == null) {
-            sendResult(source, DlcCommandResult.missingArgs("Please use /trust <action> [player]", "/trust "));
+            sendResult(source, DlcCommandResult.missingArgs(USAGE_TRUST, SUGGEST_TRUST));
             return 0;
         }
 
@@ -168,7 +186,7 @@ public final class DlcCommandRegistration {
             ResolvedPlayer target = resolvePlayer(source, db, targetName);
             source.getServer().execute(() -> {
                 if (target == null) {
-                    sendResult(source, DlcCommandResult.fail("Player not found: " + targetName));
+                    sendResult(source, DlcCommandResult.fail(ERR_PLAYER_NOT_FOUND + targetName));
                     return;
                 }
                 DlcTrustService.TrustResult result = DlcTrustService.execute(
@@ -222,7 +240,7 @@ public final class DlcCommandRegistration {
                 .executes(context -> {
                     CommandSourceStack source = context.getSource();
                     if (!source.isPlayer()) {
-                        sendResult(source, DlcCommandResult.fail("Please use /ghostmode <player> from console."));
+                        sendResult(source, DlcCommandResult.missingArgs(USAGE_GHOSTMODE, SUGGEST_GHOSTMODE));
                         return 0;
                     }
                     return setGhostMode(source, db, source.getPlayer());
@@ -273,7 +291,7 @@ public final class DlcCommandRegistration {
         dispatcher.register(Commands.literal("revivalconfig")
                 .requires(source -> source.hasPermission(2))
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use /revivalconfig <structure|gamerule|timer|reload>", "/revivalconfig "));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs(USAGE_CONFIG, SUGGEST_CONFIG));
                     return 0;
                 })
                 .then(Commands.argument(GROUP, StringArgumentType.word())
@@ -356,7 +374,7 @@ public final class DlcCommandRegistration {
             Component interactive = Component.literal("/revivalconfig timer " + key + " ")
                     .withStyle(style -> style.withColor(ChatFormatting.GRAY)
                             .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
+                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(CLICK_AUTOFILL).withStyle(ChatFormatting.GRAY)))
                     );
             Component message = Component.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
                     .withStyle(ChatFormatting.RED)
@@ -448,7 +466,7 @@ public final class DlcCommandRegistration {
                 net.minecraft.network.chat.MutableComponent interactive = Component.literal(" [Click to auto-fill]")
                         .withStyle(style -> style.withColor(ChatFormatting.GRAY)
                                 .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd))
-                                .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
+                                .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal(CLICK_AUTOFILL).withStyle(ChatFormatting.GRAY)))
                         );
                 base.append(interactive);
             }
@@ -470,11 +488,11 @@ public final class DlcCommandRegistration {
 
         return Component.literal(username).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)
                         .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pstatus " + username))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to check player status").withStyle(s -> s.withColor(ChatFormatting.GRAY)))))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(CLICK_STATUS).withStyle(s -> s.withColor(ChatFormatting.GRAY)))))
                 .append(Component.literal(" has died at ").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)))
                 .append(Component.literal("X" + death.x() + " Y" + death.y() + " Z" + death.z()).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)
                         .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, coords))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy coordinates").withStyle(s -> s.withColor(ChatFormatting.GRAY))))))
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(CLICK_COPY).withStyle(s -> s.withColor(ChatFormatting.GRAY))))))
                 .append(Component.literal(" in the ").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)))
                 .append(Component.literal(death.worldId()).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)))
                 .append(Component.literal(" (" + formatAge(death.time()) + ")").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)));
