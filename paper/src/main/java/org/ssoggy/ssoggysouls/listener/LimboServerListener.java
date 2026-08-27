@@ -32,6 +32,8 @@ public class LimboServerListener implements Listener {
     // Cache limbo spawn location to avoid repeated lookups
     private Location cachedLimboSpawn;
 
+    private static final String LIMBO_CANNOT_LEAVE = "limbo-cannot-leave";
+
     public LimboServerListener(SSoggySouls plugin, LimboCheckTask checkTask) {
         this.plugin = plugin;
         this.checkTask = checkTask;
@@ -166,7 +168,7 @@ public class LimboServerListener implements Listener {
                     return;
                 }
 
-                player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE));
             });
         });
     }
@@ -220,7 +222,7 @@ public class LimboServerListener implements Listener {
                     return;
                 }
                 player.teleport(from);
-                player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE));
             });
         });
     }

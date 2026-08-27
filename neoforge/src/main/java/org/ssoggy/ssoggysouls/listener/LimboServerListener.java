@@ -27,6 +27,8 @@ public class LimboServerListener {
             "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
     );
 
+    private static final String LIMBO_CANNOT_LEAVE = "limbo-cannot-leave";
+
     private LimboServerListener() {}
 
     public static void setDatabase(DatabaseManager database) {
@@ -70,7 +72,7 @@ public class LimboServerListener {
                 String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
                 if (!isWhitelistedCommand(cmdToCheck)) {
                     event.setCanceled(true);
-                    player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
+                    player.sendSystemMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE));
                 }
             }
         }
@@ -89,7 +91,8 @@ public class LimboServerListener {
         if (event.getEntity() instanceof ServerPlayer player) {
             // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
+            String spawnWorldStr = cfg.getLimboSpawnWorld();
+            ResourceLocation limboId = spawnWorldStr != null ? ResourceLocation.tryParse(spawnWorldStr) : null;
             if (limboId != null && event.getDimension().location().equals(limboId)) return;
 
             // Check for bypass permission (parity with Fabric)
@@ -97,7 +100,7 @@ public class LimboServerListener {
 
             if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
                 event.setCanceled(true);
-                player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
+                player.sendSystemMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE));
             }
         }
     }
@@ -112,8 +115,9 @@ public class LimboServerListener {
         player.getFoodData().setSaturation(20f);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
-        ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
+        String spawnWorldStr = cfg.getLimboSpawnWorld();
+        ResourceLocation worldId = spawnWorldStr != null ? ResourceLocation.tryParse(spawnWorldStr) : null;
+        ServerLevel world = worldId != null ? player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId)) : null;
         if (world != null) {
             player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
         }
