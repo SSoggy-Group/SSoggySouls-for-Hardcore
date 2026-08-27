@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class DlcTrustService {
+    private static final String USAGE_TRUST = "Please use /trust <action> [player]";
+    private static final String SUGGEST_TRUST = "/trust ";
+
     private DlcTrustService() {
     }
 
@@ -25,7 +28,7 @@ public final class DlcTrustService {
         }
 
         if (targetUuid == null || targetName == null || targetName.isBlank()) {
-            return new TrustResult(DlcCommandResult.fail("Please use /trust <action> [player]"), null);
+            return new TrustResult(DlcCommandResult.missingArgs(USAGE_TRUST, SUGGEST_TRUST), null);
         }
 
         if (playerUuid.equals(targetUuid)) {

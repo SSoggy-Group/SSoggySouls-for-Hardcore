@@ -110,8 +110,37 @@ public final class DlcCommandRegistration {
             C_STAIR, List.of("MAGMA_BLOCK")
     );
 
+
+    private static final String USAGE_TRUST = "Please use /trust <action> [player]";
+    private static final String USAGE_GHOSTMODE = "Please use /ghostmode <player> from console.";
+    private static final String SUGGEST_GHOSTMODE = "/ghostmode ";
+    private static final String USAGE_TRUST_EXT = "Please use /trust <grant|revoke|block|info> [player]";
+    private static final String SUGGEST_TRUST = "/trust ";
+    private static final String USAGE_CONFIG = "Please use /revivalconfig <structure|gamerule|timer|reload>";
+    private static final String SUGGEST_CONFIG = "/revivalconfig ";
+    private static final String CLICK_AUTOFILL = "Click to auto-fill this command";
+    private static final String CLICK_STATUS = "Click to check player status";
+    private static final String CLICK_COPY = "Click to copy coordinates";
+
+
+    private static final String CMD_REVIVALCONFIG = "/revivalconfig ";
+    private static final String CMD_TRUST = "/trust ";
+    private static final String ERR_PLAYERS_ONLY = "This command can only be run by a player.";
+    private static final String ERR_PLAYER_NOT_FOUND = "Player not found: ";
+
     private DlcCommandRegistration() {
     }
+
+    private static net.minecraft.text.MutableText createInteractiveTimerError(String key) {
+        return net.minecraft.text.Text.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
+                .styled(style -> style.withColor(net.minecraft.util.Formatting.RED))
+                .append(net.minecraft.text.Text.literal("/revivalconfig timer " + key + " ")
+                        .styled(style -> style.withColor(net.minecraft.util.Formatting.GRAY)
+                                .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
+                                .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal(CLICK_AUTOFILL).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY))))
+                        ));
+    }
+
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
         registerTrustCommand(dispatcher, db);
@@ -124,7 +153,7 @@ public final class DlcCommandRegistration {
     private static void registerTrustCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
         dispatcher.register(CommandManager.literal("trust")
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.fail("Please use /trust <action> [player]"));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs(USAGE_TRUST, SUGGEST_TRUST));
                     return 0;
                 })
                 .then(CommandManager.argument(ACTION, StringArgumentType.word())
@@ -141,13 +170,13 @@ public final class DlcCommandRegistration {
 
     private static int executeTrust(ServerCommandSource source, DatabaseManager db, String rawAction, String targetName) {
         if (!(source.getEntity() instanceof ServerPlayerEntity player)) {
-            sendResult(source, DlcCommandResult.fail("This command can only be run by a player."));
+            sendResult(source, DlcCommandResult.fail(ERR_PLAYERS_ONLY));
             return 0;
         }
 
         Optional<DlcTrustAction> action = DlcTrustAction.fromInput(rawAction);
         if (action.isEmpty()) {
-            sendResult(source, DlcCommandResult.fail("Please use /trust <grant|revoke|block|info> [player]"));
+            sendResult(source, DlcCommandResult.missingArgs(USAGE_TRUST_EXT, SUGGEST_TRUST));
             return 0;
         }
 
@@ -157,7 +186,7 @@ public final class DlcCommandRegistration {
         }
 
         if (targetName == null) {
-            sendResult(source, DlcCommandResult.fail("Please use /trust <action> [player]"));
+            sendResult(source, DlcCommandResult.missingArgs(USAGE_TRUST, SUGGEST_TRUST));
             return 0;
         }
 
@@ -165,7 +194,7 @@ public final class DlcCommandRegistration {
             ResolvedPlayer target = resolvePlayer(source, db, targetName);
             source.getServer().execute(() -> {
                 if (target == null) {
-                    sendResult(source, DlcCommandResult.fail("Player not found: " + targetName));
+                    sendResult(source, DlcCommandResult.fail(ERR_PLAYER_NOT_FOUND + targetName));
                     return;
                 }
                 DlcTrustService.TrustResult result = DlcTrustService.execute(
@@ -192,9 +221,9 @@ public final class DlcCommandRegistration {
                     if (source.getEntity() instanceof ServerPlayerEntity player) {
                         deaths = DlcDeaths.visibleDeaths(
                                 player.getUuid(),
-                                ConfigManager.getConfig().getTrustedObituaryAfter(),
-                                ConfigManager.getConfig().getFriendsObituaryAfter(),
-                                ConfigManager.getConfig().getPublicObituaryAfter()
+                                (ConfigManager.getConfig() != null ? ConfigManager.getConfig().getTrustedObituaryAfter() : 0),
+                                (ConfigManager.getConfig() != null ? ConfigManager.getConfig().getFriendsObituaryAfter() : 0),
+                                (ConfigManager.getConfig() != null ? ConfigManager.getConfig().getPublicObituaryAfter() : 0)
                         );
                     } else {
                         deaths = DlcDeaths.allDeaths();
@@ -219,7 +248,7 @@ public final class DlcCommandRegistration {
                 .executes(context -> {
                     ServerCommandSource source = context.getSource();
                     if (!(source.getEntity() instanceof ServerPlayerEntity player)) {
-                        sendResult(source, DlcCommandResult.fail("Please use /ghostmode <player> from console."));
+                        sendResult(source, DlcCommandResult.missingArgs(USAGE_GHOSTMODE, SUGGEST_GHOSTMODE));
                         return 0;
                     }
                     return setGhostMode(source, db, player);
@@ -270,7 +299,7 @@ public final class DlcCommandRegistration {
         dispatcher.register(CommandManager.literal("revivalconfig")
                 .requires(source -> source.hasPermissionLevel(2))
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use "));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs(USAGE_CONFIG, SUGGEST_CONFIG));
                     return 0;
                 })
                 .then(CommandManager.argument(GROUP, StringArgumentType.word())
@@ -355,7 +384,7 @@ public final class DlcCommandRegistration {
             net.minecraft.text.MutableText interactive = Text.literal("/revivalconfig timer " + key + " ")
                     .styled(style -> style.withColor(Formatting.GRAY)
                             .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
-                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to auto-fill this command").formatted(Formatting.GRAY)))
+                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal(CLICK_AUTOFILL).formatted(Formatting.GRAY)))
                     );
             source.sendMessage(base.append(interactive));
             return 0;
@@ -442,12 +471,16 @@ public final class DlcCommandRegistration {
 
     private static Text format(DlcCommandResult result) {
         if (result.status() == DlcCommandResult.Status.MISSING_ARGS) {
+            String suggestCmd = result.details() != null ? result.details() : "";
             net.minecraft.text.MutableText base = Text.literal("[RevivalPlus] " + result.message()).formatted(Formatting.RED);
-            net.minecraft.text.MutableText interactive = Text.literal("/revivalconfig <structure|gamerule|timer|reload>")
-                    .styled(style -> style.withColor(Formatting.GRAY)
-                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
-                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to auto-fill this command").formatted(Formatting.GRAY))));
-            return base.append(interactive);
+            if (!suggestCmd.isEmpty()) {
+                net.minecraft.text.MutableText interactive = Text.literal(" [Click to auto-fill]")
+                        .styled(style -> style.withColor(Formatting.GRAY)
+                                .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd))
+                                .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal(CLICK_AUTOFILL).formatted(Formatting.GRAY))));
+                base.append(interactive);
+            }
+            return base;
         }
         Formatting color = switch (result.status()) {
             case TRUE -> Formatting.GREEN;
@@ -465,11 +498,11 @@ public final class DlcCommandRegistration {
 
         return Text.literal(username).styled(style -> style.withColor(Formatting.GOLD).withBold(true)
                         .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/pstatus " + username))
-                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to check player status").styled(s -> s.withColor(Formatting.GRAY)))))
+                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal(CLICK_STATUS).styled(s -> s.withColor(Formatting.GRAY)))))
                 .append(Text.literal(" has died at ").styled(style -> style.withColor(Formatting.GRAY).withBold(false)))
                 .append(Text.literal("X" + death.x() + " Y" + death.y() + " Z" + death.z()).styled(style -> style.withColor(Formatting.GOLD).withBold(true)
                         .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.COPY_TO_CLIPBOARD, coords))
-                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to copy coordinates").styled(s -> s.withColor(Formatting.GRAY))))))
+                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal(CLICK_COPY).styled(s -> s.withColor(Formatting.GRAY))))))
                 .append(Text.literal(" in the ").styled(style -> style.withColor(Formatting.GRAY).withBold(false)))
                 .append(Text.literal(death.worldId()).styled(style -> style.withColor(Formatting.GOLD).withBold(true)))
                 .append(Text.literal(" (" + formatAge(death.time()) + ")").styled(style -> style.withColor(Formatting.GRAY).withBold(false)));
@@ -551,6 +584,7 @@ public final class DlcCommandRegistration {
 
     private static boolean getRule(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return false;
         return switch (key) {
             case C_LOSE_INV -> config.isLoseInventory();
             case C_RESTRICT_MENU -> config.isRestrictMenuAccess();
@@ -567,6 +601,7 @@ public final class DlcCommandRegistration {
 
     private static void setRule(String key, boolean value) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_LOSE_INV -> config.setLoseInventory(value);
             case C_RESTRICT_MENU -> config.setRestrictMenuAccess(value);
@@ -586,6 +621,7 @@ public final class DlcCommandRegistration {
 
     private static int getTimer(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return 0;
         return switch (key) {
             case C_TRUSTED_OBIT -> config.getTrustedObituaryAfter();
             case C_FRIENDS_OBIT -> config.getFriendsObituaryAfter();
@@ -599,6 +635,7 @@ public final class DlcCommandRegistration {
 
     private static void setTimer(String key, int value) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_TRUSTED_OBIT -> config.setTrustedObituaryAfter(value);
             case C_FRIENDS_OBIT -> config.setFriendsObituaryAfter(value);
@@ -612,6 +649,7 @@ public final class DlcCommandRegistration {
 
     private static List<String> getStructureList(String key) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return List.of();
         return switch (key) {
             case C_SOUL_SAND -> config.getSoulSandBlockTag();
             case C_FLOWER -> config.getFlowerBlockTag();
@@ -624,6 +662,7 @@ public final class DlcCommandRegistration {
 
     private static void setStructureList(String key, Collection<String> values) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
+        if (config == null) return;
         switch (key) {
             case C_SOUL_SAND -> config.setSoulSandBlocktag(values);
             case C_FLOWER -> config.setFlowerBlocktag(values);
