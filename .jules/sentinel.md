@@ -27,3 +27,7 @@
 **Vulnerability:** In `LeaveLimboCommand.java`, `RPConfig.java`, and `UpdateChecker.java`, exception messages (`e.getMessage()`) were directly appended to error logs using `logger.severe()` or `logger.warning()`.
 **Learning:** Appending `e.getMessage()` manually instead of passing the entire Exception object can leak sensitive information to the logs without providing a full stack trace, reducing debuggability and posing a potential security risk.
 **Prevention:** Always use `logger.log(Level.SEVERE, "context message", exception)` or equivalent to properly log the context message and the full stack trace securely.
+## 2024-05-30 - [Prevent Log Spoofing via Ampersand Injection]
+**Vulnerability:** Unsanitized `&` characters in user inputs were written to `admin.log` and later deserialized in-game using Kyori's `LegacyComponentSerializer.legacyAmpersand()`.
+**Learning:** Storing raw `&` characters in logs that are eventually rendered in-game with legacy ampersand serializers allows malicious actors to inject color codes and spoof chat formatting.
+**Prevention:** Always sanitize the `&` character (e.g., replacing it with a full-width `＆`) in user-controlled inputs before writing to log files that will be parsed as chat components.
