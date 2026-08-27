@@ -25,7 +25,7 @@ public final class DlcTrustService {
         }
 
         if (targetUuid == null || targetName == null || targetName.isBlank()) {
-            return new TrustResult(DlcCommandResult.fail("Please use /trust <action> [player]"), null);
+            return new TrustResult(DlcCommandResult.missingArgs("Please use /trust <action> [player]", "/trust "), null);
         }
 
         if (playerUuid.equals(targetUuid)) {

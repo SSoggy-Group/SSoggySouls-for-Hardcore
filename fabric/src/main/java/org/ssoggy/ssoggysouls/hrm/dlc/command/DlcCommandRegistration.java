@@ -124,7 +124,7 @@ public final class DlcCommandRegistration {
     private static void registerTrustCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
         dispatcher.register(CommandManager.literal("trust")
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.fail("Please use /trust <action> [player]"));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use /trust <action> [player]", "/trust "));
                     return 0;
                 })
                 .then(CommandManager.argument(ACTION, StringArgumentType.word())
@@ -147,7 +147,7 @@ public final class DlcCommandRegistration {
 
         Optional<DlcTrustAction> action = DlcTrustAction.fromInput(rawAction);
         if (action.isEmpty()) {
-            sendResult(source, DlcCommandResult.fail("Please use /trust <grant|revoke|block|info> [player]"));
+            sendResult(source, DlcCommandResult.missingArgs("Please use /trust <grant|revoke|block|info> [player]", "/trust "));
             return 0;
         }
 
@@ -157,7 +157,7 @@ public final class DlcCommandRegistration {
         }
 
         if (targetName == null) {
-            sendResult(source, DlcCommandResult.fail("Please use /trust <action> [player]"));
+            sendResult(source, DlcCommandResult.missingArgs("Please use /trust <action> [player]", "/trust "));
             return 0;
         }
 
@@ -270,7 +270,7 @@ public final class DlcCommandRegistration {
         dispatcher.register(CommandManager.literal("revivalconfig")
                 .requires(source -> source.hasPermissionLevel(2))
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use "));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use /revivalconfig <structure|gamerule|timer|reload>", "/revivalconfig "));
                     return 0;
                 })
                 .then(CommandManager.argument(GROUP, StringArgumentType.word())
@@ -442,12 +442,16 @@ public final class DlcCommandRegistration {
 
     private static Text format(DlcCommandResult result) {
         if (result.status() == DlcCommandResult.Status.MISSING_ARGS) {
+            String suggestCmd = result.details() != null ? result.details() : "";
             net.minecraft.text.MutableText base = Text.literal("[RevivalPlus] " + result.message()).formatted(Formatting.RED);
-            net.minecraft.text.MutableText interactive = Text.literal("/revivalconfig <structure|gamerule|timer|reload>")
-                    .styled(style -> style.withColor(Formatting.GRAY)
-                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
-                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to auto-fill this command").formatted(Formatting.GRAY))));
-            return base.append(interactive);
+            if (!suggestCmd.isEmpty()) {
+                net.minecraft.text.MutableText interactive = Text.literal(" [Click to auto-fill]")
+                        .styled(style -> style.withColor(Formatting.GRAY)
+                                .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd))
+                                .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to auto-fill this command").formatted(Formatting.GRAY))));
+                base.append(interactive);
+            }
+            return base;
         }
         Formatting color = switch (result.status()) {
             case TRUE -> Formatting.GREEN;
