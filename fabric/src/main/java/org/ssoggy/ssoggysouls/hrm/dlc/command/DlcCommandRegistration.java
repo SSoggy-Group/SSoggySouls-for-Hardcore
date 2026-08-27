@@ -131,6 +131,17 @@ public final class DlcCommandRegistration {
     private DlcCommandRegistration() {
     }
 
+    private static net.minecraft.text.MutableText createInteractiveTimerError(String key) {
+        return net.minecraft.text.Text.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
+                .styled(style -> style.withColor(net.minecraft.util.Formatting.RED))
+                .append(net.minecraft.text.Text.literal("/revivalconfig timer " + key + " ")
+                        .styled(style -> style.withColor(net.minecraft.util.Formatting.GRAY)
+                                .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
+                                .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, net.minecraft.text.Text.literal(CLICK_AUTOFILL).styled(s -> s.withColor(net.minecraft.util.Formatting.GRAY))))
+                        ));
+    }
+
+
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
         registerTrustCommand(dispatcher, db);
         registerDeathListCommand(dispatcher, "deathlist");

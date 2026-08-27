@@ -133,6 +133,17 @@ public final class DlcCommandRegistration {
     private DlcCommandRegistration() {
     }
 
+    private static net.minecraft.network.chat.MutableComponent createInteractiveTimerError(String key) {
+        return Component.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
+                .withStyle(ChatFormatting.RED)
+                .append(Component.literal("/revivalconfig timer " + key + " ")
+                        .withStyle(style -> style.withColor(ChatFormatting.GRAY)
+                                .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
+                                .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal(CLICK_AUTOFILL).withStyle(ChatFormatting.GRAY)))
+                        ));
+    }
+
+
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, DatabaseManager db) {
         registerTrustCommand(dispatcher, db);
         registerDeathListCommand(dispatcher, "deathlist");
