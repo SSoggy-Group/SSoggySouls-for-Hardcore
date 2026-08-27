@@ -32,6 +32,8 @@ public class LimboServerListener implements Listener {
     // Cache limbo spawn location to avoid repeated lookups
     private Location cachedLimboSpawn;
 
+    private static final String LIMBO_CANNOT_LEAVE = "limbo-cannot-leave";
+
     public LimboServerListener(SSoggySouls plugin, LimboCheckTask checkTask) {
         this.plugin = plugin;
         this.checkTask = checkTask;
@@ -140,8 +142,7 @@ public class LimboServerListener implements Listener {
         if (player.hasPermission(PERM_BYPASS) || player.hasPermission("ssoggysouls.admin")) return;
 
         String rawMessage = event.getMessage();
-        int spaceIdx = rawMessage.indexOf(' ');
-        String command = (spaceIdx == -1 ? rawMessage : rawMessage.substring(0, spaceIdx)).toLowerCase(java.util.Locale.ROOT);
+        String command = org.ssoggy.ssoggysouls.util.CommandParserUtil.getFirstWord(rawMessage).toLowerCase(java.util.Locale.ROOT);
 
         if (isWhitelistedCommand(command)) {
             return;
@@ -167,7 +168,7 @@ public class LimboServerListener implements Listener {
                     return;
                 }
 
-                player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE));
             });
         });
     }
@@ -221,7 +222,7 @@ public class LimboServerListener implements Listener {
                     return;
                 }
                 player.teleport(from);
-                player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE));
             });
         });
     }

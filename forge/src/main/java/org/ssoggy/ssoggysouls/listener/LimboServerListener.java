@@ -27,6 +27,8 @@ public class LimboServerListener {
             "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
     );
 
+    private static final String LIMBO_CANNOT_LEAVE = "limbo-cannot-leave";
+
     private LimboServerListener() {}
 
     public static void setDatabase(DatabaseManager database) {
@@ -34,9 +36,7 @@ public class LimboServerListener {
     }
 
     private static boolean isWhitelistedCommand(String fullCommand) {
-        String clean = fullCommand.trim().toLowerCase(java.util.Locale.ROOT);
-        String[] tokens = clean.split("\\s+");
-        String command = tokens.length > 0 ? tokens[0] : "";
+        String command = org.ssoggy.ssoggysouls.util.CommandParserUtil.getFirstWord(fullCommand).toLowerCase(java.util.Locale.ROOT);
         return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
@@ -72,7 +72,7 @@ public class LimboServerListener {
                 String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
                 if (!isWhitelistedCommand(cmdToCheck)) {
                     event.setCanceled(true);
-                    player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"), false);
+                    player.sendSystemMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE), false);
                 }
             }
         }
@@ -91,7 +91,9 @@ public class LimboServerListener {
         if (event.getEntity() instanceof ServerPlayer player) {
             // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
+        if (cfg == null) return;
+            String spawnWorldStr = cfg.getLimboSpawnWorld();
+            ResourceLocation limboId = spawnWorldStr != null ? ResourceLocation.tryParse(spawnWorldStr) : null;
             if (limboId != null && event.getDimension().toString().contains(limboId.toString())) return;
 
             // Check for bypass permission (parity with Fabric)
@@ -99,7 +101,7 @@ public class LimboServerListener {
 
             if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
                 event.setCanceled(true);
-                player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
+                player.sendSystemMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE));
             }
         }
     }
@@ -114,8 +116,10 @@ public class LimboServerListener {
         player.getFoodData().setSaturation(20f);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
-        net.minecraft.server.level.ServerLevel world = player.server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, worldId));
+        if (cfg == null) return;
+        String spawnWorldStr = cfg.getLimboSpawnWorld();
+        ResourceLocation worldId = spawnWorldStr != null ? ResourceLocation.tryParse(spawnWorldStr) : null;
+        net.minecraft.server.level.ServerLevel world = worldId != null ? player.server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, worldId)) : null;
         if (world != null) {
             player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), java.util.Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
         }
