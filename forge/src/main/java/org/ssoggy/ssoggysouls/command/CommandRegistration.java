@@ -35,7 +35,7 @@ public class CommandRegistration {
     }
 
     private static final String PLAYER = "player";
-    private static final String CLICK_TO_AUTOFILL = CLICK_TO_AUTOFILL;
+    private static final String CLICK_TO_AUTOFILL = "click-to-autofill";
     private static final String LIVES = "lives";
     private static DatabaseManager db;
 
