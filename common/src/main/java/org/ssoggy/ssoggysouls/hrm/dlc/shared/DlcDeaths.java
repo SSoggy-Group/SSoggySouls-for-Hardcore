@@ -125,21 +125,17 @@ public final class DlcDeaths {
         for (DlcDeathRecord deathRecord : DEATHS.values()) {
             if (deathRecord.uuid().equals(viewerUuid)) {
                 result.add(deathRecord);
-                continue;
-            }
-
-            Instant deathTime = deathRecord.time();
-            if (deathTime.isBefore(publicThreshold)) {
-                result.add(deathRecord);
-                continue;
-            }
-
-            // Only check relations if it could potentially be visible to friends or trusted
-            if (deathTime.isBefore(friendsThreshold) || deathTime.isBefore(trustedThreshold)) {
-                DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
-                if ((relationship == DlcRelation.FRIENDS && deathTime.isBefore(friendsThreshold))
-                        || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(trustedThreshold))) {
+            } else {
+                Instant deathTime = deathRecord.time();
+                if (deathTime.isBefore(publicThreshold)) {
                     result.add(deathRecord);
+                } else if (deathTime.isBefore(friendsThreshold) || deathTime.isBefore(trustedThreshold)) {
+                    // Only check relations if it could potentially be visible to friends or trusted
+                    DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
+                    if ((relationship == DlcRelation.FRIENDS && deathTime.isBefore(friendsThreshold))
+                            || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(trustedThreshold))) {
+                        result.add(deathRecord);
+                    }
                 }
             }
         }
