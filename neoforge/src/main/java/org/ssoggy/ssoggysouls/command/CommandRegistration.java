@@ -28,6 +28,10 @@ import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
 public class CommandRegistration {
+    private static Component getClickToCopyComponent() {
+        return Component.literal("Click to copy log entry").withStyle(net.minecraft.ChatFormatting.GRAY);
+    }
+
     private static net.minecraft.network.chat.Style createAutofillStyle(String commandToSuggest) {
         return net.minecraft.network.chat.Style.EMPTY
                 .withColor(net.minecraft.ChatFormatting.RED)
@@ -277,7 +281,7 @@ public class CommandRegistration {
                                         source.sendSystemMessage(Component.literal(line).withStyle(s ->
                                             s.withColor(net.minecraft.ChatFormatting.GRAY)
                                              .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
-                                             .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy log entry").withStyle(net.minecraft.ChatFormatting.GRAY)))
+                                             .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, getClickToCopyComponent()))
                                         ));
                                     }
                                 } else {
