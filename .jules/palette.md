@@ -76,3 +76,7 @@
 ## 2026-08-28 - [Fabric CI Fix] Interactive CLI String Literals
 **Learning:** Extracting common interactive chat formatting strings (like "click-to-autofill") to a constant helps prevent SonarCloud string duplication warnings and ensures consistency across CLI commands.
 **Action:** When implementing or modifying click events that rely on shared localized keys, declare a `private static final String` for the shared key.
+
+## 2026-08-28 - [Interactive CLI Refactoring] Extract Component Builders
+**Learning:** Writing repetitive Kyori Adventure or Minecraft Component builders (like chained click and hover events) inline across multiple commands causes high SonarCloud duplication metrics.
+**Action:** When creating interactive UI components for missing arguments or errors across multiple commands, extract the builder into a helper method like `sendInteractiveUsage(CommandSourceStack source, Component usageText, String suggestCmd)` rather than copying the chained builder format everywhere.
