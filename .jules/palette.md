@@ -65,3 +65,22 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2024-08-28 - Interactive CLI Name Linking in Trust List
+**Learning:** Text-heavy command outputs like lists of players are much easier to use when usernames are interactive. Using Kyori MiniMessage `<click:suggest_command:...>` tags allows users to quickly perform follow-up actions (like `/trust revoke <player>`) without re-typing names.
+**Action:** Always wrap usernames in clickable components when displaying lists in chat output to suggest logical follow-up actions and reduce user friction.
+
+## 2026-08-28 - [Fabric CI Fix] Interactive CLI Number Parsing Errors with RPCommandOutput
+**Learning:** When trying to update the legacy error markers to use Kyori Adventure MiniMessage components and applying hover/click styles in the Fabric implementation, calling `.styled(...)` directly on the interface `net.minecraft.text.Text` causes compilation errors because the modern Fabric API treats `Text` as immutable. You must call `.copy()` first to get a `MutableText`.
+**Action:** When porting chat interactivity or applying `.styled(...)` to an existing `Text` object in Fabric, Forge or NeoForge, always insert `.copy()` first.
+
+## 2026-08-28 - [Fabric CI Fix] Interactive CLI String Literals
+**Learning:** Extracting common interactive chat formatting strings (like "click-to-autofill") to a constant helps prevent SonarCloud string duplication warnings and ensures consistency across CLI commands.
+**Action:** When implementing or modifying click events that rely on shared localized keys, declare a `private static final String` for the shared key.
+
+## 2026-08-28 - [Interactive CLI Refactoring] Extract Component Builders
+**Learning:** Writing repetitive Kyori Adventure or Minecraft Component builders (like chained click and hover events) inline across multiple commands causes high SonarCloud duplication metrics.
+**Action:** When creating interactive UI components for missing arguments or errors across multiple commands, extract the builder into a helper method like `sendInteractiveUsage(CommandSourceStack source, Component usageText, String suggestCmd)` rather than copying the chained builder format everywhere.
+
+## 2026-08-28 - [Interactive CLI Refactoring] Extract Shared Logic
+**Learning:** Having blocks of identical logic duplicated in platform-specific command implementations causes SonarCloud metric failures.
+**Action:** When working in platform-specific modules like forge or neoforge, extract frequently repeated logic (like clearing death states or applying styles to components) into static helper methods within the class to reduce the total duplicated lines density.
