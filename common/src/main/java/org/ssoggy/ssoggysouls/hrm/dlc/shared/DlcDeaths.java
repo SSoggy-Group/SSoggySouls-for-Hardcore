@@ -118,24 +118,33 @@ public final class DlcDeaths {
                                                      long friendsAfterSeconds,
                                                      long publicAfterSeconds) {
         Instant now = Instant.now();
+        Instant publicThreshold = now.minusSeconds(publicAfterSeconds);
+        Instant friendsThreshold = now.minusSeconds(friendsAfterSeconds);
+        Instant trustedThreshold = now.minusSeconds(trustedAfterSeconds);
         List<DlcDeathRecord> result = new ArrayList<>();
         for (DlcDeathRecord deathRecord : DEATHS.values()) {
-            if (deathRecord.uuid().equals(viewerUuid)) {
-                result.add(deathRecord);
-                continue;
-            }
-
-            DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
-            Instant deathTime = deathRecord.time();
-            boolean visible = deathTime.isBefore(now.minusSeconds(publicAfterSeconds))
-                    || (relationship == DlcRelation.FRIENDS && deathTime.isBefore(now.minusSeconds(friendsAfterSeconds)))
-                    || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfterSeconds)));
-            if (visible) {
+            if (isVisibleTo(deathRecord, viewerUuid, publicThreshold, friendsThreshold, trustedThreshold)) {
                 result.add(deathRecord);
             }
         }
         result.sort(Comparator.comparing(DlcDeathRecord::time));
         return result;
+    }
+
+    private static boolean isVisibleTo(DlcDeathRecord deathRecord, UUID viewerUuid, Instant publicThreshold, Instant friendsThreshold, Instant trustedThreshold) {
+        if (deathRecord.uuid().equals(viewerUuid)) {
+            return true;
+        }
+        Instant deathTime = deathRecord.time();
+        if (deathTime.isBefore(publicThreshold)) {
+            return true;
+        }
+        if (deathTime.isBefore(friendsThreshold) || deathTime.isBefore(trustedThreshold)) {
+            DlcRelation relationship = new DlcSocial(deathRecord.uuid()).getRelationTo(viewerUuid);
+            return (relationship == DlcRelation.FRIENDS && deathTime.isBefore(friendsThreshold))
+                    || (relationship == DlcRelation.TRUSTED && deathTime.isBefore(trustedThreshold));
+        }
+        return false;
     }
 
     public static List<DlcDeathRecord> allDeaths() {

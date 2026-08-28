@@ -90,3 +90,6 @@
 ## 2026-07-16 - [Avoid `.toLowerCase().split()` on full chat messages]
 **Learning:** Using `rawMessage.toLowerCase().split(" ")[0]` inside high-frequency listeners like `PlayerCommandPreprocessEvent` unnecessarily allocates a string array and lowercases the entire message (which could be long) just to extract the first word.
 **Action:** Use `indexOf(' ')` to find the first space and `substring()` to isolate the command before calling `.toLowerCase()`, preventing wasteful allocations and CPU cycles on large strings.
+## 2024-05-18 - Optimized List Filtering By Hoisting Thresholds and Short-Circuiting I/O
+**Learning:** The `DlcDeaths.visibleDeaths` loop allocated multiple `Instant` objects per iteration and performed expensive synchronized storage lookups (`DlcSocial(...).getRelationTo(...)`) indiscriminately for every item, even when cheaper time thresholds would have short-circuited the logic.
+**Action:** Always hoist invariant allocations outside loops and evaluate cheap threshold conditions before expensive synchronized I/O or state lookups.
