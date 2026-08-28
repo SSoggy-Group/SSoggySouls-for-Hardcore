@@ -72,3 +72,7 @@
 ## 2026-08-28 - [Fabric CI Fix] Interactive CLI Number Parsing Errors with RPCommandOutput
 **Learning:** When trying to update the legacy error markers to use Kyori Adventure MiniMessage components and applying hover/click styles in the Fabric implementation, calling `.styled(...)` directly on the interface `net.minecraft.text.Text` causes compilation errors because the modern Fabric API treats `Text` as immutable. You must call `.copy()` first to get a `MutableText`.
 **Action:** When porting chat interactivity or applying `.styled(...)` to an existing `Text` object in Fabric, Forge or NeoForge, always insert `.copy()` first.
+
+## 2026-08-28 - [Fabric CI Fix] Interactive CLI String Literals
+**Learning:** Extracting common interactive chat formatting strings (like "click-to-autofill") to a constant helps prevent SonarCloud string duplication warnings and ensures consistency across CLI commands.
+**Action:** When implementing or modifying click events that rely on shared localized keys, declare a `private static final String` for the shared key.
