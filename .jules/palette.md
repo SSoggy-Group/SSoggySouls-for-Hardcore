@@ -68,3 +68,7 @@
 ## 2024-08-28 - Interactive CLI Name Linking in Trust List
 **Learning:** Text-heavy command outputs like lists of players are much easier to use when usernames are interactive. Using Kyori MiniMessage `<click:suggest_command:...>` tags allows users to quickly perform follow-up actions (like `/trust revoke <player>`) without re-typing names.
 **Action:** Always wrap usernames in clickable components when displaying lists in chat output to suggest logical follow-up actions and reduce user friction.
+
+## 2026-08-28 - [Fabric CI Fix] Interactive CLI Number Parsing Errors with RPCommandOutput
+**Learning:** When trying to update the legacy error markers to use Kyori Adventure MiniMessage components and applying hover/click styles in the Fabric implementation, calling `.styled(...)` directly on the interface `net.minecraft.text.Text` causes compilation errors because the modern Fabric API treats `Text` as immutable. You must call `.copy()` first to get a `MutableText`.
+**Action:** When porting chat interactivity or applying `.styled(...)` to an existing `Text` object in Fabric, Forge or NeoForge, always insert `.copy()` first.
