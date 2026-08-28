@@ -80,3 +80,7 @@
 ## 2026-08-28 - [Interactive CLI Refactoring] Extract Component Builders
 **Learning:** Writing repetitive Kyori Adventure or Minecraft Component builders (like chained click and hover events) inline across multiple commands causes high SonarCloud duplication metrics.
 **Action:** When creating interactive UI components for missing arguments or errors across multiple commands, extract the builder into a helper method like `sendInteractiveUsage(CommandSourceStack source, Component usageText, String suggestCmd)` rather than copying the chained builder format everywhere.
+
+## 2026-08-28 - [Interactive CLI Refactoring] Extract Shared Logic
+**Learning:** Having blocks of identical logic duplicated in platform-specific command implementations causes SonarCloud metric failures.
+**Action:** When working in platform-specific modules like forge or neoforge, extract frequently repeated logic (like clearing death states or applying styles to components) into static helper methods within the class to reduce the total duplicated lines density.

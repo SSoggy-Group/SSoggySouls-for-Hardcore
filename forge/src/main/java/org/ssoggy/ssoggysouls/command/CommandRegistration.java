@@ -39,6 +39,17 @@ public class CommandRegistration {
     private static final String LIVES = "lives";
     private static DatabaseManager db;
 
+    private static void clearDeathState(java.util.UUID uuid, net.minecraft.server.MinecraftServer server) {
+        DlcDeaths.clearDeath(uuid);
+        GhostModeEvents.updateGhostStatus(uuid, false);
+        GhostState ghostState = GhostState.getServerState(server);
+        ghostState.removeDeathLocation(uuid);
+        ghostState.removeDeathHolder(uuid);
+        ghostState.setDirty();
+        org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(uuid, server);
+    }
+
+
     private static void sendInteractiveUsage(CommandSourceStack source, Component usageText, String suggestCmd) {
         source.sendFailure(usageText.copy()
             .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
