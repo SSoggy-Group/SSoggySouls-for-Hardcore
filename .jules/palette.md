@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2024-08-28 - Interactive CLI Name Linking in Trust List
+**Learning:** Text-heavy command outputs like lists of players are much easier to use when usernames are interactive. Using Kyori MiniMessage `<click:suggest_command:...>` tags allows users to quickly perform follow-up actions (like `/trust revoke <player>`) without re-typing names.
+**Action:** Always wrap usernames in clickable components when displaying lists in chat output to suggest logical follow-up actions and reduce user friction.
