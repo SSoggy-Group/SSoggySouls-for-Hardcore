@@ -39,6 +39,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public final class DlcCommandRegistration {
+    private static final String USAGE_CONFIG = "/revivalconfig <structure|gamerule|timer|reload>";
+    private static final String USAGE_TRUST_ACTION = "/trust <grant|revoke|block|info> [player]";
+    private static final String USAGE_TRUST = "/trust <action> [player]";
+    private static final String PLEASE_USE = "Please use ";
     private static final String ACTION = "action";
     private static final String PLAYER = "player";
     private static final String GROUP = "group";
@@ -124,7 +128,7 @@ public final class DlcCommandRegistration {
     private static void registerTrustCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
         dispatcher.register(CommandManager.literal("trust")
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use ", "/trust <action> [player]"));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs(PLEASE_USE, USAGE_TRUST));
                     return 0;
                 })
                 .then(CommandManager.argument(ACTION, StringArgumentType.word())
@@ -147,7 +151,7 @@ public final class DlcCommandRegistration {
 
         Optional<DlcTrustAction> action = DlcTrustAction.fromInput(rawAction);
         if (action.isEmpty()) {
-            sendResult(source, DlcCommandResult.missingArgs("Please use ", "/trust <grant|revoke|block|info> [player]"));
+            sendResult(source, DlcCommandResult.missingArgs(PLEASE_USE, USAGE_TRUST_ACTION));
             return 0;
         }
 
@@ -157,7 +161,7 @@ public final class DlcCommandRegistration {
         }
 
         if (targetName == null) {
-            sendResult(source, DlcCommandResult.missingArgs("Please use ", "/trust <action> [player]"));
+            sendResult(source, DlcCommandResult.missingArgs(PLEASE_USE, USAGE_TRUST));
             return 0;
         }
 
@@ -270,7 +274,7 @@ public final class DlcCommandRegistration {
         dispatcher.register(CommandManager.literal("revivalconfig")
                 .requires(source -> source.hasPermissionLevel(2))
                 .executes(context -> {
-                    sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use ", "/revivalconfig <structure|gamerule|timer|reload>"));
+                    sendResult(context.getSource(), DlcCommandResult.missingArgs(PLEASE_USE, USAGE_CONFIG));
                     return 0;
                 })
                 .then(CommandManager.argument(GROUP, StringArgumentType.word())
