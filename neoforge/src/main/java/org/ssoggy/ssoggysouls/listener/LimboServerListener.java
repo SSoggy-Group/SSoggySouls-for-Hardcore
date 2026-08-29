@@ -22,10 +22,6 @@ public class LimboServerListener {
 
     private static DatabaseManager db;
 
-    private static final java.util.Set<String> WHITELISTED_COMMANDS = java.util.Set.of(
-            "/msg", "/tell", "/r", "/reply", "/help", "/list",
-            "/pstatus", "/psadmin", "/psa", "/revive", "/psetlives"
-    );
 
     private LimboServerListener() {}
 
@@ -33,12 +29,6 @@ public class LimboServerListener {
         db = database;
     }
 
-    private static boolean isWhitelistedCommand(String fullCommand) {
-        String clean = fullCommand.trim().toLowerCase(java.util.Locale.ROOT);
-        String[] tokens = clean.split("\\s+");
-        String command = tokens.length > 0 ? tokens[0] : "";
-        return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
-    }
 
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
@@ -70,7 +60,7 @@ public class LimboServerListener {
 
             if (db.isPlayerDead(player.getUUID())) {
                 String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
-                if (!isWhitelistedCommand(cmdToCheck)) {
+                if (!org.ssoggy.ssoggysouls.util.LimboUtil.isWhitelistedCommand(cmdToCheck)) {
                     event.setCanceled(true);
                     player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
                 }
@@ -91,7 +81,8 @@ public class LimboServerListener {
         if (event.getEntity() instanceof ServerPlayer player) {
             // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
+            String spawnWorld = cfg != null ? cfg.getLimboSpawnWorld() : null;
+            ResourceLocation limboId = spawnWorld != null ? ResourceLocation.tryParse(spawnWorld) : null;
             if (limboId != null && event.getDimension().location().equals(limboId)) return;
 
             // Check for bypass permission (parity with Fabric)
@@ -114,8 +105,9 @@ public class LimboServerListener {
         player.getFoodData().setSaturation(20f);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
-        ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
+        String spawnWorld = cfg != null ? cfg.getLimboSpawnWorld() : null;
+        ResourceLocation worldId = spawnWorld != null ? ResourceLocation.parse(spawnWorld) : null;
+        ServerLevel world = worldId != null ? player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId)) : null;
         if (world != null) {
             player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
         }
