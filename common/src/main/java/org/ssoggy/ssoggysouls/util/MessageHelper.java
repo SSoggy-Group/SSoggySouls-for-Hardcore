@@ -12,6 +12,7 @@ import java.util.Map;
  * (Kyori Component, Minecraft Text, Minecraft Component).
  */
 public class MessageHelper {
+    public static final String COMMAND_ONLY_PLAYERS_KEY = "command-only-players";
 
     protected static String prefix = "\u00a78[\u00a74\u2620\u00a78] \u00a7r";
     protected static final Map<String, String> messages = new HashMap<>();
