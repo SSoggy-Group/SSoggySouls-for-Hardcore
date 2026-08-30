@@ -90,3 +90,6 @@
 ## 2026-07-16 - [Avoid `.toLowerCase().split()` on full chat messages]
 **Learning:** Using `rawMessage.toLowerCase().split(" ")[0]` inside high-frequency listeners like `PlayerCommandPreprocessEvent` unnecessarily allocates a string array and lowercases the entire message (which could be long) just to extract the first word.
 **Action:** Use `indexOf(' ')` to find the first space and `substring()` to isolate the command before calling `.toLowerCase()`, preventing wasteful allocations and CPU cycles on large strings.
+## $(date +%Y-%m-%d) - Loop Optimization & Object Allocation
+**Learning:** Inside `ObituariesCommand.java`, `Instant.now()`, `new RPSocial`, and `MiniMessage.miniMessage()` were being repeatedly allocated inside a large `RPStatic.DEAD_LOCATIONS.entrySet()` loop. The condition checked expensive states before cheaper ones.
+**Action:** Hoisted invariant object creations (`Instant`, `MiniMessage`) outside loops, precalculated thresholds, and short-circuited early using cheap time comparisons to avoid expensive state lookups.
