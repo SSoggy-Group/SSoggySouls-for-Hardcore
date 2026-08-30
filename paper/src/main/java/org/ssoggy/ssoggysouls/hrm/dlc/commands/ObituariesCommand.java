@@ -54,7 +54,7 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender cmdSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(cmdSender instanceof Player)) {
-            cmdSender.sendMessage(MessageUtil.get("command-only-players"));
+            cmdSender.sendMessage(MessageUtil.get(org.ssoggy.ssoggysouls.util.MessageHelper.COMMAND_ONLY_PLAYERS_KEY));
             return true;
         }
         Player player = (Player) cmdSender;

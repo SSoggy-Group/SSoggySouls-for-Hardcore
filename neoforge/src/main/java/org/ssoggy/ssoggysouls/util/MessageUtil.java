@@ -1,6 +1,7 @@
 package org.ssoggy.ssoggysouls.util;
 
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Forge-specific MessageUtil.
@@ -24,14 +25,17 @@ public final class MessageUtil extends MessageHelper {
         return getRaw(key, replacements);
     }
 
+    @NotNull
     public static Component get(String key, Object... replacements) {
         return colorizeComponent(prefix + getRaw(key, replacements));
     }
 
+    @NotNull
     public static Component getNoPrefix(String key, Object... replacements) {
         return colorizeComponent(getRaw(key, replacements));
     }
 
+    @NotNull
     public static Component colorizeComponent(String text) {
         if (text == null) return Component.empty();
         return Component.literal(text.replace('&', '\u00a7'));
