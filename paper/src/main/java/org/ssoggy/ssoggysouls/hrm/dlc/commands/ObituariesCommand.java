@@ -45,6 +45,8 @@ import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 public class ObituariesCommand implements CommandExecutor, TabCompleter {
+    private static final String GOLD_BOLD = "<gold><bold>";
+    private static final String END_GOLD_BOLD = "</bold></gold>";
     private static final long DEFAULT_TRUSTED_OBITUARY_DELAY_MINUTES = 60L;
     private static final long DEFAULT_FRIENDS_OBITUARY_DELAY_MINUTES = 600L;
     private static final long DEFAULT_PUBLIC_OBITUARY_DELAY_MINUTES = 3600L;
@@ -97,7 +99,7 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
                 String escapedUsername = username != null ? miniMessage.escapeTags(username) : "Unknown";
                 deathListBuilder.append("\n<click:suggest_command:'/pstatus ").append(escapedUsername).append("'>")
                         .append("<hover:show_text:'<gray>Click to check player status</gray>'>")
-                        .append("<gold><bold>").append(escapedUsername).append("</bold></gold>")
+                        .append(GOLD_BOLD).append(escapedUsername).append(END_GOLD_BOLD)
                         .append("</hover></click>")
                         .append("<gray> has died at </gray>")
                         .append("<click:copy_to_clipboard:'").append(coords).append("'>")
@@ -105,10 +107,10 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
                         .append("<gold><bold>X").append(deathLocation.getBlockX())
                         .append(" Y").append(deathLocation.getBlockY())
                         .append(" Z").append(deathLocation.getBlockZ())
-                        .append("</bold></gold>")
+                        .append(END_GOLD_BOLD)
                         .append("</hover></click>")
                         .append("<gray> in the </gray><gold><bold>")
-                        .append(deathLocation.getWorld().getName()).append("</bold></gold>");
+                        .append(deathLocation.getWorld().getName()).append(END_GOLD_BOLD);
             }
         }
 
