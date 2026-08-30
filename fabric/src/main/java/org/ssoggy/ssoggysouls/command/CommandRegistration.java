@@ -23,6 +23,7 @@ import org.ssoggy.ssoggysouls.util.PermissionUtil;
 import java.util.concurrent.CompletableFuture;
 
 public class CommandRegistration {
+    private static final String CLICK_TO_AUTOFILL = "click-to-autofill";
 
     private static final String PLAYER = "player";
     private static final String LIVES = "lives";
@@ -97,9 +98,9 @@ public class CommandRegistration {
             .requires(source -> source.hasPermissionLevel(2))
             .executes(context -> {
                 context.getSource().sendError(MessageUtil.get("usage-revive").copy()
-                    .styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
+                    .copy().styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
                         .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
-                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
+                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL).copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
                 return 0;
             })
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
@@ -164,9 +165,9 @@ public class CommandRegistration {
             .requires(source -> source.hasPermissionLevel(2))
             .executes(context -> {
                 context.getSource().sendError(MessageUtil.get("usage-psetlives").copy()
-                    .styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
+                    .copy().styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
                         .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives "))
-                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
+                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL).copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
                 return 0;
             })
             .then(CommandManager.argument(PLAYER, StringArgumentType.word())
@@ -175,9 +176,9 @@ public class CommandRegistration {
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
                     context.getSource().sendError(MessageUtil.get("usage-psetlives-player", PLAYER, targetName).copy()
-                        .styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
+                        .copy().styled(s -> s.withColor(net.minecraft.util.Formatting.RED)
                             .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives " + targetName + " "))
-                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
+                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL).copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY))))));
                     return 0;
                 })
                 .then(CommandManager.argument(LIVES, IntegerArgumentType.integer(0))
