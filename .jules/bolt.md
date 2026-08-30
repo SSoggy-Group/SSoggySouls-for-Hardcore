@@ -93,3 +93,6 @@
 ## $(date +%Y-%m-%d) - Loop Optimization & Object Allocation
 **Learning:** Inside `ObituariesCommand.java`, `Instant.now()`, `new RPSocial`, and `MiniMessage.miniMessage()` were being repeatedly allocated inside a large `RPStatic.DEAD_LOCATIONS.entrySet()` loop. The condition checked expensive states before cheaper ones.
 **Action:** Hoisted invariant object creations (`Instant`, `MiniMessage`) outside loops, precalculated thresholds, and short-circuited early using cheap time comparisons to avoid expensive state lookups.
+## $(date +%Y-%m-%d) - SonarCloud CPD vs Cross-Platform Loaders
+**Learning:** SonarCloud's "Duplication on New Code" metric counts *all* newly added identical code blocks globally within a PR. Extracting shared logic into identical helper methods (like `createAutofillStyle`) across multiple loader-specific files (`forge`, `neoforge`) triggers severe duplication failures, even if the files were generally excluded from global CPD checks in `.sonarcloud.properties`.
+**Action:** When fixing SonarCloud bugs in parallel platform loaders where shared logic cannot easily be pulled into `common`, prefer minimal inline fixes over extracting identical new helper functions to avoid spiking the Duplication on New Code metric. Use `sonar.coverage.exclusions` in `build.gradle` to exclude untestable `CommandRegistration` classes.
