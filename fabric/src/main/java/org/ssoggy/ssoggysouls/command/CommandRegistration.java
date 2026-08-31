@@ -34,17 +34,11 @@ public class CommandRegistration {
     }
 
     private static net.minecraft.text.MutableText createInteractiveUsage(String messageKey, String suggestCmd) {
-        return MessageUtil.get(messageKey).copy().styled(s -> s
-            .withColor(net.minecraft.util.Formatting.RED)
-            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd))
-            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY)))));
+        return MessageUtil.get(messageKey).copy().styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd)).withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY)))));
     }
 
     private static net.minecraft.text.MutableText createInteractiveUsage(String messageKey, String placeholderKey, String placeholderValue, String suggestCmd) {
-        return MessageUtil.get(messageKey, placeholderKey, placeholderValue).copy().styled(s -> s
-            .withColor(net.minecraft.util.Formatting.RED)
-            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd))
-            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY)))));
+        return MessageUtil.get(messageKey, placeholderKey, placeholderValue).copy().styled(s -> s.withColor(net.minecraft.util.Formatting.RED).withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd)).withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().styled(h -> h.withColor(net.minecraft.util.Formatting.GRAY)))));
     }
 
     public static void register(SSoggySoulsMod plugin, DatabaseManager db) {

@@ -37,17 +37,11 @@ public class CommandRegistration {
     }
 
     private static net.minecraft.network.chat.MutableComponent createInteractiveUsage(String messageKey, String suggestCmd) {
-        return MessageUtil.get(messageKey).copy().withStyle(s -> s
-            .withColor(net.minecraft.ChatFormatting.RED)
-            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd))
-            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().withStyle(net.minecraft.ChatFormatting.GRAY))));
+        return MessageUtil.get(messageKey).copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED).withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd)).withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().withStyle(net.minecraft.ChatFormatting.GRAY))));
     }
 
     private static net.minecraft.network.chat.MutableComponent createInteractiveUsage(String messageKey, String placeholderKey, String placeholderValue, String suggestCmd) {
-        return MessageUtil.get(messageKey, placeholderKey, placeholderValue).copy().withStyle(s -> s
-            .withColor(net.minecraft.ChatFormatting.RED)
-            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd))
-            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().withStyle(net.minecraft.ChatFormatting.GRAY))));
+        return MessageUtil.get(messageKey, placeholderKey, placeholderValue).copy().withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED).withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, suggestCmd)).withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL_KEY).copy().withStyle(net.minecraft.ChatFormatting.GRAY))));
     }
 
     private static final String PLAYER = "player";
