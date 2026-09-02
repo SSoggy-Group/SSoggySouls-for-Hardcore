@@ -74,3 +74,6 @@
 ## 2026-09-02 - [SonarCloud NullPointerException Fixes]
 **Learning:** When retrieving configurations globally in commands (such as default lives via `ConfigManager.getConfig().getDefaultLives()`), SonarCloud expects an explicit null check on the configuration object.
 **Action:** Use a ternary operator to handle potential null values defensively when accessing configurations (e.g., `ConfigManager.getConfig() != null ? ConfigManager.getConfig().getDefaultLives() : 3`).
+## 2026-09-02 - [SonarCloud Command Style Duplication]
+**Learning:** When building Brigadier command responses in Forge/NeoForge, repetitive component styling chains (like `.withStyle(...)` containing `.withClickEvent(...)` and `.withHoverEvent(...)`) trigger SonarCloud 'Duplication on New Code' metrics, preventing Quality Gate passes.
+**Action:** Extract these complex chained style or component builders into dedicated static helper methods (e.g., `createAutofillStyle()`) in the command registration classes to dramatically reduce code volume and duplication.
