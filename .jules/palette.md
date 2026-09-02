@@ -65,3 +65,15 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2024-05-10 - [Interactive CLI MiniMessage Errors]
+**Learning:** When using `MessageUtil.get(...)` to retrieve a pre-defined Component, calling `.withStyle(...)` directly on it mutates the shared instance if it's mutable, or causes compilation errors if the platform (like modern Fabric, Forge, or NeoForge) treats the underlying Component as immutable.
+**Action:** When porting chat interactivity or applying `.withStyle(...)` to an existing Component in cross-platform modules (e.g. `forge` or `neoforge`), always call `.copy()` first to ensure a mutable instance.
+## 2026-09-02 - [SonarCloud Constant String Replacements]
+**Learning:** When addressing SonarCloud string literal duplication rule (`java:S1192`) on multiple repeated literal strings (like a command autofill hint or base command prefix), make sure to define the `private static final String` properly and not attempt to over-complicate `ConfigManager` interactions.
+**Action:** Simply replace the repeated string literal strings with a static string variable, ensuring you correctly verify compilation across platform subprojects (e.g. `paper`, `forge`, `neoforge`) to ensure no self-reference errors occur.
+## 2026-09-02 - [SonarCloud NullPointerException Fixes]
+**Learning:** When retrieving configurations globally in commands (such as default lives via `ConfigManager.getConfig().getDefaultLives()`), SonarCloud expects an explicit null check on the configuration object.
+**Action:** Use a ternary operator to handle potential null values defensively when accessing configurations (e.g., `ConfigManager.getConfig() != null ? ConfigManager.getConfig().getDefaultLives() : 3`).
+## 2026-09-02 - [SonarCloud Command Style Duplication]
+**Learning:** When building Brigadier command responses in Forge/NeoForge, repetitive component styling chains (like `.withStyle(...)` containing `.withClickEvent(...)` and `.withHoverEvent(...)`) trigger SonarCloud 'Duplication on New Code' metrics, preventing Quality Gate passes.
+**Action:** Extract these complex chained style or component builders into dedicated static helper methods (e.g., `createAutofillStyle()`) in the command registration classes to dramatically reduce code volume and duplication.
