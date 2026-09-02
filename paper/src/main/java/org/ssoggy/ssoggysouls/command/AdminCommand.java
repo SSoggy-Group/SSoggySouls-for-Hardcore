@@ -314,8 +314,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
         PendingGrace pending = pendingGraceConfirmations.remove(getConfirmationKey(sender));
         if (pending == null) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cNo pending grace confirmation found. Use /psadmin grace set first."));
+            CommandUtil.sendInteractiveUsage(sender, "&cNo pending grace confirmation found. Use /psadmin grace set first.", "/psadmin grace set ");
             return;
         }
 
@@ -323,8 +322,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         long confirmationAge = System.currentTimeMillis() - pending.createdAt();
         long twoMinutesMillis = 2 * 60 * 1000L;
         if (confirmationAge > twoMinutesMillis) {
-            sender.sendMessage(MessageUtil.colorize(
-                    "&cGrace confirmation expired. Please run /psadmin grace set again."));
+            CommandUtil.sendInteractiveUsage(sender, "&cGrace confirmation expired. Please run /psadmin grace set again.", "/psadmin grace set ");
             return;
         }
 
@@ -380,9 +378,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 );
                 pendingGraceConfirmations.put(getConfirmationKey(sender), renewed);
                 // Build message before scheduling to reduce work on main thread
-                String message = MessageUtil.colorize(
-                        "&cInvalid option. Use: /psadmin confirm <overwrite|stack|cancel>");
-                Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(message));
+                Bukkit.getScheduler().runTask(plugin, () -> CommandUtil.sendInteractiveUsage(sender, "&cInvalid option. Use: /psadmin confirm <overwrite|stack|cancel>", "/psadmin confirm "));
             }
         }
     }
