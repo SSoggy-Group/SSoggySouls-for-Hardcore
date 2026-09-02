@@ -71,3 +71,6 @@
 ## 2026-09-02 - [SonarCloud Constant String Replacements]
 **Learning:** When addressing SonarCloud string literal duplication rule (`java:S1192`) on multiple repeated literal strings (like a command autofill hint or base command prefix), make sure to define the `private static final String` properly and not attempt to over-complicate `ConfigManager` interactions.
 **Action:** Simply replace the repeated string literal strings with a static string variable, ensuring you correctly verify compilation across platform subprojects (e.g. `paper`, `forge`, `neoforge`) to ensure no self-reference errors occur.
+## 2026-09-02 - [SonarCloud NullPointerException Fixes]
+**Learning:** When retrieving configurations globally in commands (such as default lives via `ConfigManager.getConfig().getDefaultLives()`), SonarCloud expects an explicit null check on the configuration object.
+**Action:** Use a ternary operator to handle potential null values defensively when accessing configurations (e.g., `ConfigManager.getConfig() != null ? ConfigManager.getConfig().getDefaultLives() : 3`).
