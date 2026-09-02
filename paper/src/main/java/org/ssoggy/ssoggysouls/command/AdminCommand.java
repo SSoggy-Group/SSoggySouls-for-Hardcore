@@ -45,6 +45,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     private static final String ERR_NUMBER = "&cInvalid number: ";
 
     private static final String SUB_CONFIRM = "confirm";
+    private static final String CMD_GRACE_SET = "/psadmin grace set ";
 
     private static final List<String> SUB_COMMANDS = Arrays.asList(
             SUB_LIVES, SUB_GRACE, "kill", SUB_REVIVE, "reset", "info", "reload", SUB_CONFIRM);
@@ -234,7 +235,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void applyGraceSet(CommandSender sender, String[] args, PlayerData data) {
         if (args.length < 4) {
-            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin grace set <player> <time> (e.g., 1h30m, 2h, 90m)", "/psadmin grace set " + data.getUsername() + " ");
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin grace set <player> <time> (e.g., 1h30m, 2h, 90m)", CMD_GRACE_SET + data.getUsername() + " ");
             return;
         }
         String timeStr = args[3];
@@ -243,7 +244,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         if (millis < 0) {
             CommandUtil.sendInteractiveUsage(sender,
                     "&cInvalid time format: " + timeStr + ". Use formats like: 1h30m, 2h, 90m",
-                    "/psadmin grace set " + data.getUsername() + " ");
+                    CMD_GRACE_SET + data.getUsername() + " ");
             return;
         }
 
@@ -314,7 +315,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
         PendingGrace pending = pendingGraceConfirmations.remove(getConfirmationKey(sender));
         if (pending == null) {
-            CommandUtil.sendInteractiveUsage(sender, "&cNo pending grace confirmation found. Use /psadmin grace set first.", "/psadmin grace set ");
+            CommandUtil.sendInteractiveUsage(sender, "&cNo pending grace confirmation found. Use /psadmin grace set first.", CMD_GRACE_SET);
             return;
         }
 
@@ -322,7 +323,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         long confirmationAge = System.currentTimeMillis() - pending.createdAt();
         long twoMinutesMillis = 2 * 60 * 1000L;
         if (confirmationAge > twoMinutesMillis) {
-            CommandUtil.sendInteractiveUsage(sender, "&cGrace confirmation expired. Please run /psadmin grace set again.", "/psadmin grace set ");
+            CommandUtil.sendInteractiveUsage(sender, "&cGrace confirmation expired. Please run /psadmin grace set again.", CMD_GRACE_SET);
             return;
         }
 

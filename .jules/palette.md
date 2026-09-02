@@ -68,3 +68,6 @@
 ## 2024-05-10 - [Interactive CLI MiniMessage Errors]
 **Learning:** When using `MessageUtil.get(...)` to retrieve a pre-defined Component, calling `.withStyle(...)` directly on it mutates the shared instance if it's mutable, or causes compilation errors if the platform (like modern Fabric, Forge, or NeoForge) treats the underlying Component as immutable.
 **Action:** When porting chat interactivity or applying `.withStyle(...)` to an existing Component in cross-platform modules (e.g. `forge` or `neoforge`), always call `.copy()` first to ensure a mutable instance.
+## 2026-09-02 - [SonarCloud Constant String Replacements]
+**Learning:** When addressing SonarCloud string literal duplication rule (`java:S1192`) on multiple repeated literal strings (like a command autofill hint or base command prefix), make sure to define the `private static final String` properly and not attempt to over-complicate `ConfigManager` interactions.
+**Action:** Simply replace the repeated string literal strings with a static string variable, ensuring you correctly verify compilation across platform subprojects (e.g. `paper`, `forge`, `neoforge`) to ensure no self-reference errors occur.
