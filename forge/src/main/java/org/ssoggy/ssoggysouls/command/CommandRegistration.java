@@ -179,6 +179,36 @@ public class CommandRegistration {
         });
     }
 
+
+    private static void executeSetLives(String targetName, int lives, CommandSourceStack source) {
+        PlayerData data = db.getPlayerByName(targetName);
+        if (data == null) {
+            source.getServer().execute(() ->
+                source.sendFailure(MessageUtil.get("status-not-found", PLAYER, targetName)));
+            return;
+        }
+        db.setLives(data.getUuid(), lives);
+        source.getServer().execute(() -> {
+            ServerPlayer online = source.getServer() != null && source.getServer().getPlayerList() != null ? source.getServer().getPlayerList().getPlayer(data.getUuid()) : null;
+            if (lives > 0) {
+                DlcDeaths.clearDeath(data.getUuid());
+                GhostModeEvents.updateGhostStatus(data.getUuid(), false);
+                GhostState ghostState = GhostState.getServerState(source.getServer());
+                ghostState.removeDeathLocation(data.getUuid());
+                ghostState.removeDeathHolder(data.getUuid());
+                ghostState.setDirty();
+                org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(data.getUuid(), source.getServer());
+                if (online != null) {
+                    ServerLifecycleListener.setGhostModeAttributes(online, false);
+                    online.setGameMode(GameType.SURVIVAL);
+                }
+            }
+            source.sendSuccess(() -> MessageUtil.get("admin-setlives-success",
+                    PLAYER, data.getUsername(), LIVES, lives), true);
+            AdminLogger.log(source.getTextName(), "Set lives for " + data.getUsername() + " to " + lives);
+        });
+    }
+
     private static void registerSetLivesCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("psetlives")
             .requires(source -> source.hasPermission(2))
@@ -211,34 +241,7 @@ public class CommandRegistration {
                             return 0;
                         }
 
-                        CompletableFuture.runAsync(() -> {
-                            PlayerData data = db.getPlayerByName(targetName);
-                            if (data == null) {
-                                source.getServer().execute(() ->
-                                    source.sendFailure(MessageUtil.get("status-not-found", PLAYER, targetName)));
-                                return;
-                            }
-                            db.setLives(data.getUuid(), lives);
-                            source.getServer().execute(() -> {
-                                ServerPlayer online = source.getServer() != null && source.getServer().getPlayerList() != null ? source.getServer().getPlayerList().getPlayer(data.getUuid()) : null;
-                                if (lives > 0) {
-                                    DlcDeaths.clearDeath(data.getUuid());
-                                    GhostModeEvents.updateGhostStatus(data.getUuid(), false);
-                                    GhostState ghostState = GhostState.getServerState(source.getServer());
-                                    ghostState.removeDeathLocation(data.getUuid());
-                                    ghostState.removeDeathHolder(data.getUuid());
-                                    ghostState.setDirty();
-                                    org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(data.getUuid(), source.getServer());
-                                    if (online != null) {
-                                        ServerLifecycleListener.setGhostModeAttributes(online, false);
-                                        online.setGameMode(GameType.SURVIVAL);
-                                    }
-                                }
-                                source.sendSuccess(() -> MessageUtil.get("admin-setlives-success",
-                                        PLAYER, data.getUsername(), LIVES, lives), true);
-                                AdminLogger.log(source.getTextName(), "Set lives for " + data.getUsername() + " to " + lives);
-                            });
-                        });
+                        CompletableFuture.runAsync(() -> executeSetLives(targetName, lives, source));
                         return 1;
                     })
                 )
