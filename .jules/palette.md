@@ -65,3 +65,6 @@
 ## 2026-07-10 - [Interactive CLI Name Linking]
 **Learning:** Players often want to take follow-up actions (like checking status) on users listed in chat output (like obituaries). By making usernames clickable with a suggest_command, we reduce the friction of typing out another command manually.
 **Action:** When displaying lists of players or events involving players in chat, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus).
+## 2026-07-11 - [Interactive CLI Name Linking in Trust List]
+**Learning:** The trust list in SocialCommand displays players as plain text. Extending the interactive name linking pattern (from Obituaries) to the trust list reduces friction by allowing players to click names to auto-fill the `/pstatus` command.
+**Action:** When displaying lists of trusted players or relations, wrap the usernames in a clickable component that suggests a logical follow-up command (e.g., /pstatus) and properly escape tags to prevent injection.
