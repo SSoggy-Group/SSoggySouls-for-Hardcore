@@ -170,7 +170,7 @@ public class CommandRegistration {
             source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
             AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
 
-            ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetData.getUuid());
+            ServerPlayer targetPlayer = source.getServer() != null && source.getServer().getPlayerList() != null ? source.getServer().getPlayerList().getPlayer(targetData.getUuid()) : null;
             if (targetPlayer != null) {
                 targetPlayer.setGameMode(GameType.SURVIVAL);
                 ServerLifecycleListener.setGhostModeAttributes(targetPlayer, false);
@@ -220,7 +220,7 @@ public class CommandRegistration {
                             }
                             db.setLives(data.getUuid(), lives);
                             source.getServer().execute(() -> {
-                                ServerPlayer online = source.getServer().getPlayerList().getPlayer(data.getUuid());
+                                ServerPlayer online = source.getServer() != null && source.getServer().getPlayerList() != null ? source.getServer().getPlayerList().getPlayer(data.getUuid()) : null;
                                 if (lives > 0) {
                                     DlcDeaths.clearDeath(data.getUuid());
                                     GhostModeEvents.updateGhostStatus(data.getUuid(), false);
