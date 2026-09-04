@@ -29,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(modid = SSoggySoulsMod.MODID)
 public class CommandRegistration {
+    private static final String CLICK_TO_AUTOFILL = "click-to-autofill";
     
     private CommandRegistration() {
         // Utility class
@@ -111,10 +112,10 @@ public class CommandRegistration {
         dispatcher.register(Commands.literal("revive")
             .requires(source -> source.hasPermission(2))
             .executes(context -> {
-                context.getSource().sendFailure(MessageUtil.get("usage-revive")
+                context.getSource().sendFailure(MessageUtil.get("usage-revive").copy()
                     .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revive "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -150,7 +151,7 @@ public class CommandRegistration {
             return;
         }
 
-        int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives();
+        int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig() != null ? org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives() : 3;
         boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
         if (success) {
             handleReviveSuccess(targetData, source);
@@ -169,7 +170,7 @@ public class CommandRegistration {
             source.sendSuccess(() -> MessageUtil.get("admin-revive-success", PLAYER, targetData.getUsername()), true);
             AdminLogger.log(source.getTextName(), "Revived " + targetData.getUsername());
 
-            ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetData.getUuid());
+            ServerPlayer targetPlayer = source.getServer() != null && source.getServer().getPlayerList() != null ? source.getServer().getPlayerList().getPlayer(targetData.getUuid()) : null;
             if (targetPlayer != null) {
                 targetPlayer.setGameMode(GameType.SURVIVAL);
                 ServerLifecycleListener.setGhostModeAttributes(targetPlayer, false);
@@ -178,14 +179,44 @@ public class CommandRegistration {
         });
     }
 
+
+    private static void executeSetLives(String targetName, int lives, CommandSourceStack source) {
+        PlayerData data = db.getPlayerByName(targetName);
+        if (data == null) {
+            source.getServer().execute(() ->
+                source.sendFailure(MessageUtil.get("status-not-found", PLAYER, targetName)));
+            return;
+        }
+        db.setLives(data.getUuid(), lives);
+        source.getServer().execute(() -> {
+            ServerPlayer online = source.getServer() != null && source.getServer().getPlayerList() != null ? source.getServer().getPlayerList().getPlayer(data.getUuid()) : null;
+            if (lives > 0) {
+                DlcDeaths.clearDeath(data.getUuid());
+                GhostModeEvents.updateGhostStatus(data.getUuid(), false);
+                GhostState ghostState = GhostState.getServerState(source.getServer());
+                ghostState.removeDeathLocation(data.getUuid());
+                ghostState.removeDeathHolder(data.getUuid());
+                ghostState.setDirty();
+                org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(data.getUuid(), source.getServer());
+                if (online != null) {
+                    ServerLifecycleListener.setGhostModeAttributes(online, false);
+                    online.setGameMode(GameType.SURVIVAL);
+                }
+            }
+            source.sendSuccess(() -> MessageUtil.get("admin-setlives-success",
+                    PLAYER, data.getUsername(), LIVES, lives), true);
+            AdminLogger.log(source.getTextName(), "Set lives for " + data.getUsername() + " to " + lives);
+        });
+    }
+
     private static void registerSetLivesCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("psetlives")
             .requires(source -> source.hasPermission(2))
             .executes(context -> {
-                context.getSource().sendFailure(MessageUtil.get("usage-psetlives")
+                context.getSource().sendFailure(MessageUtil.get("usage-psetlives").copy()
                     .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                         .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives "))
-                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                        .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                 return 0;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -193,10 +224,10 @@ public class CommandRegistration {
                         context.getSource().getServer().getPlayerNames(), builder))
                 .executes(context -> {
                     String targetName = StringArgumentType.getString(context, PLAYER);
-                    context.getSource().sendFailure(MessageUtil.get("usage-psetlives-player", PLAYER, targetName)
+                    context.getSource().sendFailure(MessageUtil.get("usage-psetlives-player", PLAYER, targetName).copy()
                         .withStyle(s -> s.withColor(net.minecraft.ChatFormatting.RED)
                             .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/psetlives " + targetName + " "))
-                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get("click-to-autofill").withStyle(net.minecraft.ChatFormatting.GRAY)))));
+                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, MessageUtil.get(CLICK_TO_AUTOFILL).copy().withStyle(net.minecraft.ChatFormatting.GRAY)))));
                     return 0;
                 })
                 .then(Commands.argument(LIVES, IntegerArgumentType.integer(0))
@@ -210,34 +241,7 @@ public class CommandRegistration {
                             return 0;
                         }
 
-                        CompletableFuture.runAsync(() -> {
-                            PlayerData data = db.getPlayerByName(targetName);
-                            if (data == null) {
-                                source.getServer().execute(() ->
-                                    source.sendFailure(MessageUtil.get("status-not-found", PLAYER, targetName)));
-                                return;
-                            }
-                            db.setLives(data.getUuid(), lives);
-                            source.getServer().execute(() -> {
-                                ServerPlayer online = source.getServer().getPlayerList().getPlayer(data.getUuid());
-                                if (lives > 0) {
-                                    DlcDeaths.clearDeath(data.getUuid());
-                                    GhostModeEvents.updateGhostStatus(data.getUuid(), false);
-                                    GhostState ghostState = GhostState.getServerState(source.getServer());
-                                    ghostState.removeDeathLocation(data.getUuid());
-                                    ghostState.removeDeathHolder(data.getUuid());
-                                    ghostState.setDirty();
-                                    org.ssoggy.ssoggysouls.hrm.HeadDropListener.removeDroppedHeads(data.getUuid(), source.getServer());
-                                    if (online != null) {
-                                        ServerLifecycleListener.setGhostModeAttributes(online, false);
-                                        online.setGameMode(GameType.SURVIVAL);
-                                    }
-                                }
-                                source.sendSuccess(() -> MessageUtil.get("admin-setlives-success",
-                                        PLAYER, data.getUsername(), LIVES, lives), true);
-                                AdminLogger.log(source.getTextName(), "Set lives for " + data.getUsername() + " to " + lives);
-                            });
-                        });
+                        CompletableFuture.runAsync(() -> executeSetLives(targetName, lives, source));
                         return 1;
                     })
                 )
