@@ -43,7 +43,7 @@ public class GhostModeCommand implements CommandExecutor, TabCompleter { // Lazy
 
         if (playerArg.getPlayer() instanceof Player onlinePlayer) {
             result.success = COMMANDOUTPUTENUM.TRUE;
-            String safeName = onlinePlayer.getName() != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(onlinePlayer.getName()) : "Unknown";
+            String safeName = net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(onlinePlayer.getName());
             result.message = "Updated " + safeName + " gamemode to GhostMode!";
             GAMEMODESENUM.setPlayerGameMode(onlinePlayer, GAMEMODESENUM.GHOSTMODE);
         }
