@@ -152,13 +152,15 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         boolean changed = false;
         if (currentRelation == SOCIALENUM.BLOCKED) {
             ctx.output.success = COMMANDOUTPUTENUM.INFO;
-            ctx.output.message = "You already blocked " + ctx.targetPlayer.getName(); // easter egg: You tryna double-block this dude?
+            String safeName = ctx.targetPlayer.getName() != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(ctx.targetPlayer.getName()) : "Unknown";
+            ctx.output.message = "You already blocked " + safeName; // easter egg: You tryna double-block this dude?
         } else {
             changed |= ctx.social.setRelationTo(ctx.targetPlayerUUID, SOCIALENUM.BLOCKED);
             if (theirRelation.isTrustworthy()) {
                 changed |= targetSocial.setRelationTo(ctx.playerUUID, SOCIALENUM.UNTRUSTED);
             } // Unbind both players
-            ctx.output.message = "You have blocked " + ctx.targetPlayer.getName();
+            String safeName = ctx.targetPlayer.getName() != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(ctx.targetPlayer.getName()) : "Unknown";
+            ctx.output.message = "You have blocked " + safeName;
         }
         return changed;
     }
@@ -168,10 +170,12 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         boolean changed = false;
         if (currentRelation == SOCIALENUM.UNTRUSTED) {
             output.success = COMMANDOUTPUTENUM.INFO;
-            output.message = "You have no relations with " + targetPlayer.getName();
+            String safeName = targetPlayer.getName() != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(targetPlayer.getName()) : "Unknown";
+            output.message = "You have no relations with " + safeName;
         } else {
             changed |= social.setRelationTo(targetPlayerUUID, null); // Ensures that you don't get stray "Untrusted" values (saves memory)
-            output.message = "You no longer trust " + targetPlayer.getName();
+            String safeName = targetPlayer.getName() != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(targetPlayer.getName()) : "Unknown";
+            output.message = "You no longer trust " + safeName;
         }
         return changed;
     }
@@ -186,23 +190,27 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         boolean changed = false;
         if (currentRelation.isTrustworthy()) { // Already Trusted
             ctx.output.success = COMMANDOUTPUTENUM.INFO;
-            ctx.output.message = "You have already entrusted " + ctx.targetPlayer.getName();
+            String safeName = ctx.targetPlayer.getName() != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(ctx.targetPlayer.getName()) : "Unknown";
+            ctx.output.message = "You have already entrusted " + safeName;
         } else if (theirRelation == SOCIALENUM.BLOCKED) { // They Blocked you
             executeFail(ctx.sender, ctx.output, "Player has you blocked.");
         } else if (theirRelation == SOCIALENUM.TRUSTED) { // Make Players Allies
             changed |= ctx.social.setRelationTo(ctx.targetPlayerUUID, SOCIALENUM.FRIENDS);
             changed |= targetSocial.setRelationTo(ctx.playerUUID, SOCIALENUM.FRIENDS);
-            ctx.output.message = "You are now friends with " + ctx.targetPlayer.getName();
+            String safeName = ctx.targetPlayer.getName() != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(ctx.targetPlayer.getName()) : "Unknown";
+            ctx.output.message = "You are now friends with " + safeName;
 
             if (ctx.targetPlayer.getPlayer() instanceof Player targetOnline) {
                 RPCommandOutput targetMessage = new RPCommandOutput();
                 targetMessage.success = COMMANDOUTPUTENUM.TRUE;
-                targetMessage.message =  "You are now friends with " + ctx.player.getName();
+                String safePlayerName = ctx.player.getName() != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(ctx.player.getName()) : "Unknown";
+                targetMessage.message =  "You are now friends with " + safePlayerName;
                 targetOnline.sendRichMessage(targetMessage.toString());
             }
         } else { // Trust Player
             changed |= ctx.social.setRelationTo(ctx.targetPlayerUUID, SOCIALENUM.TRUSTED);
-            ctx.output.message = "You have now entrusted " + ctx.targetPlayer.getName();
+            String safeName = ctx.targetPlayer.getName() != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(ctx.targetPlayer.getName()) : "Unknown";
+            ctx.output.message = "You have now entrusted " + safeName;
         }
         return changed;
     }

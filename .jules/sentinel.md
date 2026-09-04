@@ -27,3 +27,7 @@
 **Vulnerability:** In `LeaveLimboCommand.java`, `RPConfig.java`, and `UpdateChecker.java`, exception messages (`e.getMessage()`) were directly appended to error logs using `logger.severe()` or `logger.warning()`.
 **Learning:** Appending `e.getMessage()` manually instead of passing the entire Exception object can leak sensitive information to the logs without providing a full stack trace, reducing debuggability and posing a potential security risk.
 **Prevention:** Always use `logger.log(Level.SEVERE, "context message", exception)` or equivalent to properly log the context message and the full stack trace securely.
+## 2024-09-04 - MiniMessage Formatting Injection Vulnerability
+**Vulnerability:** Unescaped player usernames were concatenated directly into Kyori MiniMessage formatted strings in command responses (e.g., `SocialCommand.java` and `GhostModeCommand.java`).
+**Learning:** Kyori MiniMessage uses `<tag>` syntax for rich text formatting. If a user can control a string (like a username, though limited in standard Minecraft, it's a risk with nicknaming plugins or future changes) that is inserted into a MiniMessage string, they could inject formatting tags, potentially spoofing server messages, breaking chat layouts, or executing hover/click events maliciously (e.g., `<click:run_command:"/op Hacker">`).
+**Prevention:** Always use `MiniMessage.miniMessage().escapeTags(input)` when interpolating user-controlled data into strings that will be parsed by `sendRichMessage()` or other MiniMessage parsing methods.
