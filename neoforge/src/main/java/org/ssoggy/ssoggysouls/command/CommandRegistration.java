@@ -29,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class CommandRegistration {
 
+
     private static net.minecraft.network.chat.Style createAutofillStyle(String commandToSuggest) {
         return net.minecraft.network.chat.Style.EMPTY
             .withColor(net.minecraft.ChatFormatting.RED)
@@ -37,14 +38,16 @@ public class CommandRegistration {
     }
 
     private static final String CLICK_TO_AUTOFILL = "click-to-autofill";
-    
+    private static final String PLAYER = "player";
+    private static final String LIVES = "lives";
+
+
+
     private CommandRegistration() {
         // Utility class
     }
 
-    private static final String PLAYER = "player";
-    private static final String LIVES = "lives";
-    private static DatabaseManager db;
+            private static DatabaseManager db;
 
     public static void setDatabase(DatabaseManager database) {
         db = database;
