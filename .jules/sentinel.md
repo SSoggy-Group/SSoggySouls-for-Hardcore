@@ -31,3 +31,8 @@
 **Vulnerability:** Usernames were appended directly into Kyori MiniMessage format strings (e.g., `RPCommandOutput` messages) without sanitization in `SocialCommand.java`.
 **Learning:** MiniMessage parses tags (like `<click>`, `<red>`) in any string passed to `sendRichMessage`. Unsanitized user inputs allow for formatting spoofing and injection vulnerabilities (similar to XSS).
 **Prevention:** Always escape user-controlled strings using `MiniMessage.miniMessage().escapeTags()` before concatenating them into MiniMessage format strings.
+
+## 2026-06-26 - [Prevent Immutable Component Compilation Error with Styling]
+**Vulnerability:** In `forge` and `neoforge` module `CommandRegistration`, styling methods like `.withStyle` were applied directly to components generated from `MessageUtil.get()`. Due to strict compilation rules on immutable UI components with cross-platform wrappers, this triggered a compile-time failure. While not a runtime vulnerability, it highlights risks associated with unverified shared instances.
+**Learning:** Shared UI or cached component instances (like error/usage messages) MUST be explicitly copied via `.copy()` before applying platform-specific styles or interactive events to prevent runtime mutation errors or strict build-time failures.
+**Prevention:** Always append `.copy()` before chaining styles or events to global/static components.
