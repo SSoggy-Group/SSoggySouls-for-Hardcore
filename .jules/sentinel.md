@@ -27,3 +27,7 @@
 **Vulnerability:** In `LeaveLimboCommand.java`, `RPConfig.java`, and `UpdateChecker.java`, exception messages (`e.getMessage()`) were directly appended to error logs using `logger.severe()` or `logger.warning()`.
 **Learning:** Appending `e.getMessage()` manually instead of passing the entire Exception object can leak sensitive information to the logs without providing a full stack trace, reducing debuggability and posing a potential security risk.
 **Prevention:** Always use `logger.log(Level.SEVERE, "context message", exception)` or equivalent to properly log the context message and the full stack trace securely.
+## 2026-06-26 - [Prevent MiniMessage Injection in Social Command]
+**Vulnerability:** Usernames were appended directly into Kyori MiniMessage format strings (e.g., `RPCommandOutput` messages) without sanitization in `SocialCommand.java`.
+**Learning:** MiniMessage parses tags (like `<click>`, `<red>`) in any string passed to `sendRichMessage`. Unsanitized user inputs allow for formatting spoofing and injection vulnerabilities (similar to XSS).
+**Prevention:** Always escape user-controlled strings using `MiniMessage.miniMessage().escapeTags()` before concatenating them into MiniMessage format strings.
