@@ -244,18 +244,6 @@ public class CommandRegistration {
 
 
 
-    private static net.minecraft.network.chat.Component formatLogLine(CommandSourceStack source, String line) {
-        if (source.isPlayer()) {
-            return Component.literal(line).withStyle(s ->
-                s.withColor(net.minecraft.ChatFormatting.GRAY)
-                 .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
-                 .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy log entry").withStyle(net.minecraft.ChatFormatting.GRAY)))
-            );
-        } else {
-            return Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY);
-        }
-    }
-
     private static void registerAdminLogCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("adminlog")
             .requires(source -> source.hasPermission(3))
@@ -276,8 +264,18 @@ public class CommandRegistration {
                             }
                             case SUCCESS -> {
                                 source.sendSystemMessage(Component.literal("--- Recent Admin Logs ---").withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD));
-                                for (String line : result.lines) {
-                                    source.sendSystemMessage(formatLogLine(source, line));
+                                if (source.isPlayer()) {
+                                    for (String line : result.lines) {
+                                        source.sendSystemMessage(Component.literal(line).withStyle(s ->
+                                            s.withColor(net.minecraft.ChatFormatting.GRAY)
+                                             .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD, line))
+                                             .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy log entry").withStyle(net.minecraft.ChatFormatting.GRAY)))
+                                        ));
+                                    }
+                                } else {
+                                    for (String line : result.lines) {
+                                        source.sendSystemMessage(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY));
+                                    }
                                 }
                             }
                         }
