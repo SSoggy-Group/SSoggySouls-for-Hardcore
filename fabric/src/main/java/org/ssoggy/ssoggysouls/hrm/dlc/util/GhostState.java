@@ -1,26 +1,26 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.util;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.world.World;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.GlobalPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class GhostState extends PersistentState {
+public class GhostState extends SavedData {
 
     private static final String DEATH_LOCATIONS = "deathLocations";
     private static final String DEATH_HOLDERS = "deathHolders";
@@ -28,84 +28,114 @@ public class GhostState extends PersistentState {
     private static final String HEAD_LOCATION_DIMENSION = "dimension";
     private static final String HEAD_LOCATION_POS = "pos";
 
-    public final Map<UUID, BlockPos> deathLocations = new HashMap<>();
-    public final Map<UUID, UUID> deathHolders = new HashMap<>();
+    private final Map<UUID, BlockPos> deathLocations = new ConcurrentHashMap<>();
+    private final Map<UUID, UUID> deathHolders = new ConcurrentHashMap<>();
     private final Map<UUID, List<GlobalPos>> headBlockLocations = new HashMap<>();
 
+    public BlockPos getDeathLocation(UUID ghostId) {
+        return deathLocations.get(ghostId);
+    }
+
+    public void setDeathLocation(UUID ghostId, BlockPos pos) {
+        deathLocations.put(ghostId, pos);
+    }
+
+    public void removeDeathLocation(UUID ghostId) {
+        deathLocations.remove(ghostId);
+    }
+
+    public Map<UUID, BlockPos> getDeathLocations() {
+        return Collections.unmodifiableMap(deathLocations);
+    }
+
+    public UUID getDeathHolder(UUID ghostId) {
+        return deathHolders.get(ghostId);
+    }
+
+    public void setDeathHolder(UUID ghostId, UUID holderId) {
+        deathHolders.put(ghostId, holderId);
+    }
+
+    public void removeDeathHolder(UUID ghostId) {
+        deathHolders.remove(ghostId);
+    }
+
+    public Map<UUID, UUID> getDeathHolders() {
+        return Collections.unmodifiableMap(deathHolders);
+    }
+
     public void addHeadBlockLocation(UUID playerId, GlobalPos location) {
-        List<GlobalPos> locations = headBlockLocations.get(playerId);
-        if (locations == null) {
-            locations = new ArrayList<>();
-            headBlockLocations.put(playerId, locations);
-        }
-        locations.add(location);
-        markDirty();
+        headBlockLocations.computeIfAbsent(playerId, key -> new ArrayList<>()).add(location);
+        setDirty();
     }
 
     public List<GlobalPos> consumeHeadBlockLocations(UUID playerId) {
         List<GlobalPos> removed = headBlockLocations.remove(playerId);
         if (removed != null) {
-            markDirty();
+            setDirty();
         }
         return removed;
     }
 
-    @Override
-    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
-        NbtCompound locations = new NbtCompound();
+    public CompoundTag save() {
+        CompoundTag tag = new CompoundTag();
+        CompoundTag locations = new CompoundTag();
         deathLocations.forEach((uuid, pos) -> locations.putLong(uuid.toString(), pos.asLong()));
-        nbt.put(DEATH_LOCATIONS, locations);
+        tag.put(DEATH_LOCATIONS, locations);
 
-        NbtCompound holders = new NbtCompound();
-        deathHolders.forEach((ghostId, holderId) -> holders.putUuid(ghostId.toString(), holderId));
-        nbt.put(DEATH_HOLDERS, holders);
+        CompoundTag holders = new CompoundTag();
+        deathHolders.forEach((ghostId, holderId) -> holders.putString(ghostId.toString(), holderId.toString()));
+        tag.put(DEATH_HOLDERS, holders);
 
-        NbtCompound headLocations = new NbtCompound();
+        CompoundTag headLocations = new CompoundTag();
         headBlockLocations.forEach((playerId, playerLocations) -> {
-            NbtList serializedLocations = new NbtList();
+            ListTag serializedLocations = new ListTag();
             for (GlobalPos location : playerLocations) {
-                NbtCompound locationTag = new NbtCompound();
-                locationTag.putString(HEAD_LOCATION_DIMENSION, location.dimension().getValue().toString());
+                CompoundTag locationTag = new CompoundTag();
+                locationTag.putString(HEAD_LOCATION_DIMENSION, location.dimension().identifier().toString());
                 locationTag.putLong(HEAD_LOCATION_POS, location.pos().asLong());
                 serializedLocations.add(locationTag);
             }
             headLocations.put(playerId.toString(), serializedLocations);
         });
-        nbt.put(HEAD_BLOCK_LOCATIONS, headLocations);
+        tag.put(HEAD_BLOCK_LOCATIONS, headLocations);
 
-        return nbt;
+        return tag;
     }
 
-    public static GhostState fromNbt(NbtCompound nbt) {
+    public static GhostState load(CompoundTag tag) {
         GhostState state = new GhostState();
 
-        if (nbt.contains(DEATH_LOCATIONS)) {
-            NbtCompound locations = nbt.getCompound(DEATH_LOCATIONS);
-            for (String key : locations.getKeys()) {
-                state.deathLocations.put(UUID.fromString(key), BlockPos.fromLong(locations.getLong(key)));
+        if (tag.contains(DEATH_LOCATIONS)) {
+            CompoundTag locations = tag.getCompoundOrEmpty(DEATH_LOCATIONS);
+            for (String key : locations.keySet()) {
+                state.deathLocations.put(UUID.fromString(key), BlockPos.of(locations.getLongOr(key, 0L)));
             }
         }
 
-        if (nbt.contains(DEATH_HOLDERS)) {
-            NbtCompound holders = nbt.getCompound(DEATH_HOLDERS);
-            for (String key : holders.getKeys()) {
-                state.deathHolders.put(UUID.fromString(key), holders.getUuid(key));
+        if (tag.contains(DEATH_HOLDERS)) {
+            CompoundTag holders = tag.getCompoundOrEmpty(DEATH_HOLDERS);
+            for (String key : holders.keySet()) {
+                String val = holders.getStringOr(key, "");
+                if (!val.isEmpty()) {
+                    state.deathHolders.put(UUID.fromString(key), UUID.fromString(val));
+                }
             }
         }
 
-        if (nbt.contains(HEAD_BLOCK_LOCATIONS)) {
-            NbtCompound headLocations = nbt.getCompound(HEAD_BLOCK_LOCATIONS);
-            for (String key : headLocations.getKeys()) {
-                NbtList locations = headLocations.getList(key, NbtElement.COMPOUND_TYPE);
+        if (tag.contains(HEAD_BLOCK_LOCATIONS)) {
+            CompoundTag headLocations = tag.getCompoundOrEmpty(HEAD_BLOCK_LOCATIONS);
+            for (String key : headLocations.keySet()) {
+                ListTag locations = headLocations.getListOrEmpty(key);
                 List<GlobalPos> parsedLocations = new ArrayList<>();
                 for (int i = 0; i < locations.size(); i++) {
-                    NbtCompound locationTag = locations.getCompound(i);
-                    Identifier dimensionId = Identifier.tryParse(locationTag.getString(HEAD_LOCATION_DIMENSION));
+                    CompoundTag locationTag = locations.getCompoundOrEmpty(i);
+                    Identifier dimensionId = Identifier.tryParse(locationTag.getStringOr(HEAD_LOCATION_DIMENSION, ""));
                     if (dimensionId == null) {
                         continue;
                     }
-                    RegistryKey<World> dimension = RegistryKey.of(RegistryKeys.WORLD, dimensionId);
-                    parsedLocations.add(GlobalPos.create(dimension, BlockPos.fromLong(locationTag.getLong(HEAD_LOCATION_POS))));
+                    ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, dimensionId);
+                    parsedLocations.add(GlobalPos.of(dimension, BlockPos.of(locationTag.getLongOr(HEAD_LOCATION_POS, 0L))));
                 }
                 if (!parsedLocations.isEmpty()) {
                     state.headBlockLocations.put(UUID.fromString(key), parsedLocations);
@@ -116,15 +146,14 @@ public class GhostState extends PersistentState {
         return state;
     }
 
+    public static final SavedDataType<GhostState> TYPE = new SavedDataType<>(
+            Identifier.fromNamespaceAndPath("ssoggysouls", "ghost_data"),
+            GhostState::new,
+            CompoundTag.CODEC.xmap(GhostState::load, GhostState::save),
+            net.minecraft.util.datafix.DataFixTypes.SAVED_DATA_COMMAND_STORAGE
+    );
+
     public static GhostState getServerState(MinecraftServer server) {
-        PersistentStateManager persistentStateManager = server.getOverworld().getPersistentStateManager();
-
-        Type<GhostState> type = new Type<>(
-                GhostState::new,
-                (nbt, ignoredRegistries) -> GhostState.fromNbt(nbt),
-                null
-        );
-
-        return persistentStateManager.getOrCreate(type, "ssoggysouls_ghost_data");
+        return server.overworld().getDataStorage().computeIfAbsent(TYPE);
     }
 }

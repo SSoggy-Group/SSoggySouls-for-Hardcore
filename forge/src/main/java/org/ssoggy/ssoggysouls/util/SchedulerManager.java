@@ -1,7 +1,7 @@
 package org.ssoggy.ssoggysouls.util;
 
-import net.minecraftforge.event.TickEvent.ServerTickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
@@ -13,7 +13,7 @@ public class SchedulerManager extends AbstractSchedulerManager {
     }
 
     @SubscribeEvent
-    public static void onServerTick(ServerTickEvent event) {
+    public static void onServerTick(TickEvent.ServerTickEvent.Post event) {
         tickTasks(e -> SSoggySoulsMod.LOGGER.error("Error executing scheduled task", e));
     }
 }

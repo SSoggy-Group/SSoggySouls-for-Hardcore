@@ -55,15 +55,17 @@ public class HeadDropListener {
             world.setBlock(headPos, Blocks.PLAYER_HEAD.defaultBlockState(), 3);
             BlockEntity be = world.getBlockEntity(headPos);
             if (be instanceof SkullBlockEntity skull) {
-                skull.setOwner(new ResolvableProfile(player.getGameProfile()));
+                ItemStack headItem = new ItemStack(Items.PLAYER_HEAD);
+                headItem.set(DataComponents.PROFILE, ResolvableProfile.createResolved(player.getGameProfile()));
+                skull.applyComponentsFromItemStack(headItem);
                 skull.setChanged();
             }
 
-            GhostState.getServerState(player.getServer()).addHeadBlockLocation(player.getUUID(), GlobalPos.of(world.dimension(), headPos));
+            GhostState.getServerState(player.level().getServer()).addHeadBlockLocation(player.getUUID(), GlobalPos.of(world.dimension(), headPos));
             SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getScoreboardName(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
             ItemStack head = new ItemStack(Items.PLAYER_HEAD);
-            head.set(DataComponents.PROFILE, new ResolvableProfile(player.getGameProfile()));
+            head.set(DataComponents.PROFILE, ResolvableProfile.createResolved(player.getGameProfile()));
             head.set(DataComponents.CUSTOM_NAME,
                     Component.literal(player.getScoreboardName() + "'s Head")
                     .withStyle(net.minecraft.ChatFormatting.YELLOW));
@@ -71,7 +73,7 @@ public class HeadDropListener {
             ItemEntity itemEntity = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, head);
 
             if (ConfigManager.getConfig().isHeadFireproof()) {
-                itemEntity.setInvulnerable(true);
+                itemEntity.setPermanentlyInvulnerable(true);
             }
             if (ConfigManager.getConfig().isHeadNoDespawn()) {
                 itemEntity.setUnlimitedLifetime();
@@ -115,7 +117,7 @@ public class HeadDropListener {
                 BlockEntity be = world.getBlockEntity(blockPos);
                 if (be instanceof SkullBlockEntity skull) {
                     ResolvableProfile ownerProfile = skull.getOwnerProfile();
-                    if (ownerProfile != null && ownerProfile.id().isPresent() && ownerProfile.id().get().equals(ownerUuid)) {
+                    if (ownerProfile != null && ownerProfile.partialProfile().id() != null && ownerProfile.partialProfile().id().equals(ownerUuid)) {
                         world.setBlock(blockPos, Blocks.AIR.defaultBlockState(), 3);
                     }
                 }

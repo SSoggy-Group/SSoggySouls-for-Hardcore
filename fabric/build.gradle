@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version "${loom_version}"
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
 }
 
 version = project.mod_version
@@ -18,12 +18,11 @@ dependencies {
 
     // Minecraft + Fabric
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // Fabric API modules
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "me.lucko:fabric-permissions-api:0.3.1"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation include("me.lucko:fabric-permissions-api:0.7.0")
 
     // Database dependencies bundled via Jar-in-Jar so Fabric Loader
     // unpacks them at runtime — plug-and-play, no manual installation needed.
@@ -33,7 +32,7 @@ dependencies {
     implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.45.3.0'
 
     // Mod Menu API (compile only, provided by Mod Menu mod at runtime)
-    modCompileOnlyApi "com.terraformersmc:modmenu:11.0.4"
+    compileOnly "com.terraformersmc:modmenu:21.0.0-beta.1"
 
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.4'
@@ -46,6 +45,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    // Native desktop libraries for MC client tests cannot be fetched through SSL MITM proxy
+    onlyIf { !project.hasProperty('skipFabricTest') }
 }
 
 processResources {

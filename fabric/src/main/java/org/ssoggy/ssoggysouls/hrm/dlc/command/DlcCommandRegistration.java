@@ -1,17 +1,19 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import net.minecraft.command.CommandSource;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.GameMode;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.GameType;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcCommandResult;
@@ -113,7 +115,7 @@ public final class DlcCommandRegistration {
     private DlcCommandRegistration() {
     }
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, DatabaseManager db) {
         registerTrustCommand(dispatcher, db);
         registerDeathListCommand(dispatcher, "deathlist");
         registerDeathListCommand(dispatcher, "obituaries");
@@ -121,17 +123,17 @@ public final class DlcCommandRegistration {
         registerConfigCommand(dispatcher);
     }
 
-    private static void registerTrustCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
-        dispatcher.register(CommandManager.literal("trust")
+    private static void registerTrustCommand(CommandDispatcher<CommandSourceStack> dispatcher, DatabaseManager db) {
+        dispatcher.register(Commands.literal("trust")
                 .executes(context -> {
                     sendResult(context.getSource(), DlcCommandResult.fail("Please use /trust <action> [player]"));
                     return 0;
                 })
-                .then(CommandManager.argument(ACTION, StringArgumentType.word())
-                        .suggests((ignoredContext, builder) -> CommandSource.suggestMatching(TRUST_ACTIONS, builder))
+                .then(Commands.argument(ACTION, StringArgumentType.word())
+                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(TRUST_ACTIONS, builder))
                         .executes(context -> executeTrust(context.getSource(), db, StringArgumentType.getString(context, ACTION), null))
-                        .then(CommandManager.argument(PLAYER, StringArgumentType.word())
-                                .suggests((context, builder) -> CommandSource.suggestMatching(
+                        .then(Commands.argument(PLAYER, StringArgumentType.word())
+                                .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                                         context.getSource().getServer().getPlayerNames(),
                                         builder))
                                 .executes(context -> executeTrust(context.getSource(), db,
@@ -139,8 +141,8 @@ public final class DlcCommandRegistration {
                                         StringArgumentType.getString(context, PLAYER))))));
     }
 
-    private static int executeTrust(ServerCommandSource source, DatabaseManager db, String rawAction, String targetName) {
-        if (!(source.getEntity() instanceof ServerPlayerEntity player)) {
+    private static int executeTrust(CommandSourceStack source, DatabaseManager db, String rawAction, String targetName) {
+        if (!source.isPlayer()) {
             sendResult(source, DlcCommandResult.fail("This command can only be run by a player."));
             return 0;
         }
@@ -151,8 +153,9 @@ public final class DlcCommandRegistration {
             return 0;
         }
 
+        ServerPlayer player = source.getPlayer();
         if (action.get() == DlcTrustAction.INFO && targetName == null) {
-            sendTrustResult(source, DlcTrustService.execute(player.getUuid(), player.getName().getString(), null, null, DlcTrustAction.INFO));
+            sendTrustResult(source, DlcTrustService.execute(player.getUUID(), player.getScoreboardName(), null, null, DlcTrustAction.INFO));
             return 1;
         }
 
@@ -169,29 +172,29 @@ public final class DlcCommandRegistration {
                     return;
                 }
                 DlcTrustService.TrustResult result = DlcTrustService.execute(
-                        player.getUuid(),
-                        player.getName().getString(),
+                        player.getUUID(),
+                        player.getScoreboardName(),
                         target.uuid(),
                         target.name(),
                         action.get()
                 );
                 sendTrustResult(source, result);
                 if (result.targetMessage() != null && target.onlinePlayer() != null) {
-                    target.onlinePlayer().sendMessage(format(DlcCommandResult.success(result.targetMessage())), false);
+                    target.onlinePlayer().sendSystemMessage(format(DlcCommandResult.success(result.targetMessage())));
                 }
             });
         });
         return 1;
     }
 
-    private static void registerDeathListCommand(CommandDispatcher<ServerCommandSource> dispatcher, String name) {
-        dispatcher.register(CommandManager.literal(name)
+    private static void registerDeathListCommand(CommandDispatcher<CommandSourceStack> dispatcher, String name) {
+        dispatcher.register(Commands.literal(name)
                 .executes(context -> {
-                    ServerCommandSource source = context.getSource();
+                    CommandSourceStack source = context.getSource();
                     List<DlcDeathRecord> deaths;
-                    if (source.getEntity() instanceof ServerPlayerEntity player) {
+                    if (source.isPlayer()) {
                         deaths = DlcDeaths.visibleDeaths(
-                                player.getUuid(),
+                                source.getPlayer().getUUID(),
                                 ConfigManager.getConfig().getTrustedObituaryAfter(),
                                 ConfigManager.getConfig().getFriendsObituaryAfter(),
                                 ConfigManager.getConfig().getPublicObituaryAfter()
@@ -207,30 +210,30 @@ public final class DlcCommandRegistration {
 
                     sendResult(source, DlcCommandResult.success("Here is a list of all the current public deaths"));
                     for (DlcDeathRecord death : deaths) {
-                        source.sendMessage(formatDeathComponent(death));
+                        source.sendSystemMessage(formatDeathComponent(death));
                     }
                     return 1;
                 }));
     }
 
-    private static void registerGhostModeCommand(CommandDispatcher<ServerCommandSource> dispatcher, DatabaseManager db) {
-        dispatcher.register(CommandManager.literal("ghostmode")
-                .requires(source -> source.hasPermissionLevel(2))
+    private static void registerGhostModeCommand(CommandDispatcher<CommandSourceStack> dispatcher, DatabaseManager db) {
+        dispatcher.register(Commands.literal("ghostmode")
+                .requires(source -> source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER))
                 .executes(context -> {
-                    ServerCommandSource source = context.getSource();
-                    if (!(source.getEntity() instanceof ServerPlayerEntity player)) {
+                    CommandSourceStack source = context.getSource();
+                    if (!source.isPlayer()) {
                         sendResult(source, DlcCommandResult.fail("Please use /ghostmode <player> from console."));
                         return 0;
                     }
-                    return setGhostMode(source, db, player);
+                    return setGhostMode(source, db, source.getPlayer());
                 })
-                .then(CommandManager.argument(PLAYER, StringArgumentType.word())
-                        .suggests((context, builder) -> CommandSource.suggestMatching(
+                .then(Commands.argument(PLAYER, StringArgumentType.word())
+                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                                 context.getSource().getServer().getPlayerNames(),
                                 builder))
                         .executes(context -> {
                             String targetName = StringArgumentType.getString(context, PLAYER);
-                            ServerPlayerEntity target = findOnlinePlayer(context.getSource().getServer(), targetName);
+                            ServerPlayer target = context.getSource().getServer().getPlayerList().getPlayerByName(targetName);
                             if (target == null) {
                                 sendResult(context.getSource(), DlcCommandResult.fail("Online player not found: " + targetName));
                                 return 0;
@@ -239,51 +242,51 @@ public final class DlcCommandRegistration {
                         })));
     }
 
-    private static int setGhostMode(ServerCommandSource source, DatabaseManager db, ServerPlayerEntity target) {
+    private static int setGhostMode(CommandSourceStack source, DatabaseManager db, ServerPlayer target) {
         CompletableFuture.runAsync(() -> {
-            db.setLives(target.getUuid(), 0);
-            DlcNames.cache(target.getUuid(), target.getName().getString());
-            new DlcStats(target.getUuid()).incrementStat(DlcStat.DEATHS, 1);
+            db.setLives(target.getUUID(), 0);
+            DlcNames.cache(target.getUUID(), target.getScoreboardName());
+            new DlcStats(target.getUUID()).incrementStat(DlcStat.DEATHS, 1);
             source.getServer().execute(() -> {
-                target.changeGameMode(GameMode.ADVENTURE);
+                target.setGameMode(GameType.ADVENTURE);
                 MainServerListener.setGhostModeAttributes(target, true);
-                GhostModeEvents.updateGhostStatus(target.getUuid(), true);
+                GhostModeEvents.updateGhostStatus(target.getUUID(), true);
                 GhostState ghostState = GhostState.getServerState(source.getServer());
-                ghostState.deathLocations.put(target.getUuid(), target.getBlockPos());
-                ghostState.deathHolders.remove(target.getUuid());
-                ghostState.markDirty();
+                ghostState.setDeathLocation(target.getUUID(), target.blockPosition());
+                ghostState.removeDeathHolder(target.getUUID());
+                ghostState.setDirty();
                 DlcDeaths.recordDeath(
-                        target.getUuid(),
-                        target.getName().getString(),
-                        target.getServerWorld().getRegistryKey().getValue().toString(),
-                        target.getBlockPos().getX(),
-                        target.getBlockPos().getY(),
-                        target.getBlockPos().getZ()
+                        target.getUUID(),
+                        target.getScoreboardName(),
+                        target.level().dimension().identifier().toString(),
+                        target.blockPosition().getX(),
+                        target.blockPosition().getY(),
+                        target.blockPosition().getZ()
                 );
-                sendResult(source, DlcCommandResult.success("Updated " + target.getName().getString() + " gamemode to GhostMode!"));
+                sendResult(source, DlcCommandResult.success("Updated " + target.getScoreboardName() + " gamemode to GhostMode!"));
             });
         });
         return 1;
     }
 
-    private static void registerConfigCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal("revivalconfig")
-                .requires(source -> source.hasPermissionLevel(2))
+    private static void registerConfigCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("revivalconfig")
+                .requires(source -> source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER))
                 .executes(context -> {
                     sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use "));
                     return 0;
                 })
-                .then(CommandManager.argument(GROUP, StringArgumentType.word())
-                        .suggests((context, builder) -> CommandSource.suggestMatching(CONFIG_GROUPS, builder))
+                .then(Commands.argument(GROUP, StringArgumentType.word())
+                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(CONFIG_GROUPS, builder))
                         .executes(context -> executeConfig(context.getSource(), StringArgumentType.getString(context, GROUP), null, null, null))
-                        .then(CommandManager.argument(KEY, StringArgumentType.word())
+                        .then(Commands.argument(KEY, StringArgumentType.word())
                                 .suggests((context, builder) -> suggestConfigKeys(context.getArgument(GROUP, String.class), builder))
                                 .executes(context -> executeConfig(context.getSource(),
                                         StringArgumentType.getString(context, GROUP),
                                         StringArgumentType.getString(context, KEY),
                                         null,
                                         null))
-                                .then(CommandManager.argument(EDIT, StringArgumentType.word())
+                                .then(Commands.argument(EDIT, StringArgumentType.word())
                                         .suggests((context, builder) -> suggestConfigValues(
                                                 StringArgumentType.getString(context, GROUP),
                                                 StringArgumentType.getString(context, KEY),
@@ -293,8 +296,8 @@ public final class DlcCommandRegistration {
                                                 StringArgumentType.getString(context, KEY),
                                                 StringArgumentType.getString(context, EDIT),
                                                 null))
-                                        .then(CommandManager.argument(BLOCK, StringArgumentType.greedyString())
-                                                .suggests((ignoredContext, builder) -> CommandSource.suggestMatching(blockSuggestions(), builder))
+                                        .then(Commands.argument(BLOCK, StringArgumentType.greedyString())
+                                                .suggests((context, builder) -> SharedSuggestionProvider.suggest(blockSuggestions(), builder))
                                                 .executes(context -> executeConfig(context.getSource(),
                                                         StringArgumentType.getString(context, GROUP),
                                                         StringArgumentType.getString(context, KEY),
@@ -302,7 +305,7 @@ public final class DlcCommandRegistration {
                                                         StringArgumentType.getString(context, BLOCK))))))));
     }
 
-    private static int executeConfig(ServerCommandSource source, String group, String key, String editOrValue, String block) {
+    private static int executeConfig(CommandSourceStack source, String group, String key, String editOrValue, String block) {
         String normalizedGroup = normalizeGroup(group);
         if (C_RELOAD.equals(normalizedGroup)) {
             ConfigManager.load();
@@ -322,7 +325,7 @@ public final class DlcCommandRegistration {
         return 0;
     }
 
-    private static int executeGameruleConfig(ServerCommandSource source, String key, String value) {
+    private static int executeGameruleConfig(CommandSourceStack source, String key, String value) {
         if (!GAMERULE_KEYS.contains(key)) {
             sendResult(source, DlcCommandResult.fail("Unknown gamerule: " + key));
             return 0;
@@ -337,7 +340,7 @@ public final class DlcCommandRegistration {
         return 1;
     }
 
-    private static int executeTimerConfig(ServerCommandSource source, String key, String value) {
+    private static int executeTimerConfig(CommandSourceStack source, String key, String value) {
         if (!TIMER_KEYS.contains(key)) {
             sendResult(source, DlcCommandResult.fail("Unknown timer: " + key));
             return 0;
@@ -350,14 +353,15 @@ public final class DlcCommandRegistration {
         try {
             parsed = Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            net.minecraft.text.MutableText base = Text.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
-                    .formatted(Formatting.RED);
-            net.minecraft.text.MutableText interactive = Text.literal("/revivalconfig timer " + key + " ")
-                    .styled(style -> style.withColor(Formatting.GRAY)
-                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
-                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to auto-fill this command").formatted(Formatting.GRAY)))
+            Component interactive = Component.literal("/revivalconfig timer " + key + " ")
+                    .withStyle(style -> style.withColor(ChatFormatting.GRAY)
+                            .withClickEvent(new ClickEvent.SuggestCommand("/revivalconfig timer " + key + " "))
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
                     );
-            source.sendMessage(base.append(interactive));
+            Component message = Component.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
+                    .withStyle(ChatFormatting.RED)
+                    .append(interactive);
+            source.sendSystemMessage(message);
             return 0;
         }
         setTimer(key, parsed);
@@ -366,7 +370,7 @@ public final class DlcCommandRegistration {
         return 1;
     }
 
-    private static int executeStructureConfig(ServerCommandSource source, String key, String edit, String block) {
+    private static int executeStructureConfig(CommandSourceStack source, String key, String edit, String block) {
         if (!STRUCTURE_KEYS.contains(key)) {
             sendResult(source, DlcCommandResult.fail("Unknown structure block tag: " + key));
             return 0;
@@ -412,10 +416,10 @@ public final class DlcCommandRegistration {
         return 1;
     }
 
-    private static ResolvedPlayer resolvePlayer(ServerCommandSource source, DatabaseManager db, String name) {
-        ServerPlayerEntity online = findOnlinePlayer(source.getServer(), name);
+    private static ResolvedPlayer resolvePlayer(CommandSourceStack source, DatabaseManager db, String name) {
+        ServerPlayer online = source.getServer().getPlayerList().getPlayerByName(name);
         if (online != null) {
-            return new ResolvedPlayer(online.getUuid(), online.getName().getString(), online);
+            return new ResolvedPlayer(online.getUUID(), online.getScoreboardName(), online);
         }
         PlayerData data = db.getPlayerByName(name);
         if (data != null) {
@@ -426,53 +430,50 @@ public final class DlcCommandRegistration {
                 .orElse(null);
     }
 
-    private static ServerPlayerEntity findOnlinePlayer(MinecraftServer server, String name) {
-        return server.getPlayerManager().getPlayer(name);
-    }
-
-    private static void sendTrustResult(ServerCommandSource source, DlcTrustService.TrustResult result) {
+    private static void sendTrustResult(CommandSourceStack source, DlcTrustService.TrustResult result) {
         sendResult(source, result.result());
     }
 
-    private static void sendResult(ServerCommandSource source, DlcCommandResult result) {
+    private static void sendResult(CommandSourceStack source, DlcCommandResult result) {
         for (String line : result.message().split("\\n")) {
-            source.sendMessage(format(new DlcCommandResult(result.status(), line, result.details())));
+            source.sendSystemMessage(format(new DlcCommandResult(result.status(), line, result.details())));
         }
     }
 
-    private static Text format(DlcCommandResult result) {
+    private static Component format(DlcCommandResult result) {
         if (result.status() == DlcCommandResult.Status.MISSING_ARGS) {
-            net.minecraft.text.MutableText base = Text.literal("[RevivalPlus] " + result.message()).formatted(Formatting.RED);
-            net.minecraft.text.MutableText interactive = Text.literal("/revivalconfig <structure|gamerule|timer|reload>")
-                    .styled(style -> style.withColor(Formatting.GRAY)
-                            .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
-                            .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to auto-fill this command").formatted(Formatting.GRAY))));
+            net.minecraft.network.chat.MutableComponent base = Component.literal("[RevivalPlus] " + result.message()).withStyle(ChatFormatting.RED);
+            net.minecraft.network.chat.MutableComponent interactive = Component.literal("/revivalconfig <structure|gamerule|timer|reload>")
+                    .withStyle(style -> style.withColor(ChatFormatting.GRAY)
+                            .withClickEvent(new ClickEvent.SuggestCommand("/revivalconfig "))
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
+                    );
             return base.append(interactive);
         }
-        Formatting color = switch (result.status()) {
-            case TRUE -> Formatting.GREEN;
-            case FALSE -> Formatting.RED;
-            case INFO -> Formatting.GRAY;
-            case RAW -> Formatting.GOLD;
-            case MISSING_ARGS -> Formatting.RED;
+        ChatFormatting color = switch (result.status()) {
+            case TRUE -> ChatFormatting.GREEN;
+            case FALSE -> ChatFormatting.RED;
+            case INFO -> ChatFormatting.GRAY;
+            case RAW -> ChatFormatting.GOLD;
+            case MISSING_ARGS -> ChatFormatting.RED;
         };
-        return Text.literal("[RevivalPlus] " + result.message()).styled(style -> style.withColor(color));
+        return Component.literal("[RevivalPlus] " + result.message()).withStyle(color);
     }
 
-    private static Text formatDeathComponent(DlcDeathRecord death) {
+    private static Component formatDeathComponent(DlcDeathRecord death) {
         String username = DlcNames.getOrDefault(death.uuid(), death.username());
         String coords = death.x() + " " + death.y() + " " + death.z();
 
-        return Text.literal(username).styled(style -> style.withColor(Formatting.GOLD).withBold(true)
-                        .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.SUGGEST_COMMAND, "/pstatus " + username))
-                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to check player status").styled(s -> s.withColor(Formatting.GRAY)))))
-                .append(Text.literal(" has died at ").styled(style -> style.withColor(Formatting.GRAY).withBold(false)))
-                .append(Text.literal("X" + death.x() + " Y" + death.y() + " Z" + death.z()).styled(style -> style.withColor(Formatting.GOLD).withBold(true)
-                        .withClickEvent(new net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.COPY_TO_CLIPBOARD, coords))
-                        .withHoverEvent(new net.minecraft.text.HoverEvent(net.minecraft.text.HoverEvent.Action.SHOW_TEXT, Text.literal("Click to copy coordinates").styled(s -> s.withColor(Formatting.GRAY))))))
-                .append(Text.literal(" in the ").styled(style -> style.withColor(Formatting.GRAY).withBold(false)))
-                .append(Text.literal(death.worldId()).styled(style -> style.withColor(Formatting.GOLD).withBold(true)))
-                .append(Text.literal(" (" + formatAge(death.time()) + ")").styled(style -> style.withColor(Formatting.GRAY).withBold(false)));
+        return Component.literal(username).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)
+                        .withClickEvent(new ClickEvent.SuggestCommand("/pstatus " + username))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to check player status").withStyle(s -> s.withColor(ChatFormatting.GRAY)))))
+                .append(Component.literal(" has died at ").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)))
+                .append(Component.literal("X" + death.x() + " Y" + death.y() + " Z" + death.z()).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)
+                        .withClickEvent(new ClickEvent.CopyToClipboard(coords))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to copy coordinates").withStyle(s -> s.withColor(ChatFormatting.GRAY))))))
+                .append(Component.literal(" in the ").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)))
+                .append(Component.literal(death.worldId()).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)))
+                .append(Component.literal(" (" + formatAge(death.time()) + ")").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)));
     }
 
     private static String formatAge(Instant time) {
@@ -498,33 +499,33 @@ public final class DlcCommandRegistration {
     private static CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestConfigKeys(String group, com.mojang.brigadier.suggestion.SuggestionsBuilder builder) {
         String normalized = normalizeGroup(group);
         if (C_STRUCTURE.equals(normalized)) {
-            return CommandSource.suggestMatching(STRUCTURE_KEYS, builder);
+            return SharedSuggestionProvider.suggest(STRUCTURE_KEYS, builder);
         }
         if (C_GAMERULE.equals(normalized)) {
-            return CommandSource.suggestMatching(GAMERULE_KEYS, builder);
+            return SharedSuggestionProvider.suggest(GAMERULE_KEYS, builder);
         }
         if (C_TIMER.equals(normalized)) {
-            return CommandSource.suggestMatching(TIMER_KEYS, builder);
+            return SharedSuggestionProvider.suggest(TIMER_KEYS, builder);
         }
-        return CommandSource.suggestMatching(List.of(), builder);
+        return SharedSuggestionProvider.suggest(List.of(), builder);
     }
 
     private static CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> suggestConfigValues(String group, String key, com.mojang.brigadier.suggestion.SuggestionsBuilder builder) {
         String normalized = normalizeGroup(group);
         if (C_STRUCTURE.equals(normalized)) {
-            return CommandSource.suggestMatching(EDIT_ACTIONS, builder);
+            return SharedSuggestionProvider.suggest(EDIT_ACTIONS, builder);
         }
         if (C_GAMERULE.equals(normalized)) {
-            return CommandSource.suggestMatching(List.of("true", "false"), builder);
+            return SharedSuggestionProvider.suggest(List.of("true", "false"), builder);
         }
         if (C_TIMER.equals(normalized)) {
-            return CommandSource.suggestMatching(List.of(String.valueOf(getTimer(key))), builder);
+            return SharedSuggestionProvider.suggest(List.of(String.valueOf(getTimer(key))), builder);
         }
-        return CommandSource.suggestMatching(List.of(), builder);
+        return SharedSuggestionProvider.suggest(List.of(), builder);
     }
 
     private static class BlockSuggestionsHolder {
-        private static final List<String> INSTANCE = Registries.BLOCK.getIds().stream()
+        private static final List<String> INSTANCE = BuiltInRegistries.BLOCK.keySet().stream()
                 .map(id -> id.getPath().toUpperCase(Locale.ROOT))
                 .toList();
     }
@@ -543,7 +544,7 @@ public final class DlcCommandRegistration {
         }
         String lower = trimmed.toLowerCase(Locale.ROOT);
         Identifier id = Identifier.tryParse(lower.contains(":") ? lower : "minecraft:" + lower);
-        if (id == null || !Registries.BLOCK.containsId(id)) {
+        if (id == null || !BuiltInRegistries.BLOCK.containsKey(id)) {
             return null;
         }
         return id.getPath().toUpperCase(Locale.ROOT);
@@ -634,6 +635,6 @@ public final class DlcCommandRegistration {
         }
     }
 
-    private record ResolvedPlayer(java.util.UUID uuid, String name, ServerPlayerEntity onlinePlayer) {
+    private record ResolvedPlayer(java.util.UUID uuid, String name, ServerPlayer onlinePlayer) {
     }
 }

@@ -16,7 +16,7 @@ public final class PermissionUtil extends PermissionHelper {
         if (!config.isLimboOpSecurityCheck()) return false;
         if (!config.isLimboServer()) return false;
         if (!source.isPlayer()) return false;
-        if (!source.hasPermission(2)) return false;
+        if (!source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) return false;
 
         ServerPlayer player = source.getPlayer();
         if (player == null) return false;
@@ -34,13 +34,13 @@ public final class PermissionUtil extends PermissionHelper {
             MutableComponent message = Component.literal("Either ").withStyle(ChatFormatting.GRAY);
             message.append(Component.literal("/deop").withStyle(style -> style
                     .withColor(ChatFormatting.YELLOW)
-                    .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/deop " + source.getPlayer().getScoreboardName()))
-                    .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to prepare /deop").withStyle(ChatFormatting.GRAY)))));
+                    .withClickEvent(new ClickEvent.SuggestCommand("/deop " + source.getPlayer().getScoreboardName()))
+                    .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to prepare /deop").withStyle(ChatFormatting.GRAY)))));
             message.append(Component.literal(" yourself on Limbo, or ask an administrator to add you to the whitelist (").withStyle(ChatFormatting.GRAY));
             message.append(Component.literal("limboTrustedAdmins").withStyle(style -> style
                     .withColor(ChatFormatting.YELLOW)
-                    .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.COPY_TO_CLIPBOARD, "limboTrustedAdmins"))
-                    .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy config key").withStyle(ChatFormatting.GRAY)))));
+                    .withClickEvent(new ClickEvent.CopyToClipboard("limboTrustedAdmins"))
+                    .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to copy config key").withStyle(ChatFormatting.GRAY)))));
             message.append(Component.literal(").").withStyle(ChatFormatting.GRAY));
             source.sendSystemMessage(message);
         } else {

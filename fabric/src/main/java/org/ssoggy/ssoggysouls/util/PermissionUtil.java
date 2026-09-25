@@ -1,28 +1,28 @@
 package org.ssoggy.ssoggysouls.util;
 
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 
 public final class PermissionUtil extends PermissionHelper {
     private PermissionUtil() {}
 
-    public static boolean isBlockedByLimboOpSecurity(ServerCommandSource source) {
+    public static boolean isBlockedByLimboOpSecurity(CommandSourceStack source) {
         ConfigManager.ModConfig config = ConfigManager.getConfig();
         if (!config.isLimboOpSecurityCheck()) return false;
         if (!config.isLimboServer()) return false;
-        if (!source.isExecutedByPlayer()) return false;
-        if (!source.hasPermissionLevel(2)) return false;
+        if (!source.isPlayer()) return false;
+        if (!source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) return false;
 
-        ServerPlayerEntity player = source.getPlayer();
+        ServerPlayer player = source.getPlayer();
         if (player == null) return false;
 
-        if (isTrustedAdmin(player.getUuid().toString(), player.getName().getString().toLowerCase(java.util.Locale.ROOT), config.getLimboTrustedAdmins())) {
+        if (isTrustedAdmin(player.getUUID().toString(), player.getScoreboardName().toLowerCase(java.util.Locale.ROOT), config.getLimboTrustedAdmins())) {
             return false;
         }
 
@@ -37,23 +37,23 @@ public final class PermissionUtil extends PermissionHelper {
         return true;
     }
 
-    public static void sendSecurityBlockMessage(ServerCommandSource source) {
-        source.sendError(Text.literal("Security Error: On the Limbo server, OP status cannot be used to execute this command.").formatted(Formatting.RED));
-        if (source.isExecutedByPlayer()) {
-            MutableText message = Text.literal("Either ").formatted(Formatting.GRAY);
-            message.append(Text.literal("/deop").styled(style -> style
-                    .withColor(Formatting.YELLOW)
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/deop " + source.getPlayer().getName().getString()))
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to prepare /deop").formatted(Formatting.GRAY)))));
-            message.append(Text.literal(" yourself on Limbo, ask an administrator to add you to the whitelist, or have them grant you the bypass permission (").formatted(Formatting.GRAY));
-            message.append(Text.literal("ssoggysouls.bypass-limbo-op-security").styled(style -> style
-                    .withColor(Formatting.YELLOW)
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "ssoggysouls.bypass-limbo-op-security"))
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to copy permission node").formatted(Formatting.GRAY)))));
-            message.append(Text.literal(").").formatted(Formatting.GRAY));
-            source.sendError(message);
+    public static void sendSecurityBlockMessage(CommandSourceStack source) {
+        source.sendFailure(Component.literal("Security Error: On the Limbo server, OP status cannot be used to execute this command.").withStyle(ChatFormatting.RED));
+        if (source.isPlayer()) {
+            MutableComponent message = Component.literal("Either ").withStyle(ChatFormatting.GRAY);
+            message.append(Component.literal("/deop").withStyle(style -> style
+                    .withColor(ChatFormatting.YELLOW)
+                    .withClickEvent(new ClickEvent.SuggestCommand("/deop " + source.getPlayer().getScoreboardName()))
+                    .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to prepare /deop").withStyle(ChatFormatting.GRAY)))));
+            message.append(Component.literal(" yourself on Limbo, ask an administrator to add you to the whitelist, or have them grant you the bypass permission (").withStyle(ChatFormatting.GRAY));
+            message.append(Component.literal("ssoggysouls.bypass-limbo-op-security").withStyle(style -> style
+                    .withColor(ChatFormatting.YELLOW)
+                    .withClickEvent(new ClickEvent.CopyToClipboard("ssoggysouls.bypass-limbo-op-security"))
+                    .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to copy permission node").withStyle(ChatFormatting.GRAY)))));
+            message.append(Component.literal(").").withStyle(ChatFormatting.GRAY));
+            source.sendFailure(message);
         } else {
-            source.sendError(Text.literal("Either /deop yourself on Limbo, ask an administrator to add you to the whitelist, or have them grant you the bypass permission (ssoggysouls.bypass-limbo-op-security).").formatted(Formatting.GRAY));
+            source.sendFailure(Component.literal("Either /deop yourself on Limbo, ask an administrator to add you to the whitelist, or have them grant you the bypass permission (ssoggysouls.bypass-limbo-op-security).").withStyle(ChatFormatting.GRAY));
         }
     }
 }

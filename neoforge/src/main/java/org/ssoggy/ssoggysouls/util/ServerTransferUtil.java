@@ -3,7 +3,7 @@ package org.ssoggy.ssoggysouls.util;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.io.ByteArrayInputStream;
@@ -35,7 +35,7 @@ public class ServerTransferUtil {
 
     public record BungeeConnectPayload(String serverName) implements CustomPacketPayload {
         public static final CustomPacketPayload.Type<BungeeConnectPayload> PAYLOAD_TYPE = new CustomPacketPayload.Type<>(
-                ResourceLocation.fromNamespaceAndPath("bungeecord", "main")
+                Identifier.fromNamespaceAndPath("bungeecord", "main")
         );
 
         public static final StreamCodec<FriendlyByteBuf, BungeeConnectPayload> CODEC = StreamCodec.of(

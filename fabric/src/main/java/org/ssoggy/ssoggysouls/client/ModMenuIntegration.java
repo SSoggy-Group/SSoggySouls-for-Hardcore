@@ -2,10 +2,10 @@ package org.ssoggy.ssoggysouls.client;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 public class ModMenuIntegration implements ModMenuApi {
@@ -18,7 +18,7 @@ public class ModMenuIntegration implements ModMenuApi {
         private final Screen parent;
 
         protected SimpleConfigScreen(Screen parent) {
-            super(Text.literal("SSoggySouls Configuration"));
+            super(Component.literal("SSoggySouls Configuration"));
             this.parent = parent;
         }
 
@@ -27,38 +27,38 @@ public class ModMenuIntegration implements ModMenuApi {
             int y = this.height / 4;
             
             // Toggle HRM
-            this.addDrawableChild(ButtonWidget.builder(
-                Text.literal("HRM Enabled: " + ConfigManager.getConfig().isHrmEnabled()),
+            this.addRenderableWidget(Button.builder(
+                Component.literal("HRM Enabled: " + ConfigManager.getConfig().isHrmEnabled()),
                 button -> {
                     ConfigManager.getConfig().setHrmEnabled(!ConfigManager.getConfig().isHrmEnabled());
-                    button.setMessage(Text.literal("HRM Enabled: " + ConfigManager.getConfig().isHrmEnabled()));
+                    button.setMessage(Component.literal("HRM Enabled: " + ConfigManager.getConfig().isHrmEnabled()));
                     ConfigManager.save();
                 }
-            ).dimensions(this.width / 2 - 100, y, 200, 20)
-            .tooltip(Tooltip.of(Text.literal("Toggles Hardcore Revive Mode. When enabled, players drop heads and can be revived via rituals.")))
+            ).bounds(this.width / 2 - 100, y, 200, 20)
+            .tooltip(Tooltip.create(Component.literal("Toggles Hardcore Revive Mode. When enabled, players drop heads and can be revived via rituals.")))
             .build());
 
             // Default Lives
-            this.addDrawableChild(ButtonWidget.builder(
-                Text.literal("Default Lives: " + ConfigManager.getConfig().getDefaultLives()),
+            this.addRenderableWidget(Button.builder(
+                Component.literal("Default Lives: " + ConfigManager.getConfig().getDefaultLives()),
                 button -> {
                     int nextLives = (ConfigManager.getConfig().getDefaultLives() % 10) + 1;
                     ConfigManager.getConfig().setDefaultLives(nextLives);
-                    button.setMessage(Text.literal("Default Lives: " + ConfigManager.getConfig().getDefaultLives()));
+                    button.setMessage(Component.literal("Default Lives: " + ConfigManager.getConfig().getDefaultLives()));
                     ConfigManager.save();
                 }
-            ).dimensions(this.width / 2 - 100, y + 25, 200, 20)
-            .tooltip(Tooltip.of(Text.literal("Sets the default number of lives a new player starts with (1-10).")))
+            ).bounds(this.width / 2 - 100, y + 25, 200, 20)
+            .tooltip(Tooltip.create(Component.literal("Sets the default number of lives a new player starts with (1-10).")))
             .build());
 
             // Back button
-            this.addDrawableChild(ButtonWidget.builder(Text.translatable("gui.back"), ignored -> this.client.setScreen(this.parent))
-                .dimensions(this.width / 2 - 100, this.height - 40, 200, 20).build());
+            this.addRenderableWidget(Button.builder(Component.translatable("gui.back"), ignored -> this.minecraft.setScreenAndShow(this.parent))
+                .bounds(this.width / 2 - 100, this.height - 40, 200, 20).build());
         }
 
         @Override
-        public void close() {
-            this.client.setScreen(this.parent);
+        public void onClose() {
+            this.minecraft.setScreenAndShow(this.parent);
         }
     }
 }

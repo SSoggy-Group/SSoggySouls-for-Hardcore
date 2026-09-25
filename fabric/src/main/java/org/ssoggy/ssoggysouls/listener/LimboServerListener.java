@@ -1,25 +1,24 @@
 package org.ssoggy.ssoggysouls.listener;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.GameMode;
-import net.minecraft.world.World;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
-import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
+import org.ssoggy.ssoggysouls.util.MessageUtil;
 
-import java.util.UUID;
-import java.util.Set;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class LimboServerListener {
@@ -36,7 +35,6 @@ public class LimboServerListener {
     private LimboServerListener() {
         registerJoinEvent();
         registerCancelDamageEvent();
-        registerWorldChangeEvent();
     }
 
     public static void register(DatabaseManager db) {
@@ -46,8 +44,8 @@ public class LimboServerListener {
 
     private void registerJoinEvent() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            ServerPlayerEntity player = handler.getPlayer();
-            UUID uuid = player.getUuid();
+            ServerPlayer player = handler.getPlayer();
+            UUID uuid = player.getUUID();
 
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
@@ -56,46 +54,23 @@ public class LimboServerListener {
         });
     }
 
-    private void handleJoinSync(ServerPlayerEntity player, PlayerData data, MinecraftServer server) {
-        UUID uuid = player.getUuid();
-        if (server.getPlayerManager().getPlayer(uuid) == null) {
+    private void handleJoinSync(ServerPlayer player, PlayerData data, MinecraftServer server) {
+        UUID uuid = player.getUUID();
+        if (server.getPlayerList().getPlayer(uuid) == null) {
             return;
         }
         if (data != null && data.isDead()) {
             applyLimboState(player);
         } else {
-            player.changeGameMode(GameMode.SURVIVAL);
-            player.sendMessage(MessageUtil.get("limbo-welcome-visitor"), false);
+            player.setGameMode(GameType.SURVIVAL);
+            player.sendSystemMessage(MessageUtil.get("limbo-welcome-visitor"));
         }
     }
 
     private void registerCancelDamageEvent() {
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, ignoredSource, ignoredAmount) ->
-            !(entity instanceof ServerPlayerEntity player && player.interactionManager.getGameMode() == GameMode.ADVENTURE)
+            !(entity instanceof ServerPlayer player && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE)
         );
-    }
-
-    private void registerWorldChangeEvent() {
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, ignoredOrigin, destination) -> {
-            if (db == null || !db.isPlayerDead(player.getUuid())) {
-                return;
-            }
-
-            ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
-            if (worldId == null) {
-                return;
-            }
-            RegistryKey<World> limboWorldKey = RegistryKey.of(RegistryKeys.WORLD, worldId);
-            if (destination.getRegistryKey().equals(limboWorldKey)) {
-                return;
-            }
-            ServerWorld limboWorld = player.getServer().getWorld(limboWorldKey);
-            if (limboWorld != null) {
-                player.teleport(limboWorld, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
-                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
-            }
-        });
     }
 
     private static boolean isWhitelistedCommand(String message) {
@@ -104,54 +79,51 @@ public class LimboServerListener {
         return WHITELISTED_COMMANDS.contains(command) || WHITELISTED_COMMANDS.contains("/" + command);
     }
 
-    public static boolean shouldBlockCommand(ServerPlayerEntity player, String command) {
+    public static boolean shouldBlockCommand(ServerPlayer player, String command) {
         if (db == null) return false;
         
         String fullCmd = "/" + command;
-        if (db.isPlayerDead(player.getUuid()) && !isWhitelistedCommand(fullCmd)) {
-            player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
+        if (db.isPlayerDead(player.getUUID()) && !isWhitelistedCommand(fullCmd)) {
+            player.sendSystemMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE));
             return true;
         }
         return false;
     }
 
-    public static boolean shouldBlockPortal(ServerPlayerEntity player, ServerWorld destination) {
+    public static boolean shouldBlockPortal(ServerPlayer player, ServerLevel destination) {
         if (db == null) return false;
-        if (player.hasPermissionLevel(2)) return false; // Basic bypass logic placeholder
+        if (player.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) return false;
 
-        // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
-        if (worldId != null && destination.getRegistryKey().getValue().equals(worldId)) {
+        if (worldId != null && destination.dimension().identifier().equals(worldId)) {
             return false;
         }
 
-        // Only intercept portal-triggered travel to avoid blocking server-driven transfers.
-        if (player.interactionManager.getGameMode() == GameMode.ADVENTURE && player.portalManager.isInPortal() && db.isPlayerDead(player.getUuid())) {
-            player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
+        if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
+            player.sendSystemMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE));
             return true;
         }
         return false;
     }
 
-    private void applyLimboState(ServerPlayerEntity player) {
-        player.changeGameMode(GameMode.ADVENTURE);
-        player.getInventory().clear();
+    private void applyLimboState(ServerPlayer player) {
+        player.setGameMode(GameType.ADVENTURE);
+        player.getInventory().clearContent();
         player.experienceLevel = 0;
         player.experienceProgress = 0;
         player.setHealth(player.getMaxHealth());
-        player.getHungerManager().setFoodLevel(20);
-                player.sendMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE), false);
+        player.getFoodData().setFoodLevel(20);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
         Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
         if (worldId != null) {
-            ServerWorld world = player.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, worldId));
+            ServerLevel world = player.level().getServer().getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
             if (world != null) {
-                player.teleport(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+                player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), java.util.Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch(), true);
             }
         }
 
-        player.sendMessage(MessageUtil.get("limbo-welcome-dead"), false);
+        player.sendSystemMessage(MessageUtil.get("limbo-welcome-dead"));
     }
 }

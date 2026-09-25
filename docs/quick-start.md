@@ -13,15 +13,15 @@ This guide will help you get SSoggySouls up and running in 8 simple steps. For m
 
 **For a Single Server Setup (Easy):**
 
-- One Minecraft 1.21.X server (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
-- Java 21+
+- One Minecraft 26.X server (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
+- Java 25+
 
 **For a 2-Server Setup (Advanced):**
 
-- Two Minecraft 1.21.X servers (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
+- Two Minecraft 26.X servers (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 - A Velocity Proxy connecting them
 - MySQL 5.7+ / MariaDB 10.2+ database
-- Java 21+
+- Java 25+
 
 ## Installation Steps
 

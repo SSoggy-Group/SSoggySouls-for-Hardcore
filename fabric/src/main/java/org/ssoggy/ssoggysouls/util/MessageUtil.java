@@ -1,12 +1,12 @@
 package org.ssoggy.ssoggysouls.util;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 /**
  * Fabric-specific MessageUtil.
  * <p>
  * Delegates raw substitution to the common {@link MessageHelper} and wraps
- * results in Minecraft {@link Text} for use with Fabric's chat API.
+ * results in Minecraft {@link Component} for use with Fabric's chat API.
  */
 public final class MessageUtil extends MessageHelper {
 
@@ -34,16 +34,16 @@ public final class MessageUtil extends MessageHelper {
         return getRaw(key, replacements);
     }
 
-    public static Text get(String key, Object... replacements) {
-        return colorizeText(prefix + getRaw(key, replacements));
+    public static Component get(String key, Object... replacements) {
+        return colorizeComponent(prefix + getRaw(key, replacements));
     }
 
-    public static Text getNoPrefix(String key, Object... replacements) {
-        return colorizeText(getRaw(key, replacements));
+    public static Component getNoPrefix(String key, Object... replacements) {
+        return colorizeComponent(getRaw(key, replacements));
     }
 
-    public static Text colorizeText(String text) {
-        if (text == null) return Text.empty();
-        return Text.literal(text.replace('&', '\u00a7'));
+    public static Component colorizeComponent(String text) {
+        if (text == null) return Component.empty();
+        return Component.literal(text.replace('&', '\u00a7'));
     }
 }

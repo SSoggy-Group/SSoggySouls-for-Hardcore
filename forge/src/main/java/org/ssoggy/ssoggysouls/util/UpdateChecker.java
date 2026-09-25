@@ -26,15 +26,12 @@ public class UpdateChecker {
     private final String currentVersion;
 
     public UpdateChecker() {
-        this.currentVersion = ModList.get().getModContainerById(SSoggySoulsMod.MODID)
+        this.currentVersion = ModList.getModContainerById(SSoggySoulsMod.MODID)
                 .map(mod -> mod.getModInfo().getVersion().toString())
                 .orElse("0.0.0");
     }
 
     public void checkForUpdates() {
-        // Bolt Optimization: Replace synchronous HttpURLConnection within CompletableFuture.runAsync()
-        // with the non-blocking java.net.http.HttpClient.sendAsync() to prevent thread starvation
-        // in the ForkJoinPool.commonPool().
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(GITHUB_API))
                 .timeout(Duration.ofSeconds(5))

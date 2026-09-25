@@ -1,12 +1,12 @@
 ---
 layout: default
 title: SSoggySouls Documentation
-description: Hardcore lives system plugin for Minecraft 1.21.X
+description: Hardcore lives system plugin for Minecraft 26.X
 ---
 
 ## SSoggySouls Documentation
 
-Hardcore lives system mod/plugin for Minecraft 1.21.X with Limbo exile, revival mechanics, and cross-server persistence.
+Hardcore lives system mod/plugin for Minecraft 26.X (26.1–26.3) with Limbo exile, revival mechanics, and cross-server persistence.
 
 > **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
@@ -26,10 +26,10 @@ SSoggySouls is designed for Velocity proxy networks and provides a high-stakes h
 
 ## Requirements
 
-- Minecraft: 1.21.X (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
+- Minecraft: 26.X (26.1–26.3) (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 - Proxy: Velocity
 - Database: MySQL 5.7+ or MariaDB 10.2+
-- Java: 21+
+- Java: 25+
 - Architecture: Main server + Limbo server
 
 > Do not enable `hardcore=true` in `server.properties`. Leave it `false` and let SSoggySouls manage hardcore behavior.

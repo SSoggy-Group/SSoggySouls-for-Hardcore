@@ -16,7 +16,7 @@ plugins {
 allprojects {
     apply plugin: 'jacoco'
     jacoco {
-        toolVersion = "0.8.12"
+        toolVersion = "0.8.15"
     }
 }
 
@@ -51,18 +51,17 @@ subprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.toVersion(25)
+        targetCompatibility = JavaVersion.toVersion(25)
     }
 
     tasks.withType(JavaCompile).configureEach {
-        options.release = 21
+        options.release = 25
         options.encoding = 'UTF-8'
     }
 
     repositories {
         mavenCentral()
-        maven { url = 'https://libraries.minecraft.net/' }
         maven { url = 'https://maven.fabricmc.net/' }
         maven { url = 'https://maven.minecraftforge.net/' }
         maven { url = 'https://maven.neoforged.net/releases' }

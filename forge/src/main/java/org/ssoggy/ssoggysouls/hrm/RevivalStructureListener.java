@@ -5,6 +5,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -13,7 +14,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityEvent;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -21,8 +21,9 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+
 public class RevivalStructureListener {
 
     private static final Map<UUID, GlobalPos> PENDING_REVIVALS = new ConcurrentHashMap<>();
@@ -56,36 +58,36 @@ public class RevivalStructureListener {
     }
 
     @SubscribeEvent
-    public static void onBlockPlace(PlayerInteractEvent.RightClickBlock event) {
+    public static boolean onBlockPlace(PlayerInteractEvent.RightClickBlock event) {
         ServerPlayer serverPlayer = org.ssoggy.ssoggysouls.util.HrmUtil.getValidServerPlayer(event, db);
         if (serverPlayer == null) {
-            return;
+            return false;
         }
 
         Level world = event.getLevel();
         ItemStack stack = event.getItemStack();
 
         if (!stack.is(Items.PLAYER_HEAD)) {
-            return;
+            return false;
         }
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
-        if (profile == null || profile.id().isEmpty()) {
-            return;
+        if (profile == null || profile.partialProfile().id() == null) {
+            return false;
         }
 
-        UUID ownerUuid = profile.id().get();
+        UUID ownerUuid = profile.partialProfile().id();
         BlockPos placedPos = event.getPos().relative(event.getFace());
 
         if (!isRitualStructure(world, placedPos)) {
             if (checkIncompleteStructure(world, placedPos)) {
                 serverPlayer.sendSystemMessage(Component.literal(MessageUtil.getRawString("revival-structure-incomplete")).withStyle(net.minecraft.ChatFormatting.RED));
-                world.playSound(null, placedPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.4f, 2f);
+                world.playSound(null, placedPos.getX(), placedPos.getY(), placedPos.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.4f, 2f);
             }
-            return;
+            return false;
         }
 
-        event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+        event.setCancellationResult(InteractionResult.SUCCESS);
 
         final ItemStack finalStack = stack.copy();
         finalStack.setCount(1);
@@ -94,6 +96,7 @@ public class RevivalStructureListener {
         }
 
         triggerRevival(serverPlayer, world, placedPos, ownerUuid, db, finalStack);
+        return true;
     }
 
     private static void triggerRevival(ServerPlayer serverPlayer, Level world, BlockPos placedPos, UUID ownerUuid,
@@ -104,9 +107,9 @@ public class RevivalStructureListener {
             String ownerName = org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcNames.getOrDefault(ownerUuid, "Player");
 
             if (!isDead) {
-                serverPlayer.server.execute(() -> {
+                serverPlayer.level().getServer().execute(() -> {
                     sendError(serverPlayer, ownerName + " is not dead!");
-                    world.playSound(null, placedPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.4f, 2f);
+                    world.playSound(null, placedPos.getX(), placedPos.getY(), placedPos.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.4f, 2f);
                     refundHead(serverPlayer, refundedItem);
                 });
                 return;
@@ -114,7 +117,7 @@ public class RevivalStructureListener {
 
             boolean success = db.revivePlayer(ownerUuid, ConfigManager.getConfig().getOnReviveLives());
             if (!success) {
-                serverPlayer.server.execute(() -> {
+                serverPlayer.level().getServer().execute(() -> {
                     sendError(serverPlayer, "Failed to revive. Check console.");
                     refundHead(serverPlayer, refundedItem);
                 });
@@ -125,13 +128,13 @@ public class RevivalStructureListener {
             new DlcStats(ownerUuid).incrementStat(DlcStat.REVIVES, 1);
             SSoggySoulsMod.LOGGER.info("{} revived {} via ritual structure!", serverPlayer.getScoreboardName(), ownerName);
 
-            serverPlayer.server.execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, ownerName));
+            serverPlayer.level().getServer().execute(() -> performRevival(world, placedPos, serverPlayer, ownerUuid, ownerName));
         });
     }
 
     private static void refundHead(ServerPlayer serverPlayer, ItemStack head) {
         if (!serverPlayer.isCreative() && !serverPlayer.getInventory().add(head)) {
-            serverPlayer.drop(head, false);
+            serverPlayer.drop(head, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
     }
 
@@ -146,22 +149,20 @@ public class RevivalStructureListener {
 
         HeadDropListener.removeDroppedHeads(revivedUuid, world.getServer());
 
-        summoner.sendSystemMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()), false);
-        summoner.sendSystemMessage(MessageUtil.get("revive-from-limbo", "player", revivedName), false);
+        summoner.sendSystemMessage(MessageUtil.get("admin-revive-success", "player", revivedName, "lives", ConfigManager.getConfig().getOnReviveLives()));
+        summoner.sendSystemMessage(MessageUtil.get("revive-from-limbo", "player", revivedName));
 
         world.players().forEach(p -> {
-            if (!p.getUUID().equals(summoner.getUUID()) && p instanceof ServerPlayer sp) {
-                sp.sendSystemMessage(Component.literal("§e" + summoner.getScoreboardName() + " revived " + revivedName + "!"), false);
+            if (!p.getUUID().equals(summoner.getUUID())) {
+                p.sendSystemMessage(Component.literal("§e" + summoner.getScoreboardName() + " revived " + revivedName + "!"));
             }
         });
 
         if (ConfigManager.getConfig().isRitualLightningStrike()) {
-            LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(world);
-            if (lightning != null) {
-                lightning.moveTo(placedPos.getCenter());
-                lightning.setVisualOnly(true);
-                world.addFreshEntity(lightning);
-            }
+            LightningBolt lightning = new LightningBolt(net.minecraft.world.entity.EntityTypes.LIGHTNING_BOLT, world);
+            lightning.setPos(Vec3.atCenterOf(placedPos));
+            lightning.setVisualOnly(true);
+            world.addFreshEntity(lightning);
         }
 
         ServerPlayer revivedPlayer = world.getServer().getPlayerList().getPlayer(revivedUuid);
@@ -174,15 +175,15 @@ public class RevivalStructureListener {
     }
 
     public static void restoreAtStructure(ServerPlayer revived, ServerLevel world, BlockPos spawnPos) {
-        revived.teleportTo(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, java.util.Set.of(), 0, 0);
+        revived.teleportTo(world, spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, java.util.Set.of(), 0, 0, true);
         revived.setGameMode(GameType.SURVIVAL);
         ServerLifecycleListener.setGhostModeAttributes(revived, false);
-        revived.sendSystemMessage(MessageUtil.get("revive-success"), false);
+        revived.sendSystemMessage(MessageUtil.get("revive-success"));
 
         revived.removeAllEffects();
         int resistanceTicks = ConfigManager.getConfig().getReviveResistanceTicks();
         if (resistanceTicks > 0) {
-            revived.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, resistanceTicks, 4, false, true));
+            revived.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, resistanceTicks, 4, false, true));
         }
         int glowingTicks = ConfigManager.getConfig().getReviveGlowingTicks();
         if (glowingTicks > 0) {
@@ -190,8 +191,8 @@ public class RevivalStructureListener {
         }
 
         if (ConfigManager.getConfig().isRitualTotemEffect()) {
-            revived.level().playSound(null, revived.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1.0f, 1.0f);
-            world.broadcastEntityEvent(revived, EntityEvent.TALISMAN_ACTIVATE);
+            revived.level().playSound(null, revived.getX(), revived.getY(), revived.getZ(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1.0f, 1.0f);
+            world.broadcastEntityEvent(revived, EntityEvent.PROTECTED_FROM_DEATH);
         }
     }
 
@@ -252,7 +253,7 @@ public class RevivalStructureListener {
     }
 
     private static void sendError(ServerPlayer player, String msg) {
-        player.sendSystemMessage(Component.literal("§c" + msg), false);
+        player.sendSystemMessage(Component.literal("§c" + msg));
     }
 
     private static boolean isRitualStructure(Level world, BlockPos headPos) {
@@ -301,7 +302,7 @@ public class RevivalStructureListener {
     }
 
     private static boolean isBlockInTagList(BlockState state, java.util.List<String> tags) {
-        net.minecraft.resources.ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        Identifier id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
         String name = id.getPath().toUpperCase(java.util.Locale.ROOT);
         return tags.contains(name);
     }

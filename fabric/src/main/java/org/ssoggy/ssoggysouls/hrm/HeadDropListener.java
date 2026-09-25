@@ -1,20 +1,21 @@
 package org.ssoggy.ssoggysouls.hrm;
 
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
-import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 
@@ -33,69 +34,62 @@ public class HeadDropListener {
     private static final Map<UUID, List<UUID>> headItemEntityUuids = new HashMap<>();
 
     public static void register() {
-        // Head drop is now triggered from MainServerListener.handleDeathSync
-        // when isDead becomes true, avoiding the race condition with async DB state.
+        // Head drop is triggered from MainServerListener
     }
 
-    /**
-     * Triggers a head drop for the given player.
-     * Must be called from the server thread.
-     */
-    public static void triggerHeadDrop(ServerPlayerEntity player) {
+    public static void triggerHeadDrop(ServerPlayer player) {
         dropHead(player);
     }
 
-    private static void dropHead(ServerPlayerEntity player) {
+    private static void dropHead(ServerPlayer player) {
         if (player.isCreative() && !ConfigManager.getConfig().isCreativePlayersDropHeads()) {
             return;
         }
 
-        World world = player.getServerWorld();
-        BlockPos pos = player.getBlockPos();
+        Level world = player.level();
+        BlockPos pos = player.blockPosition();
 
-        // Handle placing as block vs dropping as item
         if (ConfigManager.getConfig().isHeadPlaceAsBlock() || !ConfigManager.getConfig().isHeadBurnsInLava()) {
             BlockPos headPos = findSafeBlockPos(world, pos);
-            world.setBlockState(headPos, net.minecraft.block.Blocks.PLAYER_HEAD.getDefaultState());
-            net.minecraft.block.entity.BlockEntity be = world.getBlockEntity(headPos);
-            if (be instanceof net.minecraft.block.entity.SkullBlockEntity skull) {
-                skull.setOwner(new ProfileComponent(player.getGameProfile()));
-                skull.markDirty();
+            world.setBlock(headPos, Blocks.PLAYER_HEAD.defaultBlockState(), 3);
+            BlockEntity be = world.getBlockEntity(headPos);
+            if (be instanceof SkullBlockEntity skull) {
+                ItemStack headItem = new ItemStack(Items.PLAYER_HEAD);
+                headItem.set(DataComponents.PROFILE, ResolvableProfile.createResolved(player.getGameProfile()));
+                skull.applyComponentsFromItemStack(headItem);
+                skull.setChanged();
             }
 
-            GhostState.getServerState(player.server).addHeadBlockLocation(player.getUuid(), GlobalPos.create(world.getRegistryKey(), headPos));
-            SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getName().getString(), headPos.getX(), headPos.getY(), headPos.getZ());
+            GhostState.getServerState(player.level().getServer()).addHeadBlockLocation(player.getUUID(), GlobalPos.of(world.dimension(), headPos));
+            SSoggySoulsMod.LOGGER.info("Placed {}'s head at {} {} {}", player.getScoreboardName(), headPos.getX(), headPos.getY(), headPos.getZ());
         } else {
-            // Create player head item
             ItemStack head = new ItemStack(Items.PLAYER_HEAD);
-            head.set(DataComponentTypes.PROFILE, new ProfileComponent(player.getGameProfile()));
-            head.set(DataComponentTypes.CUSTOM_NAME,
-                    Text.literal(player.getName().getString() + "'s Head")
-                    .styled(style -> style.withColor(Formatting.YELLOW)));
+            head.set(DataComponents.PROFILE, ResolvableProfile.createResolved(player.getGameProfile()));
+            head.set(DataComponents.CUSTOM_NAME,
+                    Component.literal(player.getScoreboardName() + "'s Head")
+                    .withStyle(net.minecraft.ChatFormatting.YELLOW));
 
-            // Spawn item entity
             ItemEntity itemEntity = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, head);
 
             if (ConfigManager.getConfig().isHeadFireproof()) {
-                itemEntity.setInvulnerable(true);
+                itemEntity.setPermanentlyInvulnerable(true);
             }
             if (ConfigManager.getConfig().isHeadNoDespawn()) {
-                itemEntity.setNeverDespawn();
+                itemEntity.setUnlimitedLifetime();
             }
 
-            world.spawnEntity(itemEntity);
+            world.addFreshEntity(itemEntity);
             headItemEntityUuids
-                    .computeIfAbsent(player.getUuid(), k -> new ArrayList<>())
-                    .add(itemEntity.getUuid());
-            SSoggySoulsMod.LOGGER.info("Dropped {}'s head at {} {} {}", player.getName().getString(), pos.getX(), pos.getY(), pos.getZ());
+                    .computeIfAbsent(player.getUUID(), k -> new ArrayList<>())
+                    .add(itemEntity.getUUID());
+            SSoggySoulsMod.LOGGER.info("Dropped {}'s head at {} {} {}", player.getScoreboardName(), pos.getX(), pos.getY(), pos.getZ());
         }
     }
 
-    private static BlockPos findSafeBlockPos(World world, BlockPos origin) {
-        BlockPos.Mutable mutable = origin.mutableCopy();
-        // Search up to 10 blocks up for air
+    private static BlockPos findSafeBlockPos(Level world, BlockPos origin) {
+        BlockPos.MutableBlockPos mutable = origin.mutable();
         for (int i = 0; i < 10; i++) {
-            if (world.getBlockState(mutable).isAir()) return mutable.toImmutable();
+            if (world.getBlockState(mutable).isAir()) return mutable.immutable();
             mutable.move(0, 1, 0);
         }
         return origin;
@@ -111,19 +105,19 @@ public class HeadDropListener {
 
     private static void removeTrackedHeadBlocks(UUID ownerUuid, MinecraftServer server, List<GlobalPos> knownLocations) {
         for (GlobalPos pos : knownLocations) {
-            ServerWorld world = server.getWorld(pos.dimension());
+            ServerLevel world = server.getLevel(pos.dimension());
             if (world == null) continue;
 
             BlockPos blockPos = pos.pos();
             world.getChunk(blockPos);
 
-            if (world.getBlockState(blockPos).getBlock() == net.minecraft.block.Blocks.PLAYER_HEAD ||
-                world.getBlockState(blockPos).getBlock() == net.minecraft.block.Blocks.PLAYER_WALL_HEAD) {
-                net.minecraft.block.entity.BlockEntity be = world.getBlockEntity(blockPos);
-                if (be instanceof net.minecraft.block.entity.SkullBlockEntity skull) {
-                    ProfileComponent ownerProfile = skull.getOwner();
-                    if (ownerProfile != null && ownerProfile.id().isPresent() && ownerProfile.id().get().equals(ownerUuid)) {
-                        world.setBlockState(blockPos, net.minecraft.block.Blocks.AIR.getDefaultState());
+            if (world.getBlockState(blockPos).getBlock() == Blocks.PLAYER_HEAD ||
+                world.getBlockState(blockPos).getBlock() == Blocks.PLAYER_WALL_HEAD) {
+                BlockEntity be = world.getBlockEntity(blockPos);
+                if (be instanceof SkullBlockEntity skull) {
+                    ResolvableProfile ownerProfile = skull.getOwnerProfile();
+                    if (ownerProfile != null && ownerProfile.partialProfile().id() != null && ownerProfile.partialProfile().id().equals(ownerUuid)) {
+                        world.setBlock(blockPos, Blocks.AIR.defaultBlockState(), 3);
                     }
                 }
             }
@@ -136,8 +130,8 @@ public class HeadDropListener {
             return;
         }
         for (UUID entityUuid : entityUuids) {
-            for (ServerWorld world : server.getWorlds()) {
-                net.minecraft.entity.Entity entity = world.getEntity(entityUuid);
+            for (ServerLevel world : server.getAllLevels()) {
+                net.minecraft.world.entity.Entity entity = world.getEntity(entityUuid);
                 if (entity instanceof ItemEntity itemEntity) {
                     itemEntity.discard();
                     break;

@@ -48,21 +48,20 @@ public class HeadEffectsTask {
     }
 
     private static boolean isWearingPlayerHead(ServerPlayer player) {
-        // Helmet is equipment slot index 3 (head)
-        ItemStack helmet = player.getInventory().armor.get(3);
+        ItemStack helmet = player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD);
         return !helmet.isEmpty() && helmet.is(Items.PLAYER_HEAD);
     }
 
     private static void applyEffects(ServerPlayer player) {
-        player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0, false, false));
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, INFINITE_DURATION, 0, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, INFINITE_DURATION, 0, false, false));
         player.addEffect(new MobEffectInstance(MobEffects.HEALTH_BOOST, INFINITE_DURATION, 4, false, false));
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, INFINITE_DURATION, 0, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, INFINITE_DURATION, 0, false, false));
     }
 
     private static void removeEffects(ServerPlayer player) {
-        player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+        player.removeEffect(MobEffects.SLOWNESS);
         player.removeEffect(MobEffects.HEALTH_BOOST);
-        player.removeEffect(MobEffects.DAMAGE_RESISTANCE);
+        player.removeEffect(MobEffects.RESISTANCE);
     }
 }

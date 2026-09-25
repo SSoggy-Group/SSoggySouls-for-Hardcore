@@ -2,16 +2,15 @@ package org.ssoggy.ssoggysouls.hrm.dlc.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,14 +77,14 @@ public class GhostState extends SavedData {
         return removed;
     }
 
-    @Override
-    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+    public CompoundTag save() {
+        CompoundTag tag = new CompoundTag();
         CompoundTag locations = new CompoundTag();
         deathLocations.forEach((uuid, pos) -> locations.putLong(uuid.toString(), pos.asLong()));
         tag.put(DEATH_LOCATIONS, locations);
 
         CompoundTag holders = new CompoundTag();
-        deathHolders.forEach((ghostId, holderId) -> holders.putUUID(ghostId.toString(), holderId));
+        deathHolders.forEach((ghostId, holderId) -> holders.putString(ghostId.toString(), holderId.toString()));
         tag.put(DEATH_HOLDERS, holders);
 
         CompoundTag headLocations = new CompoundTag();
@@ -93,7 +92,7 @@ public class GhostState extends SavedData {
             ListTag serializedLocations = new ListTag();
             for (GlobalPos location : playerLocations) {
                 CompoundTag locationTag = new CompoundTag();
-                locationTag.putString(HEAD_LOCATION_DIMENSION, location.dimension().location().toString());
+                locationTag.putString(HEAD_LOCATION_DIMENSION, location.dimension().identifier().toString());
                 locationTag.putLong(HEAD_LOCATION_POS, location.pos().asLong());
                 serializedLocations.add(locationTag);
             }
@@ -108,32 +107,35 @@ public class GhostState extends SavedData {
         GhostState state = new GhostState();
 
         if (tag.contains(DEATH_LOCATIONS)) {
-            CompoundTag locations = tag.getCompound(DEATH_LOCATIONS);
-            for (String key : locations.getAllKeys()) {
-                state.deathLocations.put(UUID.fromString(key), BlockPos.of(locations.getLong(key)));
+            CompoundTag locations = tag.getCompoundOrEmpty(DEATH_LOCATIONS);
+            for (String key : locations.keySet()) {
+                state.deathLocations.put(UUID.fromString(key), BlockPos.of(locations.getLongOr(key, 0L)));
             }
         }
 
         if (tag.contains(DEATH_HOLDERS)) {
-            CompoundTag holders = tag.getCompound(DEATH_HOLDERS);
-            for (String key : holders.getAllKeys()) {
-                state.deathHolders.put(UUID.fromString(key), holders.getUUID(key));
+            CompoundTag holders = tag.getCompoundOrEmpty(DEATH_HOLDERS);
+            for (String key : holders.keySet()) {
+                String val = holders.getStringOr(key, "");
+                if (!val.isEmpty()) {
+                    state.deathHolders.put(UUID.fromString(key), UUID.fromString(val));
+                }
             }
         }
 
         if (tag.contains(HEAD_BLOCK_LOCATIONS)) {
-            CompoundTag headLocations = tag.getCompound(HEAD_BLOCK_LOCATIONS);
-            for (String key : headLocations.getAllKeys()) {
-                ListTag locations = headLocations.getList(key, Tag.TAG_COMPOUND);
+            CompoundTag headLocations = tag.getCompoundOrEmpty(HEAD_BLOCK_LOCATIONS);
+            for (String key : headLocations.keySet()) {
+                ListTag locations = headLocations.getListOrEmpty(key);
                 List<GlobalPos> parsedLocations = new ArrayList<>();
                 for (int i = 0; i < locations.size(); i++) {
-                    CompoundTag locationTag = locations.getCompound(i);
-                    ResourceLocation dimensionId = ResourceLocation.tryParse(locationTag.getString(HEAD_LOCATION_DIMENSION));
+                    CompoundTag locationTag = locations.getCompoundOrEmpty(i);
+                    Identifier dimensionId = Identifier.tryParse(locationTag.getStringOr(HEAD_LOCATION_DIMENSION, ""));
                     if (dimensionId == null) {
                         continue;
                     }
                     ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, dimensionId);
-                    parsedLocations.add(GlobalPos.of(dimension, BlockPos.of(locationTag.getLong(HEAD_LOCATION_POS))));
+                    parsedLocations.add(GlobalPos.of(dimension, BlockPos.of(locationTag.getLongOr(HEAD_LOCATION_POS, 0L))));
                 }
                 if (!parsedLocations.isEmpty()) {
                     state.headBlockLocations.put(UUID.fromString(key), parsedLocations);
@@ -144,12 +146,14 @@ public class GhostState extends SavedData {
         return state;
     }
 
+    public static final SavedDataType<GhostState> TYPE = new SavedDataType<>(
+            Identifier.fromNamespaceAndPath("ssoggysouls", "ghost_data"),
+            GhostState::new,
+            CompoundTag.CODEC.xmap(GhostState::load, GhostState::save),
+            net.minecraft.util.datafix.DataFixTypes.SAVED_DATA_COMMAND_STORAGE
+    );
+
     public static GhostState getServerState(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(
-                new SavedData.Factory<>(
-                        GhostState::new,
-                        (tag, registries) -> GhostState.load(tag),
-                        null),
-                "ssoggysouls_ghost_data");
+        return server.overworld().getDataStorage().computeIfAbsent(TYPE);
     }
 }

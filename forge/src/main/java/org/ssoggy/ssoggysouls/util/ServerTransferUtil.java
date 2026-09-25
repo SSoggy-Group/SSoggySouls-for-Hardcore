@@ -3,12 +3,8 @@ package org.ssoggy.ssoggysouls.util;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.ChannelBuilder;
-import net.minecraftforge.network.SimpleChannel;
-import net.minecraftforge.network.Channel;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,18 +15,8 @@ import java.io.UncheckedIOException;
 
 public class ServerTransferUtil {
 
-    private static final int PROTOCOL_VERSION = 1;
-    public static final SimpleChannel CHANNEL = ChannelBuilder
-            .named(ResourceLocation.fromNamespaceAndPath(SSoggySoulsMod.MODID, "bungee_connect"))
-            .networkProtocolVersion(PROTOCOL_VERSION)
-            .acceptedVersions(Channel.VersionTest.exact(PROTOCOL_VERSION))
-            .simpleChannel();
-
     public static void register() {
-        CHANNEL.messageBuilder(BungeeConnectPayload.class, 1)
-                .codec(BungeeConnectPayload.CODEC)
-                .consumerMainThread((payload, context) -> {}) // No action needed on the client or server side to handle this specific custom payload besides what the proxy does
-                .add();
+        // No-op. This utility sends vanilla custom payload packets directly.
     }
 
     public static void sendToServer(ServerPlayer player, String serverName) {
@@ -49,7 +35,7 @@ public class ServerTransferUtil {
 
     public record BungeeConnectPayload(String serverName) implements CustomPacketPayload {
         public static final CustomPacketPayload.Type<BungeeConnectPayload> PAYLOAD_TYPE = new CustomPacketPayload.Type<>(
-                ResourceLocation.fromNamespaceAndPath("bungeecord", "main")
+                Identifier.fromNamespaceAndPath("bungeecord", "main")
         );
 
         public static final StreamCodec<FriendlyByteBuf, BungeeConnectPayload> CODEC = StreamCodec.of(
@@ -82,7 +68,7 @@ public class ServerTransferUtil {
         );
 
         @Override
-        public CustomPacketPayload.Type<BungeeConnectPayload> type() {
+        public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
             return PAYLOAD_TYPE;
         }
     }

@@ -22,11 +22,11 @@ This comprehensive guide covers everything you need to know to properly install 
 
 ### Server Requirements
 
-- **Minecraft Version:** 1.21.X
+- **Minecraft Version:** 26.X (26.1–26.3)
 
 - **Server Software:** Spigot, Paper, Purpur, Fabric, Forge, or NeoForge
 
-- **Java Version:** 21 or higher
+- **Java Version:** 25 or higher
 
 - **Database:** SQLite (built-in, zero setup) for single server OR MySQL 5.7+ / MariaDB 10.2+ for multi-server
 
@@ -245,7 +245,7 @@ The Forge and NeoForge versions are installed similarly to the Bukkit version, b
 
 ### Requirements
 
-- **Forge or NeoForge Loader** installed on your server (1.21.1).
+- **Forge or NeoForge Loader** installed on your server (26.X).
 
 ### Installation Steps
 

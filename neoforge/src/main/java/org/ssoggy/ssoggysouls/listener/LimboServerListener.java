@@ -2,7 +2,7 @@ package org.ssoggy.ssoggysouls.listener;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
@@ -49,7 +49,7 @@ public class LimboServerListener {
         CompletableFuture.runAsync(() -> {
             boolean isDead = db.isPlayerDead(uuid);
 
-            player.server.execute(() -> {
+            player.level().getServer().execute(() -> {
                 if (isDead) {
                     applyLimboState(player);
                 } else {
@@ -91,11 +91,11 @@ public class LimboServerListener {
         if (event.getEntity() instanceof ServerPlayer player) {
             // Allow travel to the Limbo dimension (prevents blocking the initial death teleport)
             ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-            ResourceLocation limboId = ResourceLocation.tryParse(cfg.getLimboSpawnWorld());
-            if (limboId != null && event.getDimension().location().equals(limboId)) return;
+            Identifier limboId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+            if (limboId != null && event.getDimension().identifier().equals(limboId)) return;
 
             // Check for bypass permission (parity with Fabric)
-            if (player.hasPermissions(2)) return;
+            if (player.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) return;
 
             if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
                 event.setCanceled(true);
@@ -114,10 +114,10 @@ public class LimboServerListener {
         player.getFoodData().setSaturation(20f);
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
-        ResourceLocation worldId = ResourceLocation.parse(cfg.getLimboSpawnWorld());
-        ServerLevel world = player.server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
+        Identifier worldId = Identifier.parse(cfg.getLimboSpawnWorld());
+        ServerLevel world = player.level().getServer().getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
         if (world != null) {
-            player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch());
+            player.teleportTo(world, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), java.util.Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch(), true);
         }
 
         player.sendSystemMessage(MessageUtil.get("limbo-welcome-dead"));

@@ -1,18 +1,21 @@
 package org.ssoggy.ssoggysouls.hrm;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 public class HeadEffectsTask {
 
-    private static final int INFINITE_DURATION = -1; // -1 is infinite in 1.20.5+
+    private static final int INFINITE_DURATION = -1; // -1 is infinite in modern MC
     private HeadEffectsTask() {
         // Utility class
     }
@@ -20,10 +23,10 @@ public class HeadEffectsTask {
     public static void register() {
         final Set<UUID> wearingHead = new HashSet<>();
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getTicks() % 20 != 0) return; // Run once per second
+            if (server.getTickCount() % 20 != 0) return; // Run once per second
 
-            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                UUID uuid = player.getUuid();
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                UUID uuid = player.getUUID();
                 boolean wearing = isWearingPlayerHead(player);
 
                 if (wearing && !wearingHead.contains(uuid)) {
@@ -35,25 +38,25 @@ public class HeadEffectsTask {
             }
 
             // Cleanup offline players
-            wearingHead.removeIf(uuid -> server.getPlayerManager().getPlayer(uuid) == null);
+            wearingHead.removeIf(uuid -> server.getPlayerList().getPlayer(uuid) == null);
         });
     }
 
-    private static boolean isWearingPlayerHead(ServerPlayerEntity player) {
-        ItemStack helmet = player.getInventory().getArmorStack(3); // 3 is helmet slot
-        return !helmet.isEmpty() && helmet.isOf(Items.PLAYER_HEAD);
+    private static boolean isWearingPlayerHead(ServerPlayer player) {
+        ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
+        return !helmet.isEmpty() && helmet.is(Items.PLAYER_HEAD);
     }
 
-    private static void applyEffects(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 200, 0, false, false));
-        player.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, INFINITE_DURATION, 0, false, false));
-        player.addStatusEffect(new StatusEffectInstance(StatusEffects.HEALTH_BOOST, INFINITE_DURATION, 4, false, false));
-        player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, INFINITE_DURATION, 0, false, false));
+    private static void applyEffects(ServerPlayer player) {
+        player.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, INFINITE_DURATION, 0, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.HEALTH_BOOST, INFINITE_DURATION, 4, false, false));
+        player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, INFINITE_DURATION, 0, false, false));
     }
 
-    private static void removeEffects(ServerPlayerEntity player) {
-        player.removeStatusEffect(StatusEffects.SLOWNESS);
-        player.removeStatusEffect(StatusEffects.HEALTH_BOOST);
-        player.removeStatusEffect(StatusEffects.RESISTANCE);
+    private static void removeEffects(ServerPlayer player) {
+        player.removeEffect(MobEffects.SLOWNESS);
+        player.removeEffect(MobEffects.HEALTH_BOOST);
+        player.removeEffect(MobEffects.RESISTANCE);
     }
 }

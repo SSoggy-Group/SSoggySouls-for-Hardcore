@@ -11,7 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -218,7 +218,7 @@ public final class DlcCommandRegistration {
 
     private static void registerGhostModeCommand(CommandDispatcher<CommandSourceStack> dispatcher, DatabaseManager db) {
         dispatcher.register(Commands.literal("ghostmode")
-                .requires(source -> source.hasPermission(2))
+                .requires(source -> source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER))
                 .executes(context -> {
                     CommandSourceStack source = context.getSource();
                     if (!source.isPlayer()) {
@@ -258,7 +258,7 @@ public final class DlcCommandRegistration {
                 DlcDeaths.recordDeath(
                         target.getUUID(),
                         target.getScoreboardName(),
-                        ((net.minecraft.server.level.ServerLevel) target.level()).dimension().toString(),
+                        target.level().dimension().identifier().toString(),
                         target.blockPosition().getX(),
                         target.blockPosition().getY(),
                         target.blockPosition().getZ()
@@ -271,7 +271,7 @@ public final class DlcCommandRegistration {
 
     private static void registerConfigCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("revivalconfig")
-                .requires(source -> source.hasPermission(2))
+                .requires(source -> source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER))
                 .executes(context -> {
                     sendResult(context.getSource(), DlcCommandResult.missingArgs("Please use "));
                     return 0;
@@ -355,8 +355,8 @@ public final class DlcCommandRegistration {
         } catch (NumberFormatException e) {
             Component interactive = Component.literal("/revivalconfig timer " + key + " ")
                     .withStyle(style -> style.withColor(ChatFormatting.GRAY)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig timer " + key + " "))
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
+                            .withClickEvent(new ClickEvent.SuggestCommand("/revivalconfig timer " + key + " "))
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
                     );
             Component message = Component.literal("[RevivalPlus] Timer value must be a number. Click to fix: ")
                     .withStyle(ChatFormatting.RED)
@@ -445,8 +445,8 @@ public final class DlcCommandRegistration {
             net.minecraft.network.chat.MutableComponent base = Component.literal("[RevivalPlus] " + result.message()).withStyle(ChatFormatting.RED);
             net.minecraft.network.chat.MutableComponent interactive = Component.literal("/revivalconfig <structure|gamerule|timer|reload>")
                     .withStyle(style -> style.withColor(ChatFormatting.GRAY)
-                            .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.SUGGEST_COMMAND, "/revivalconfig "))
-                            .withHoverEvent(new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT, Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
+                            .withClickEvent(new ClickEvent.SuggestCommand("/revivalconfig "))
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to auto-fill this command").withStyle(ChatFormatting.GRAY)))
                     );
             return base.append(interactive);
         }
@@ -465,12 +465,12 @@ public final class DlcCommandRegistration {
         String coords = death.x() + " " + death.y() + " " + death.z();
 
         return Component.literal(username).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pstatus " + username))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to check player status").withStyle(s -> s.withColor(ChatFormatting.GRAY)))))
+                        .withClickEvent(new ClickEvent.SuggestCommand("/pstatus " + username))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to check player status").withStyle(s -> s.withColor(ChatFormatting.GRAY)))))
                 .append(Component.literal(" has died at ").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)))
                 .append(Component.literal("X" + death.x() + " Y" + death.y() + " Z" + death.z()).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, coords))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy coordinates").withStyle(s -> s.withColor(ChatFormatting.GRAY))))))
+                        .withClickEvent(new ClickEvent.CopyToClipboard(coords))
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to copy coordinates").withStyle(s -> s.withColor(ChatFormatting.GRAY))))))
                 .append(Component.literal(" in the ").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)))
                 .append(Component.literal(death.worldId()).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(true)))
                 .append(Component.literal(" (" + formatAge(death.time()) + ")").withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)));
@@ -543,7 +543,7 @@ public final class DlcCommandRegistration {
             return "ALL";
         }
         String lower = trimmed.toLowerCase(Locale.ROOT);
-        ResourceLocation id = ResourceLocation.tryParse(lower.contains(":") ? lower : "minecraft:" + lower);
+        Identifier id = Identifier.tryParse(lower.contains(":") ? lower : "minecraft:" + lower);
         if (id == null || !BuiltInRegistries.BLOCK.containsKey(id)) {
             return null;
         }

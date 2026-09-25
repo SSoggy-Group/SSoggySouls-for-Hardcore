@@ -1,5 +1,6 @@
 package org.ssoggy.ssoggysouls.hrm;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -8,7 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -50,7 +51,7 @@ public class ReviveSkullManager {
         CompletableFuture.runAsync(() -> {
             List<PlayerData> deadPlayers = db.getDeadPlayers();
 
-            serverPlayer.server.execute(() -> {
+            serverPlayer.level().getServer().execute(() -> {
                 if (deadPlayers.isEmpty()) {
                     serverPlayer.sendSystemMessage(Component.literal("No dead players found.").withStyle(net.minecraft.ChatFormatting.GRAY));
                     return;
@@ -78,7 +79,7 @@ public class ReviveSkullManager {
                     public boolean stillValid(Player pl) { return true; }
 
                     @Override
-                    public void clicked(int slotIndex, int button, ClickType clickType, Player clickingPlayer) {
+                    public void clicked(int slotIndex, int button, ContainerInput containerInput, Player clickingPlayer) {
                         if (slotIndex >= 0 && slotIndex < numSlots) {
                             ItemStack clicked = this.slots.get(slotIndex).getItem();
                             handleMenuClick(clicked, clickingPlayer);
@@ -105,7 +106,7 @@ public class ReviveSkullManager {
     private static void handleMenuClick(ItemStack clicked, Player clickingPlayer) {
         if (!clicked.isEmpty() && clicked.is(Items.PLAYER_HEAD)) {
             ResolvableProfile profile = clicked.get(DataComponents.PROFILE);
-            if (profile != null && profile.id().isPresent()) {
+            if (profile != null && profile.partialProfile().id() != null) {
                 String name = profile.name().orElse("Unknown");
 
                 ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
@@ -113,12 +114,12 @@ public class ReviveSkullManager {
                 realHead.set(DataComponents.CUSTOM_NAME, Component.literal(name + "'s Head").withStyle(net.minecraft.ChatFormatting.YELLOW));
 
                 if (!clickingPlayer.getInventory().add(realHead)) {
-                    clickingPlayer.drop(realHead, false);
+                    clickingPlayer.drop(realHead, false, net.minecraft.util.Prediction.SERVER_ONLY);
                 }
                 clickingPlayer.sendSystemMessage(Component.literal("Received " + name + "'s head.").withStyle(net.minecraft.ChatFormatting.GREEN));
 
                 if (clickingPlayer instanceof ServerPlayer spe) {
-                    spe.getServer().execute(spe::closeContainer);
+                    spe.level().getServer().execute(spe::closeContainer);
                 }
             }
         }
@@ -126,11 +127,10 @@ public class ReviveSkullManager {
 
     private static ItemStack createMenuHead(PlayerData data) {
         ItemStack head = new ItemStack(Items.PLAYER_HEAD);
-        head.set(DataComponents.PROFILE, new ResolvableProfile(
-                Optional.of(data.getUsername()),
-                Optional.of(data.getUuid()),
-                new PropertyMap()
-        ));
+        head.set(DataComponents.PROFILE, ResolvableProfile.createResolved(new GameProfile(
+                data.getUuid(),
+                data.getUsername()
+        )));
         head.set(DataComponents.CUSTOM_NAME, Component.literal(data.getUsername()).withStyle(net.minecraft.ChatFormatting.RED));
         return head;
     }
@@ -150,6 +150,6 @@ public class ReviveSkullManager {
     public static boolean isReviveSkull(ItemStack stack) {
         if (stack.isEmpty() || !stack.has(DataComponents.CUSTOM_DATA)) return false;
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-        return data != null && data.contains("ReviveSkull");
+        return data != null && data.copyTag().contains("ReviveSkull");
     }
 }

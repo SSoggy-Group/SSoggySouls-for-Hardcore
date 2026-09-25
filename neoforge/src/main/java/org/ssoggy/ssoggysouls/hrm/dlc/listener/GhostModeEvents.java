@@ -45,7 +45,7 @@ public class GhostModeEvents {
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(uuid);
             boolean isDead = data != null && data.isDead();
-            player.server.execute(() -> {
+            player.level().getServer().execute(() -> {
                 if (isDead) GHOST_CACHE.add(uuid);
                 else GHOST_CACHE.remove(uuid);
             });
@@ -115,7 +115,7 @@ public class GhostModeEvents {
 
     private static void enforceGhostRestrictions(ServerPlayer player) {
         UUID uuid = player.getUUID();
-        GhostState state = GhostState.getServerState(player.server);
+        GhostState state = GhostState.getServerState(player.level().getServer());
 
         if (state.getDeathHolder(uuid) != null) {
             return;
@@ -137,14 +137,20 @@ public class GhostModeEvents {
 
     private static void applyTeleportFeedback(ServerPlayer player, BlockPos deathPos) {
         // Port of Paper's onPlayerMove teleport feedback (sound + particles).
-        player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
+        player.teleportTo((net.minecraft.server.level.ServerLevel) player.level(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), true);
         
         // Scope sound and particles to the ghost only to prevent location leaking
-        player.playNotifySound(SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(
+                net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.CHORUS_FRUIT_TELEPORT), SoundSource.PLAYERS,
+                player.getX(), player.getY(), player.getZ(),
+                1.0f, 1.0f, player.level().getRandom().nextLong()
+        ));
         
         if (ConfigManager.getConfig().isGhostModeParticles()) {
-            player.serverLevel().sendParticles(player, ParticleTypes.DRAGON_BREATH, true,
-                    deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5,
+            ((net.minecraft.server.level.ServerLevel) player.level()).sendParticles(player,
+                    net.minecraft.core.particles.PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0f),
+                    true, false,
+                    deathPos.getX() + 0.5, (double) deathPos.getY(), deathPos.getZ() + 0.5,
                     50, 0.0, 1.0, 0.0, 0.2);
         }
         

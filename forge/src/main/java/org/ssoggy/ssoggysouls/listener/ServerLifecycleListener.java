@@ -6,7 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
@@ -56,7 +56,7 @@ public class ServerLifecycleListener {
             DlcNames.cache(uuid, player.getScoreboardName());
 
             final PlayerData finalData = data;
-            player.server.execute(() -> handleJoinSync(player, finalData));
+            player.level().getServer().execute(() -> handleJoinSync(player, finalData));
         });
     }
 
@@ -64,7 +64,7 @@ public class ServerLifecycleListener {
         GlobalPos pending = org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.consumePendingRevival(player.getUUID());
         if (pending != null) {
             setGhostModeAttributes(player, false);
-            ServerLevel targetWorld = player.server.getLevel(pending.dimension());
+            ServerLevel targetWorld = player.level().getServer().getLevel(pending.dimension());
             org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.restoreAtStructure(player, targetWorld != null ? targetWorld : (ServerLevel) player.level(), pending.pos());
             return;
         }
@@ -118,7 +118,7 @@ public class ServerLifecycleListener {
                 new DlcStats(killer.getUUID()).incrementStat(DlcStat.KILLS, 1);
             }
 
-            player.server.execute(() -> handleDeathSync(player, data, remaining));
+            player.level().getServer().execute(() -> handleDeathSync(player, data, remaining));
         });
     }
 
@@ -134,13 +134,13 @@ public class ServerLifecycleListener {
             setGhostModeAttributes(player, true);
             player.sendSystemMessage(MessageUtil.get("death-now-ghost"));
             org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents.updateGhostStatus(player.getUUID(), true);
-            GhostState state = GhostState.getServerState(player.server);
+            GhostState state = GhostState.getServerState(player.level().getServer());
             state.setDeathLocation(player.getUUID(), player.blockPosition());
             state.setDirty();
             DlcDeaths.recordDeath(
                     player.getUUID(),
                     player.getScoreboardName(),
-                    ((ServerLevel) player.level()).dimension().location().toString(),
+                    player.level().dimension().identifier().toString(),
                     player.blockPosition().getX(),
                     player.blockPosition().getY(),
                     player.blockPosition().getZ()
@@ -162,7 +162,7 @@ public class ServerLifecycleListener {
 
         CompletableFuture.runAsync(() -> {
             if (db.isPlayerDead(uuid)) {
-                player.server.execute(() -> handleRespawnSync(player));
+                player.level().getServer().execute(() -> handleRespawnSync(player));
             }
         });
     }
@@ -179,7 +179,7 @@ public class ServerLifecycleListener {
 
     public static void setGhostModeAttributes(ServerPlayer player, boolean isGhost) {
         player.setInvisible(isGhost);
-        player.setInvulnerable(isGhost);
+        player.setPermanentlyInvulnerable(isGhost);
         player.getAbilities().mayfly = false;
         player.getAbilities().flying = false;
         player.onUpdateAbilities();

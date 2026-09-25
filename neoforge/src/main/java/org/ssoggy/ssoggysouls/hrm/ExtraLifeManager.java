@@ -80,12 +80,12 @@ public class ExtraLifeManager {
     }
 
     private static void handleFailedUse(ServerPlayer serverPlayer, String messageKey) {
-        serverPlayer.server.execute(() -> {
+        serverPlayer.level().getServer().execute(() -> {
             serverPlayer.sendSystemMessage(MessageUtil.get(messageKey));
             if (!serverPlayer.isCreative()) {
                 ItemStack refundedItem = createExtraLifeItem();
                 if (!serverPlayer.getInventory().add(refundedItem)) {
-                    serverPlayer.drop(refundedItem, false);
+                    serverPlayer.drop(refundedItem, false, net.minecraft.util.Prediction.SERVER_ONLY);
                 }
             }
         });
@@ -97,9 +97,9 @@ public class ExtraLifeManager {
 
         SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getScoreboardName(), newLives);
 
-        serverPlayer.server.execute(() -> {
+        serverPlayer.level().getServer().execute(() -> {
             serverPlayer.sendSystemMessage(MessageUtil.get("extra-life-gained", "lives", newLives));
-            serverPlayer.level().playSound(null, serverPlayer.blockPosition(), SoundEvents.PLAYER_LEVELUP,
+            serverPlayer.level().playSound(null, serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(), SoundEvents.PLAYER_LEVELUP,
                     SoundSource.PLAYERS, 1.0f, 1.2f);
             serverPlayer.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60, 0, false, true));
         });
@@ -120,6 +120,6 @@ public class ExtraLifeManager {
     public static boolean isExtraLifeItem(ItemStack stack) {
         if (stack.isEmpty() || !stack.has(DataComponents.CUSTOM_DATA)) return false;
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-        return data != null && data.contains("ExtraLife");
+        return data != null && data.copyTag().contains("ExtraLife");
     }
 }

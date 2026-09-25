@@ -3,31 +3,30 @@ package org.ssoggy.ssoggysouls;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import org.slf4j.Logger;
 import net.minecraftforge.fml.loading.FMLPaths;
-import org.ssoggy.ssoggysouls.util.ConfigManager;
-
+import org.slf4j.Logger;
+import org.ssoggy.ssoggysouls.command.CommandRegistration;
 import org.ssoggy.ssoggysouls.database.DatabaseInitializationException;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.database.MySQLManager;
 import org.ssoggy.ssoggysouls.database.SQLiteManager;
-import org.ssoggy.ssoggysouls.command.CommandRegistration;
-import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
-import org.ssoggy.ssoggysouls.util.MessageUtil;
-import org.ssoggy.ssoggysouls.util.UpdateChecker;
 import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
-import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
+import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
 import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
 import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
-import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
+import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostBlockEvents;
+import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcServices;
 import org.ssoggy.ssoggysouls.listener.LimboServerListener;
+import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
+import org.ssoggy.ssoggysouls.util.ConfigManager;
+import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
+import org.ssoggy.ssoggysouls.util.UpdateChecker;
 
 @Mod(SSoggySoulsMod.MODID)
 public class SSoggySoulsMod implements PluginContext {
@@ -36,12 +35,9 @@ public class SSoggySoulsMod implements PluginContext {
     public static final Logger LOGGER = LogUtils.getLogger();
     private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MODID);
 
-    public SSoggySoulsMod(IEventBus modEventBus) {
-        // Register the commonSetup method for modloading
-        modEventBus.addListener(this::commonSetup);
-
-        // Register ourselves for server and other game events we are interested in
+    public SSoggySoulsMod() {
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(CommandRegistration.class);
 
         LOGGER.info("SSoggySouls Forge is loading...");
 
@@ -57,7 +53,7 @@ public class SSoggySoulsMod implements PluginContext {
         } else {
             databaseManager = new SQLiteManager(this);
         }
-        
+
         try {
             databaseManager.initialize();
         } catch (DatabaseInitializationException e) {
@@ -68,7 +64,7 @@ public class SSoggySoulsMod implements PluginContext {
 
         // Set Database instances
         CommandRegistration.setDatabase(databaseManager);
-        
+
         if (ConfigManager.getConfig().isLimboServer()) {
             MinecraftForge.EVENT_BUS.register(LimboServerListener.class);
             LimboServerListener.setDatabase(databaseManager);
@@ -98,10 +94,6 @@ public class SSoggySoulsMod implements PluginContext {
         if (ConfigManager.getConfig().isCheckForUpdates()) {
             new UpdateChecker().checkForUpdates();
         }
-    }
-
-    private void commonSetup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(ServerTransferUtil::register);
     }
 
     @SubscribeEvent

@@ -3,17 +3,18 @@ package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.TickEvent.ServerTickEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.GhostState;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.GhostRestrictionLogic;
@@ -24,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+
 public class GhostModeEvents {
 
     private static final Set<UUID> GHOST_CACHE = ConcurrentHashMap.newKeySet();
@@ -45,7 +47,7 @@ public class GhostModeEvents {
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(uuid);
             boolean isDead = data != null && data.isDead();
-            player.server.execute(() -> {
+            player.level().getServer().execute(() -> {
                 if (isDead) GHOST_CACHE.add(uuid);
                 else GHOST_CACHE.remove(uuid);
             });
@@ -62,51 +64,44 @@ public class GhostModeEvents {
     }
 
     @SubscribeEvent
-    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        handleCancelableEvent(event, event.getEntity());
+    public static boolean onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        return isGhost(event.getEntity());
     }
 
     @SubscribeEvent
-    public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        handleCancelableEvent(event, event.getEntity());
+    public static boolean onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        return isGhost(event.getEntity());
     }
 
     @SubscribeEvent
-    public static void onAttackEntity(AttackEntityEvent event) {
-        handleCancelableEvent(event, event.getEntity());
+    public static boolean onAttackEntity(AttackEntityEvent event) {
+        return isGhost(event.getEntity());
     }
 
     @SubscribeEvent
-    public static void onItemToss(ItemTossEvent event) {
-        handleCancelableEvent(event, event.getPlayer());
-    }
-
-    private static void handleCancelableEvent(net.minecraftforge.eventbus.api.Event event, Player player) {
-        if (!ConfigManager.getConfig().isHrmEnabled()) return;
-
-        if (isGhost(player)) {
-            if (event.isCancelable()) event.setCanceled(true);
-        }
+    public static boolean onItemToss(ItemTossEvent event) {
+        return isGhost(event.getPlayer());
     }
 
     @SubscribeEvent
-    public static void onInteractEntity(PlayerInteractEvent.EntityInteract event) {
-        if (!ConfigManager.getConfig().isHrmEnabled()) return;
+    public static boolean onInteractEntity(PlayerInteractEvent.EntityInteractSpecific event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return false;
 
         if (isGhost(event.getEntity())) {
             if (event.getEntity() instanceof ServerPlayer serverPlayer) {
                 serverPlayer.setCamera(event.getTarget());
             }
-            if (event.isCancelable()) event.setCanceled(true);
+            return true;
         }
+        return false;
     }
 
     @SubscribeEvent
-    public static void onServerTick(ServerTickEvent event) {
+    public static void onServerTick(TickEvent.ServerTickEvent.Post event) {
         if (!ConfigManager.getConfig().isHrmEnabled()) return;
 
         for (UUID uuid : GHOST_CACHE) {
-            ServerPlayer player = event.getServer().getPlayerList().getPlayer(uuid);
+            ServerPlayer player = event.server().getPlayerList().getPlayer(uuid);
             if (player != null) {
                 enforceGhostRestrictions(player);
             }
@@ -115,7 +110,7 @@ public class GhostModeEvents {
 
     private static void enforceGhostRestrictions(ServerPlayer player) {
         UUID uuid = player.getUUID();
-        GhostState state = GhostState.getServerState(player.server);
+        GhostState state = GhostState.getServerState(player.level().getServer());
 
         if (state.getDeathHolder(uuid) != null) {
             return;
@@ -136,20 +131,24 @@ public class GhostModeEvents {
     }
 
     private static void applyTeleportFeedback(ServerPlayer player, BlockPos deathPos) {
-        // Port of Paper's onPlayerMove teleport feedback (sound + particles).
-        player.teleportTo(player.serverLevel(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, player.getYRot(), player.getXRot());
+        player.teleportTo((ServerLevel) player.level(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), true);
         
-        // Scope sound and particles to the ghost only to prevent location leaking
-        player.playNotifySound(SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
+        player.connection.send(new ClientboundSoundPacket(
+                net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.CHORUS_FRUIT_TELEPORT), SoundSource.PLAYERS,
+                player.getX(), player.getY(), player.getZ(),
+                1.0f, 1.0f, player.level().getRandom().nextLong()
+        ));
         
         if (ConfigManager.getConfig().isGhostModeParticles()) {
-            ((net.minecraft.server.level.ServerLevel) player.level()).sendParticles(player, ParticleTypes.DRAGON_BREATH, true,
-                    deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5,
+            ((ServerLevel) player.level()).sendParticles(player,
+                    net.minecraft.core.particles.PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0f),
+                    true, false,
+                    deathPos.getX() + 0.5, (double) deathPos.getY(), deathPos.getZ() + 0.5,
                     50, 0.0, 1.0, 0.0, 0.2);
         }
         
         player.sendSystemMessage(Component.literal(GhostRestrictionLogic.RESTRICTION_MESSAGE)
-                .withStyle(net.minecraft.ChatFormatting.GRAY), false);
+                .withStyle(net.minecraft.ChatFormatting.GRAY));
     }
 
     public static void updateGhostStatus(UUID uuid, boolean isDead) {

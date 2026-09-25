@@ -3,6 +3,7 @@ package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -15,7 +16,7 @@ import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.shared.DlcDeaths;
@@ -50,11 +51,11 @@ public class GhostBlockEvents {
         }
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
-        if (profile == null || profile.id().isEmpty()) {
+        if (profile == null || profile.partialProfile().id() == null) {
             return;
         }
 
-        UUID ownerUuid = profile.id().get();
+        UUID ownerUuid = profile.partialProfile().id();
         UUID holderUuid = player.getUUID();
         String holderName = player.getScoreboardName();
         CompletableFuture.runAsync(() -> {
@@ -64,7 +65,7 @@ public class GhostBlockEvents {
     }
 
     @SubscribeEvent
-    public static void onBlockBreak(BlockEvent.BreakEvent event) {
+    public static void onBlockBreak(BreakBlockEvent event) {
         if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled()) return;
 
         if (db == null || event.getLevel().isClientSide() || !(event.getPlayer() instanceof ServerPlayer player)) {
@@ -84,8 +85,8 @@ public class GhostBlockEvents {
 
     private static void handleHeadBreak(Level world, ServerPlayer player, SkullBlockEntity skull) {
         ResolvableProfile profile = skull.getOwnerProfile();
-        if (profile != null && profile.id().isPresent()) {
-            UUID ownerUuid = profile.id().get();
+        if (profile != null && profile.partialProfile().id() != null) {
+            UUID ownerUuid = profile.partialProfile().id();
             
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(ownerUuid);
@@ -123,9 +124,9 @@ public class GhostBlockEvents {
         if (!stack.is(Items.PLAYER_HEAD)) return;
 
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
-        if (profile == null || profile.id().isEmpty()) return;
+        if (profile == null || profile.partialProfile().id() == null) return;
 
-        UUID ownerUuid = profile.id().get();
+        UUID ownerUuid = profile.partialProfile().id();
         BlockPos targetPos = event.getPos().relative(event.getFace());
 
         event.getLevel().getServer().execute(() -> handleHeadPlace(event.getLevel(), ownerUuid, targetPos));
@@ -137,7 +138,7 @@ public class GhostBlockEvents {
             BlockEntity be = world.getBlockEntity(targetPos);
             if (be instanceof SkullBlockEntity skull) {
                 ResolvableProfile profile = skull.getOwnerProfile();
-                if (profile != null && profile.id().isPresent() && profile.id().get().equals(ownerUuid)) {
+                if (profile != null && profile.partialProfile().id() != null && profile.partialProfile().id().equals(ownerUuid)) {
                     updateGhostStateOnPlace(world, ownerUuid, targetPos);
                 }
             }
@@ -154,7 +155,7 @@ public class GhostBlockEvents {
         DlcDeaths.recordDeath(
                 ownerUuid,
                 DlcNames.getOrDefault(ownerUuid, ownerUuid.toString()),
-                world.dimension().location().toString(),
+                world.dimension().identifier().toString(),
                 targetPos.getX(),
                 targetPos.getY(),
                 targetPos.getZ()
@@ -169,7 +170,7 @@ public class GhostBlockEvents {
                         ghost.setGameMode(GameType.ADVENTURE);
                         ServerLifecycleListener.setGhostModeAttributes(ghost, true);
 
-                        ghost.teleportTo(ghost.serverLevel(), targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, ghost.getYRot(), ghost.getXRot());
+                        ghost.teleportTo((ServerLevel) world, targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, java.util.Set.of(), ghost.getYRot(), ghost.getXRot(), true);
                         ghost.sendSystemMessage(Component.literal("Your head has been placed down.").withStyle(net.minecraft.ChatFormatting.GRAY));
                     }
                 });

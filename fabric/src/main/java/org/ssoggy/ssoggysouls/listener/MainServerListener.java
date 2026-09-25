@@ -1,12 +1,13 @@
 package org.ssoggy.ssoggysouls.listener;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.world.GameMode;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.level.GameType;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
 import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
@@ -36,7 +37,6 @@ public class MainServerListener {
         registerJoinEvent();
         registerQuitEvent();
         registerDeathEvent();
-        registerRespawnEvent();
     }
 
     public static void register(DatabaseManager db) {
@@ -44,24 +44,22 @@ public class MainServerListener {
     }
 
     private void registerJoinEvent() {
-        // Player Join
         ServerPlayConnectionEvents.JOIN.register((handler, ignoredSender, server) -> {
-            ServerPlayerEntity player = handler.getPlayer();
-            UUID uuid = player.getUuid();
+            ServerPlayer player = handler.getPlayer();
+            UUID uuid = player.getUUID();
 
-            // Run async DB fetch
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
                 if (data == null) {
                     long graceMs = ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod());
-                    data = PlayerData.createNew(uuid, player.getName().getString(),
+                    data = PlayerData.createNew(uuid, player.getScoreboardName(),
                             ConfigManager.getConfig().getDefaultLives(), graceMs);
                     db.savePlayer(data);
                 } else {
-                    data.setUsername(player.getName().getString());
+                    data.setUsername(player.getScoreboardName());
                     db.savePlayer(data);
                 }
-                DlcNames.cache(uuid, player.getName().getString());
+                DlcNames.cache(uuid, player.getScoreboardName());
 
                 final PlayerData finalData = data;
                 server.execute(() -> handleJoinSync(player, finalData));
@@ -69,13 +67,12 @@ public class MainServerListener {
         });
     }
 
-    private void handleJoinSync(ServerPlayerEntity player, PlayerData data) {
-        // Apply a pending offline revival (teleport + restore gamemode + effects)
-        GlobalPos pending = RevivalStructureListener.consumePendingRevival(player.getUuid());
+    private void handleJoinSync(ServerPlayer player, PlayerData data) {
+        GlobalPos pending = RevivalStructureListener.consumePendingRevival(player.getUUID());
         if (pending != null) {
             setGhostModeAttributes(player, false);
-            ServerWorld targetWorld = player.getServer().getWorld(pending.dimension());
-            RevivalStructureListener.restoreAtStructure(player, targetWorld != null ? targetWorld : player.getServerWorld(), pending.pos());
+            ServerLevel targetWorld = player.level().getServer().getLevel(pending.dimension());
+            RevivalStructureListener.restoreAtStructure(player, targetWorld != null ? targetWorld : (ServerLevel) player.level(), pending.pos());
             return;
         }
 
@@ -85,125 +82,98 @@ public class MainServerListener {
                 return;
             }
 
-            // Dead player joined -> Ghost mode (Adventure)
-            if (player.interactionManager.getGameMode() != GameMode.ADVENTURE) {
-                player.changeGameMode(GameMode.ADVENTURE);
+            if (player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE) {
+                player.setGameMode(GameType.ADVENTURE);
                 setGhostModeAttributes(player, true);
-                player.sendMessage(MessageUtil.get("ghost-mode-active"), false);
+                player.sendSystemMessage(MessageUtil.get("ghost-mode-active"));
             }
-        } else if (player.interactionManager.getGameMode() == GameMode.ADVENTURE) {
-            // Alive player was in ghost -> Restore
-            player.changeGameMode(GameMode.SURVIVAL);
+        } else if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
+            player.setGameMode(GameType.SURVIVAL);
             setGhostModeAttributes(player, false);
         }
     }
 
     private void registerQuitEvent() {
-        // Player Quit
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            ServerPlayerEntity player = handler.getPlayer();
-            UUID uuid = player.getUuid();
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, ignoredServer) -> {
+            UUID uuid = handler.getPlayer().getUUID();
             long now = System.currentTimeMillis();
             CompletableFuture.runAsync(() -> db.setLastSeen(uuid, now));
         });
     }
 
     private void registerDeathEvent() {
-        // Player Death
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
-            if (!(entity instanceof ServerPlayerEntity player)) return;
-            UUID uuid = player.getUuid();
-            ServerPlayerEntity killer = damageSource.getAttacker() instanceof ServerPlayerEntity serverPlayer ? serverPlayer : null;
+            if (!(entity instanceof ServerPlayer player)) {
+                return;
+            }
+
+            UUID uuid = player.getUUID();
+            ServerPlayer killer = damageSource.getEntity() instanceof ServerPlayer sp ? sp : null;
 
             CompletableFuture.runAsync(() -> {
                 PlayerData data = db.getPlayer(uuid);
-                if (data == null) return; // Should not happen if they joined
+                if (data == null) {
+                    return;
+                }
 
                 if (data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod()))) {
-                    return; // Grace period protects from life loss
+                    return;
                 }
 
                 int remaining = data.decrementLife();
                 db.savePlayer(data);
                 new DlcStats(uuid).incrementStat(DlcStat.DEATHS, 1);
                 if (killer != null) {
-                    DlcNames.cache(killer.getUuid(), killer.getName().getString());
-                    new DlcStats(killer.getUuid()).incrementStat(DlcStat.KILLS, 1);
+                    DlcNames.cache(killer.getUUID(), killer.getScoreboardName());
+                    new DlcStats(killer.getUUID()).incrementStat(DlcStat.KILLS, 1);
                 }
 
-                player.server.execute(() -> handleDeathSync(player, data, remaining));
+                player.level().getServer().execute(() -> handleDeathSync(player, data, remaining));
             });
         });
     }
 
-    private void handleDeathSync(ServerPlayerEntity player, PlayerData data, int remaining) {
+    private void handleDeathSync(ServerPlayer player, PlayerData data, int remaining) {
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
-                player.sendMessage(MessageUtil.get("death-sending-to-limbo"), false);
+                player.sendSystemMessage(MessageUtil.get("death-sending-to-limbo"));
                 ServerTransferUtil.sendToLimbo(player);
                 return;
             }
 
-            GhostState state = GhostState.getServerState(player.getServer());
-            state.deathLocations.put(player.getUuid(), player.getBlockPos());
-            state.markDirty();
+            player.setGameMode(GameType.ADVENTURE);
+            setGhostModeAttributes(player, true);
+            player.sendSystemMessage(MessageUtil.get("death-now-ghost"));
+            GhostModeEvents.updateGhostStatus(player.getUUID(), true);
+            GhostState state = GhostState.getServerState(player.level().getServer());
+            state.setDeathLocation(player.getUUID(), player.blockPosition());
+            state.setDirty();
             DlcDeaths.recordDeath(
-                    player.getUuid(),
-                    player.getName().getString(),
-                    player.getServerWorld().getRegistryKey().getValue().toString(),
-                    player.getBlockPos().getX(),
-                    player.getBlockPos().getY(),
-                    player.getBlockPos().getZ()
+                    player.getUUID(),
+                    player.getScoreboardName(),
+                    player.level().dimension().identifier().toString(),
+                    player.blockPosition().getX(),
+                    player.blockPosition().getY(),
+                    player.blockPosition().getZ()
             );
 
-            player.changeGameMode(GameMode.ADVENTURE);
-            setGhostModeAttributes(player, true);
-            GhostModeEvents.updateGhostStatus(player.getUuid(), true);
-            player.sendMessage(MessageUtil.get("death-now-ghost"), false);
-
-            // Trigger head drop now that we know isDead is true (avoids race with DB state)
             if (ConfigManager.getConfig().isDropHeads()) {
                 HeadDropListener.triggerHeadDrop(player);
             }
         } else {
-            player.sendMessage(MessageUtil.get("death-life-lost", "lives", remaining), false);
+            player.sendSystemMessage(MessageUtil.get("death-life-lost", "lives", remaining));
         }
     }
 
-    private void registerRespawnEvent() {
-        // Player Respawn
-        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, ignoredAlive) -> {
-            UUID uuid = newPlayer.getUuid();
-            CompletableFuture.runAsync(() -> {
-                PlayerData data = db.getPlayer(uuid);
-                if (data != null && data.isDead()) {
-                    newPlayer.server.execute(() -> handleRespawnSync(newPlayer));
-                }
-            });
-        });
-    }
-
-    private void handleRespawnSync(ServerPlayerEntity player) {
-        if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
-            ServerTransferUtil.sendToLimbo(player);
-            return;
-        }
-
-        player.changeGameMode(GameMode.ADVENTURE);
-        setGhostModeAttributes(player, true);
-    }
-
-    public static void setGhostModeAttributes(ServerPlayerEntity player, boolean isGhost) {
+    public static void setGhostModeAttributes(ServerPlayer player, boolean isGhost) {
         player.setInvisible(isGhost);
-        player.setInvulnerable(isGhost);
-        player.getAbilities().allowFlying = false; // Ghosts cannot fly, they walk
+        player.setPermanentlyInvulnerable(isGhost);
+        player.getAbilities().mayfly = false;
         player.getAbilities().flying = false;
-        player.sendAbilitiesUpdate();
+        player.onUpdateAbilities();
 
-        // Also add custom ghost effects (darkness, cave sounds) from the DLC
         if (isGhost) {
-            player.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(
-                    net.minecraft.entity.effect.StatusEffects.DARKNESS, 60, 0, false, false));
+            player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 60, 0, false, false));
         }
     }
 }

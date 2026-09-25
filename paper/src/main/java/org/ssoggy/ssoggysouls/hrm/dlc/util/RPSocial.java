@@ -21,7 +21,7 @@ package org.ssoggy.ssoggysouls.hrm.dlc.util;
 import com.google.common.collect.Maps;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.SOCIALENUM;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiPredicate;

@@ -1,7 +1,7 @@
 name: SSoggySouls
 version: ${project.version}
 main: org.ssoggy.ssoggysouls.SSoggySouls
-api-version: '1.21'
+api-version: '26.1'
 author: Mario
 description: Hardcore lives system with cross-server Limbo exile and revival mechanics
 
