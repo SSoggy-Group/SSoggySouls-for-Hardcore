@@ -8,7 +8,7 @@
 
 **Version 4.5.7** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
 
-A hardcore lives system mod/plugin for Minecraft 26.X (26.1–26.3) (Supports Spigot, Paper, Purpur, Fabric, Forge, and NeoForge). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
+A hardcore lives system mod/plugin for Minecraft 26.X (Supports Spigot, Paper, Purpur, Fabric, Forge, and NeoForge; backwards compatible with 1.21.X). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
 
 > **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 >
@@ -213,17 +213,16 @@ Living players can check out Limbo using `/limbo`.
 
 ## Requirements
 
-- **Minecraft:** 26.X (Target: 26.3; backward compatible with 26.1, 26.1.1, 26.1.2, 26.2, and 26.3) (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
+- **Minecraft:** 26.X (backwards compatible with 1.21.X) (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 - **Proxy:** Velocity (BungeeCord/Waterfall might work but not tested)
 - **Database:** SQLite (built-in, for single server) OR MySQL 5.7+ / MariaDB 10.2+ (for 2-server setup)
 - **Java:** 25+
 - **Servers:** One server (single-server mode) OR two backend servers behind a Velocity proxy (Main + Limbo)
 
-### Version & Backward Compatibility
+### Backward Compatibility
 
-- **Supported Minecraft Versions:** 26.1, 26.1.1, 26.1.2, 26.2, and 26.3.
-- **Backward Compatibility:** All loader builds (Paper, Fabric, NeoForge, Forge) are backward compatible down to 26.1.
-- **Legacy 1.21.x Releases:** If you are running an older Minecraft 1.21.x server, use the corresponding legacy builds available in the [Modrinth Version History](https://modrinth.com/project/Pb03qu6T/versions).
+- **Supported Minecraft Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3) and backwards compatible with 1.21.X across all loaders (Spigot, Paper, Purpur, Fabric, Forge, and NeoForge).
+- **Legacy 1.21.x Releases:** If you are running a 1.21.X server, prior releases remain available on [Modrinth Version History](https://modrinth.com/project/Pb03qu6T/versions) and [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
 
 > **Important:** Do NOT enable `hardcore=true` in `server.properties` on either server. Keep it `false`. The plugin handles hardcore stuff internally - if you turn on actual hardcore mode it'll break things. If you already did, either delete your world or look up how to edit the game files.
 >

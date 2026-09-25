@@ -1,7 +1,7 @@
 # SSoggySouls
 
 <img src="https://cdn.modrinth.com/data/Pb03qu6T/images/70ce5f45786d4716bb6d47d242ee3238a2b4ec4a.jpeg" alt="SSoggySouls Banner">
-**Version 4.5.7** | Minecraft 26.X (26.1–26.3) | Spigot/Paper/Purpur/Fabric/Forge/NeoForge
+**Version 4.5.7** | Minecraft 26.X (backwards compatible with 1.21.X) | Spigot/Paper/Purpur/Fabric/Forge/NeoForge
 
 A hardcore lives system plugin. When you die enough times, you get exiled to a Limbo server (multi-server) or enter spectator mode (single-server) until your teammates revive you.
 > **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
@@ -47,14 +47,14 @@ Wearing a dead player's head grants Speed II and Night Vision to help you delive
 
 ## Requirements
 
-- **Minecraft:** 26.X (Target: 26.3; backward compatible with 26.1, 26.1.1, 26.1.2, 26.2, and 26.3)
+- **Minecraft:** 26.X (backwards compatible with 1.21.X) (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 - **Java:** 25+
 - **Database:** SQLite (built-in, zero setup) OR MySQL/MariaDB (required for multi-server)
 - *(Optional)* **Proxy:** Velocity with two backend servers
 
 ### Backward Compatibility
 
-- **Supported Versions:** 26.1, 26.1.1, 26.1.2, 26.2, and 26.3 across Paper/Spigot, Fabric, Forge, and NeoForge.
+- **Supported Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3) and backwards compatible with 1.21.X across Paper/Spigot, Fabric, Forge, and NeoForge.
 - **Older Versions:** For Minecraft 1.21.x and earlier, grab previous versions from the [Modrinth Version History](https://modrinth.com/project/Pb03qu6T/versions).
 
 > **Important:** Do NOT enable `hardcore=true` in `server.properties`. Keep it `false` - the plugin natively handles these mechanics.
