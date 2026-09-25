@@ -22,7 +22,7 @@ This comprehensive guide covers everything you need to know to properly install 
 
 ### Server Requirements
 
-- **Minecraft Version:** 26.X (26.1–26.3)
+- **Minecraft Version:** 26.X (Target: 26.3; backward compatible with 26.1, 26.1.1, 26.1.2, 26.2, and 26.3 across all platforms)
 
 - **Server Software:** Spigot, Paper, Purpur, Fabric, Forge, or NeoForge
 
@@ -31,6 +31,11 @@ This comprehensive guide covers everything you need to know to properly install 
 - **Database:** SQLite (built-in, zero setup) for single server OR MySQL 5.7+ / MariaDB 10.2+ for multi-server
 
 - **Proxy Software:** Velocity (only needed for 2-server setup; BungeeCord/Waterfall untested but may work)
+
+### Backward Compatibility
+
+- **Supported Minecraft Versions:** 26.1 through 26.3.
+- **Legacy Minecraft Versions:** For 1.21.x and earlier versions, use previous builds from Modrinth version history.
 
 ### Server Setup
 

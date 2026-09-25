@@ -26,11 +26,16 @@ SSoggySouls is designed for Velocity proxy networks and provides a high-stakes h
 
 ## Requirements
 
-- Minecraft: 26.X (26.1–26.3) (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
+- Minecraft: 26.X (Target: 26.3; backward compatible with 26.1, 26.1.1, 26.1.2, 26.2, and 26.3)
 - Proxy: Velocity
 - Database: MySQL 5.7+ or MariaDB 10.2+
 - Java: 25+
 - Architecture: Main server + Limbo server
+
+### Backward Compatibility
+
+- Supported: 26.1, 26.1.1, 26.1.2, 26.2, and 26.3 across Paper/Spigot, Fabric, NeoForge, and Forge.
+- Legacy: For 1.21.x and older Minecraft versions, download previous builds from Modrinth history or GitHub Releases.
 
 > Do not enable `hardcore=true` in `server.properties`. Leave it `false` and let SSoggySouls manage hardcore behavior.
 

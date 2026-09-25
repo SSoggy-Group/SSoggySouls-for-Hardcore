@@ -47,10 +47,15 @@ Wearing a dead player's head grants Speed II and Night Vision to help you delive
 
 ## Requirements
 
-- **Minecraft:** 26.X (26.1–26.3) (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
+- **Minecraft:** 26.X (Target: 26.3; backward compatible with 26.1, 26.1.1, 26.1.2, 26.2, and 26.3)
 - **Java:** 25+
 - **Database:** SQLite (built-in, zero setup) OR MySQL/MariaDB (required for multi-server)
 - *(Optional)* **Proxy:** Velocity with two backend servers
+
+### Backward Compatibility
+
+- **Supported Versions:** 26.1, 26.1.1, 26.1.2, 26.2, and 26.3 across Paper/Spigot, Fabric, Forge, and NeoForge.
+- **Older Versions:** For Minecraft 1.21.x and earlier, grab previous versions from the [Modrinth Version History](https://modrinth.com/project/Pb03qu6T/versions).
 
 > **Important:** Do NOT enable `hardcore=true` in `server.properties`. Keep it `false` - the plugin natively handles these mechanics.
 

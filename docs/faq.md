@@ -55,7 +55,7 @@ ______________________________________________________________________
 
 ### Q: Which version of Minecraft is supported?
 
-**A:** SSoggySouls requires **Minecraft 26.X (26.1–26.3)** with:
+**A:** SSoggySouls targets **Minecraft 26.3** and is backward compatible with **26.1, 26.1.1, 26.1.2, 26.2, and 26.3** with:
 
 - Spigot, Paper, Purpur, Fabric, Forge, or NeoForge server software
 

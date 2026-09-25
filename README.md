@@ -215,11 +215,17 @@ Living players can check out Limbo using `/limbo`.
 
 ## Requirements
 
-- **Minecraft:** 26.X (26.1–26.3) (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
+- **Minecraft:** 26.X (Target: 26.3; backward compatible with 26.1, 26.1.1, 26.1.2, 26.2, and 26.3) (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 - **Proxy:** Velocity (BungeeCord/Waterfall might work but not tested)
 - **Database:** SQLite (built-in, for single server) OR MySQL 5.7+ / MariaDB 10.2+ (for 2-server setup)
 - **Java:** 25+
 - **Servers:** One server (single-server mode) OR two backend servers behind a Velocity proxy (Main + Limbo)
+
+### Version & Backward Compatibility
+
+- **Supported Minecraft Versions:** 26.1, 26.1.1, 26.1.2, 26.2, and 26.3.
+- **Backward Compatibility:** All loader builds (Paper, Fabric, NeoForge, Forge) are backward compatible down to 26.1.
+- **Legacy 1.21.x Releases:** If you are running an older Minecraft 1.21.x server, use the corresponding legacy builds available in the [Modrinth Version History](https://modrinth.com/project/Pb03qu6T/versions).
 
 > **Important:** Do NOT enable `hardcore=true` in `server.properties` on either server. Keep it `false`. The plugin handles hardcore stuff internally - if you turn on actual hardcore mode it'll break things. If you already did, either delete your world or look up how to edit the game files.
 >
