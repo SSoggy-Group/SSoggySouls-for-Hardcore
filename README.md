@@ -3,8 +3,6 @@
 ![SSoggySouls Banner](https://cdn.modrinth.com/data/Pb03qu6T/images/48a03bf24103dde408dbbcad653a3936b5f5255a.png)
 
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=SSoggy-Group_SSoggySouls-for-Hardcore&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=SSoggy-Group_SSoggySouls-for-Hardcore)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SSoggy-Group_SSoggySouls-for-Hardcore&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=SSoggy-Group_SSoggySouls-for-Hardcore)
-[![AI Code Assurance](https://sonarcloud.io/api/project_badges/ai_code_assurance?project=SSoggy-Group_SSoggySouls-for-Hardcore)](https://sonarcloud.io/summary/new_code?id=SSoggy-Group_SSoggySouls-for-Hardcore)
 [![Auto Bump, Build, and Release](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml)
 [![Continuous Integration](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml)
 
