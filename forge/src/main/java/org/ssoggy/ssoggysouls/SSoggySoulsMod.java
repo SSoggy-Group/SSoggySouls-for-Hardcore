@@ -91,6 +91,9 @@ public class SSoggySoulsMod implements PluginContext {
             GhostBlockEvents.register(databaseManager);
         }
 
+        // Initialize network channel
+        ServerTransferUtil.register();
+
         if (ConfigManager.getConfig().isCheckForUpdates()) {
             new UpdateChecker().checkForUpdates();
         }

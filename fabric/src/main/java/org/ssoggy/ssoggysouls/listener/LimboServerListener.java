@@ -100,7 +100,7 @@ public class LimboServerListener {
             return false;
         }
 
-        if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
+        if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && player.portalProcess != null && db.isPlayerDead(player.getUUID())) {
             player.sendSystemMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE));
             return true;
         }

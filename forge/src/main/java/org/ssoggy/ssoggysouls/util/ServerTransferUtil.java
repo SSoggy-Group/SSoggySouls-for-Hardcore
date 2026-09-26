@@ -5,6 +5,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.Channel;
+import net.minecraftforge.network.ChannelBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,14 +17,26 @@ import java.io.UncheckedIOException;
 
 public class ServerTransferUtil {
 
-    public static void register() {
-        // No-op. This utility sends vanilla custom payload packets directly.
+    private static final Identifier BUNGEE_CHANNEL = Identifier.fromNamespaceAndPath("bungeecord", "main");
+    private static Channel<CustomPacketPayload> channel;
+
+    public static synchronized void register() {
+        if (channel == null) {
+            channel = ChannelBuilder.named(BUNGEE_CHANNEL)
+                    .optional()
+                    .payloadChannel()
+                    .play()
+                    .clientbound()
+                    .add(BungeeConnectPayload.PAYLOAD_TYPE, BungeeConnectPayload.CODEC.cast(), (msg, ctx) -> {})
+                    .build();
+        }
     }
 
     public static void sendToServer(ServerPlayer player, String serverName) {
-        player.connection.send(new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(
-                new BungeeConnectPayload(serverName)
-        ));
+        if (channel == null) {
+            register();
+        }
+        channel.send(new BungeeConnectPayload(serverName), player.connection.getConnection());
     }
 
     public static void sendToLimbo(ServerPlayer player) {
@@ -35,7 +49,7 @@ public class ServerTransferUtil {
 
     public record BungeeConnectPayload(String serverName) implements CustomPacketPayload {
         public static final CustomPacketPayload.Type<BungeeConnectPayload> PAYLOAD_TYPE = new CustomPacketPayload.Type<>(
-                Identifier.fromNamespaceAndPath("bungeecord", "main")
+                BUNGEE_CHANNEL
         );
 
         public static final StreamCodec<FriendlyByteBuf, BungeeConnectPayload> CODEC = StreamCodec.of(

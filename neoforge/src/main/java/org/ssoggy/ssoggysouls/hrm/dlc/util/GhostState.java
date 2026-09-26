@@ -38,10 +38,12 @@ public class GhostState extends SavedData {
 
     public void setDeathLocation(UUID ghostId, BlockPos pos) {
         deathLocations.put(ghostId, pos);
+        setDirty();
     }
 
     public void removeDeathLocation(UUID ghostId) {
         deathLocations.remove(ghostId);
+        setDirty();
     }
 
     public Map<UUID, BlockPos> getDeathLocations() {
@@ -54,10 +56,12 @@ public class GhostState extends SavedData {
 
     public void setDeathHolder(UUID ghostId, UUID holderId) {
         deathHolders.put(ghostId, holderId);
+        setDirty();
     }
 
     public void removeDeathHolder(UUID ghostId) {
         deathHolders.remove(ghostId);
+        setDirty();
     }
 
     public Map<UUID, UUID> getDeathHolders() {

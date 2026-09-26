@@ -5,6 +5,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,14 +17,15 @@ import java.io.UncheckedIOException;
 
 public class ServerTransferUtil {
 
-    public static void register() {
-        // No-op. This utility sends vanilla custom payload packets directly.
+    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        event.registrar("bungeecord").optional().playToClient(
+                BungeeConnectPayload.PAYLOAD_TYPE,
+                BungeeConnectPayload.CODEC
+        );
     }
 
     public static void sendToServer(ServerPlayer player, String serverName) {
-        player.connection.send(new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(
-                new BungeeConnectPayload(serverName)
-        ));
+        PacketDistributor.sendToPlayer(player, new BungeeConnectPayload(serverName));
     }
 
     public static void sendToLimbo(ServerPlayer player) {

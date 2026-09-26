@@ -1,5 +1,7 @@
 package org.ssoggy.ssoggysouls.util;
 
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -16,13 +18,11 @@ import java.io.UncheckedIOException;
 public class ServerTransferUtil {
 
     public static void registerPayloads() {
-        // No-op. This utility sends vanilla custom payload packets directly.
+        PayloadTypeRegistry.clientboundPlay().register(BungeeConnectPayload.PAYLOAD_TYPE, BungeeConnectPayload.CODEC);
     }
 
     public static void sendToServer(ServerPlayer player, String serverName) {
-        player.connection.send(new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(
-                new BungeeConnectPayload(serverName)
-        ));
+        ServerPlayNetworking.send(player, new BungeeConnectPayload(serverName));
     }
 
     public static void sendToLimbo(ServerPlayer player) {

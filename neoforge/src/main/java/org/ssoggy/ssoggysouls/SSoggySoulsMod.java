@@ -40,6 +40,7 @@ public class SSoggySoulsMod implements PluginContext {
     public SSoggySoulsMod(IEventBus modEventBus) {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(ServerTransferUtil::registerPayloads);
 
         // Register ourselves for server and other game events we are interested in
         NeoForge.EVENT_BUS.register(this);
@@ -104,7 +105,6 @@ public class SSoggySoulsMod implements PluginContext {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(ServerTransferUtil::register);
     }
 
     @SubscribeEvent
