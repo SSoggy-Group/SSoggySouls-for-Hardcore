@@ -1,5 +1,6 @@
 package org.ssoggy.ssoggysouls.listener;
 
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.core.GlobalPos;
@@ -35,6 +36,7 @@ public class LimboServerListener {
     private LimboServerListener() {
         registerJoinEvent();
         registerCancelDamageEvent();
+        registerWorldChangeEvent();
     }
 
     public static void register(DatabaseManager db) {
@@ -73,6 +75,29 @@ public class LimboServerListener {
         );
     }
 
+    private void registerWorldChangeEvent() {
+        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, ignoredOrigin, destination) -> {
+            if (db == null || !db.isPlayerDead(player.getUUID())) {
+                return;
+            }
+
+            ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+            Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+            if (worldId == null) {
+                return;
+            }
+            ResourceKey<Level> limboWorldKey = ResourceKey.create(Registries.DIMENSION, worldId);
+            if (destination.dimension().equals(limboWorldKey)) {
+                return;
+            }
+            ServerLevel limboWorld = destination.getServer().getLevel(limboWorldKey);
+            if (limboWorld != null) {
+                player.teleportTo(limboWorld, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch(), true);
+                player.sendSystemMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE));
+            }
+        });
+    }
+
     private static boolean isWhitelistedCommand(String message) {
         String[] tokens = message.trim().split("\\s+");
         String command = tokens.length > 0 ? tokens[0].toLowerCase(Locale.ROOT) : "";
@@ -92,6 +117,8 @@ public class LimboServerListener {
 
     public static boolean shouldBlockPortal(ServerPlayer player, ServerLevel destination) {
         if (db == null) return false;
+        // Only portal-driven dimension changes are blocked; same-level teleports (commands, revival) pass through
+        if (destination == player.level() || player.portalProcess == null || !player.portalProcess.isInsidePortalThisTick()) return false;
         if (player.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) return false;
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();

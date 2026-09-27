@@ -22,7 +22,7 @@ This comprehensive guide covers everything you need to know to properly install 
 
 ### Server Requirements
 
-- **Minecraft Version:** 26.X (backwards compatible with 1.21.X)
+- **Minecraft Version:** 26.X
 
 - **Server Software:** Spigot, Paper, Purpur, Fabric, Forge, or NeoForge
 
@@ -34,7 +34,7 @@ This comprehensive guide covers everything you need to know to properly install 
 
 ### Backward Compatibility
 
-- **Supported Minecraft Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3) and backwards compatible with 1.21.X.
+- **Supported Minecraft Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3). Not compatible with 1.21.X (requires Java 25 and 26.X APIs).
 - **Legacy Minecraft Versions:** For 1.21.x and earlier versions, use previous builds from Modrinth version history.
 
 ### Server Setup
@@ -199,7 +199,7 @@ Get the latest version:
 
 - [Modrinth](https://modrinth.com/project/Pb03qu6T)
 
-Download `SSoggySouls-4.5.7.jar` (or latest version).
+Download `SSoggySouls-4.6.0.jar` (or latest version).
 
 ### Installation Steps
 
@@ -210,14 +210,14 @@ Download `SSoggySouls-4.5.7.jar` (or latest version).
 **For Single Server Setups:**
 
 ```text
-Server: /plugins/SSoggySouls-4.5.7.jar
+Server: /plugins/SSoggySouls-4.6.0.jar
 ```
 
 **For 2-Server Setups (Main + Limbo):**
 
 ```text
-Main Server: /plugins/SSoggySouls-4.5.7.jar
-Limbo Server: /plugins/SSoggySouls-4.5.7.jar
+Main Server: /plugins/SSoggySouls-4.6.0.jar
+Limbo Server: /plugins/SSoggySouls-4.6.0.jar
 ```
 
 1. **Start your server(s)** to generate config files
@@ -561,7 +561,7 @@ Check console logs for:
 
 ### Mistake 6: Different Plugin Versions
 
-**Wrong:** Main server has v3.2.6, Limbo has v4.5.7
+**Wrong:** Main server has v3.2.6, Limbo has v4.6.0
 
 **Right:** Both servers must use the exact same version
 

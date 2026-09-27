@@ -6,9 +6,9 @@
 [![Auto Bump, Build, and Release](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml)
 [![Continuous Integration](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml)
 
-**Version 4.5.7** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
+**Version 4.6.0** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
 
-A hardcore lives system mod/plugin for Minecraft 26.X (Supports Spigot, Paper, Purpur, Fabric, Forge, and NeoForge; backwards compatible with 1.21.X). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
+A hardcore lives system mod/plugin for Minecraft 26.X (Supports Spigot, Paper, Purpur, Fabric, Forge, and NeoForge). 1.21.X servers need an older release. When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
 
 > **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 >
@@ -213,7 +213,7 @@ Living players can check out Limbo using `/limbo`.
 
 ## Requirements
 
-- **Minecraft:** 26.X (backwards compatible with 1.21.X) (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
+- **Minecraft:** 26.X (Spigot, Paper, Purpur, Fabric, Forge, or NeoForge)
 - **Proxy:** Velocity (BungeeCord/Waterfall might work but not tested)
 - **Database:** SQLite (built-in, for single server) OR MySQL 5.7+ / MariaDB 10.2+ (for 2-server setup)
 - **Java:** 25+
@@ -221,7 +221,7 @@ Living players can check out Limbo using `/limbo`.
 
 ### Backward Compatibility
 
-- **Supported Minecraft Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3) and backwards compatible with 1.21.X across all loaders (Spigot, Paper, Purpur, Fabric, Forge, and NeoForge).
+- **Supported Minecraft Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3) across all loaders (Spigot, Paper, Purpur, Fabric, Forge, and NeoForge).
 - **Legacy 1.21.x Releases:** If you are running a 1.21.X server, prior releases remain available on [Modrinth Version History](https://modrinth.com/project/Pb03qu6T/versions) and [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
 
 > **Important:** Do NOT enable `hardcore=true` in `server.properties` on either server. Keep it `false`. The plugin handles hardcore stuff internally - if you turn on actual hardcore mode it'll break things. If you already did, either delete your world or look up how to edit the game files.
@@ -313,14 +313,14 @@ After setup, test everything:
 
 ### Step 1: Download
 
-Download the latest release (`SSoggySouls-4.5.7.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
+Download the latest release (`SSoggySouls-4.6.0.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
 
 ### Step 2: Install Plugin
 
-Place `SSoggySouls-4.5.7.jar` in the `plugins/` folder of **both** servers:
+Place `SSoggySouls-4.6.0.jar` in the `plugins/` folder of **both** servers:
 
-- Main server: `/plugins/SSoggySouls-4.5.7.jar`
-- Limbo server: `/plugins/SSoggySouls-4.5.7.jar`
+- Main server: `/plugins/SSoggySouls-4.6.0.jar`
+- Limbo server: `/plugins/SSoggySouls-4.6.0.jar`
 
 ### Step 3: Generate Config
 
@@ -746,7 +746,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 
 ## Changelog
 
-### v4.5.7
+### v4.6.0
 
 **What's Changed:**
 
@@ -756,7 +756,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 - **Auto-build workflow** - GitHub Actions now builds the JAR automatically on every push.
 - **Rename: PolarSouls to SSoggySouls** - Finished renaming everything internally. No config changes needed.
 
-**Full Changelog:** [v1...v4.5.7](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v4.5.7)
+**Full Changelog:** [v1...v4.6.0](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v4.6.0)
 
 ## Credits
 
