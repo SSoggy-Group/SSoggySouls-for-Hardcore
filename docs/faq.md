@@ -327,11 +327,15 @@ ______________________________________________________________________
 
 **A:** You receive:
 
-- ⚡ **Speed II** effect (faster movement)
+- **Slowness I** — the soul is heavy; you move slower
 
-- 👁️ **Night Vision** (see in darkness)
+- **Health Boost V** — +10 hearts of max health
 
-This gives tactical advantage while carrying the head to a revival structure. The effects disappear when you remove the head.
+- **Resistance I** — take less damage
+
+- **Nausea** for the first 10 seconds after putting it on
+
+Carrying a soul is slow but makes you much harder to kill on the way to a revival structure. The effects disappear when you remove the head.
 
 ______________________________________________________________________
 
@@ -553,7 +557,7 @@ ______________________________________________________________________
   ```bash
   /psadmin grace PlayerName 48
 
-```text
+```
 
 ______________________________________________________________________
 
@@ -688,9 +692,9 @@ hrm:
 
   revive-skull-recipe: false # Disable Revive Skull crafting
 
-  head-wearing-effects: false # Disable Speed/Night Vision
+  head-wearing-effects: false # Disable head-wearing effects
 
-```text
+```
 
 Or set `enabled: false` to disable everything.
 

@@ -541,7 +541,7 @@ hrm:
 
   leave-structure-base: true      # Don't destroy structure after revive
 
-  head-wearing-effects: true      # Speed/night vision when wearing heads
+  head-wearing-effects: true      # Slowness/Health Boost/Resistance when wearing heads
 
   revive-skull-recipe: true       # Enable Revive Skull crafting
 
@@ -610,11 +610,15 @@ head-wearing-effects: true
 
 When a player wears a dead player's head, they receive:
 
-- **Speed II** effect
+- **Slowness I** — the soul is heavy; you move slower
 
-- **Night Vision** effect
+- **Health Boost V** — +10 hearts of max health
 
-Tactical advantage while carrying heads to revival structures.
+- **Resistance I** — take less damage
+
+- **Nausea** for the first 10 seconds after putting it on
+
+Slower, but much harder to kill while carrying a head to a revival structure.
 
 ### Revive Skull Recipe
 
@@ -644,7 +648,7 @@ lose-inventory: false                 # Do players drop inventory upon hardcore 
 restrict-menu-access: true            # Can ghosts open menus?
 creative-players-drop-heads: false    # Do creative players drop heads?
 keep-structure-base: true             # Does structure remain after revival?
-head-effects: true                    # Speed/Night Vision when wearing heads?
+head-effects: true                    # Slowness/Health Boost/Resistance when wearing heads?
 head-burns-in-lava: false             # Do heads burn? (If false, placed as block)
 ritual-lightning-strike: true         # Strike lightning on revival?
 ritual-totem-effect: true             # Show totem animation on revival?

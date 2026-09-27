@@ -174,7 +174,7 @@ Change letters in `row1/row2/row3` and define your own materials in `ingredients
 
 ### Head Wearing Effects
 
-- Wear a dead player's head = get Speed II and Night Vision
+- Wear a dead player's head = get Slowness, Health Boost V and Resistance
 - Handy for running to revival structures
 - Can disable in `config.yml` (`hrm.head-wearing-effects: false`)
 
@@ -477,7 +477,7 @@ hrm:
   death-location-message: true    # Send death coords to player
   structure-revive: true          # Enable 3x3x3 ritual structures
   leave-structure-base: true      # Don't destroy structure after revive
-  head-wearing-effects: true      # Speed/night vision when wearing heads
+  head-wearing-effects: true      # Slowness/Health Boost/Resistance when wearing heads
   revive-skull-recipe: true       # Enable Revive Skull crafting
 ```
 

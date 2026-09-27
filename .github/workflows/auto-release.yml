@@ -289,8 +289,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Apply Version to Gradle files
         env:
@@ -313,10 +313,16 @@ jobs:
         id: commit_version
         env:
           NEW_VERSION: ${{ needs.prepare-release.outputs.new_version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+
+          # Authenticate per command via a transient header instead of embedding the
+          # token in the remote URL or persisting it in .git/config.
+          AUTH_HEADER="AUTHORIZATION: basic $(printf 'x-access-token:%s' "${GH_TOKEN}" | base64 -w0)"
+          echo "::add-mask::${AUTH_HEADER#AUTHORIZATION: basic }"
+          authgit() { git -c "http.https://github.com/.extraheader=${AUTH_HEADER}" "$@"; }
 
           TAG="v${NEW_VERSION}"
           TAG_CREATED="false"
@@ -329,25 +335,25 @@ jobs:
               -m "- Update platform version files to ${TAG}." \
               -m "- Refresh documentation references for ${TAG}."
 
-            git fetch --prune --tags origin
+            authgit fetch --prune --tags origin
 
             if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
               echo "Tag ${TAG} already exists locally; skipping release tag and push."
               echo "tag_created=false" >> "${GITHUB_OUTPUT}"
               exit 0
-            elif git ls-remote --tags origin "${TAG}" | grep -q "refs/tags/${TAG}$"; then
+            elif authgit ls-remote --tags origin "${TAG}" | grep -q "refs/tags/${TAG}$"; then
               echo "Tag ${TAG} already exists on origin; skipping release tag and push."
               echo "tag_created=false" >> "${GITHUB_OUTPUT}"
               exit 0
             fi
 
-            git pull --rebase origin main
+            authgit pull --rebase origin main
 
             git tag "${TAG}"
             TAG_CREATED="true"
 
-            git push origin main
-            git push origin "${TAG}"
+            authgit push origin main
+            authgit push origin "${TAG}"
           fi
 
           echo "tag_created=${TAG_CREATED}" >> "${GITHUB_OUTPUT}"
