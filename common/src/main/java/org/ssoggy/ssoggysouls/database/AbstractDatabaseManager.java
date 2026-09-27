@@ -274,6 +274,37 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
     }
 
     @Override
+    public void setUsername(UUID uuid, String username) {
+        String sql = UPDATE + tableName + " SET username = ? WHERE uuid = ?";
+        try (Connection conn = getDataSource().getConnection();
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+            ps.setString(1, username);
+            ps.setString(2, uuid.toString());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set username for " + uuid);
+        }
+    }
+
+    @Override
+    public boolean incrementLives(UUID uuid, int maxLives) {
+        // Single conditional UPDATE so concurrent uses can neither lose an increment
+        // nor push lives past the cap.
+        String sql = UPDATE + tableName
+                + " SET lives = lives + 1 WHERE uuid = ? AND is_dead = FALSE AND (? <= 0 OR lives < ?)";
+        try (Connection conn = getDataSource().getConnection();
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+            ps.setString(1, uuid.toString());
+            ps.setInt(2, maxLives);
+            ps.setInt(3, maxLives);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to increment lives for " + uuid);
+            return false;
+        }
+    }
+
+    @Override
     public void invalidateDeathStatusCache(UUID uuid) {
         deathStatusCache.remove(uuid);
     }

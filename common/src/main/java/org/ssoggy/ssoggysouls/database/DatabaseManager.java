@@ -17,6 +17,15 @@ public interface DatabaseManager {
     void setFirstJoin(UUID uuid, long firstJoin);
     void setLastSeen(UUID uuid, long lastSeen);
     void setGraceUntil(UUID uuid, long graceUntil);
+    /** Updates only the username column (avoids overwriting concurrent changes). */
+    void setUsername(UUID uuid, String username);
+    /**
+     * Atomically adds one life to a living player, unless that would exceed
+     * {@code maxLives} (ignored when {@code maxLives <= 0}).
+     *
+     * @return true if a life was added
+     */
+    boolean incrementLives(UUID uuid, int maxLives);
     void invalidateDeathStatusCache(UUID uuid);
     List<PlayerData> getDeadPlayers();
     String getPluginVersion(String key);
