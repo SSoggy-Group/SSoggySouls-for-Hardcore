@@ -95,7 +95,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -164,7 +164,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -287,7 +287,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
@@ -436,7 +436,7 @@ jobs:
 
       - name: Publish Paper to Modrinth
         if: steps.check_paper.outputs.already_published != 'true'
-        uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075
+        uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3.1
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
@@ -493,7 +493,7 @@ jobs:
 
       - name: Publish Fabric to Modrinth
         if: steps.check_fabric.outputs.already_published != 'true'
-        uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075
+        uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3.1
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
@@ -548,7 +548,7 @@ jobs:
 
       - name: Publish Forge to Modrinth
         if: steps.check_forge.outputs.already_published != 'true'
-        uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075
+        uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3.1
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
@@ -601,7 +601,7 @@ jobs:
 
       - name: Publish NeoForge to Modrinth
         if: steps.check_neoforge.outputs.already_published != 'true'
-        uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075
+        uses: Kir-Antipov/mc-publish@52307b03863581dec6b652b83e597aec02ebb075 # v3.3.1
         with:
           modrinth-id: Pb03qu6T
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
