@@ -1,6 +1,9 @@
 package org.ssoggy.ssoggysouls.hrm;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -39,6 +42,8 @@ public class ExtraLifeManager implements Listener {
     private final DatabaseManager db;
     private final NamespacedKey extraLifeKey;
     private final NamespacedKey recipeKey;
+    // Players with an Extra Life use still being processed; blocks right-click spam dupes
+    private final Set<UUID> inFlight = ConcurrentHashMap.newKeySet();
 
     public ExtraLifeManager(SSoggySouls plugin) {
         this.plugin = plugin;
@@ -123,46 +128,70 @@ public class ExtraLifeManager implements Listener {
 
         event.setCancelled(true);
         Player player = event.getPlayer();
+        if (!inFlight.add(player.getUniqueId())) return;
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
-                consumeExtraLife(player, item));
+        // Take one item up front (main thread) so the same stack can never pay for
+        // more than one life; it is refunded if the use is rejected.
+        ItemStack single = item.clone();
+        single.setAmount(1);
+        item.setAmount(item.getAmount() - 1);
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            boolean consumed = false;
+            try {
+                consumed = consumeExtraLife(player);
+            } finally {
+                final boolean used = consumed;
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    inFlight.remove(player.getUniqueId());
+                    if (!used && player.isOnline()) {
+                        player.getInventory().addItem(single).values()
+                                .forEach(left -> player.getWorld().dropItem(player.getLocation(), left));
+                    }
+                });
+            }
+        });
     }
 
-    private void consumeExtraLife(Player player, ItemStack item) {
-        PlayerData data = db.getPlayer(player.getUniqueId());
+    private boolean consumeExtraLife(Player player) {
+        PlayerData data;
+        try {
+            data = db.getPlayerStrict(player.getUniqueId());
+        } catch (java.sql.SQLException e) {
+            // Don't create a record over the real one on a failed read; the item is refunded
+            plugin.getLogger().log(Level.WARNING, e, () -> "Could not load " + player.getName() + " for Extra Life");
+            return false;
+        }
         if (data == null) {
             data = PlayerData.createNew(player.getUniqueId(), player.getName(),
-                    plugin.getDefaultLives());
+                    plugin.getDefaultLives(), plugin.getGracePeriodMillis());
             db.savePlayer(data);
         }
 
         if (data.isDead()) {
             Bukkit.getScheduler().runTask(plugin, () ->
                     player.sendMessage(MessageUtil.get("extra-life-dead")));
-            return;
+            return false;
         }
 
         int maxLives = plugin.getMaxLives();
-        if (maxLives > 0 && data.getLives() >= maxLives) {
-            Bukkit.getScheduler().runTask(plugin, () ->
-                    player.sendMessage(MessageUtil.get("extra-life-max",
-                            "max", maxLives)));
-            return;
+        // Atomic conditional increment so concurrent writers can't lose this life
+        if (!db.incrementLives(data.getUuid(), maxLives)) {
+            PlayerData latest = db.getPlayer(data.getUuid());
+            boolean nowDead = latest != null && latest.isDead();
+            Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(nowDead
+                    ? MessageUtil.get("extra-life-dead")
+                    : MessageUtil.get("extra-life-max", "max", maxLives)));
+            return false;
         }
 
-        int newLives = data.getLives() + 1;
-        db.setLives(data.getUuid(), newLives);
+        PlayerData updated = db.getPlayer(data.getUuid());
+        int newLives = updated != null ? updated.getLives() : data.getLives() + 1;
         plugin.getLogger().log(Level.INFO, "{0} used Extra Life item (now {1} lives)",
                 new Object[]{player.getName(), newLives});
 
         final int finalLives = newLives;
         Bukkit.getScheduler().runTask(plugin, () -> {
-            if (item.getAmount() > 1) {
-                item.setAmount(item.getAmount() - 1);
-            } else {
-                player.getInventory().removeItem(item);
-            }
-
             player.sendMessage(MessageUtil.get("extra-life-used",
                     "lives", finalLives));
 
@@ -174,5 +203,6 @@ public class ExtraLifeManager implements Listener {
             player.addPotionEffect(new PotionEffect(
                     PotionEffectType.GLOWING, 60, 0, false, true));
         });
+        return true;
     }
 }

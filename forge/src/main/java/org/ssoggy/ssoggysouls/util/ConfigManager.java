@@ -23,10 +23,17 @@ public class ConfigManager {
         if (CONFIG_FILE.exists()) {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 config = GSON.fromJson(reader, ModConfig.class);
-            } catch (IOException e) {
-                org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.error("Failed to load config file", e);
+                if (config == null) {
+                    // Empty file
+                    config = new ModConfig();
+                } else {
+                    config.mergeDefaultMessages();
+                }
+            } catch (IOException | com.google.gson.JsonParseException e) {
+                // Fall back to defaults in memory but leave the user's (possibly broken) file
+                // untouched so their settings can be fixed rather than silently overwritten.
+                org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.error("Failed to load config file, using defaults", e);
                 config = new ModConfig();
-                save();
             }
         } else {
             config = new ModConfig();
@@ -132,6 +139,14 @@ public class ConfigManager {
         private String messagePrefix = "§8[§4☠§8] §r";
         private java.util.Map<String, String> messages = new java.util.HashMap<>();
 
+        /** Adds default messages missing from an older config file, keeping configured ones. */
+        void mergeDefaultMessages() {
+            if (messages == null) {
+                messages = new java.util.HashMap<>();
+            }
+            new ModConfig().messages.forEach(messages::putIfAbsent);
+        }
+
         // --- Structure Block Tags ---
         @com.google.gson.annotations.SerializedName("soulSandBlocktag")
         private java.util.List<String> soulSandBlockTag = new java.util.ArrayList<>(java.util.Arrays.asList("CRYING_OBSIDIAN", "OBSIDIAN"));
@@ -150,6 +165,11 @@ public class ConfigManager {
 
         public ModConfig() {
             // Default messages
+            messages.put("usage-revive", "§cUsage: /revive <player>");
+            messages.put("usage-psetlives", "§cUsage: /psetlives <player> <lives>");
+            messages.put("usage-psetlives-player", "§cUsage: /psetlives %player% <lives>");
+            messages.put("click-to-autofill", "§7Click to autofill");
+            messages.put("admin-log-read-error", "§cCould not read the admin log. Check the server console.");
             messages.put("death-life-lost", "§cYou lost a life! §7Remaining: §e%lives%");
             messages.put("death-last-life", "§c§l⚠ FINAL WARNING! §cYou are on your last life. Be careful!");
             messages.put("revive-success", "§a§l✦ REVIVED! §aReturning to the world of the living...");

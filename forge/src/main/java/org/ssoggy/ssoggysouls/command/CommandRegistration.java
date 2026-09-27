@@ -148,8 +148,12 @@ public class CommandRegistration {
             return;
         }
 
-        int defaultLives = ConfigManager.getConfig().getDefaultLives();
-        boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
+        // Same lives as a ritual revive (was defaultLives, making command revives stronger)
+        int reviveLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getOnReviveLives();
+        boolean success = db.revivePlayer(targetData.getUuid(), reviveLives);
+        if (success) {
+            org.ssoggy.ssoggysouls.listener.LimboServerListener.setCachedDead(targetData.getUuid(), false);
+        }
         if (success) {
             handleReviveSuccess(targetData, source);
         }
@@ -216,7 +220,13 @@ public class CommandRegistration {
                                 return;
                             }
 
-                            db.setLives(data.getUuid(), lives);
+                            if (!db.setLives(data.getUuid(), lives)) {
+                                source.getServer().execute(() ->
+                                    source.sendFailure(Component.literal("Failed to update lives for " + data.getUsername() + ". Check console.")));
+                                return;
+                            }
+                            // No-op unless this is a Limbo server; applies the restriction immediately
+                            org.ssoggy.ssoggysouls.listener.LimboServerListener.setCachedDead(data.getUuid(), lives <= 0);
                             source.getServer().execute(() -> {
                                 ServerPlayer online = source.getServer().getPlayerList().getPlayer(data.getUuid());
                                 if (lives > 0) {

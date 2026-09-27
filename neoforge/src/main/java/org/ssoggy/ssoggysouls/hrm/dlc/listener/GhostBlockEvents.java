@@ -149,7 +149,7 @@ public class GhostBlockEvents {
         GhostState ghostState = GhostState.getServerState(world.getServer());
 
         ghostState.removeDeathHolder(ownerUuid);
-        ghostState.setDeathLocation(ownerUuid, targetPos);
+        ghostState.setDeathLocation(ownerUuid, net.minecraft.core.GlobalPos.of(world.dimension(), targetPos));
         ghostState.setDirty();
         DlcDeaths.setHolder(ownerUuid, null);
         DlcDeaths.recordDeath(

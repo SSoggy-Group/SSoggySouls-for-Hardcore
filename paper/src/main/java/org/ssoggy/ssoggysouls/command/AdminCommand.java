@@ -141,6 +141,10 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         }
 
         String action = args[1].toLowerCase();
+        if (!LIVES_ACTIONS.contains(action)) {
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin lives <set|give|take> <player> <amount>", "/psadmin lives ");
+            return;
+        }
         String targetName = args[2];
         int amount = parseIntOrError(sender, args[3], "/psadmin lives " + action + " " + targetName + " ");
         if (amount < 0) return;
@@ -182,7 +186,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private static int computeNewLives(int current, String action, int amount) {
         return switch (action) {
-            case "give" -> current + amount;
+            case "give" -> (int) Math.min(Integer.MAX_VALUE, (long) current + amount);
             case "take" -> Math.max(0, current - amount);
             default -> amount; // "set"
         };
@@ -426,6 +430,12 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private void applyDeathTransition(Player target) {
         if (!target.isOnline()) return;
+
+        // Already on Limbo: apply the same dead state a dead player gets on join
+        if (plugin.isLimboServer() && plugin.getLimboServerListener() != null) {
+            plugin.getLimboServerListener().markDead(target);
+            return;
+        }
 
         if (plugin.isSingleServerMode()) {
             target.setGameMode(GameMode.SPECTATOR);

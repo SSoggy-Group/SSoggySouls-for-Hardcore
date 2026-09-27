@@ -529,9 +529,13 @@ ______________________________________________________________________
 
 When a living player **wears a dead player's head**, they receive:
 
-- **Speed II** — faster movement to the revival structure
+- **Slowness I** — the soul is heavy; you move slower
 
-- **Night Vision** — see in darkness en route
+- **Health Boost V** — +10 hearts of max health
+
+- **Resistance I** — take less damage
+
+- **Nausea** for the first 10 seconds after putting it on
 
 **Configuration:**
 
@@ -575,7 +579,7 @@ hrm:
 
   revive-skull-recipe: true     # Enable Revive Skull crafting
 
-  head-wearing-effects: true    # Speed/night vision on heads
+  head-wearing-effects: true    # Slowness/Health Boost/Resistance on heads
 
   detect-hrm-revive: true       # Auto-detect completed structures
 

@@ -280,10 +280,9 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
             getServer().getPluginManager().registerEvents(
                     new RevivalStructureListener(this), this);
 
-            if (hrmHeadEffects) {
-                new HeadEffectsTask(this).runTaskTimer(this, 20L, 20L);
-                getLogger().info("HRM head-wearing effects task started.");
-            }
+            // Always scheduled; the task checks the toggle each run so /psadmin reload and
+            // /revivalconfig can enable/disable it without a restart
+            new HeadEffectsTask(this).runTaskTimer(this, 20L, 20L);
 
             if (hrmReviveSkullRecipe) {
                 reviveSkullManager = new ReviveSkullManager(this);
@@ -580,6 +579,14 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
     public MainServerListener getMainServerListener() {
         return mainServerListener;
+    }
+
+    public HeadDropListener getHeadDropListener() {
+        return headDropListener;
+    }
+
+    public LimboServerListener getLimboServerListener() {
+        return limboServerListener;
     }
 
     public boolean isLimboServer() {

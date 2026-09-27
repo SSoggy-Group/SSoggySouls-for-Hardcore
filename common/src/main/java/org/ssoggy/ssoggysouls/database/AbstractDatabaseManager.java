@@ -48,6 +48,16 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public PlayerData getPlayer(UUID uuid) {
+        try {
+            return getPlayerStrict(uuid);
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player " + uuid);
+            return null;
+        }
+    }
+
+    @Override
+    public PlayerData getPlayerStrict(UUID uuid) throws SQLException {
         if (uuid == null) return null;
         String sql = SELECT_ALL + tableName + " WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
@@ -58,8 +68,6 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
                     return mapResultSet(rs);
                 }
             }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player " + uuid);
         }
         return null;
     }
@@ -217,7 +225,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
     }
 
     @Override
-    public void setLives(UUID uuid, int lives) {
+    public boolean setLives(UUID uuid, int lives) {
         String sql = UPDATE + tableName + " SET lives = ?, is_dead = ? WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
@@ -229,8 +237,10 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
             if (rows > 0) {
                 deathStatusCache.put(uuid, dead);
             }
+            return rows > 0;
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set lives for " + uuid);
+            return false;
         }
     }
 
@@ -270,6 +280,37 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
             ps.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set grace_until for " + uuid);
+        }
+    }
+
+    @Override
+    public void setUsername(UUID uuid, String username) {
+        String sql = UPDATE + tableName + " SET username = ? WHERE uuid = ?";
+        try (Connection conn = getDataSource().getConnection();
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+            ps.setString(1, username);
+            ps.setString(2, uuid.toString());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set username for " + uuid);
+        }
+    }
+
+    @Override
+    public boolean incrementLives(UUID uuid, int maxLives) {
+        // Single conditional UPDATE so concurrent uses can neither lose an increment
+        // nor push lives past the cap.
+        String sql = UPDATE + tableName
+                + " SET lives = lives + 1 WHERE uuid = ? AND is_dead = FALSE AND (? <= 0 OR lives < ?)";
+        try (Connection conn = getDataSource().getConnection();
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+            ps.setString(1, uuid.toString());
+            ps.setInt(2, maxLives);
+            ps.setInt(3, maxLives);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to increment lives for " + uuid);
+            return false;
         }
     }
 

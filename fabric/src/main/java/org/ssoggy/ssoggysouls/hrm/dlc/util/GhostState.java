@@ -12,6 +12,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -31,12 +33,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GhostState extends SavedData {
 
     private static final String DEATH_LOCATIONS = "deathLocations";
+    private static final String DEATH_DIMENSIONS = "deathDimensions";
     private static final String DEATH_HOLDERS = "deathHolders";
     private static final String HEAD_BLOCK_LOCATIONS = "headBlockLocations";
     private static final String HEAD_LOCATION_DIMENSION = "dimension";
     private static final String HEAD_LOCATION_POS = "pos";
 
     private final Map<UUID, BlockPos> deathLocations = new ConcurrentHashMap<>();
+    // Dimension of each death location; absent for entries saved before it was tracked
+    private final Map<UUID, ResourceKey<Level>> deathDimensions = new ConcurrentHashMap<>();
     private final Map<UUID, UUID> deathHolders = new ConcurrentHashMap<>();
     private final Map<UUID, List<GlobalPos>> headBlockLocations = new HashMap<>();
 
@@ -46,12 +51,41 @@ public class GhostState extends SavedData {
 
     public void setDeathLocation(UUID ghostId, BlockPos pos) {
         deathLocations.put(ghostId, pos);
+        deathDimensions.remove(ghostId);
         setDirty();
+    }
+
+    public void setDeathLocation(UUID ghostId, GlobalPos pos) {
+        deathLocations.put(ghostId, pos.pos());
+        deathDimensions.put(ghostId, pos.dimension());
+        setDirty();
+    }
+
+    /** Dimension of the stored death location, or {@code null} if unknown (legacy data). */
+    public ResourceKey<Level> getDeathDimension(UUID ghostId) {
+        return deathDimensions.get(ghostId);
     }
 
     public void removeDeathLocation(UUID ghostId) {
         deathLocations.remove(ghostId);
+        deathDimensions.remove(ghostId);
         setDirty();
+    }
+
+    /**
+     * Returns a position a ghost can actually stand at. Deaths in the void would
+     * otherwise pin the ghost (or its head) below the world forever: use the top of
+     * the column, or the server spawn when the column is empty (e.g. End void).
+     */
+    public static GlobalPos reachableDeathPos(ServerLevel level, BlockPos pos) {
+        if (pos.getY() >= level.getMinY()) {
+            return GlobalPos.of(level.dimension(), pos);
+        }
+        int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
+        if (top > level.getMinY()) {
+            return GlobalPos.of(level.dimension(), new BlockPos(pos.getX(), top, pos.getZ()));
+        }
+        return level.getServer().getRespawnData().globalPos();
     }
 
     public Map<UUID, BlockPos> getDeathLocations() {
@@ -95,6 +129,10 @@ public class GhostState extends SavedData {
         deathLocations.forEach((uuid, pos) -> locations.putLong(uuid.toString(), pos.asLong()));
         tag.put(DEATH_LOCATIONS, locations);
 
+        CompoundTag dimensions = new CompoundTag();
+        deathDimensions.forEach((uuid, dim) -> dimensions.putString(uuid.toString(), dim.identifier().toString()));
+        tag.put(DEATH_DIMENSIONS, dimensions);
+
         CompoundTag holders = new CompoundTag();
         deathHolders.forEach((ghostId, holderId) -> holders.putString(ghostId.toString(), holderId.toString()));
         tag.put(DEATH_HOLDERS, holders);
@@ -122,6 +160,16 @@ public class GhostState extends SavedData {
             CompoundTag locations = tag.getCompoundOrEmpty(DEATH_LOCATIONS);
             for (String key : locations.keySet()) {
                 state.deathLocations.put(UUID.fromString(key), BlockPos.of(locations.getLongOr(key, 0L)));
+            }
+        }
+
+        if (tag.contains(DEATH_DIMENSIONS)) {
+            CompoundTag dimensions = tag.getCompoundOrEmpty(DEATH_DIMENSIONS);
+            for (String key : dimensions.keySet()) {
+                Identifier dimensionId = Identifier.tryParse(dimensions.getStringOr(key, ""));
+                if (dimensionId != null) {
+                    state.deathDimensions.put(UUID.fromString(key), ResourceKey.create(Registries.DIMENSION, dimensionId));
+                }
             }
         }
 
@@ -192,6 +240,7 @@ public class GhostState extends SavedData {
             CompoundTag root = NbtIo.readCompressed(legacyFile, NbtAccounter.unlimitedHeap());
             GhostState legacy = load(root.getCompoundOrEmpty("data"));
             legacy.deathLocations.forEach(state.deathLocations::putIfAbsent);
+            legacy.deathDimensions.forEach(state.deathDimensions::putIfAbsent);
             legacy.deathHolders.forEach(state.deathHolders::putIfAbsent);
             legacy.headBlockLocations.forEach(state.headBlockLocations::putIfAbsent);
             state.setDirty();

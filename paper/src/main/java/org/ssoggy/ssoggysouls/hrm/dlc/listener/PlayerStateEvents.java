@@ -18,6 +18,7 @@ along with RevivePlus.  If not, see <https://www.gnu.org/licenses/>
 
 package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 
+import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.GAMEMODESENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.STATSENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.COMMANDOUTPUTENUM;
@@ -112,10 +113,36 @@ public class PlayerStateEvents implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
-        World world = player.getWorld();
-        Location deathPos = RPStatic.DEAD_LOCATIONS
-                .getOrDefault(player.getUniqueId(), Pair.of(world.getSpawnLocation(), Instant.now())).getLeft();
-        event.setRespawnLocation(deathPos);
+        UUID uuid = player.getUniqueId();
+        Pair<Location, Instant> death = RPStatic.DEAD_LOCATIONS.get(uuid);
+        // Only ghosts respawn at their death spot; players who still have lives keep
+        // their normal (bed / respawn anchor / world spawn) respawn location.
+        if (death == null || !isGhostRespawn(player)) {
+            return;
+        }
+        event.setRespawnLocation(aboveVoid(death.getLeft()));
+    }
+
+    private static boolean isGhostRespawn(Player player) {
+        if (GAMEMODESENUM.getPlayerGameMode(player) == GAMEMODESENUM.GHOSTMODE) {
+            return true;
+        }
+        // In-memory outcome from the death flow: no blocking DB call during respawn, and no
+        // stale "alive" read before the final death is saved. If the outcome is still
+        // pending the normal spawn is used; ghost restrictions pull the ghost back on move.
+        SSoggySouls plugin = SSoggySouls.getInstance();
+        return plugin != null && plugin.getMainServerListener() != null
+                && plugin.getMainServerListener().isFinalDeathRespawnPending(player.getUniqueId());
+    }
+
+    /** Death positions are clamped to minHeight; respawning there drops the ghost into the void. */
+    private static Location aboveVoid(Location loc) {
+        World world = loc.getWorld();
+        if (world == null || loc.getY() > world.getMinHeight()) {
+            return loc;
+        }
+        org.bukkit.block.Block top = world.getHighestBlockAt(loc.getBlockX(), loc.getBlockZ());
+        return top.getType().isSolid() ? top.getLocation().add(0.5, 1, 0.5) : world.getSpawnLocation();
     }
 
     @EventHandler

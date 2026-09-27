@@ -44,7 +44,6 @@ import org.ssoggy.ssoggysouls.model.PlayerData;
 public class HeadDropListener implements Listener {
 
     private static final String PERM_BYPASS = "ssoggysouls.bypass";
-    private static final String SKIP_HEAD_DROP_MSG = "Skipping head drop for ";
     private static final int ENTITIES_PER_TICK = 50;
     private static final int CHUNKS_PER_TICK = 10;
     private static final int PLAYERS_PER_TICK = 5;
@@ -54,6 +53,8 @@ public class HeadDropListener implements Listener {
     // Tracks locations of skull blocks placed on death so cleanup can remove them
     // directly, even if their chunk is unloaded at revive time.
     private final Map<UUID, List<Location>> headBlockLocations = new ConcurrentHashMap<>();
+    // Death location captured at death, dropped once MainServerListener resolves the outcome
+    private final Map<UUID, Location> pendingHeadDrops = new ConcurrentHashMap<>();
 
     public HeadDropListener(SSoggySouls plugin) {
         this.plugin = plugin;
@@ -70,7 +71,36 @@ public class HeadDropListener implements Listener {
         if (deathLoc == null) return;
 
         sendDeathLocationMessage(player, deathLoc, world);
-        scheduleHeadDrop(player, world, deathLoc);
+        if (plugin.isHrmDropHeads()) {
+            pendingHeadDrops.put(player.getUniqueId(), reachableHeadLocation(world, deathLoc));
+        }
+    }
+
+    /**
+     * Called by MainServerListener on the main thread once the death outcome is persisted.
+     * Replaces the old fixed-attempt DB polling, which could give up before a slow final-death
+     * write landed and lose the head permanently.
+     */
+    public void onDeathResolved(Player player, boolean finalDeath) {
+        Location deathLoc = pendingHeadDrops.remove(player.getUniqueId());
+        if (!finalDeath || deathLoc == null || deathLoc.getWorld() == null) return;
+        placeOrDropHead(player, deathLoc.getWorld(), deathLoc);
+    }
+
+    /**
+     * A head dropped/placed below the world is destroyed, leaving the player
+     * permanently unrevivable. Void deaths move the head to the top block of the
+     * column, or to world spawn if the column is empty (e.g. End void).
+     */
+    private static Location reachableHeadLocation(World world, Location deathLoc) {
+        if (deathLoc.getY() >= world.getMinHeight()) {
+            return deathLoc;
+        }
+        Block top = world.getHighestBlockAt(deathLoc.getBlockX(), deathLoc.getBlockZ());
+        if (top.getType().isSolid()) {
+            return top.getLocation().add(0.5, 1, 0.5);
+        }
+        return world.getSpawnLocation();
     }
 
     private void sendDeathLocationMessage(Player player, Location deathLoc, World world) {
@@ -80,41 +110,6 @@ public class HeadDropListener implements Listener {
                     + "<hover:show_text:'<gray>Click to copy coordinates</gray>'>"
                     + deathLoc.getBlockX() + ", " + deathLoc.getBlockY() + ", " + deathLoc.getBlockZ()
                     + "</hover></click> in " + world.getName() + "</italic></gray>");
-        }
-    }
-
-    private void scheduleHeadDrop(Player player, World world, Location deathLoc) {
-        if (!plugin.isHrmDropHeads()) return;
-
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-            if (!shouldDropHead(player)) return;
-
-            // Place / drop the head on the main thread
-            Bukkit.getScheduler().runTask(plugin, () ->
-                    placeOrDropHead(player, world, deathLoc));
-        }, 10L); // 0.5s delay because why not it would break otherwise
-    }
-
-    private boolean shouldDropHead(Player player) {
-        PlayerData data = db.getPlayer(player.getUniqueId());
-        if (data == null) {
-            debugSkip(player, "(no data).");
-            return false;
-        }
-        if (!data.isDead()) {
-            debugSkip(player, "(not dead).");
-            return false;
-        }
-        if (data.isInGracePeriod(plugin.getGracePeriodMillis())) {
-            debugSkip(player, "(grace period).");
-            return false;
-        }
-        return true;
-    }
-
-    private void debugSkip(Player player, String reason) {
-        if (plugin.isDebugMode()) {
-            plugin.debug(SKIP_HEAD_DROP_MSG + player.getName() + " " + reason);
         }
     }
 
@@ -158,10 +153,24 @@ public class HeadDropListener implements Listener {
         UUID ownerUuid = getHeadOwnerUuid(event.getEntity().getItemStack());
         if (ownerUuid == null) return;
 
-        PlayerData data = db.getPlayer(ownerUuid);
-        if (data != null && data.isDead()) {
-            event.setCancelled(true);
-        }
+        // Never block the main thread on the DB: keep the item (age resets), then
+        // let it go if the owner turns out to be alive.
+        event.setCancelled(true);
+        Item itemEntity = event.getEntity();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            PlayerData data;
+            try {
+                data = db.getPlayerStrict(ownerUuid);
+            } catch (java.sql.SQLException e) {
+                // Read failed: keep the head (age was reset); the next despawn retries the check
+                return;
+            }
+            if (data == null || !data.isDead()) {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (itemEntity.isValid()) itemEntity.remove();
+                });
+            }
+        });
     }
 
     private UUID getHeadOwnerUuid(ItemStack stack) {

@@ -125,17 +125,34 @@ public class GhostModeEvents {
             return;
         }
 
+        // Death positions carry their dimension; without it a ghost who died in the
+        // Nether would be pinned to the same coordinates in the Overworld.
+        net.minecraft.server.level.ServerLevel deathLevel = (net.minecraft.server.level.ServerLevel) player.level();
+        net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> deathDimension = state.getDeathDimension(uuid);
+        if (deathDimension != null) {
+            net.minecraft.server.level.ServerLevel stored = player.level().getServer().getLevel(deathDimension);
+            if (stored != null) {
+                deathLevel = stored;
+            }
+        }
+        if (deathPos.getY() < deathLevel.getMinY()) {
+            net.minecraft.core.GlobalPos safe = GhostState.reachableDeathPos(deathLevel, deathPos);
+            state.setDeathLocation(uuid, safe);
+            return;
+        }
+
         BlockPos currentPos = player.blockPosition();
         double maxDistance = ConfigManager.getConfig().getSpectatorHeadRestrictRadius();
 
-        if (GhostRestrictionLogic.isOutOfBounds(deathPos.getX(), deathPos.getY(), deathPos.getZ(),
+        if (deathLevel != player.level()
+                || GhostRestrictionLogic.isOutOfBounds(deathPos.getX(), deathPos.getY(), deathPos.getZ(),
                 currentPos.getX(), currentPos.getY(), currentPos.getZ(), maxDistance)) {
-            applyTeleportFeedback(player, deathPos);
+            applyTeleportFeedback(player, deathLevel, deathPos);
         }
     }
 
-    private static void applyTeleportFeedback(ServerPlayer player, BlockPos deathPos) {
-        player.teleportTo((ServerLevel) player.level(), deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), true);
+    private static void applyTeleportFeedback(ServerPlayer player, net.minecraft.server.level.ServerLevel deathLevel, BlockPos deathPos) {
+        player.teleportTo(deathLevel, deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, java.util.Set.of(), player.getYRot(), player.getXRot(), true);
         
         player.connection.send(new ClientboundSoundPacket(
                 net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.CHORUS_FRUIT_TELEPORT), SoundSource.PLAYERS,

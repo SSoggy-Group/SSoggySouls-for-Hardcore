@@ -823,7 +823,7 @@ ______________________________________________________________________
 
 #### - Check Java Version
 
-Requires Java 21 or higher:
+Requires Java 25 or higher:
 
 ```bash
 java -version

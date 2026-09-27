@@ -3,6 +3,7 @@ package org.ssoggy.ssoggysouls.listener;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
@@ -13,9 +14,11 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,6 +37,104 @@ public class LimboServerListener {
         db = database;
     }
 
+    // Death status cache. Command/portal/level-change handlers run on the server thread
+    // and must not block on a DB round-trip; the cache is filled on join and refreshed
+    // asynchronously every few seconds.
+    private static final Set<UUID> DEAD_PLAYERS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final int DEAD_CACHE_REFRESH_TICKS = 100;
+    private static final int VOID_CHECK_TICKS = 20;
+
+    private static boolean isCachedDead(UUID uuid) {
+        return DEAD_PLAYERS.contains(uuid);
+    }
+
+    // Per-player count of authoritative cache writes (join, /psetlives, /revive). A refresh
+    // records it before its async read and only applies its result if no write happened
+    // meanwhile, so a stale read can't overwrite a newer update.
+    private static final java.util.Map<UUID, Long> CACHE_WRITES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Also called by /psetlives and /revive so Limbo restrictions update without waiting for a refresh. */
+    public static void setCachedDead(UUID uuid, boolean dead) {
+        CACHE_WRITES.compute(uuid, (k, writes) -> {
+            applyCachedDead(uuid, dead);
+            return writes == null ? 1L : writes + 1;
+        });
+    }
+
+    private static void applyRefreshedDead(UUID uuid, boolean dead, long writesSeen) {
+        CACHE_WRITES.compute(uuid, (k, writes) -> {
+            if ((writes == null ? 0L : writes) == writesSeen) {
+                applyCachedDead(uuid, dead);
+            }
+            return writes;
+        });
+    }
+
+    private static void applyCachedDead(UUID uuid, boolean dead) {
+        if (dead) {
+            DEAD_PLAYERS.add(uuid);
+        } else {
+            DEAD_PLAYERS.remove(uuid);
+        }
+    }
+
+    private static void onLimboTick(MinecraftServer server) {
+        int tick = server.getTickCount();
+        if (tick % VOID_CHECK_TICKS == 0) {
+            rescueFromVoid(server);
+        }
+        if (db != null && tick % DEAD_CACHE_REFRESH_TICKS == 0) {
+            java.util.List<UUID> online = server.getPlayerList().getPlayers().stream().map(ServerPlayer::getUUID).toList();
+            if (online.isEmpty()) return;
+            CompletableFuture.runAsync(() -> {
+                for (UUID uuid : online) {
+                    long writesSeen = CACHE_WRITES.getOrDefault(uuid, 0L);
+                    try {
+                        // A successful read with no record is a visitor; only a failed read keeps
+                        // the last known status (otherwise a fail-closed join would stick forever)
+                        PlayerData data = db.getPlayerStrict(uuid);
+                        applyRefreshedDead(uuid, data != null && data.isDead(), writesSeen);
+                    } catch (java.sql.SQLException e) {
+                        // keep the last known status
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Limbo cancels all damage for ADVENTURE players, including void damage, so a ghost
+     * that falls out of the world would fall forever. Bring them back to the limbo spawn.
+     */
+    private static void rescueFromVoid(MinecraftServer server) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE
+                    && player.getY() < player.level().getMinY()) {
+                ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+                Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+                ServerLevel limbo = worldId == null ? null : server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
+                if (limbo != null) {
+                    player.teleportTo(limbo, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch(), true);
+                } else {
+                    net.minecraft.core.BlockPos spawn = server.getRespawnData().pos();
+                    player.teleportTo(server.overworld(), spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, Set.of(), player.getYRot(), player.getXRot(), true);
+                }
+                player.resetFallDistance();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerTick(net.minecraftforge.event.TickEvent.ServerTickEvent.Post event) {
+        onLimboTick(event.server());
+    }
+
+    @SubscribeEvent
+    public static void onPlayerQuit(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+        DEAD_PLAYERS.remove(event.getEntity().getUUID());
+        CACHE_WRITES.remove(event.getEntity().getUUID());
+    }
+
     private static boolean isWhitelistedCommand(String fullCommand) {
         String clean = fullCommand.trim().toLowerCase(java.util.Locale.ROOT);
         String[] tokens = clean.split("\\s+");
@@ -46,12 +147,25 @@ public class LimboServerListener {
         if (db == null || !(event.getEntity() instanceof ServerPlayer player)) return;
 
         UUID uuid = player.getUUID();
+        // Restricted until the lookup answers, so the join window can't be used to escape
+        DEAD_PLAYERS.add(uuid);
 
         CompletableFuture.runAsync(() -> {
-            boolean isDead = db.isPlayerDead(uuid);
+            // Missing record = first-time visitor; failed read = keep restricted
+            // (as the old isPlayerDead did)
+            boolean isDead;
+            try {
+                PlayerData data = db.getPlayerStrict(uuid);
+                isDead = data != null && data.isDead();
+            } catch (java.sql.SQLException e) {
+                org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.warn("Could not load {} on Limbo join; treating as dead", player.getScoreboardName(), e);
+                isDead = true;
+            }
+            final boolean finalIsDead = isDead;
+            setCachedDead(uuid, isDead);
 
             player.level().getServer().execute(() -> {
-                if (isDead) {
+                if (finalIsDead) {
                     applyLimboState(player);
                 } else {
                     player.setGameMode(GameType.SURVIVAL);
@@ -69,7 +183,7 @@ public class LimboServerListener {
         if (source.getEntity() instanceof ServerPlayer player) {
             String fullCommand = event.getParseResults().getReader().getString();
 
-            if (db.isPlayerDead(player.getUUID())) {
+            if (isCachedDead(player.getUUID())) {
                 String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
                 if (!isWhitelistedCommand(cmdToCheck)) {
                     player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
@@ -98,7 +212,7 @@ public class LimboServerListener {
             // Check for bypass permission (parity with Fabric)
             if (player.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) return false;
 
-            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
+            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && isCachedDead(player.getUUID())) {
                 player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
                 return true; // Cancel dimension travel
             }

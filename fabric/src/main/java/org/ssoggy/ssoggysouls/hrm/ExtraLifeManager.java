@@ -55,6 +55,10 @@ public class ExtraLifeManager {
 
     private static void processExtraLife(ServerPlayer serverPlayer, DatabaseManager db) {
         PlayerData data = getOrCreatePlayerData(serverPlayer, db);
+        if (data == null) {
+            handleFailedUse(serverPlayer, null); // DB read failed: refund only
+            return;
+        }
 
         if (data.isDead()) {
             handleFailedUse(serverPlayer, "extra-life-dead");
@@ -62,19 +66,30 @@ public class ExtraLifeManager {
         }
 
         int maxLives = ConfigManager.getConfig().getMaxLives();
-        if (maxLives > 0 && data.getLives() >= maxLives) {
-            handleFailedUse(serverPlayer, "extra-life-at-max");
+        // Atomic conditional increment: concurrent uses can't overwrite each other's life
+        if (!db.incrementLives(data.getUuid(), maxLives)) {
+            PlayerData latest = db.getPlayer(data.getUuid());
+            handleFailedUse(serverPlayer, latest != null && latest.isDead() ? "extra-life-dead" : "extra-life-at-max");
             return;
         }
 
-        grantExtraLife(serverPlayer, db, data.getUuid(), data.getLives());
+        PlayerData updated = db.getPlayer(data.getUuid());
+        grantExtraLife(serverPlayer, updated != null ? updated.getLives() : data.getLives() + 1);
     }
 
     private static PlayerData getOrCreatePlayerData(ServerPlayer serverPlayer, DatabaseManager db) {
-        PlayerData data = db.getPlayer(serverPlayer.getUUID());
+        PlayerData data;
+        try {
+            data = db.getPlayerStrict(serverPlayer.getUUID());
+        } catch (java.sql.SQLException e) {
+            // Don't create a record over the real one on a failed read
+            SSoggySoulsMod.LOGGER.warn("Could not load {} for Extra Life", serverPlayer.getScoreboardName(), e);
+            return null;
+        }
         if (data == null) {
             data = PlayerData.createNew(serverPlayer.getUUID(), serverPlayer.getScoreboardName(),
-                    ConfigManager.getConfig().getDefaultLives(), 0);
+                    ConfigManager.getConfig().getDefaultLives(),
+                    ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod()));
             db.savePlayer(data);
         }
         return data;
@@ -82,7 +97,9 @@ public class ExtraLifeManager {
 
     private static void handleFailedUse(ServerPlayer serverPlayer, String messageKey) {
         serverPlayer.level().getServer().execute(() -> {
-            serverPlayer.sendSystemMessage(MessageUtil.get(messageKey));
+            if (messageKey != null) {
+                serverPlayer.sendSystemMessage(MessageUtil.get(messageKey));
+            }
             if (!serverPlayer.isCreative()) {
                 ItemStack refundedItem = createExtraLifeItem();
                 if (!serverPlayer.getInventory().add(refundedItem)) {
@@ -92,9 +109,7 @@ public class ExtraLifeManager {
         });
     }
 
-    private static void grantExtraLife(ServerPlayer serverPlayer, DatabaseManager db, java.util.UUID uuid, int currentLives) {
-        int newLives = currentLives + 1;
-        db.setLives(uuid, newLives);
+    private static void grantExtraLife(ServerPlayer serverPlayer, int newLives) {
 
         SSoggySoulsMod.LOGGER.info("{} used Extra Life item (now {} lives)", serverPlayer.getScoreboardName(),
                 newLives);

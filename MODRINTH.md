@@ -41,7 +41,7 @@ Build a 3x3x3 beacon-like structure:
 - **Extra Life:** Right-click to gain +1 life (max cap applies). The recipe is fully customizable.
 
 **Head Effects:**
-Wearing a dead player's head grants Speed II and Night Vision to help you deliver it to a ritual safely.
+Wearing a dead player's head grants Health Boost V and Resistance (at the cost of Slowness) to help you deliver it to a ritual safely.
 
 ---
 
