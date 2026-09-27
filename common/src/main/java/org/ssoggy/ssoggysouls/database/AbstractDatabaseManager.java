@@ -225,7 +225,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
     }
 
     @Override
-    public void setLives(UUID uuid, int lives) {
+    public boolean setLives(UUID uuid, int lives) {
         String sql = UPDATE + tableName + " SET lives = ?, is_dead = ? WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
@@ -237,8 +237,10 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
             if (rows > 0) {
                 deathStatusCache.put(uuid, dead);
             }
+            return rows > 0;
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to set lives for " + uuid);
+            return false;
         }
     }
 

@@ -47,8 +47,29 @@ public class LimboServerListener {
         return DEAD_PLAYERS.contains(uuid);
     }
 
+    // Per-player count of authoritative cache writes (join, /psetlives, /revive). A refresh
+    // records it before its async read and only applies its result if no write happened
+    // meanwhile, so a stale read can't overwrite a newer update.
+    private static final java.util.Map<UUID, Long> CACHE_WRITES = new java.util.concurrent.ConcurrentHashMap<>();
+
     /** Also called by /psetlives and /revive so Limbo restrictions update without waiting for a refresh. */
     public static void setCachedDead(UUID uuid, boolean dead) {
+        CACHE_WRITES.compute(uuid, (k, writes) -> {
+            applyCachedDead(uuid, dead);
+            return writes == null ? 1L : writes + 1;
+        });
+    }
+
+    private static void applyRefreshedDead(UUID uuid, boolean dead, long writesSeen) {
+        CACHE_WRITES.compute(uuid, (k, writes) -> {
+            if ((writes == null ? 0L : writes) == writesSeen) {
+                applyCachedDead(uuid, dead);
+            }
+            return writes;
+        });
+    }
+
+    private static void applyCachedDead(UUID uuid, boolean dead) {
         if (dead) {
             DEAD_PLAYERS.add(uuid);
         } else {
@@ -66,11 +87,12 @@ public class LimboServerListener {
             if (online.isEmpty()) return;
             CompletableFuture.runAsync(() -> {
                 for (UUID uuid : online) {
+                    long writesSeen = CACHE_WRITES.getOrDefault(uuid, 0L);
                     try {
                         // A successful read with no record is a visitor; only a failed read keeps
                         // the last known status (otherwise a fail-closed join would stick forever)
                         PlayerData data = db.getPlayerStrict(uuid);
-                        setCachedDead(uuid, data != null && data.isDead());
+                        applyRefreshedDead(uuid, data != null && data.isDead(), writesSeen);
                     } catch (java.sql.SQLException e) {
                         // keep the last known status
                     }
@@ -109,6 +131,7 @@ public class LimboServerListener {
     @SubscribeEvent
     public static void onPlayerQuit(PlayerEvent.PlayerLoggedOutEvent event) {
         DEAD_PLAYERS.remove(event.getEntity().getUUID());
+        CACHE_WRITES.remove(event.getEntity().getUUID());
     }
 
     private static boolean isWhitelistedCommand(String fullCommand) {

@@ -18,7 +18,8 @@ public interface DatabaseManager {
     boolean isPlayerDead(UUID uuid);
     java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids);
     boolean revivePlayer(UUID uuid, int livesToRestore);
-    void setLives(UUID uuid, int lives);
+    /** @return true if a row was updated; false if no record exists or the write failed */
+    boolean setLives(UUID uuid, int lives);
     void setFirstJoin(UUID uuid, long firstJoin);
     void setLastSeen(UUID uuid, long lastSeen);
     void setGraceUntil(UUID uuid, long graceUntil);

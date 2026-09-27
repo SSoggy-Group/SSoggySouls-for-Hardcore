@@ -209,7 +209,11 @@ public class CommandRegistration {
                                     source.sendFailure(MessageUtil.get("status-not-found", PLAYER, targetName)));
                                 return;
                             }
-                            db.setLives(data.getUuid(), lives);
+                            if (!db.setLives(data.getUuid(), lives)) {
+                                source.getServer().execute(() ->
+                                    source.sendFailure(Component.literal("Failed to update lives for " + data.getUsername() + ". Check console.")));
+                                return;
+                            }
                             // No-op unless this is a Limbo server; applies the restriction immediately
                             org.ssoggy.ssoggysouls.listener.LimboServerListener.setCachedDead(data.getUuid(), lives <= 0);
                             source.getServer().execute(() -> {
