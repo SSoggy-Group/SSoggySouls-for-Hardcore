@@ -3,6 +3,7 @@ package org.ssoggy.ssoggysouls.hrm;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
@@ -10,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -32,6 +34,8 @@ public class HeadDropListener {
         // Utility class
     }
 
+    private static final String HEAD_DROP_TAG = "ssoggysouls:death_head";
+
     private static final Map<UUID, List<UUID>> headItemEntityUuids = new HashMap<>();
 
     public static void register() {
@@ -51,7 +55,7 @@ public class HeadDropListener {
             return;
         }
 
-        BlockPos headPos = (ConfigManager.getConfig().isHeadPlaceAsBlock() || !ConfigManager.getConfig().isHeadBurnsInLava())
+        BlockPos headPos = ConfigManager.getConfig().isHeadPlaceAsBlock()
                 ? findSafeBlockPos(world, pos) : null;
         if (headPos != null) {
             world.setBlock(headPos, Blocks.PLAYER_HEAD.defaultBlockState(), 3);
@@ -72,6 +76,11 @@ public class HeadDropListener {
             head.set(DataComponents.CUSTOM_NAME,
                     Component.literal(player.getScoreboardName() + "'s Head")
                     .withStyle(net.minecraft.ChatFormatting.YELLOW));
+
+            // Persist provenance so revival cleanup can distinguish death drops after a restart.
+            CompoundTag tag = new CompoundTag();
+            tag.putBoolean(HEAD_DROP_TAG, true);
+            head.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
 
             ItemEntity itemEntity = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, head);
 
@@ -165,6 +174,8 @@ public class HeadDropListener {
 
     private static boolean isOwnedHead(ItemStack stack, UUID ownerUuid) {
         if (!stack.is(Items.PLAYER_HEAD)) return false;
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        if (data == null || !data.copyTag().getBoolean(HEAD_DROP_TAG).orElse(false)) return false;
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
         return profile != null && ownerUuid.equals(profile.partialProfile().id());
     }
