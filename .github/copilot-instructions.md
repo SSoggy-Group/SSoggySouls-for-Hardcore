@@ -45,5 +45,3 @@ _Critical Rule:_ If a change does not affect the end-user's compiled `.jar` (lik
 2. DEPENDENCY SHADOWING:
    If adding a new library for the `common` module, you must ensure it is correctly declared and properly shadowed/included in the `fabric`, `forge`, and `paper` build scripts so the classes are present at runtime.
 
-3. PRE-EMPTIVE SONARCLOUD COMPLIANCE:
-   All new code must be strictly compliant with SonarCloud Java standards to pass `build-mode: none` CodeQL analysis. Avoid nested try-catch blocks, do not use restricted identifiers (e.g., `var`, `yield`, `record` as variable names), and optimize lambda strings. Write clean code the first time to prevent CI dashboard debt.

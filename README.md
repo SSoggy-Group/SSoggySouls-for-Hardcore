@@ -2,11 +2,10 @@
 
 ![SSoggySouls Banner](https://cdn.modrinth.com/data/Pb03qu6T/images/48a03bf24103dde408dbbcad653a3936b5f5255a.png)
 
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=SSoggy-Group_SSoggySouls-for-Hardcore&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=SSoggy-Group_SSoggySouls-for-Hardcore)
 [![Auto Bump, Build, and Release](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml)
 [![Continuous Integration](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml)
 
-**Version 4.6.1** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
+**Version 4.6.4** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
 
 A hardcore lives system mod/plugin for Minecraft 26.X (Supports Spigot, Paper, Purpur, Fabric, Forge, and NeoForge). 1.21.X servers need an older release. When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
 
@@ -313,14 +312,14 @@ After setup, test everything:
 
 ### Step 1: Download
 
-Download the latest release (`SSoggySouls-4.6.1.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
+Download the latest release (`SSoggySouls-4.6.4.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
 
 ### Step 2: Install Plugin
 
-Place `SSoggySouls-4.6.1.jar` in the `plugins/` folder of **both** servers:
+Place `SSoggySouls-4.6.4.jar` in the `plugins/` folder of **both** servers:
 
-- Main server: `/plugins/SSoggySouls-4.6.1.jar`
-- Limbo server: `/plugins/SSoggySouls-4.6.1.jar`
+- Main server: `/plugins/SSoggySouls-4.6.4.jar`
+- Limbo server: `/plugins/SSoggySouls-4.6.4.jar`
 
 ### Step 3: Generate Config
 
@@ -746,7 +745,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 
 ## Changelog
 
-### v4.6.1
+### v4.6.4
 
 **What's Changed:**
 
@@ -756,7 +755,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 - **Auto-build workflow** - GitHub Actions now builds the JAR automatically on every push.
 - **Rename: PolarSouls to SSoggySouls** - Finished renaming everything internally. No config changes needed.
 
-**Full Changelog:** [v1...v4.6.1](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v4.6.1)
+**Full Changelog:** [v1...v4.6.4](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v4.6.4)
 
 ## Credits
 
