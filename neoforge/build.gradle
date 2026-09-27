@@ -67,10 +67,10 @@ dependencies {
         exclude group: 'org.slf4j', module: 'slf4j-api'
         version {
             strictly '[7.0,8.0)'
-            prefer '7.0.2'
+            prefer '7.1.0'
         }
     }
-    jarJar(implementation('com.mysql:mysql-connector-j:26.7.0')) {
+    jarJar(implementation('com.mysql:mysql-connector-j:8.0.33')) {
         version {
             strictly '[8.0,9.0)'
             prefer '8.0.33'
@@ -79,7 +79,7 @@ dependencies {
     jarJar(implementation('org.xerial:sqlite-jdbc:3.53.4.0')) {
         version {
             strictly '[3.53.1,4.0)'
-            prefer '3.53.1.0'
+            prefer '3.53.4.0'
         }
     }
 
