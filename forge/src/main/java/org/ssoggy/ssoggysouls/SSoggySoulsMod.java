@@ -5,6 +5,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -26,6 +27,7 @@ import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.SchedulerManager;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 import org.ssoggy.ssoggysouls.util.UpdateChecker;
 
@@ -37,8 +39,11 @@ public class SSoggySoulsMod implements PluginContext {
     private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MODID);
 
     public SSoggySoulsMod() {
-        // EventBus 7 rejects register() on classes with a single listener; use addListener for those
+        // EventBus 7 rejects register() on classes with a single @SubscribeEvent method,
+        // so single-listener classes are wired directly to their event's BUS.
+        ServerStartingEvent.BUS.addListener(this::onServerStarting);
         RegisterCommandsEvent.BUS.addListener(CommandRegistration::onRegisterCommands);
+        TickEvent.ServerTickEvent.Post.BUS.addListener(SchedulerManager::onServerTick);
 
         LOGGER.info("SSoggySouls Forge is loading...");
 
@@ -98,6 +103,10 @@ public class SSoggySoulsMod implements PluginContext {
         if (ConfigManager.getConfig().isCheckForUpdates()) {
             new UpdateChecker().checkForUpdates();
         }
+    }
+
+    public void onServerStarting(ServerStartingEvent event) {
+        // Do something when the server starts
     }
 
     @Override

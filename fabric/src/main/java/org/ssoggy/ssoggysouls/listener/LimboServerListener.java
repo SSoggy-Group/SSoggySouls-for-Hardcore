@@ -117,6 +117,8 @@ public class LimboServerListener {
 
     public static boolean shouldBlockPortal(ServerPlayer player, ServerLevel destination) {
         if (db == null) return false;
+        // Only portal-driven dimension changes are blocked; same-level teleports (commands, revival) pass through
+        if (destination == player.level() || player.portalProcess == null || !player.portalProcess.isInsidePortalThisTick()) return false;
         if (player.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) return false;
 
         ConfigManager.ModConfig cfg = ConfigManager.getConfig();
@@ -125,7 +127,7 @@ public class LimboServerListener {
             return false;
         }
 
-        if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && player.portalProcess != null && player.portalProcess.isInsidePortalThisTick() && db.isPlayerDead(player.getUUID())) {
+        if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
             player.sendSystemMessage(MessageUtil.get(LIMBO_CANNOT_LEAVE_MESSAGE));
             return true;
         }

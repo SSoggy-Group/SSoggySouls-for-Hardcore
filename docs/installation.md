@@ -34,7 +34,7 @@ This comprehensive guide covers everything you need to know to properly install 
 
 ### Backward Compatibility
 
-- **Supported Minecraft Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3). Not compatible with 1.21.X.
+- **Supported Minecraft Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3). Not compatible with 1.21.X (requires Java 25 and 26.X APIs).
 - **Legacy Minecraft Versions:** For 1.21.x and earlier versions, use previous builds from Modrinth version history.
 
 ### Server Setup

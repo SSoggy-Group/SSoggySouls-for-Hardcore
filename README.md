@@ -8,7 +8,7 @@
 
 **Version 4.6.0** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
 
-A hardcore lives system mod/plugin for Minecraft 26.X (Supports Spigot, Paper, Purpur, Fabric, Forge, and NeoForge). When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
+A hardcore lives system mod/plugin for Minecraft 26.X (Supports Spigot, Paper, Purpur, Fabric, Forge, and NeoForge). 1.21.X servers need an older release. When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
 
 > **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 >

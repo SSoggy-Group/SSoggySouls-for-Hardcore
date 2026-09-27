@@ -82,7 +82,7 @@ public class LimboServerListener {
 
     @SubscribeEvent
     public static boolean onLivingAttack(LivingAttackEvent event) {
-        // Cancel before hurt runs so knockback, hurt animation and thorns are skipped too
+        // Cancel at attack time (not LivingDamageEvent) so no hurt flash, knockback, i-frames or armor wear occur
         return event.getEntity() instanceof ServerPlayer player && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE;
     }
 
