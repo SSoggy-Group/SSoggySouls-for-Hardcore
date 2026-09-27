@@ -252,7 +252,7 @@ public final class DlcCommandRegistration {
                 MainServerListener.setGhostModeAttributes(target, true);
                 GhostModeEvents.updateGhostStatus(target.getUUID(), true);
                 GhostState ghostState = GhostState.getServerState(source.getServer());
-                ghostState.setDeathLocation(target.getUUID(), target.blockPosition());
+                ghostState.setDeathLocation(target.getUUID(), GhostState.reachableDeathPos((net.minecraft.server.level.ServerLevel) target.level(), target.blockPosition()));
                 ghostState.removeDeathHolder(target.getUUID());
                 ghostState.setDirty();
                 DlcDeaths.recordDeath(

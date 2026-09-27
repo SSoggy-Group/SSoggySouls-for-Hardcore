@@ -3,6 +3,7 @@ package org.ssoggy.ssoggysouls.listener;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
@@ -12,9 +13,11 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
+import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -33,6 +36,74 @@ public class LimboServerListener {
         db = database;
     }
 
+    // Death status cache. Command/portal/level-change handlers run on the server thread
+    // and must not block on a DB round-trip; the cache is filled on join and refreshed
+    // asynchronously every few seconds.
+    private static final Set<UUID> DEAD_PLAYERS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final int DEAD_CACHE_REFRESH_TICKS = 100;
+    private static final int VOID_CHECK_TICKS = 20;
+
+    private static boolean isCachedDead(UUID uuid) {
+        return DEAD_PLAYERS.contains(uuid);
+    }
+
+    private static void setCachedDead(UUID uuid, boolean dead) {
+        if (dead) {
+            DEAD_PLAYERS.add(uuid);
+        } else {
+            DEAD_PLAYERS.remove(uuid);
+        }
+    }
+
+    private static void onLimboTick(MinecraftServer server) {
+        int tick = server.getTickCount();
+        if (tick % VOID_CHECK_TICKS == 0) {
+            rescueFromVoid(server);
+        }
+        if (db != null && tick % DEAD_CACHE_REFRESH_TICKS == 0) {
+            java.util.List<UUID> online = server.getPlayerList().getPlayers().stream().map(ServerPlayer::getUUID).toList();
+            if (online.isEmpty()) return;
+            CompletableFuture.runAsync(() -> {
+                for (UUID uuid : online) {
+                    PlayerData data = db.getPlayer(uuid);
+                    setCachedDead(uuid, data != null && data.isDead());
+                }
+            });
+        }
+    }
+
+    /**
+     * Limbo cancels all damage for ADVENTURE players, including void damage, so a ghost
+     * that falls out of the world would fall forever. Bring them back to the limbo spawn.
+     */
+    private static void rescueFromVoid(MinecraftServer server) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE
+                    && player.getY() < player.level().getMinY()) {
+                ConfigManager.ModConfig cfg = ConfigManager.getConfig();
+                Identifier worldId = Identifier.tryParse(cfg.getLimboSpawnWorld());
+                ServerLevel limbo = worldId == null ? null : server.getLevel(ResourceKey.create(Registries.DIMENSION, worldId));
+                if (limbo != null) {
+                    player.teleportTo(limbo, cfg.getLimboSpawnX(), cfg.getLimboSpawnY(), cfg.getLimboSpawnZ(), Set.of(), cfg.getLimboSpawnYaw(), cfg.getLimboSpawnPitch(), true);
+                } else {
+                    net.minecraft.core.BlockPos spawn = server.getRespawnData().pos();
+                    player.teleportTo(server.overworld(), spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, Set.of(), player.getYRot(), player.getXRot(), true);
+                }
+                player.resetFallDistance();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+        onLimboTick(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void onPlayerQuit(PlayerEvent.PlayerLoggedOutEvent event) {
+        DEAD_PLAYERS.remove(event.getEntity().getUUID());
+    }
+
     private static boolean isWhitelistedCommand(String fullCommand) {
         String clean = fullCommand.trim().toLowerCase(java.util.Locale.ROOT);
         String[] tokens = clean.split("\\s+");
@@ -47,7 +118,10 @@ public class LimboServerListener {
         UUID uuid = player.getUUID();
 
         CompletableFuture.runAsync(() -> {
-            boolean isDead = db.isPlayerDead(uuid);
+            // getPlayer (not isPlayerDead): a missing record means a first-time visitor, not a dead player
+            PlayerData data = db.getPlayer(uuid);
+            boolean isDead = data != null && data.isDead();
+            setCachedDead(uuid, isDead);
 
             player.level().getServer().execute(() -> {
                 if (isDead) {
@@ -68,7 +142,7 @@ public class LimboServerListener {
         if (source.getEntity() instanceof ServerPlayer player) {
             String fullCommand = event.getParseResults().getReader().getString();
 
-            if (db.isPlayerDead(player.getUUID())) {
+            if (isCachedDead(player.getUUID())) {
                 String cmdToCheck = fullCommand.startsWith("/") ? fullCommand : "/" + fullCommand;
                 if (!isWhitelistedCommand(cmdToCheck)) {
                     event.setCanceled(true);
@@ -97,7 +171,7 @@ public class LimboServerListener {
             // Check for bypass permission (parity with Fabric)
             if (player.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) return;
 
-            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && db.isPlayerDead(player.getUUID())) {
+            if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && isCachedDead(player.getUUID())) {
                 event.setCanceled(true);
                 player.sendSystemMessage(MessageUtil.get("limbo-cannot-leave"));
             }

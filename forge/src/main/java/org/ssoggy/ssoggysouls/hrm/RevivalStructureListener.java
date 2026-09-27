@@ -75,7 +75,10 @@ public class RevivalStructureListener {
         }
 
         UUID ownerUuid = profile.partialProfile().id();
-        BlockPos placedPos = event.getPos().relative(event.getFace());
+        // Vanilla places into the clicked block when it is replaceable (grass, snow layer)
+        BlockPos clicked = event.getPos();
+        BlockPos placedPos = world.getBlockState(clicked).canBeReplaced() || event.getFace() == null
+                ? clicked : clicked.relative(event.getFace());
 
         if (!isRitualStructure(world, placedPos)) {
             if (checkIncompleteStructure(world, placedPos)) {
@@ -194,6 +197,7 @@ public class RevivalStructureListener {
         }
     }
 
+    // Blocks are consumed without drops: the ritual's cost (e.g. the ore block) must not be refunded.
     private static void breakStructure(Level world, BlockPos headPos) {
         breakCorners(world, headPos);
         breakCenter(world, headPos);
@@ -209,10 +213,10 @@ public class RevivalStructureListener {
                     BlockPos flowerPos = headPos.offset(x, -1, z);
 
                     if (isFlower(world, flowerPos.getX(), flowerPos.getY(), flowerPos.getZ())) {
-                        world.destroyBlock(flowerPos, true);
+                        world.destroyBlock(flowerPos, false);
                     }
                     if (isSoulSand(world, soulSandPos.getX(), soulSandPos.getY(), soulSandPos.getZ())) {
-                        world.destroyBlock(soulSandPos, true);
+                        world.destroyBlock(soulSandPos, false);
                     }
                 }
             }
@@ -222,7 +226,7 @@ public class RevivalStructureListener {
     private static void breakCenter(Level world, BlockPos headPos) {
         BlockPos center = headPos.below();
         if (isFence(world, center.getX(), center.getY(), center.getZ())) {
-            world.destroyBlock(center, true);
+            world.destroyBlock(center, false);
         }
     }
 
@@ -232,7 +236,7 @@ public class RevivalStructureListener {
                 if ((Math.abs(x) == 1 && z == 0) || (x == 0 && Math.abs(z) == 1)) {
                     BlockPos stairPos = headPos.offset(x, -2, z);
                     if (isStair(world, stairPos.getX(), stairPos.getY(), stairPos.getZ())) {
-                        world.destroyBlock(stairPos, true);
+                        world.destroyBlock(stairPos, false);
                     }
                 }
             }
@@ -244,7 +248,7 @@ public class RevivalStructureListener {
             for (int x = -1; x <= 1; x++) {
                 for (int z = -1; z <= 1; z++) {
                     BlockPos basePos = headPos.offset(x, -2, z);
-                    world.destroyBlock(basePos, true);
+                    world.destroyBlock(basePos, false);
                 }
             }
         }

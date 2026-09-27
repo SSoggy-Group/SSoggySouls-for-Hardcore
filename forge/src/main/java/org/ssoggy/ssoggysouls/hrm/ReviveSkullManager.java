@@ -105,19 +105,33 @@ public class ReviveSkullManager {
             ResolvableProfile profile = clicked.get(DataComponents.PROFILE);
             if (profile != null && profile.partialProfile().id() != null) {
                 String name = profile.name().orElse("Unknown");
-
-                ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
-                realHead.set(DataComponents.PROFILE, profile);
-                realHead.set(DataComponents.CUSTOM_NAME, Component.literal(name + "'s Head").withStyle(net.minecraft.ChatFormatting.YELLOW));
-
-                if (!clickingPlayer.getInventory().add(realHead)) {
-                    clickingPlayer.drop(realHead, false, net.minecraft.util.Prediction.SERVER_ONLY);
+                java.util.UUID ownerUuid = profile.partialProfile().id();
+                if (!(clickingPlayer instanceof ServerPlayer spe)) {
+                    return;
                 }
-                clickingPlayer.sendSystemMessage(Component.literal("Received " + name + "'s head.").withStyle(net.minecraft.ChatFormatting.GREEN));
 
-                if (clickingPlayer instanceof ServerPlayer spe) {
-                    spe.level().getServer().execute(spe::closeContainer);
-                }
+                // Close immediately (we're on the server thread) so repeated clicks can't queue extra heads
+                spe.closeContainer();
+
+                // The menu may be stale: only hand out heads of players who are still dead
+                CompletableFuture.runAsync(() -> {
+                    PlayerData data = db == null ? null : db.getPlayer(ownerUuid);
+                    spe.level().getServer().execute(() -> {
+                        if (data == null || !data.isDead()) {
+                            spe.sendSystemMessage(Component.literal(name + " is no longer dead!").withStyle(net.minecraft.ChatFormatting.RED));
+                            return;
+                        }
+
+                        ItemStack realHead = new ItemStack(Items.PLAYER_HEAD);
+                        realHead.set(DataComponents.PROFILE, profile);
+                        realHead.set(DataComponents.CUSTOM_NAME, Component.literal(name + "'s Head").withStyle(net.minecraft.ChatFormatting.YELLOW));
+
+                        if (!spe.getInventory().add(realHead)) {
+                            spe.drop(realHead, false, net.minecraft.util.Prediction.SERVER_ONLY);
+                        }
+                        spe.sendSystemMessage(Component.literal("Received " + name + "'s head.").withStyle(net.minecraft.ChatFormatting.GREEN));
+                    });
+                });
             }
         }
     }

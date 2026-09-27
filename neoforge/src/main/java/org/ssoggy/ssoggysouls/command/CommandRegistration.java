@@ -149,8 +149,9 @@ public class CommandRegistration {
             return;
         }
 
-        int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives();
-        boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
+        // Same lives as a ritual revive (was defaultLives, making command revives stronger)
+        int reviveLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getOnReviveLives();
+        boolean success = db.revivePlayer(targetData.getUuid(), reviveLives);
         if (success) {
             handleReviveSuccess(targetData, source);
         }
@@ -230,6 +231,12 @@ public class CommandRegistration {
                                     if (online != null) {
                                         ServerLifecycleListener.setGhostModeAttributes(online, false);
                                         online.setGameMode(GameType.SURVIVAL);
+                                    }
+                                } else if (lives == 0) {
+                                    GhostModeEvents.updateGhostStatus(data.getUuid(), true);
+                                    if (online != null) {
+                                        online.setGameMode(GameType.ADVENTURE);
+                                        ServerLifecycleListener.setGhostModeAttributes(online, true);
                                     }
                                 }
                                 source.sendSuccess(() -> MessageUtil.get("admin-setlives-success",

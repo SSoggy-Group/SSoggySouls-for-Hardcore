@@ -138,8 +138,9 @@ public class CommandRegistration {
             return;
         }
 
-        int defaultLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getDefaultLives();
-        boolean success = db.revivePlayer(targetData.getUuid(), defaultLives);
+        // Same lives as a ritual revive (was defaultLives, making command revives stronger)
+        int reviveLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getOnReviveLives();
+        boolean success = db.revivePlayer(targetData.getUuid(), reviveLives);
         if (success) {
             handleReviveSuccess(targetData, source);
         }

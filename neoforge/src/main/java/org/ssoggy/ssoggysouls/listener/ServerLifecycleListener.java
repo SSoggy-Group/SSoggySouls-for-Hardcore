@@ -1,6 +1,7 @@
 package org.ssoggy.ssoggysouls.listener;
 
 import net.minecraft.core.GlobalPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.GameType;
@@ -19,13 +20,20 @@ import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerLifecycleListener {
 
     private static final int GHOST_MODE_DARKNESS_DURATION_TICKS = 60;
-    
+
+    // Deaths whose DB outcome is still being resolved. Respawns during that window are
+    // left to finishDeath, which applies ghost state to whichever entity is current.
+    private static final Set<UUID> DEATH_PENDING = ConcurrentHashMap.newKeySet();
+
     private ServerLifecycleListener() {
         // Utility class
     }
@@ -41,30 +49,53 @@ public class ServerLifecycleListener {
         if (db == null || !(event.getEntity() instanceof ServerPlayer)) return;
         ServerPlayer player = (ServerPlayer) event.getEntity();
         UUID uuid = player.getUUID();
+        String name = player.getScoreboardName();
+        MinecraftServer server = player.level().getServer();
 
         CompletableFuture.runAsync(() -> {
             PlayerData data = db.getPlayer(uuid);
             if (data == null) {
                 long graceMs = ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod());
-                data = PlayerData.createNew(uuid, player.getScoreboardName(),
+                data = PlayerData.createNew(uuid, name,
                         ConfigManager.getConfig().getDefaultLives(), graceMs);
                 db.savePlayer(data);
             } else {
-                data.setUsername(player.getScoreboardName());
-                db.savePlayer(data);
+                // Targeted updates only: a full-row save here could overwrite a revive
+                // or extra life written by another server/thread in the meantime.
+                if (!Objects.equals(data.getUsername(), name)) {
+                    db.setUsername(uuid, name);
+                }
+                pauseGracePeriodForOffline(data, uuid);
             }
-            DlcNames.cache(uuid, player.getScoreboardName());
+            DlcNames.cache(uuid, name);
 
             final PlayerData finalData = data;
-            player.level().getServer().execute(() -> handleJoinSync(player, finalData));
+            server.execute(() -> handleJoinSync(server, uuid, finalData));
         });
     }
 
-    private static void handleJoinSync(ServerPlayer player, PlayerData data) {
-        GlobalPos pending = org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.consumePendingRevival(player.getUUID());
+    /** Grace period does not tick while offline (matches the Paper implementation). */
+    private static void pauseGracePeriodForOffline(PlayerData data, UUID uuid) {
+        long lastSeen = data.getLastSeen();
+        if (lastSeen <= 0) return;
+        long now = System.currentTimeMillis();
+        if (data.getGraceUntil() > lastSeen && now > lastSeen) {
+            long adjusted = data.getGraceUntil() + (now - lastSeen);
+            data.setGraceUntil(adjusted);
+            db.setGraceUntil(uuid, adjusted);
+        }
+        data.setLastSeen(0L);
+        db.setLastSeen(uuid, 0L);
+    }
+
+    private static void handleJoinSync(MinecraftServer server, UUID uuid, PlayerData data) {
+        ServerPlayer player = server.getPlayerList().getPlayer(uuid);
+        if (player == null) return;
+
+        GlobalPos pending = org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.consumePendingRevival(uuid);
         if (pending != null) {
             setGhostModeAttributes(player, false);
-            ServerLevel targetWorld = player.level().getServer().getLevel(pending.dimension());
+            ServerLevel targetWorld = server.getLevel(pending.dimension());
             org.ssoggy.ssoggysouls.hrm.RevivalStructureListener.restoreAtStructure(player, targetWorld != null ? targetWorld : player.level(), pending.pos());
             return;
         }
@@ -75,12 +106,17 @@ public class ServerLifecycleListener {
                 return;
             }
 
-            if (player.gameMode.getGameModeForPlayer() != GameType.ADVENTURE) {
-                player.setGameMode(GameType.ADVENTURE);
-                setGhostModeAttributes(player, true);
+            boolean alreadyGhost = player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE;
+            player.setGameMode(GameType.ADVENTURE);
+            // Always re-apply: invisibility is not persisted, so a relogging ghost
+            // (already in ADVENTURE) would otherwise become visible.
+            setGhostModeAttributes(player, true);
+            if (!alreadyGhost) {
                 player.sendSystemMessage(MessageUtil.get("ghost-mode-active"));
             }
-        } else if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
+        } else if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && player.isInvulnerable()) {
+            // Only undo ghost state (marked by our persisted invulnerability); leave
+            // players an admin deliberately put in ADVENTURE alone.
             player.setGameMode(GameType.SURVIVAL);
             setGhostModeAttributes(player, false);
         }
@@ -100,57 +136,90 @@ public class ServerLifecycleListener {
         if (db == null || !(event.getEntity() instanceof ServerPlayer)) return;
         ServerPlayer player = (ServerPlayer) event.getEntity();
         UUID uuid = player.getUUID();
-        ServerPlayer killer = event.getSource().getEntity() instanceof ServerPlayer serverPlayer ? serverPlayer : null;
+        MinecraftServer server = player.level().getServer();
+        ServerPlayer killer = event.getSource().getEntity() instanceof ServerPlayer serverPlayer && serverPlayer != player
+                ? serverPlayer : null;
+        // Snapshot now: by the time the DB answers the player may have respawned elsewhere
+        GlobalPos deathPos = GhostState.reachableDeathPos(player.level(), player.blockPosition());
+        DEATH_PENDING.add(uuid);
 
         CompletableFuture.runAsync(() -> {
-            PlayerData data = db.getPlayer(uuid);
-            if (data == null) return;
+            PlayerData data = null;
+            int remaining = 0;
+            try {
+                data = db.getPlayer(uuid);
+                if (data == null
+                        || data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod()))) {
+                    data = null;
+                    return;
+                }
 
-            if (data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod()))) {
-                return;
+                remaining = data.decrementLife();
+                db.savePlayer(data);
+                new DlcStats(uuid).incrementStat(DlcStat.DEATHS, 1);
+                if (killer != null) {
+                    DlcNames.cache(killer.getUUID(), killer.getScoreboardName());
+                    new DlcStats(killer.getUUID()).incrementStat(DlcStat.KILLS, 1);
+                }
+            } finally {
+                final PlayerData finalData = data;
+                final int finalRemaining = remaining;
+                server.execute(() -> finishDeath(server, player, deathPos, finalData, finalRemaining));
             }
-
-            int remaining = data.decrementLife();
-            db.savePlayer(data);
-            new DlcStats(uuid).incrementStat(DlcStat.DEATHS, 1);
-            if (killer != null) {
-                DlcNames.cache(killer.getUUID(), killer.getScoreboardName());
-                new DlcStats(killer.getUUID()).incrementStat(DlcStat.KILLS, 1);
-            }
-
-            player.level().getServer().execute(() -> handleDeathSync(player, data, remaining));
         });
     }
 
-    private static void handleDeathSync(ServerPlayer player, PlayerData data, int remaining) {
-        if (data.isDead()) {
-            if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
-                player.sendSystemMessage(MessageUtil.get("death-sending-to-limbo"));
-                ServerTransferUtil.sendToLimbo(player);
-                return;
-            }
+    /**
+     * Applies the death outcome on the server thread. {@code deadEntity} is only used for
+     * identity (profile/name); state changes go to the player's current entity, which is a
+     * new object if they already respawned.
+     */
+    private static void finishDeath(MinecraftServer server, ServerPlayer deadEntity, GlobalPos deathPos,
+                                    PlayerData data, int remaining) {
+        UUID uuid = deadEntity.getUUID();
+        DEATH_PENDING.remove(uuid);
+        if (data == null) return; // grace period / unknown player: no life lost
 
-            player.setGameMode(GameType.ADVENTURE);
-            setGhostModeAttributes(player, true);
-            player.sendSystemMessage(MessageUtil.get("death-now-ghost"));
-            org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents.updateGhostStatus(player.getUUID(), true);
-            GhostState state = GhostState.getServerState(player.level().getServer());
-            state.setDeathLocation(player.getUUID(), player.blockPosition());
-            state.setDirty();
-            DlcDeaths.recordDeath(
-                    player.getUUID(),
-                    player.getScoreboardName(),
-                    player.level().dimension().identifier().toString(),
-                    player.blockPosition().getX(),
-                    player.blockPosition().getY(),
-                    player.blockPosition().getZ()
-            );
-
-            if (ConfigManager.getConfig().isDropHeads()) {
-                HeadDropListener.triggerHeadDrop(player);
+        ServerPlayer current = server.getPlayerList().getPlayer(uuid);
+        if (!data.isDead()) {
+            if (current != null) {
+                current.sendSystemMessage(MessageUtil.get("death-life-lost", "lives", remaining));
             }
-        } else {
-            player.sendSystemMessage(MessageUtil.get("death-life-lost", "lives", remaining));
+            return;
+        }
+
+        // Drop the head in every mode (Paper does too), otherwise players sent to Limbo
+        // could never be revived by ritual.
+        if (ConfigManager.getConfig().isDropHeads()) {
+            ServerLevel deathLevel = server.getLevel(deathPos.dimension());
+            HeadDropListener.triggerHeadDrop(deadEntity, deathLevel != null ? deathLevel : server.overworld(), deathPos.pos());
+        }
+
+        if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
+            if (current != null) {
+                current.sendSystemMessage(MessageUtil.get("death-sending-to-limbo"));
+                ServerTransferUtil.sendToLimbo(current);
+            }
+            return;
+        }
+
+        org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents.updateGhostStatus(uuid, true);
+        GhostState state = GhostState.getServerState(server);
+        state.setDeathLocation(uuid, deathPos);
+        state.setDirty();
+        DlcDeaths.recordDeath(
+                uuid,
+                deadEntity.getScoreboardName(),
+                deathPos.dimension().identifier().toString(),
+                deathPos.pos().getX(),
+                deathPos.pos().getY(),
+                deathPos.pos().getZ()
+        );
+
+        if (current != null) {
+            current.setGameMode(GameType.ADVENTURE);
+            setGhostModeAttributes(current, true);
+            current.sendSystemMessage(MessageUtil.get("death-now-ghost"));
         }
     }
 
@@ -159,10 +228,16 @@ public class ServerLifecycleListener {
         if (db == null || !(event.getEntity() instanceof ServerPlayer)) return;
         ServerPlayer player = (ServerPlayer) event.getEntity();
         UUID uuid = player.getUUID();
+        // finishDeath will ghost the new entity once the outcome is known
+        if (DEATH_PENDING.contains(uuid)) return;
 
+        MinecraftServer server = player.level().getServer();
         CompletableFuture.runAsync(() -> {
             if (db.isPlayerDead(uuid)) {
-                player.level().getServer().execute(() -> handleRespawnSync(player));
+                server.execute(() -> {
+                    ServerPlayer current = server.getPlayerList().getPlayer(uuid);
+                    if (current != null) handleRespawnSync(current);
+                });
             }
         });
     }

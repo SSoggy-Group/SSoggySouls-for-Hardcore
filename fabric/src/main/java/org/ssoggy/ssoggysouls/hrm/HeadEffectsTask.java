@@ -21,24 +21,24 @@ public class HeadEffectsTask {
     }
 
     public static void register() {
-        final Set<UUID> wearingHead = new HashSet<>();
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (server.getTickCount() % 20 != 0) return; // Run once per second
+            if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled()
+                    || !org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHeadWearingEffects()) return;
 
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                UUID uuid = player.getUUID();
+                // State-based: the effects are infinite and saved with the player, so an
+                // in-memory "who is wearing" set lost track of them across relogs/restarts
+                // and let players keep the buffs after taking the head off.
                 boolean wearing = isWearingPlayerHead(player);
+                boolean hasEffects = hasHeadEffects(player);
 
-                if (wearing && !wearingHead.contains(uuid)) {
+                if (wearing && !hasEffects) {
                     applyEffects(player);
-                    wearingHead.add(uuid);
-                } else if (!wearing && wearingHead.remove(uuid)) {
+                } else if (!wearing && hasEffects) {
                     removeEffects(player);
                 }
             }
-
-            // Cleanup offline players
-            wearingHead.removeIf(uuid -> server.getPlayerList().getPlayer(uuid) == null);
         });
     }
 
@@ -54,9 +54,19 @@ public class HeadEffectsTask {
         player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, INFINITE_DURATION, 0, false, false));
     }
 
+    /** Our Health Boost is the marker: infinite and at our amplifier. */
+    private static boolean hasHeadEffects(ServerPlayer player) {
+        MobEffectInstance boost = player.getEffect(MobEffects.HEALTH_BOOST);
+        return boost != null && boost.isInfiniteDuration() && boost.getAmplifier() == 4;
+    }
+
     private static void removeEffects(ServerPlayer player) {
-        player.removeEffect(MobEffects.SLOWNESS);
-        player.removeEffect(MobEffects.HEALTH_BOOST);
-        player.removeEffect(MobEffects.RESISTANCE);
+        // Only strip the infinite copies we added, not effects from beacons/potions
+        for (var effect : java.util.List.of(MobEffects.SLOWNESS, MobEffects.HEALTH_BOOST, MobEffects.RESISTANCE)) {
+            MobEffectInstance active = player.getEffect(effect);
+            if (active != null && active.isInfiniteDuration()) {
+                player.removeEffect(effect);
+            }
+        }
     }
 }
