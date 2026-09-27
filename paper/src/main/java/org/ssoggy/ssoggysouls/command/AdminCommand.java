@@ -141,6 +141,10 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         }
 
         String action = args[1].toLowerCase();
+        if (!LIVES_ACTIONS.contains(action)) {
+            CommandUtil.sendInteractiveUsage(sender, "&cUsage: /psadmin lives <set|give|take> <player> <amount>", "/psadmin lives ");
+            return;
+        }
         String targetName = args[2];
         int amount = parseIntOrError(sender, args[3], "/psadmin lives " + action + " " + targetName + " ");
         if (amount < 0) return;
@@ -182,7 +186,7 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
 
     private static int computeNewLives(int current, String action, int amount) {
         return switch (action) {
-            case "give" -> current + amount;
+            case "give" -> (int) Math.min(Integer.MAX_VALUE, (long) current + amount);
             case "take" -> Math.max(0, current - amount);
             default -> amount; // "set"
         };
@@ -447,6 +451,11 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 target.sendMessage(MessageUtil.get("death-hybrid-warning",
                         "timeout", timeoutStr));
 
+                // Already on Limbo: nothing to transfer to, and there is no MainServerListener here
+                if (plugin.isLimboServer()) {
+                    return;
+                }
+
                 // Schedule the hybrid timeout and register it for proper cancellation
                 UUID targetUuid = target.getUniqueId();
                 BukkitTask task = Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -463,6 +472,9 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             }
             default -> {
                 target.sendMessage(MessageUtil.get("death-sent-to-limbo"));
+                if (plugin.isLimboServer()) {
+                    return;
+                }
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     if (target.isOnline()) {
                         ServerTransferUtil.sendToLimbo(target);

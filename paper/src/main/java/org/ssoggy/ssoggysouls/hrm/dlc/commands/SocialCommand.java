@@ -66,13 +66,23 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         }
 
         Entity player = cmdSender instanceof Entity entity ? entity : null;
-        OfflinePlayer targetPlayer = failArgs ? null : cmdSender.getServer().getOfflinePlayer(args[1].toLowerCase(Locale.ROOT).trim());
         if (!(player instanceof Player)) {
             cmdSender.sendMessage(MessageUtil.get("command-only-players"));
             return true;
         }
         UUID playerUUID = player.getUniqueId();
-        if (targetPlayer == null) return true;
+
+        // "/trust info" with no target: list every relation
+        if (failArgs) {
+            showTrustList(output, new RPSocial(playerUUID), null);
+            cmdSender.sendRichMessage(output.toString());
+            return true;
+        }
+
+        // Keep the typed casing: offline-mode UUIDs are derived from the exact name
+        String targetName = args[1].trim();
+        Player onlineTarget = Bukkit.getPlayerExact(targetName);
+        OfflinePlayer targetPlayer = onlineTarget != null ? onlineTarget : cmdSender.getServer().getOfflinePlayer(targetName);
         UUID targetPlayerUUID = targetPlayer.getUniqueId();
         RPUtil.addUsernameToCache(playerUUID);
 
@@ -146,7 +156,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     private boolean handleBlock(SocialContext ctx, RPSocial targetSocial,
                              SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
         if (ctx.playerUUID.equals(ctx.targetPlayerUUID)) {
-            executeFail(ctx.sender, ctx.output, "Player has you blocked");
+            executeFail(ctx.sender, ctx.output, "You cannot target yourself");
             return false;
         }
         boolean changed = false;
@@ -179,7 +189,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     private boolean handleGrant(SocialContext ctx, RPSocial targetSocial,
                              SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
         if (ctx.playerUUID.equals(ctx.targetPlayerUUID)) {
-            executeFail(ctx.sender, ctx.output, "Player has you blocked");
+            executeFail(ctx.sender, ctx.output, "You cannot target yourself");
             return false;
         }
 
@@ -211,7 +221,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         output.success = COMMANDOUTPUTENUM.RAW;
         output.message = "\n<green>--- Trust List ---</green>\n";
 
-        social.getRelationsToAll((k, v) -> k.equals(targetPlayerUUID)).forEach((k, v) ->
+        social.getRelationsToAll((k, v) -> targetPlayerUUID == null || k.equals(targetPlayerUUID)).forEach((k, v) ->
             output.message += "- " + RPUtil.getUsernameFromCache(k) + ": " + v + "\n"
             // Future: Make them glow locally when this command is ran
         );

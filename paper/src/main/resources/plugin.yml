@@ -69,12 +69,12 @@ commands:
   
   trust:
     description: Trust other players to see your death location when you have died.
-    permission: 'bukkit.command.plugins'
+    permission: 'ssoggysouls.trust'
     usage: /trust <action:trustoption/info> [target:player]
   
   deathlist:
     description: Shows the avaliable public death locations on the server.
-    permission: 'bukkit.command.plugins'
+    permission: 'ssoggysouls.deathlist'
     usage: /deathlist [target:player]
     aliases: [obituaries]
   
@@ -84,6 +84,14 @@ commands:
     usage: /ghostmode [target:player]
 
 permissions:
+  ssoggysouls.trust:
+    description: Allows managing who can see your death location (/trust)
+    default: true
+
+  ssoggysouls.deathlist:
+    description: Allows viewing public death locations (/deathlist)
+    default: true
+
   ssoggysouls.revive:
     description: Allows reviving dead players
     default: op
