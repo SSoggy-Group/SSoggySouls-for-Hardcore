@@ -199,7 +199,7 @@ Get the latest version:
 
 - [Modrinth](https://modrinth.com/project/Pb03qu6T)
 
-Download `SSoggySouls-4.6.0.jar` (or latest version).
+Download `SSoggySouls-4.6.1.jar` (or latest version).
 
 ### Installation Steps
 
@@ -210,14 +210,14 @@ Download `SSoggySouls-4.6.0.jar` (or latest version).
 **For Single Server Setups:**
 
 ```text
-Server: /plugins/SSoggySouls-4.6.0.jar
+Server: /plugins/SSoggySouls-4.6.1.jar
 ```
 
 **For 2-Server Setups (Main + Limbo):**
 
 ```text
-Main Server: /plugins/SSoggySouls-4.6.0.jar
-Limbo Server: /plugins/SSoggySouls-4.6.0.jar
+Main Server: /plugins/SSoggySouls-4.6.1.jar
+Limbo Server: /plugins/SSoggySouls-4.6.1.jar
 ```
 
 1. **Start your server(s)** to generate config files
@@ -561,7 +561,7 @@ Check console logs for:
 
 ### Mistake 6: Different Plugin Versions
 
-**Wrong:** Main server has v3.2.6, Limbo has v4.6.0
+**Wrong:** Main server has v3.2.6, Limbo has v4.6.1
 
 **Right:** Both servers must use the exact same version
 
