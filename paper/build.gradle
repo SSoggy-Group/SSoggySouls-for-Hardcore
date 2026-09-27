@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'org.ssoggy'
-version = '4.6.1'
+version = '4.6.2'
 
 // Dedicated configuration for libs to bundle into the fat JAR.
 configurations {
