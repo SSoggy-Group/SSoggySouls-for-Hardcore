@@ -158,7 +158,13 @@ public class HeadDropListener implements Listener {
         event.setCancelled(true);
         Item itemEntity = event.getEntity();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            PlayerData data = db.getPlayer(ownerUuid);
+            PlayerData data;
+            try {
+                data = db.getPlayerStrict(ownerUuid);
+            } catch (java.sql.SQLException e) {
+                // Read failed: keep the head (age was reset); the next despawn retries the check
+                return;
+            }
             if (data == null || !data.isDead()) {
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     if (itemEntity.isValid()) itemEntity.remove();
