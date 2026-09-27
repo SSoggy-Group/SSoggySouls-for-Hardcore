@@ -55,7 +55,7 @@ ______________________________________________________________________
 
 ### Q: Which version of Minecraft is supported?
 
-**A:** SSoggySouls supports **Minecraft 26.X** (and is backwards compatible with 1.21.X) with:
+**A:** SSoggySouls supports **Minecraft 26.X** with:
 
 - Spigot, Paper, Purpur, Fabric, Forge, or NeoForge server software
 
