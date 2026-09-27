@@ -8,6 +8,11 @@ public interface DatabaseManager {
     void initialize() throws DatabaseInitializationException;
     void shutdown();
     PlayerData getPlayer(UUID uuid);
+    /**
+     * Like {@link #getPlayer(UUID)} but propagates database errors, so callers can tell
+     * "no record" ({@code null}) apart from "query failed" (exception).
+     */
+    PlayerData getPlayerStrict(UUID uuid) throws java.sql.SQLException;
     PlayerData getPlayerByName(String username);
     void savePlayer(PlayerData data);
     boolean isPlayerDead(UUID uuid);

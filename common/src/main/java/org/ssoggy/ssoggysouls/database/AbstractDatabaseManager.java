@@ -48,6 +48,16 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public PlayerData getPlayer(UUID uuid) {
+        try {
+            return getPlayerStrict(uuid);
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player " + uuid);
+            return null;
+        }
+    }
+
+    @Override
+    public PlayerData getPlayerStrict(UUID uuid) throws SQLException {
         if (uuid == null) return null;
         String sql = SELECT_ALL + tableName + " WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
@@ -58,8 +68,6 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
                     return mapResultSet(rs);
                 }
             }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player " + uuid);
         }
         return null;
     }

@@ -121,4 +121,21 @@ class AbstractDatabaseManagerTest {
 
         verify(logger).log(eq(Level.WARNING), eq(sqlException), any(java.util.function.Supplier.class));
     }
+
+    @Test
+    void testGetPlayerStrictPropagatesSQLException() throws SQLException {
+        // Death handling relies on telling a failed read apart from a missing record
+        SQLException sqlException = new SQLException("Mock Error");
+        when(preparedStatement.executeQuery()).thenThrow(sqlException);
+
+        assertThrows(SQLException.class, () -> dbManager.getPlayerStrict(testUuid));
+    }
+
+    @Test
+    void testGetPlayerStrictReturnsNullWhenMissing() throws SQLException {
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(false);
+
+        assertNull(dbManager.getPlayerStrict(testUuid));
+    }
 }

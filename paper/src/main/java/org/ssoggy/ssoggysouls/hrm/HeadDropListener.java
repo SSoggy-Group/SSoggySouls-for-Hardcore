@@ -44,19 +44,17 @@ import org.ssoggy.ssoggysouls.model.PlayerData;
 public class HeadDropListener implements Listener {
 
     private static final String PERM_BYPASS = "ssoggysouls.bypass";
-    private static final String SKIP_HEAD_DROP_MSG = "Skipping head drop for ";
     private static final int ENTITIES_PER_TICK = 50;
     private static final int CHUNKS_PER_TICK = 10;
     private static final int PLAYERS_PER_TICK = 5;
-    // The death is written asynchronously by MainServerListener; poll until it lands
-    private static final long HEAD_DROP_RETRY_TICKS = 10L;
-    private static final int HEAD_DROP_MAX_ATTEMPTS = 10;
 
     private final SSoggySouls plugin;
     private final DatabaseManager db;
     // Tracks locations of skull blocks placed on death so cleanup can remove them
     // directly, even if their chunk is unloaded at revive time.
     private final Map<UUID, List<Location>> headBlockLocations = new ConcurrentHashMap<>();
+    // Death location captured at death, dropped once MainServerListener resolves the outcome
+    private final Map<UUID, Location> pendingHeadDrops = new ConcurrentHashMap<>();
 
     public HeadDropListener(SSoggySouls plugin) {
         this.plugin = plugin;
@@ -73,7 +71,20 @@ public class HeadDropListener implements Listener {
         if (deathLoc == null) return;
 
         sendDeathLocationMessage(player, deathLoc, world);
-        scheduleHeadDrop(player, world, reachableHeadLocation(world, deathLoc));
+        if (plugin.isHrmDropHeads()) {
+            pendingHeadDrops.put(player.getUniqueId(), reachableHeadLocation(world, deathLoc));
+        }
+    }
+
+    /**
+     * Called by MainServerListener on the main thread once the death outcome is persisted.
+     * Replaces the old fixed-attempt DB polling, which could give up before a slow final-death
+     * write landed and lose the head permanently.
+     */
+    public void onDeathResolved(Player player, boolean finalDeath) {
+        Location deathLoc = pendingHeadDrops.remove(player.getUniqueId());
+        if (!finalDeath || deathLoc == null || deathLoc.getWorld() == null) return;
+        placeOrDropHead(player, deathLoc.getWorld(), deathLoc);
     }
 
     /**
@@ -99,53 +110,6 @@ public class HeadDropListener implements Listener {
                     + "<hover:show_text:'<gray>Click to copy coordinates</gray>'>"
                     + deathLoc.getBlockX() + ", " + deathLoc.getBlockY() + ", " + deathLoc.getBlockZ()
                     + "</hover></click> in " + world.getName() + "</italic></gray>");
-        }
-    }
-
-    private void scheduleHeadDrop(Player player, World world, Location deathLoc) {
-        if (!plugin.isHrmDropHeads()) return;
-
-        scheduleHeadDropAttempt(player, world, deathLoc, System.currentTimeMillis(), 1);
-    }
-
-    private void scheduleHeadDropAttempt(Player player, World world, Location deathLoc,
-                                         long deathTime, int attempt) {
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-            PlayerData data = db.getPlayer(player.getUniqueId());
-            boolean deathPersisted = data != null && data.isDead() && data.getLastDeath() >= deathTime - 1000L;
-            if (!deathPersisted && attempt < HEAD_DROP_MAX_ATTEMPTS
-                    && (data == null || !data.isInGracePeriod(plugin.getGracePeriodMillis()))) {
-                // Final-death write may not have landed yet (slow DB); try again
-                scheduleHeadDropAttempt(player, world, deathLoc, deathTime, attempt + 1);
-                return;
-            }
-            if (!shouldDropHead(player, data)) return;
-
-            // Place / drop the head on the main thread
-            Bukkit.getScheduler().runTask(plugin, () ->
-                    placeOrDropHead(player, world, deathLoc));
-        }, HEAD_DROP_RETRY_TICKS);
-    }
-
-    private boolean shouldDropHead(Player player, PlayerData data) {
-        if (data == null) {
-            debugSkip(player, "(no data).");
-            return false;
-        }
-        if (!data.isDead()) {
-            debugSkip(player, "(not dead).");
-            return false;
-        }
-        if (data.isInGracePeriod(plugin.getGracePeriodMillis())) {
-            debugSkip(player, "(grace period).");
-            return false;
-        }
-        return true;
-    }
-
-    private void debugSkip(Player player, String reason) {
-        if (plugin.isDebugMode()) {
-            plugin.debug(SKIP_HEAD_DROP_MSG + player.getName() + " " + reason);
         }
     }
 

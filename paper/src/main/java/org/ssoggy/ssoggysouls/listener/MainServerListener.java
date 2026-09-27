@@ -124,6 +124,10 @@ public class MainServerListener implements Listener {
         if (data.isDead()) {
             redirectToLimbo(player, data);
         } else {
+            // A player who disconnected on the death screen (or was transferred to Limbo)
+            // never fired onPlayerRespawn here; clear leftovers so future deaths aren't skipped.
+            pendingLimbo.remove(uuid);
+            pendingSurvivalRestore.remove(uuid);
             restoreGameModeIfNeeded(player, uuid, data);
         }
     }
@@ -296,7 +300,18 @@ public class MainServerListener implements Listener {
     }
 
     private void handleDeathAsync(Player player, UUID uuid) {
-        PlayerData data = db.getPlayer(uuid);
+        PlayerData data;
+        try {
+            data = db.getPlayerStrict(uuid);
+        } catch (java.sql.SQLException e) {
+            // Retry instead of treating a failed read as "no record": that would save a fresh
+            // full-lives record over the real one and drop the death. The death stays pending,
+            // so an early respawn keeps waiting for the outcome.
+            plugin.getLogger().log(Level.WARNING, e, () -> "Could not load " + player.getName()
+                    + " to resolve their death; retrying in 5s");
+            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> handleDeathAsync(player, uuid), 100L);
+            return;
+        }
         if (data == null) {
             // Use grace period overload to ensure proper grace tracking for new players
             data = PlayerData.createNew(uuid, player.getName(), plugin.getDefaultLives(),
@@ -339,6 +354,11 @@ public class MainServerListener implements Listener {
         Bukkit.getScheduler().runTask(plugin, () -> {
             deathResultPending.remove(uuid);
             boolean alreadyRespawned = respawnedBeforeResult.remove(uuid);
+            // Head drop is driven by the persisted outcome, not by polling the DB
+            org.ssoggy.ssoggysouls.hrm.HeadDropListener headDrops = plugin.getHeadDropListener();
+            if (headDrops != null) {
+                headDrops.onDeathResolved(player, finalDeath);
+            }
             if (finalDeath) {
                 if (alreadyRespawned) {
                     handleFinalDeathRespawn(player, uuid);

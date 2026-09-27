@@ -154,31 +154,47 @@ public class MainServerListener {
             GlobalPos deathPos = GhostState.reachableDeathPos(player.level(), player.blockPosition());
             DEATH_PENDING.add(uuid);
 
-            CompletableFuture.runAsync(() -> {
-                PlayerData data = null;
-                int remaining = 0;
-                try {
-                    data = db.getPlayer(uuid);
-                    if (data == null
-                            || data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod()))) {
-                        data = null;
-                        return;
-                    }
-
-                    remaining = data.decrementLife();
-                    db.savePlayer(data);
-                    new DlcStats(uuid).incrementStat(DlcStat.DEATHS, 1);
-                    if (killer != null) {
-                        DlcNames.cache(killer.getUUID(), killer.getScoreboardName());
-                        new DlcStats(killer.getUUID()).incrementStat(DlcStat.KILLS, 1);
-                    }
-                } finally {
-                    final PlayerData finalData = data;
-                    final int finalRemaining = remaining;
-                    server.execute(() -> finishDeath(server, player, deathPos, finalData, finalRemaining));
-                }
-            });
+            CompletableFuture.runAsync(() -> resolveDeath(server, player, deathPos, killer));
         });
+    }
+
+    private static final long DEATH_RETRY_SECONDS = 5L;
+
+    /**
+     * Async part of the death flow. A failed DB read is retried (the death stays pending,
+     * so an early respawn keeps waiting) rather than being treated as "no record", which
+     * would silently drop the death.
+     */
+    private void resolveDeath(MinecraftServer server, ServerPlayer player, GlobalPos deathPos, ServerPlayer killer) {
+        UUID uuid = player.getUUID();
+        PlayerData data;
+        try {
+            data = db.getPlayerStrict(uuid);
+        } catch (java.sql.SQLException e) {
+            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.warn("Could not load {} to resolve their death; retrying in {}s",
+                    player.getScoreboardName(), DEATH_RETRY_SECONDS, e);
+            CompletableFuture.runAsync(() -> resolveDeath(server, player, deathPos, killer),
+                    CompletableFuture.delayedExecutor(DEATH_RETRY_SECONDS, java.util.concurrent.TimeUnit.SECONDS));
+            return;
+        }
+
+        int remaining = 0;
+        if (data == null
+                || data.isInGracePeriod(ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod()))) {
+            data = null;
+        } else {
+            remaining = data.decrementLife();
+            db.savePlayer(data);
+            new DlcStats(uuid).incrementStat(DlcStat.DEATHS, 1);
+            if (killer != null) {
+                DlcNames.cache(killer.getUUID(), killer.getScoreboardName());
+                new DlcStats(killer.getUUID()).incrementStat(DlcStat.KILLS, 1);
+            }
+        }
+
+        final PlayerData finalData = data;
+        final int finalRemaining = remaining;
+        server.execute(() -> finishDeath(server, player, deathPos, finalData, finalRemaining));
     }
 
     /**

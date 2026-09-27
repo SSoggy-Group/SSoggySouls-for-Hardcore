@@ -581,6 +581,10 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         return mainServerListener;
     }
 
+    public HeadDropListener getHeadDropListener() {
+        return headDropListener;
+    }
+
     public LimboServerListener getLimboServerListener() {
         return limboServerListener;
     }
