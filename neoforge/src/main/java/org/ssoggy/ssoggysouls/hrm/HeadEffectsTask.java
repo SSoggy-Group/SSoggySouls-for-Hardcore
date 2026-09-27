@@ -57,6 +57,7 @@ public class HeadEffectsTask {
         player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, INFINITE_DURATION, 0, false, false));
         player.addEffect(new MobEffectInstance(MobEffects.HEALTH_BOOST, INFINITE_DURATION, HEALTH_BOOST_AMPLIFIER, false, false));
         player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, INFINITE_DURATION, 0, false, false));
+        player.addTag(OWNER_TAG);
     }
 
     private static final int HEALTH_BOOST_AMPLIFIER = 4;
@@ -66,17 +67,33 @@ public class HeadEffectsTask {
         return effect != null && effect.isInfiniteDuration() && effect.getAmplifier() == amplifier;
     }
 
-    /** Any one of our effects counts, so losing one (e.g. milk, another mod) can't strand the rest. */
-    private static boolean hasHeadEffects(ServerPlayer player) {
+    // Persistent ownership marker (saved in the player's NBT "Tags"): effects can't carry
+    // a source, so without it an unrelated infinite Slowness/Resistance would look like ours.
+    private static final String OWNER_TAG = "ssoggysouls_head_effects";
+
+    private static boolean hasMatchingEffects(ServerPlayer player) {
         return isOurs(player.getEffect(MobEffects.SLOWNESS), 0)
                 || isOurs(player.getEffect(MobEffects.HEALTH_BOOST), HEALTH_BOOST_AMPLIFIER)
                 || isOurs(player.getEffect(MobEffects.RESISTANCE), 0);
     }
 
+    private static boolean hasHeadEffects(ServerPlayer player) {
+        if (player.entityTags().contains(OWNER_TAG)) {
+            boolean any = hasMatchingEffects(player);
+            if (!any) {
+                player.removeTag(OWNER_TAG); // effects already gone (death, milk)
+            }
+            return any;
+        }
+        // Legacy (pre-marker) players: infinite Health Boost V is unique to this task
+        return isOurs(player.getEffect(MobEffects.HEALTH_BOOST), HEALTH_BOOST_AMPLIFIER);
+    }
+
     private static void removeEffects(ServerPlayer player) {
-        // Only strip copies matching what we applied, not effects from other sources
+        // Only reached when we own the effects (marker or legacy signature)
         if (isOurs(player.getEffect(MobEffects.SLOWNESS), 0)) player.removeEffect(MobEffects.SLOWNESS);
         if (isOurs(player.getEffect(MobEffects.HEALTH_BOOST), HEALTH_BOOST_AMPLIFIER)) player.removeEffect(MobEffects.HEALTH_BOOST);
         if (isOurs(player.getEffect(MobEffects.RESISTANCE), 0)) player.removeEffect(MobEffects.RESISTANCE);
+        player.removeTag(OWNER_TAG);
     }
 }

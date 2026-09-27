@@ -2,8 +2,10 @@ package org.ssoggy.ssoggysouls.hrm;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -27,9 +29,11 @@ public class HeadEffectsTask extends BukkitRunnable {
             PotionEffectType.RESISTANCE, INFINITE_DURATION, 0, false, false);
 
     private final SSoggySouls plugin;
+    private final NamespacedKey ownerKey;
 
     public HeadEffectsTask(SSoggySouls plugin) {
         this.plugin = plugin;
+        this.ownerKey = new NamespacedKey(plugin, "head_effects");
     }
 
     @Override
@@ -65,11 +69,24 @@ public class HeadEffectsTask extends BukkitRunnable {
         return helmet != null && helmet.getType() == Material.PLAYER_HEAD;
     }
 
-    /** Any one of our effects counts, so losing one (e.g. milk) can't strand the rest. */
-    private static boolean hasHeadEffects(Player player) {
+    private static boolean hasMatchingEffects(Player player) {
         return isOurs(player.getPotionEffect(PotionEffectType.SLOWNESS), 0)
                 || isOurs(player.getPotionEffect(PotionEffectType.HEALTH_BOOST), HEALTH_BOOST_AMPLIFIER)
                 || isOurs(player.getPotionEffect(PotionEffectType.RESISTANCE), 0);
+    }
+
+    private boolean hasHeadEffects(Player player) {
+        // Persistent ownership marker: effects can't carry a source, so without it an
+        // unrelated infinite Slowness/Resistance would look like ours.
+        if (player.getPersistentDataContainer().has(ownerKey, PersistentDataType.BYTE)) {
+            boolean any = hasMatchingEffects(player);
+            if (!any) {
+                player.getPersistentDataContainer().remove(ownerKey); // effects already gone (death, milk)
+            }
+            return any;
+        }
+        // Legacy (pre-marker) players: an infinite Health Boost V is unique to this task
+        return isOurs(player.getPotionEffect(PotionEffectType.HEALTH_BOOST), HEALTH_BOOST_AMPLIFIER);
     }
 
     /** Infinite and at the exact amplifier this task applies; anything else is not ours. */
@@ -79,16 +96,17 @@ public class HeadEffectsTask extends BukkitRunnable {
                 && (effect.isInfinite() || effect.getDuration() > 1_000_000);
     }
 
-    private static void applyEffects(Player player) {
+    private void applyEffects(Player player) {
         // Use cached potion effects instead of creating new instances
         player.addPotionEffect(NAUSEA_EFFECT);
         player.addPotionEffect(SLOWNESS_EFFECT);
         player.addPotionEffect(HEALTH_BOOST_EFFECT);
         player.addPotionEffect(RESISTANCE_EFFECT);
+        player.getPersistentDataContainer().set(ownerKey, PersistentDataType.BYTE, (byte) 1);
     }
 
-    private static void removeEffects(Player player) {
-        // Only strip copies matching what we applied, not effects from beacons/potions
+    private void removeEffects(Player player) {
+        // Only reached when we own the effects (marker or legacy signature)
         if (isOurs(player.getPotionEffect(PotionEffectType.SLOWNESS), 0)) {
             player.removePotionEffect(PotionEffectType.SLOWNESS);
         }
@@ -98,5 +116,6 @@ public class HeadEffectsTask extends BukkitRunnable {
         if (isOurs(player.getPotionEffect(PotionEffectType.RESISTANCE), 0)) {
             player.removePotionEffect(PotionEffectType.RESISTANCE);
         }
+        player.getPersistentDataContainer().remove(ownerKey);
     }
 }
