@@ -154,7 +154,14 @@ public class ExtraLifeManager implements Listener {
     }
 
     private boolean consumeExtraLife(Player player) {
-        PlayerData data = db.getPlayer(player.getUniqueId());
+        PlayerData data;
+        try {
+            data = db.getPlayerStrict(player.getUniqueId());
+        } catch (java.sql.SQLException e) {
+            // Don't create a record over the real one on a failed read; the item is refunded
+            plugin.getLogger().log(Level.WARNING, e, () -> "Could not load " + player.getName() + " for Extra Life");
+            return false;
+        }
         if (data == null) {
             data = PlayerData.createNew(player.getUniqueId(), player.getName(),
                     plugin.getDefaultLives(), plugin.getGracePeriodMillis());

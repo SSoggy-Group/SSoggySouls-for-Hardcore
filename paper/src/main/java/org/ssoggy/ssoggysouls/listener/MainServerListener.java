@@ -98,7 +98,17 @@ public class MainServerListener implements Listener {
             }
         }
 
-        PlayerData data = db.getPlayer(player.getUniqueId());
+        PlayerData data;
+        try {
+            data = db.getPlayerStrict(player.getUniqueId());
+        } catch (java.sql.SQLException e) {
+            // A failed read is not a first join: creating a record would overwrite the real one
+            plugin.getLogger().log(Level.WARNING, e, () -> "Could not load " + player.getName() + " on join; retrying in 5s");
+            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+                if (player.isOnline()) handleJoinAsync(player);
+            }, 100L);
+            return;
+        }
 
         if (data == null) {
             handleFirstJoin(player);

@@ -111,10 +111,20 @@ public class LimboServerListener {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayer player = handler.getPlayer();
             UUID uuid = player.getUUID();
+            // Restricted until the lookup answers, so the join window can't be used to escape
+            DEAD_PLAYERS.add(uuid);
 
             CompletableFuture.runAsync(() -> {
-                PlayerData data = db.getPlayer(uuid);
-                server.execute(() -> handleJoinSync(player, data, server));
+                PlayerData data;
+                try {
+                    data = db.getPlayerStrict(uuid);
+                } catch (java.sql.SQLException e) {
+                    // A failed read keeps the player restricted (as the old isPlayerDead did)
+                    org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.warn("Could not load {} on Limbo join; treating as dead", player.getScoreboardName(), e);
+                    data = new PlayerData(uuid, player.getScoreboardName(), 0, true, 0L, 0L, 0L, 0L);
+                }
+                final PlayerData finalData = data;
+                server.execute(() -> handleJoinSync(player, finalData, server));
             });
         });
     }

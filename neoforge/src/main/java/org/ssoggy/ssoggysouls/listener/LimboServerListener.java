@@ -119,15 +119,25 @@ public class LimboServerListener {
         if (db == null || !(event.getEntity() instanceof ServerPlayer player)) return;
 
         UUID uuid = player.getUUID();
+        // Restricted until the lookup answers, so the join window can't be used to escape
+        DEAD_PLAYERS.add(uuid);
 
         CompletableFuture.runAsync(() -> {
-            // getPlayer (not isPlayerDead): a missing record means a first-time visitor, not a dead player
-            PlayerData data = db.getPlayer(uuid);
-            boolean isDead = data != null && data.isDead();
+            // Missing record = first-time visitor; failed read = keep restricted
+            // (as the old isPlayerDead did)
+            boolean isDead;
+            try {
+                PlayerData data = db.getPlayerStrict(uuid);
+                isDead = data != null && data.isDead();
+            } catch (java.sql.SQLException e) {
+                org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.warn("Could not load {} on Limbo join; treating as dead", player.getScoreboardName(), e);
+                isDead = true;
+            }
+            final boolean finalIsDead = isDead;
             setCachedDead(uuid, isDead);
 
             player.level().getServer().execute(() -> {
-                if (isDead) {
+                if (finalIsDead) {
                     applyLimboState(player);
                 } else {
                     player.setGameMode(GameType.SURVIVAL);

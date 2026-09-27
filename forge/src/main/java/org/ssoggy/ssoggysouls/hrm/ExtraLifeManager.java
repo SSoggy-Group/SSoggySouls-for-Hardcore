@@ -53,6 +53,10 @@ public class ExtraLifeManager {
 
     private static void processExtraLife(ServerPlayer serverPlayer) {
         PlayerData data = getOrCreatePlayerData(serverPlayer);
+        if (data == null) {
+            handleFailedUse(serverPlayer, null); // DB read failed: refund only
+            return;
+        }
 
         if (data.isDead()) {
             handleFailedUse(serverPlayer, "extra-life-dead");
@@ -72,7 +76,14 @@ public class ExtraLifeManager {
     }
 
     private static PlayerData getOrCreatePlayerData(ServerPlayer serverPlayer) {
-        PlayerData data = db.getPlayer(serverPlayer.getUUID());
+        PlayerData data;
+        try {
+            data = db.getPlayerStrict(serverPlayer.getUUID());
+        } catch (java.sql.SQLException e) {
+            // Don't create a record over the real one on a failed read
+            SSoggySoulsMod.LOGGER.warn("Could not load {} for Extra Life", serverPlayer.getScoreboardName(), e);
+            return null;
+        }
         if (data == null) {
             data = PlayerData.createNew(serverPlayer.getUUID(), serverPlayer.getScoreboardName(),
                     ConfigManager.getConfig().getDefaultLives(),
@@ -84,7 +95,9 @@ public class ExtraLifeManager {
 
     private static void handleFailedUse(ServerPlayer serverPlayer, String messageKey) {
         serverPlayer.level().getServer().execute(() -> {
-            serverPlayer.sendSystemMessage(MessageUtil.get(messageKey));
+            if (messageKey != null) {
+                serverPlayer.sendSystemMessage(MessageUtil.get(messageKey));
+            }
             if (!serverPlayer.isCreative()) {
                 ItemStack refundedItem = createExtraLifeItem();
                 if (!serverPlayer.getInventory().add(refundedItem)) {

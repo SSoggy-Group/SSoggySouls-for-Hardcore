@@ -58,27 +58,42 @@ public class MainServerListener {
             UUID uuid = player.getUUID();
             String name = player.getScoreboardName();
 
-            CompletableFuture.runAsync(() -> {
-                PlayerData data = db.getPlayer(uuid);
-                if (data == null) {
-                    long graceMs = ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod());
-                    data = PlayerData.createNew(uuid, name,
-                            ConfigManager.getConfig().getDefaultLives(), graceMs);
-                    db.savePlayer(data);
-                } else {
-                    // Targeted updates only: a full-row save here could overwrite a revive
-                    // or extra life written by another server/thread in the meantime.
-                    if (!Objects.equals(data.getUsername(), name)) {
-                        db.setUsername(uuid, name);
-                    }
-                    pauseGracePeriodForOffline(data, uuid);
-                }
-                DlcNames.cache(uuid, name);
-
-                final PlayerData finalData = data;
-                server.execute(() -> handleJoinSync(server, uuid, finalData));
-            });
+            CompletableFuture.runAsync(() -> loadOnJoin(server, uuid, name));
         });
+    }
+
+    private static final long JOIN_RETRY_SECONDS = 5L;
+
+    private void loadOnJoin(MinecraftServer server, UUID uuid, String name) {
+        PlayerData data;
+        try {
+            data = db.getPlayerStrict(uuid);
+        } catch (java.sql.SQLException e) {
+            // A failed read is not a first join: creating a record would overwrite the real one
+            org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.warn("Could not load {} on join; retrying in {}s", name, JOIN_RETRY_SECONDS, e);
+            CompletableFuture.runAsync(() -> {
+                if (server.getPlayerList().getPlayer(uuid) != null) loadOnJoin(server, uuid, name);
+            }, CompletableFuture.delayedExecutor(JOIN_RETRY_SECONDS, java.util.concurrent.TimeUnit.SECONDS));
+            return;
+        }
+
+        if (data == null) {
+            long graceMs = ConfigManager.parseGracePeriod(ConfigManager.getConfig().getGracePeriod());
+            data = PlayerData.createNew(uuid, name,
+                    ConfigManager.getConfig().getDefaultLives(), graceMs);
+            db.savePlayer(data);
+        } else {
+            // Targeted updates only: a full-row save here could overwrite a revive
+            // or extra life written by another server/thread in the meantime.
+            if (!Objects.equals(data.getUsername(), name)) {
+                db.setUsername(uuid, name);
+            }
+            pauseGracePeriodForOffline(data, uuid);
+        }
+        DlcNames.cache(uuid, name);
+
+        final PlayerData finalData = data;
+        server.execute(() -> handleJoinSync(server, uuid, finalData));
     }
 
     /** Grace period does not tick while offline (matches the Paper implementation). */
