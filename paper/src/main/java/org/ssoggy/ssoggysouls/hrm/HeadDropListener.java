@@ -48,6 +48,9 @@ public class HeadDropListener implements Listener {
     private static final int ENTITIES_PER_TICK = 50;
     private static final int CHUNKS_PER_TICK = 10;
     private static final int PLAYERS_PER_TICK = 5;
+    // The death is written asynchronously by MainServerListener; poll until it lands
+    private static final long HEAD_DROP_RETRY_TICKS = 10L;
+    private static final int HEAD_DROP_MAX_ATTEMPTS = 10;
 
     private final SSoggySouls plugin;
     private final DatabaseManager db;
@@ -70,7 +73,23 @@ public class HeadDropListener implements Listener {
         if (deathLoc == null) return;
 
         sendDeathLocationMessage(player, deathLoc, world);
-        scheduleHeadDrop(player, world, deathLoc);
+        scheduleHeadDrop(player, world, reachableHeadLocation(world, deathLoc));
+    }
+
+    /**
+     * A head dropped/placed below the world is destroyed, leaving the player
+     * permanently unrevivable. Void deaths move the head to the top block of the
+     * column, or to world spawn if the column is empty (e.g. End void).
+     */
+    private static Location reachableHeadLocation(World world, Location deathLoc) {
+        if (deathLoc.getY() >= world.getMinHeight()) {
+            return deathLoc;
+        }
+        Block top = world.getHighestBlockAt(deathLoc.getBlockX(), deathLoc.getBlockZ());
+        if (top.getType().isSolid()) {
+            return top.getLocation().add(0.5, 1, 0.5);
+        }
+        return world.getSpawnLocation();
     }
 
     private void sendDeathLocationMessage(Player player, Location deathLoc, World world) {
@@ -86,17 +105,29 @@ public class HeadDropListener implements Listener {
     private void scheduleHeadDrop(Player player, World world, Location deathLoc) {
         if (!plugin.isHrmDropHeads()) return;
 
+        scheduleHeadDropAttempt(player, world, deathLoc, System.currentTimeMillis(), 1);
+    }
+
+    private void scheduleHeadDropAttempt(Player player, World world, Location deathLoc,
+                                         long deathTime, int attempt) {
         Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-            if (!shouldDropHead(player)) return;
+            PlayerData data = db.getPlayer(player.getUniqueId());
+            boolean deathPersisted = data != null && data.isDead() && data.getLastDeath() >= deathTime - 1000L;
+            if (!deathPersisted && attempt < HEAD_DROP_MAX_ATTEMPTS
+                    && (data == null || !data.isInGracePeriod(plugin.getGracePeriodMillis()))) {
+                // Final-death write may not have landed yet (slow DB); try again
+                scheduleHeadDropAttempt(player, world, deathLoc, deathTime, attempt + 1);
+                return;
+            }
+            if (!shouldDropHead(player, data)) return;
 
             // Place / drop the head on the main thread
             Bukkit.getScheduler().runTask(plugin, () ->
                     placeOrDropHead(player, world, deathLoc));
-        }, 10L); // 0.5s delay because why not it would break otherwise
+        }, HEAD_DROP_RETRY_TICKS);
     }
 
-    private boolean shouldDropHead(Player player) {
-        PlayerData data = db.getPlayer(player.getUniqueId());
+    private boolean shouldDropHead(Player player, PlayerData data) {
         if (data == null) {
             debugSkip(player, "(no data).");
             return false;
@@ -158,10 +189,18 @@ public class HeadDropListener implements Listener {
         UUID ownerUuid = getHeadOwnerUuid(event.getEntity().getItemStack());
         if (ownerUuid == null) return;
 
-        PlayerData data = db.getPlayer(ownerUuid);
-        if (data != null && data.isDead()) {
-            event.setCancelled(true);
-        }
+        // Never block the main thread on the DB: keep the item (age resets), then
+        // let it go if the owner turns out to be alive.
+        event.setCancelled(true);
+        Item itemEntity = event.getEntity();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            PlayerData data = db.getPlayer(ownerUuid);
+            if (data == null || !data.isDead()) {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (itemEntity.isValid()) itemEntity.remove();
+                });
+            }
+        });
     }
 
     private UUID getHeadOwnerUuid(ItemStack stack) {

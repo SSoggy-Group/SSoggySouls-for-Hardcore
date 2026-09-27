@@ -29,6 +29,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -158,7 +159,8 @@ public class GhostModeEvents implements Listener {
         }
 
         try {
-            Location newLocation = new Location(player.getWorld(),
+            World savedWorld = split.length >= 4 ? Bukkit.getWorld(split[3]) : null;
+            Location newLocation = new Location(savedWorld != null ? savedWorld : player.getWorld(),
                     (int) Double.parseDouble(split[0]) + 0.5, (int) Double.parseDouble(split[1]) + 0.5, (int) Double.parseDouble(split[2]) + 0.5); // center transforms (e.g. 4.79530 or 4.12405 to 4 to 4.5)
             RPStatic.DEAD_LOCATIONS.put(uuid, Pair.of(newLocation, Instant.parse(savedTime))); // This should be removed when playerhead block is destroyed
             return newLocation;

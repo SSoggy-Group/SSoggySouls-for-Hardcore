@@ -1,9 +1,5 @@
 package org.ssoggy.ssoggysouls.hrm;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -17,20 +13,20 @@ import org.ssoggy.ssoggysouls.SSoggySouls;
 // does that thingy with effects when you wear player head
 public class HeadEffectsTask extends BukkitRunnable {
 
-    private static final int INFINITE_DURATION = Integer.MAX_VALUE;
-    
+    private static final int INFINITE_DURATION = PotionEffect.INFINITE_DURATION;
+    private static final int HEALTH_BOOST_AMPLIFIER = 4;
+
     // Cache potion effects to avoid creating new instances every time
     private static final PotionEffect NAUSEA_EFFECT = new PotionEffect(
             PotionEffectType.NAUSEA, 200, 0, false, false);
     private static final PotionEffect SLOWNESS_EFFECT = new PotionEffect(
             PotionEffectType.SLOWNESS, INFINITE_DURATION, 0, false, false);
     private static final PotionEffect HEALTH_BOOST_EFFECT = new PotionEffect(
-            PotionEffectType.HEALTH_BOOST, INFINITE_DURATION, 4, false, false);
+            PotionEffectType.HEALTH_BOOST, INFINITE_DURATION, HEALTH_BOOST_AMPLIFIER, false, false);
     private static final PotionEffect RESISTANCE_EFFECT = new PotionEffect(
             PotionEffectType.RESISTANCE, INFINITE_DURATION, 0, false, false);
 
     private final SSoggySouls plugin;
-    private final Set<UUID> wearingHead = new HashSet<>();
 
     public HeadEffectsTask(SSoggySouls plugin) {
         this.plugin = plugin;
@@ -38,32 +34,47 @@ public class HeadEffectsTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            UUID uuid = player.getUniqueId();
-            boolean wearing = isWearingPlayerHead(player);
+        if (!plugin.isHrmHeadEffects() || !Boolean.TRUE.equals(
+                org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic.CONFIG_RULES == null ? Boolean.TRUE
+                        : org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic.CONFIG_RULES.getOrDefault("head-effects", true))) {
+            return;
+        }
 
-            if (wearing && !wearingHead.contains(uuid)) {
+        // State-based rather than transition-based: the effects are infinite and saved
+        // with the player, so an in-memory "who is wearing" set would lose track of them
+        // across relogs/restarts and let players keep the buffs without the head.
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            boolean wearing = isWearingPlayerHead(player);
+            boolean hasEffects = hasHeadEffects(player);
+
+            if (wearing && !hasEffects) {
                 applyEffects(player);
-                wearingHead.add(uuid);
-                // Avoid string concatenation - only log if debug is enabled
                 if (plugin.isDebugMode()) {
                     plugin.debug(player.getName() + " equipped a player head, applying effects.");
                 }
-            } else if (!wearing && wearingHead.remove(uuid)) {
+            } else if (!wearing && hasEffects) {
                 removeEffects(player);
                 if (plugin.isDebugMode()) {
                     plugin.debug(player.getName() + " removed player head, removing effects.");
                 }
             }
         }
-
-        // Clean up disconnected players from tracking set
-        wearingHead.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
     }
 
     private static boolean isWearingPlayerHead(Player player) {
         ItemStack helmet = player.getInventory().getHelmet();
         return helmet != null && helmet.getType() == Material.PLAYER_HEAD;
+    }
+
+    /** Our Health Boost is the marker: infinite and at our amplifier. */
+    private static boolean hasHeadEffects(Player player) {
+        PotionEffect boost = player.getPotionEffect(PotionEffectType.HEALTH_BOOST);
+        return isOurs(boost) && boost.getAmplifier() == HEALTH_BOOST_AMPLIFIER;
+    }
+
+    private static boolean isOurs(PotionEffect effect) {
+        // Older versions used Integer.MAX_VALUE instead of a true infinite duration
+        return effect != null && (effect.isInfinite() || effect.getDuration() > 1_000_000);
     }
 
     private static void applyEffects(Player player) {
@@ -75,8 +86,12 @@ public class HeadEffectsTask extends BukkitRunnable {
     }
 
     private static void removeEffects(Player player) {
-        player.removePotionEffect(PotionEffectType.SLOWNESS);
-        player.removePotionEffect(PotionEffectType.HEALTH_BOOST);
-        player.removePotionEffect(PotionEffectType.RESISTANCE);
+        // Only strip the infinite copies we added, not effects from beacons/potions
+        for (PotionEffectType type : new PotionEffectType[] {
+                PotionEffectType.SLOWNESS, PotionEffectType.HEALTH_BOOST, PotionEffectType.RESISTANCE}) {
+            if (isOurs(player.getPotionEffect(type))) {
+                player.removePotionEffect(type);
+            }
+        }
     }
 }

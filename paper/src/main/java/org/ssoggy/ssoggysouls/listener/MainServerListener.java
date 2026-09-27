@@ -2,6 +2,7 @@ package org.ssoggy.ssoggysouls.listener;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,6 +46,10 @@ public class MainServerListener implements Listener {
     private final Set<UUID> pendingSurvivalRestore = ConcurrentHashMap.newKeySet();
     private final Set<UUID> expectedGamemodeChanges = ConcurrentHashMap.newKeySet();
     private final Set<UUID> hybridWindowUsed = ConcurrentHashMap.newKeySet();
+    // Deaths whose outcome (life lost vs. final death) is still being resolved asynchronously
+    private final Set<UUID> deathResultPending = ConcurrentHashMap.newKeySet();
+    // Players who clicked respawn before their death outcome was known
+    private final Set<UUID> respawnedBeforeResult = ConcurrentHashMap.newKeySet();
     private final Map<UUID, BukkitTask> hybridPendingTransfers = new HashMap<>();
     private final Map<UUID, Long> reviveCooldowns = new ConcurrentHashMap<>();
 
@@ -110,7 +115,7 @@ public class MainServerListener implements Listener {
             shouldSave = true;
         }
 
-        if (!data.getUsername().equals(player.getName())) {
+        if (!Objects.equals(data.getUsername(), player.getName())) {
             data.setUsername(player.getName());
             shouldSave = true;
         }
@@ -120,7 +125,7 @@ public class MainServerListener implements Listener {
         }
 
         if (data.isDead()) {
-            redirectToLimbo(player);
+            redirectToLimbo(player, data);
         } else {
             restoreGameModeIfNeeded(player, uuid, data);
         }
@@ -149,8 +154,7 @@ public class MainServerListener implements Listener {
                 }
                 grantReviveCooldown(uuid);
                 hybridWindowUsed.remove(uuid);
-                expectedGamemodeChanges.add(uuid);
-                player.setGameMode(GameMode.SURVIVAL);
+                setGameModeSilently(player, GameMode.SURVIVAL);
                 if (wasPreviouslyDead) {
                     player.sendMessage(MessageUtil.get("revive-success"));
                 }
@@ -179,9 +183,14 @@ public class MainServerListener implements Listener {
         }
     }
 
-    private void redirectToLimbo(Player player) {
+    private void redirectToLimbo(Player player, PlayerData data) {
         String deathMode = effectiveDeathMode();
         plugin.debug(player.getName() + " is dead (mode: " + deathMode + ")");
+        // Remaining hybrid window is derived from the persisted death time so a
+        // server restart (which clears hybridWindowUsed) cannot grant a fresh window.
+        long hybridRemainingMs = data.getLastDeath() > 0
+                ? data.getLastDeath() + cachedHybridTimeout * 1000L - System.currentTimeMillis()
+                : 0L;
 
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (!player.isOnline()) return;
@@ -189,10 +198,10 @@ public class MainServerListener implements Listener {
             switch (deathMode) {
                 case SSoggySouls.MODE_SPECTATOR -> applySpectatorMode(player);
                 case SSoggySouls.MODE_HYBRID -> {
-                    if (hybridWindowUsed.contains(player.getUniqueId())) {
+                    if (hybridWindowUsed.contains(player.getUniqueId()) || hybridRemainingMs <= 0) {
                         sendDirectToLimbo(player);
                     } else {
-                        applyHybridOnJoin(player, player.getUniqueId());
+                        applyHybridOnJoin(player, player.getUniqueId(), hybridRemainingMs);
                     }
                 }
                 default -> sendDirectToLimbo(player);
@@ -216,9 +225,24 @@ public class MainServerListener implements Listener {
 
     private void applySpectatorMode(Player player) {
         player.sendMessage(MessageUtil.get(MSG_NOW_SPECTATOR));
-        expectedGamemodeChanges.add(player.getUniqueId());
-        player.setGameMode(GameMode.SPECTATOR);
+        setGameModeSilently(player, GameMode.SPECTATOR);
         mainReviveCheckTask.addSpectator(player.getUniqueId());
+    }
+
+    /**
+     * Changes game mode without it being mistaken for an external (HRM) revive.
+     * The marker is cleared right after the call: if no event fired (mode unchanged)
+     * or the change was cancelled, a stale marker would otherwise swallow the next
+     * genuine SPECTATOR->SURVIVAL revive.
+     */
+    private void setGameModeSilently(Player player, GameMode mode) {
+        UUID uuid = player.getUniqueId();
+        expectedGamemodeChanges.add(uuid);
+        try {
+            player.setGameMode(mode);
+        } finally {
+            expectedGamemodeChanges.remove(uuid);
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -227,11 +251,15 @@ public class MainServerListener implements Listener {
         if (player.hasPermission(PERM_BYPASS)) return;
 
         UUID uuid = player.getUniqueId();
-        if (pendingLimbo.contains(uuid)) return;
+        if (pendingLimbo.contains(uuid) || deathResultPending.contains(uuid)) return;
 
         // Skip if still in post-revive immunity
         Long cooldownExpiry = reviveCooldowns.get(uuid);
-        if (cooldownExpiry != null && System.currentTimeMillis() < cooldownExpiry) {
+        if (cooldownExpiry != null && System.currentTimeMillis() >= cooldownExpiry) {
+            reviveCooldowns.remove(uuid);
+            cooldownExpiry = null;
+        }
+        if (cooldownExpiry != null) {
             if (plugin.isDebugMode()) {
                 plugin.debug(player.getName() + " death ignored (revive cooldown active)");
             }
@@ -244,8 +272,9 @@ public class MainServerListener implements Listener {
             return;
         }
 
-        // mark for processing before async DB check
-        pendingLimbo.add(uuid);
+        // Outcome unknown until the async DB check completes; onPlayerRespawn defers
+        // to applyDeathOutcome if the player respawns before then.
+        deathResultPending.add(uuid);
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> handleDeathAsync(player, uuid));
     }
@@ -280,8 +309,7 @@ public class MainServerListener implements Listener {
         }
 
         if (data.isInGracePeriod(plugin.getGracePeriodMillis())) {
-            pendingLimbo.remove(uuid);
-            pendingSurvivalRestore.add(uuid);
+            applyDeathOutcome(player, uuid, false);
             restoreIfAccidentalSpectator(player, uuid);
             notifyGracePeriod(player, data);
             return;
@@ -296,21 +324,42 @@ public class MainServerListener implements Listener {
         }
 
         if (data.isDead()) {
-            // UUID stays in pendingLimbo
+            applyDeathOutcome(player, uuid, true);
             handleFinalDeath(player, uuid);
         } else {
-            pendingLimbo.remove(uuid);
-            pendingSurvivalRestore.add(uuid);
+            applyDeathOutcome(player, uuid, false);
             restoreIfAccidentalSpectator(player, uuid);
             notifyLifeLost(player, remainingLives);
         }
     }
 
+    /**
+     * Publishes the resolved death outcome on the main thread. If the player already
+     * respawned while the DB check was running, the matching respawn handling is
+     * applied now instead of waiting for a respawn event that already happened.
+     */
+    private void applyDeathOutcome(Player player, UUID uuid, boolean finalDeath) {
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            deathResultPending.remove(uuid);
+            boolean alreadyRespawned = respawnedBeforeResult.remove(uuid);
+            if (finalDeath) {
+                if (alreadyRespawned) {
+                    handleFinalDeathRespawn(player, uuid);
+                } else {
+                    pendingLimbo.add(uuid);
+                }
+            } else if (alreadyRespawned) {
+                handleProtectedRespawn(player, uuid);
+            } else {
+                pendingSurvivalRestore.add(uuid);
+            }
+        });
+    }
+
     private void restoreIfAccidentalSpectator(Player player, UUID uuid) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (player.isOnline() && player.getGameMode() == GameMode.SPECTATOR) {
-                expectedGamemodeChanges.add(uuid);
-                player.setGameMode(GameMode.SURVIVAL);
+                setGameModeSilently(player, GameMode.SURVIVAL);
                 cancelHybridTransfer(uuid);
                 plugin.debug(player.getName() + " had lives — restored from spectator.");
             }
@@ -344,7 +393,6 @@ public class MainServerListener implements Listener {
         // send death message only, gamemode change sent to onPlayerRespawn
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (!player.isOnline()) {
-                pendingLimbo.remove(uuid);
                 return;
             }
 
@@ -360,27 +408,26 @@ public class MainServerListener implements Listener {
         });
     }
 
-    private void applyHybridOnJoin(Player player, UUID uuid) {
+    private void applyHybridOnJoin(Player player, UUID uuid, long remainingMs) {
         if (plugin.isSingleServerMode()) {
             applySpectatorMode(player);
             return;
         }
 
+        int remainingSeconds = (int) Math.max(1L, Math.min(cachedHybridTimeout, (remainingMs + 999) / 1000));
         hybridWindowUsed.add(uuid);
         player.sendMessage(MessageUtil.get("death-hybrid-warning",
-                "timeout", formatTime(cachedHybridTimeout))); // Use cached value
-        expectedGamemodeChanges.add(uuid);
-        player.setGameMode(GameMode.SPECTATOR);
+                "timeout", formatTime(remainingSeconds)));
+        setGameModeSilently(player, GameMode.SPECTATOR);
         mainReviveCheckTask.addSpectator(uuid);
-        scheduleHybridTimeout(player, uuid);
+        scheduleHybridTimeout(player, uuid, remainingSeconds);
     }
 
-    private void scheduleHybridTimeout(Player player, UUID uuid) {
+    private void scheduleHybridTimeout(Player player, UUID uuid, int timeoutSeconds) {
         if (plugin.isSingleServerMode()) {
             return;
         }
 
-        int timeoutSeconds = cachedHybridTimeout; // Use cached value
         long delayTicks = timeoutSeconds * 20L;
         BukkitTask task = Bukkit.getScheduler().runTaskLater(plugin, () -> {
             hybridPendingTransfers.remove(uuid);
@@ -389,7 +436,8 @@ public class MainServerListener implements Listener {
                 ServerTransferUtil.sendToLimbo(player);
             }
         }, delayTicks);
-        hybridPendingTransfers.put(uuid, task);
+        // Replaces (and cancels) any previous timer instead of leaking a duplicate
+        registerHybridTransfer(uuid, task);
     }
 
     private static String formatTime(int seconds) {
@@ -407,6 +455,12 @@ public class MainServerListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
+        // Death outcome still being resolved; applyDeathOutcome finishes the respawn handling
+        if (deathResultPending.contains(uuid)) {
+            respawnedBeforeResult.add(uuid);
+            return;
+        }
+
         // Handle protected deaths (grace period, revive cooldown, or lives remaining)
         // Restore to survival since hardcore mode sets them to spectator on respawn
         if (pendingSurvivalRestore.remove(uuid)) {
@@ -423,8 +477,7 @@ public class MainServerListener implements Listener {
     private void handleProtectedRespawn(Player player, UUID uuid) {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (player.isOnline() && player.getGameMode() != GameMode.SURVIVAL) {
-                expectedGamemodeChanges.add(uuid);
-                player.setGameMode(GameMode.SURVIVAL);
+                setGameModeSilently(player, GameMode.SURVIVAL);
                 cancelHybridTransfer(uuid);
                 plugin.debug(player.getName() + " restored to survival after protected death.");
             }
@@ -440,28 +493,24 @@ public class MainServerListener implements Listener {
 
             switch (deathMode) {
                 case SSoggySouls.MODE_SPECTATOR -> {
-                    expectedGamemodeChanges.add(uuid);
-                    player.setGameMode(GameMode.SPECTATOR);
+                    setGameModeSilently(player, GameMode.SPECTATOR);
                     mainReviveCheckTask.addSpectator(uuid);
                 }
                 case SSoggySouls.MODE_HYBRID -> {
                     hybridWindowUsed.add(uuid);
-                    expectedGamemodeChanges.add(uuid);
-                    player.setGameMode(GameMode.SPECTATOR);
+                    setGameModeSilently(player, GameMode.SPECTATOR);
                     mainReviveCheckTask.addSpectator(uuid);
-                    scheduleHybridTimeout(player, uuid);
+                    scheduleHybridTimeout(player, uuid, cachedHybridTimeout);
                 }
                 default -> {
                     if (plugin.isSpectatorOnDeath()) {
-                        expectedGamemodeChanges.add(uuid);
-                        player.setGameMode(GameMode.SPECTATOR);
+                        setGameModeSilently(player, GameMode.SPECTATOR);
                         mainReviveCheckTask.addSpectator(uuid);
                     }
                     Bukkit.getScheduler().runTaskLater(plugin, () -> {
                         if (player.isOnline()) {
                             ServerTransferUtil.sendToLimbo(player);
                         }
-                        expectedGamemodeChanges.remove(uuid);
                     }, plugin.getSendToLimboDelayTicks());
                 }
             }

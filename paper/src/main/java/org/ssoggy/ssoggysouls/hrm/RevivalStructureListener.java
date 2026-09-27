@@ -78,7 +78,7 @@ public class RevivalStructureListener implements Listener {
             if (!isDead) {
                 String name = skullOwner.getName() != null ? skullOwner.getName() : "Player";
                 sendError(placer, name + " is not dead!");
-                playErrorEffect(placed);
+                Bukkit.getScheduler().runTask(plugin, () -> playErrorEffect(placed));
                 return;
             }
 

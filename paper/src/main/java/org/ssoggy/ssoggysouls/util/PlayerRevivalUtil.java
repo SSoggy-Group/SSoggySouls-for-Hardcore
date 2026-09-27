@@ -48,13 +48,19 @@ public final class PlayerRevivalUtil {
     }
 
     private static boolean shouldRestore(Player target) {
-        return target.getGameMode() != GameMode.SURVIVAL || GAMEMODESENUM.getPlayerGameMode(target) == GAMEMODESENUM.GHOSTMODE;
+        if (target.getGameMode() != GameMode.SURVIVAL) return true;
+        // GAMEMODESENUM's static init needs the DLC client, which Limbo never creates
+        return RPStatic.CLIENT != null && GAMEMODESENUM.getPlayerGameMode(target) == GAMEMODESENUM.GHOSTMODE;
     }
 
     private static void executeRevival(SSoggySouls plugin, Player target) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (target.isOnline()) {
-                GAMEMODESENUM.setPlayerGameMode(target, GAMEMODESENUM.SURVIVAL);
+                if (RPStatic.CLIENT != null) {
+                    GAMEMODESENUM.setPlayerGameMode(target, GAMEMODESENUM.SURVIVAL);
+                } else {
+                    target.setGameMode(GameMode.SURVIVAL);
+                }
                 target.sendMessage(MessageUtil.get("revive-success"));
 
                 if (plugin.isLimboServer()) {
