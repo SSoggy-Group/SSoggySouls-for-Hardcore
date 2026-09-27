@@ -34,17 +34,16 @@ public class HeadEffectsTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        if (!plugin.isHrmHeadEffects() || !Boolean.TRUE.equals(
+        // When disabled keep running so previously applied effects get stripped
+        boolean enabled = plugin.isHrmHeadEffects() && Boolean.TRUE.equals(
                 org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic.CONFIG_RULES == null ? Boolean.TRUE
-                        : org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic.CONFIG_RULES.getOrDefault("head-effects", true))) {
-            return;
-        }
+                        : org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic.CONFIG_RULES.getOrDefault("head-effects", true));
 
         // State-based rather than transition-based: the effects are infinite and saved
         // with the player, so an in-memory "who is wearing" set would lose track of them
         // across relogs/restarts and let players keep the buffs without the head.
         for (Player player : Bukkit.getOnlinePlayers()) {
-            boolean wearing = isWearingPlayerHead(player);
+            boolean wearing = enabled && isWearingPlayerHead(player);
             boolean hasEffects = hasHeadEffects(player);
 
             if (wearing && !hasEffects) {
@@ -66,15 +65,18 @@ public class HeadEffectsTask extends BukkitRunnable {
         return helmet != null && helmet.getType() == Material.PLAYER_HEAD;
     }
 
-    /** Our Health Boost is the marker: infinite and at our amplifier. */
+    /** Any one of our effects counts, so losing one (e.g. milk) can't strand the rest. */
     private static boolean hasHeadEffects(Player player) {
-        PotionEffect boost = player.getPotionEffect(PotionEffectType.HEALTH_BOOST);
-        return isOurs(boost) && boost.getAmplifier() == HEALTH_BOOST_AMPLIFIER;
+        return isOurs(player.getPotionEffect(PotionEffectType.SLOWNESS), 0)
+                || isOurs(player.getPotionEffect(PotionEffectType.HEALTH_BOOST), HEALTH_BOOST_AMPLIFIER)
+                || isOurs(player.getPotionEffect(PotionEffectType.RESISTANCE), 0);
     }
 
-    private static boolean isOurs(PotionEffect effect) {
+    /** Infinite and at the exact amplifier this task applies; anything else is not ours. */
+    private static boolean isOurs(PotionEffect effect, int amplifier) {
         // Older versions used Integer.MAX_VALUE instead of a true infinite duration
-        return effect != null && (effect.isInfinite() || effect.getDuration() > 1_000_000);
+        return effect != null && effect.getAmplifier() == amplifier
+                && (effect.isInfinite() || effect.getDuration() > 1_000_000);
     }
 
     private static void applyEffects(Player player) {
@@ -86,12 +88,15 @@ public class HeadEffectsTask extends BukkitRunnable {
     }
 
     private static void removeEffects(Player player) {
-        // Only strip the infinite copies we added, not effects from beacons/potions
-        for (PotionEffectType type : new PotionEffectType[] {
-                PotionEffectType.SLOWNESS, PotionEffectType.HEALTH_BOOST, PotionEffectType.RESISTANCE}) {
-            if (isOurs(player.getPotionEffect(type))) {
-                player.removePotionEffect(type);
-            }
+        // Only strip copies matching what we applied, not effects from beacons/potions
+        if (isOurs(player.getPotionEffect(PotionEffectType.SLOWNESS), 0)) {
+            player.removePotionEffect(PotionEffectType.SLOWNESS);
+        }
+        if (isOurs(player.getPotionEffect(PotionEffectType.HEALTH_BOOST), HEALTH_BOOST_AMPLIFIER)) {
+            player.removePotionEffect(PotionEffectType.HEALTH_BOOST);
+        }
+        if (isOurs(player.getPotionEffect(PotionEffectType.RESISTANCE), 0)) {
+            player.removePotionEffect(PotionEffectType.RESISTANCE);
         }
     }
 }

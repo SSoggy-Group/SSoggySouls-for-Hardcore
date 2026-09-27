@@ -127,9 +127,12 @@ public class PlayerStateEvents implements Listener {
         if (GAMEMODESENUM.getPlayerGameMode(player) == GAMEMODESENUM.GHOSTMODE) {
             return true;
         }
+        // In-memory outcome from the death flow: no blocking DB call during respawn, and no
+        // stale "alive" read before the final death is saved. If the outcome is still
+        // pending the normal spawn is used; ghost restrictions pull the ghost back on move.
         SSoggySouls plugin = SSoggySouls.getInstance();
-        return plugin != null && plugin.getDatabaseManager() != null
-                && plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
+        return plugin != null && plugin.getMainServerListener() != null
+                && plugin.getMainServerListener().isFinalDeathRespawnPending(player.getUniqueId());
     }
 
     /** Death positions are clamped to minHeight; respawning there drops the ghost into the void. */

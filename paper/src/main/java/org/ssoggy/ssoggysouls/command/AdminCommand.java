@@ -431,6 +431,12 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
     private void applyDeathTransition(Player target) {
         if (!target.isOnline()) return;
 
+        // Already on Limbo: apply the same dead state a dead player gets on join
+        if (plugin.isLimboServer() && plugin.getLimboServerListener() != null) {
+            plugin.getLimboServerListener().markDead(target);
+            return;
+        }
+
         if (plugin.isSingleServerMode()) {
             target.setGameMode(GameMode.SPECTATOR);
             target.sendMessage(MessageUtil.get("death-now-spectator"));
@@ -451,11 +457,6 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
                 target.sendMessage(MessageUtil.get("death-hybrid-warning",
                         "timeout", timeoutStr));
 
-                // Already on Limbo: nothing to transfer to, and there is no MainServerListener here
-                if (plugin.isLimboServer()) {
-                    return;
-                }
-
                 // Schedule the hybrid timeout and register it for proper cancellation
                 UUID targetUuid = target.getUniqueId();
                 BukkitTask task = Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -472,9 +473,6 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
             }
             default -> {
                 target.sendMessage(MessageUtil.get("death-sent-to-limbo"));
-                if (plugin.isLimboServer()) {
-                    return;
-                }
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     if (target.isOnline()) {
                         ServerTransferUtil.sendToLimbo(target);

@@ -81,6 +81,12 @@ public class LimboServerListener implements Listener {
         checkTask.removePlayer(event.getPlayer().getUniqueId());
     }
 
+    /** Puts an online player into the dead Limbo state (e.g. after an admin kill on Limbo). */
+    public void markDead(Player player) {
+        checkTask.addPlayer(player.getUniqueId());
+        applyLimboState(player);
+    }
+
     private void applyLimboState(Player player) {
         player.setGameMode(GameMode.ADVENTURE);
 

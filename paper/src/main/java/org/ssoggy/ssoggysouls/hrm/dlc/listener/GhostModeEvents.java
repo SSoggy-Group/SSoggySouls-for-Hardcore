@@ -110,9 +110,10 @@ public class GhostModeEvents implements Listener {
         Location deadLocation = getLocation(pair, uuid, player); // See method below
         if (deadLocation == null) return;
 
-        double distance = deadLocation.distanceSquared(playerLocation);
         double maxDistance = RPStatic.CONFIG_TIMERS.getOrDefault("spectator-headrestrict-radius", 16);
-        if (distance >= (maxDistance * maxDistance)) {
+        // distanceSquared throws across worlds; a ghost in another world is always pulled back
+        boolean otherWorld = !java.util.Objects.equals(deadLocation.getWorld(), playerLocation.getWorld());
+        if (otherWorld || deadLocation.distanceSquared(playerLocation) >= (maxDistance * maxDistance)) {
             deadLocation.setYaw(player.getYaw());
             deadLocation.setPitch(player.getPitch());
             player.teleportAsync(deadLocation); // Note: radius could gradually increase over time in a future iteration

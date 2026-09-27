@@ -107,21 +107,18 @@ public class MainServerListener implements Listener {
 
         UUID uuid = player.getUniqueId();
         long now = System.currentTimeMillis();
-        boolean shouldSave = false;
 
+        // Targeted updates only: a full-row save here could overwrite a revive or life
+        // change written by another server between the read above and this write.
         if (data.getLastSeen() > 0) {
             pauseGracePeriodForOffline(data, uuid, now);
             data.setLastSeen(0L);
-            shouldSave = true;
+            db.setLastSeen(uuid, 0L);
         }
 
         if (!Objects.equals(data.getUsername(), player.getName())) {
             data.setUsername(player.getName());
-            shouldSave = true;
-        }
-
-        if (shouldSave) {
-            db.savePlayer(data);
+            db.setUsername(uuid, player.getName());
         }
 
         if (data.isDead()) {
@@ -559,6 +556,15 @@ public class MainServerListener implements Listener {
             reviveCooldowns.put(uuid, System.currentTimeMillis() + (seconds * 1000L));
             plugin.debug("Granted " + seconds + "s revive cooldown to " + uuid);
         }
+    }
+
+    /**
+     * Whether the player's latest death has been resolved as final and they are about to
+     * respawn (read by other respawn listeners that run before this one's HIGHEST handler).
+     * False while the outcome is still pending.
+     */
+    public boolean isFinalDeathRespawnPending(UUID uuid) {
+        return pendingLimbo.contains(uuid);
     }
 
     /**

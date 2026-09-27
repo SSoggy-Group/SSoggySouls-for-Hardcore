@@ -107,6 +107,9 @@ public class MainServerListener {
             return;
         }
 
+        // Set synchronously from the loaded data so interaction guards that read the
+        // ghost cache can't race the separate async cache fill on join.
+        GhostModeEvents.updateGhostStatus(uuid, data.isDead());
         if (data.isDead()) {
             if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
                 ServerTransferUtil.sendToLimbo(player);
@@ -121,8 +124,9 @@ public class MainServerListener {
             if (!alreadyGhost) {
                 player.sendSystemMessage(MessageUtil.get("ghost-mode-active"));
             }
-        } else if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && player.isInvulnerable()) {
-            // Only undo ghost state (marked by our persisted invulnerability); leave
+        } else if (player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE && player.isPermanentlyInvulnerable()) {
+            // Only undo ghost state (marked by our persisted permanent invulnerability;
+            // isInvulnerable() also covers post-join spawn protection); leave
             // players an admin deliberately put in ADVENTURE alone.
             player.setGameMode(GameType.SURVIVAL);
             setGhostModeAttributes(player, false);

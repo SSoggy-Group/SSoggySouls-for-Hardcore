@@ -66,7 +66,10 @@ public class LimboServerListener {
             CompletableFuture.runAsync(() -> {
                 for (UUID uuid : online) {
                     PlayerData data = db.getPlayer(uuid);
-                    setCachedDead(uuid, data != null && data.isDead());
+                    // null = missing record or DB error: keep the last known status
+                    if (data != null) {
+                        setCachedDead(uuid, data.isDead());
+                    }
                 }
             });
         }

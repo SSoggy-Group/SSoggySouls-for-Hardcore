@@ -248,7 +248,13 @@ public class RevivalStructureListener {
             for (int x = -1; x <= 1; x++) {
                 for (int z = -1; z <= 1; z++) {
                     BlockPos basePos = headPos.offset(x, -2, z);
-                    world.destroyBlock(basePos, false);
+                    // Re-check: the structure was validated before the async DB call, so a
+                    // block swapped in meanwhile must not be deleted without a drop.
+                    if (isOre(world, basePos.getX(), basePos.getY(), basePos.getZ())
+                            || isSoulSand(world, basePos.getX(), basePos.getY(), basePos.getZ())
+                            || isStair(world, basePos.getX(), basePos.getY(), basePos.getZ())) {
+                        world.destroyBlock(basePos, false);
+                    }
                 }
             }
         }
