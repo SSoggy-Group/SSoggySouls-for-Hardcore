@@ -148,7 +148,7 @@ public class GhostModeEvents {
         }
 
         player.sendSystemMessage(Component.literal(GhostRestrictionLogic.RESTRICTION_MESSAGE)
-                .withStyle(net.minecraft.ChatFormatting.GRAY));
+                .withStyle(net.minecraft.ChatFormatting.GRAY), true);
     }
 
     public static void updateGhostStatus(UUID uuid, boolean isDead) {

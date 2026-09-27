@@ -37,6 +37,7 @@ public class MainServerListener {
         registerJoinEvent();
         registerQuitEvent();
         registerDeathEvent();
+        registerRespawnEvent();
     }
 
     public static void register(DatabaseManager db) {
@@ -163,6 +164,27 @@ public class MainServerListener {
         } else {
             player.sendSystemMessage(MessageUtil.get("death-life-lost", "lives", remaining));
         }
+    }
+
+    private void registerRespawnEvent() {
+        net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+            UUID uuid = newPlayer.getUUID();
+            CompletableFuture.runAsync(() -> {
+                if (db.isPlayerDead(uuid)) {
+                    newPlayer.level().getServer().execute(() -> handleRespawnSync(newPlayer));
+                }
+            });
+        });
+    }
+
+    private void handleRespawnSync(ServerPlayer player) {
+        if (ConfigManager.getConfig().isSendToLimboOnDeath()) {
+            ServerTransferUtil.sendToLimbo(player);
+            return;
+        }
+
+        player.setGameMode(GameType.ADVENTURE);
+        setGhostModeAttributes(player, true);
     }
 
     public static void setGhostModeAttributes(ServerPlayer player, boolean isGhost) {

@@ -1,11 +1,14 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -33,6 +36,8 @@ public class GhostBlockEvents {
 
     public static void register(DatabaseManager db) {
         registerHeadBreak(db);
+        registerHeadPlace(db);
+        registerInventoryHeadTracker();
     }
 
     private static void registerHeadBreak(DatabaseManager db) {
@@ -69,11 +74,65 @@ public class GhostBlockEvents {
                             ghost.setGameMode(GameType.SPECTATOR);
                             ghost.setCamera(serverPlayer);
                             ghost.sendSystemMessage(Component.literal("Started spectating " + serverPlayer.getScoreboardName()).withStyle(net.minecraft.ChatFormatting.GRAY));
-                            ghost.sendSystemMessage(Component.literal(serverPlayer.getScoreboardName() + " is currently carrying your playerhead...").withStyle(net.minecraft.ChatFormatting.YELLOW));
+                            ghost.sendSystemMessage(Component.literal(serverPlayer.getScoreboardName() + " is currently carrying your playerhead...").withStyle(net.minecraft.ChatFormatting.YELLOW), true);
                         }
                     });
                 }
             });
+        }
+    }
+
+    private static void registerHeadPlace(DatabaseManager db) {
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (world.isClientSide() || !(player instanceof ServerPlayer))
+                return InteractionResult.PASS;
+
+            ItemStack stack = player.getItemInHand(hand);
+            if (!stack.is(Items.PLAYER_HEAD))
+                return InteractionResult.PASS;
+
+            ResolvableProfile profile = stack.get(DataComponents.PROFILE);
+            if (profile == null || profile.partialProfile().id() == null)
+                return InteractionResult.PASS;
+
+            UUID ownerUuid = profile.partialProfile().id();
+            BlockPos targetPos = hitResult.getBlockPos().relative(hitResult.getDirection());
+
+            world.getServer().execute(() -> handleHeadPlace(world, ownerUuid, targetPos, db));
+
+            return InteractionResult.PASS;
+        });
+    }
+
+    private static void registerInventoryHeadTracker() {
+        final int[] tickCounter = {0};
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            tickCounter[0] = (tickCounter[0] + 1) % 20;
+            if (tickCounter[0] != 0) {
+                return;
+            }
+
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                checkPlayerInventoryForHeads(player);
+            }
+        });
+    }
+
+    private static void checkPlayerInventoryForHeads(ServerPlayer player) {
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            ItemStack stack = player.getInventory().getItem(slot);
+            if (stack.is(Items.PLAYER_HEAD)) {
+                ResolvableProfile profile = stack.get(DataComponents.PROFILE);
+                if (profile != null && profile.partialProfile().id() != null) {
+                    UUID ownerUuid = profile.partialProfile().id();
+                    UUID playerUuid = player.getUUID();
+                    String playerName = player.getScoreboardName();
+                    CompletableFuture.runAsync(() -> {
+                        DlcDeaths.setHolder(ownerUuid, playerUuid);
+                        DlcNames.cache(playerUuid, playerName);
+                    });
+                }
+            }
         }
     }
 
@@ -116,7 +175,7 @@ public class GhostBlockEvents {
                         MainServerListener.setGhostModeAttributes(ghost, true);
 
                         ghost.teleportTo((ServerLevel) world, targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, java.util.Set.of(), ghost.getYRot(), ghost.getXRot(), true);
-                        ghost.sendSystemMessage(Component.literal("Your head has been placed down.").withStyle(net.minecraft.ChatFormatting.GRAY));
+                        ghost.sendSystemMessage(Component.literal("Your head has been placed down.").withStyle(net.minecraft.ChatFormatting.GRAY), true);
                     }
                 });
             }

@@ -1,5 +1,6 @@
 package org.ssoggy.ssoggysouls.mixin;
 
+import com.mojang.brigadier.ParseResults;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -12,8 +13,10 @@ import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 
 @Mixin(Commands.class)
 public class CommandsMixin {
-    @Inject(method = "performPrefixedCommand", at = @At("HEAD"), cancellable = true)
-    private void onPerformPrefixedCommand(CommandSourceStack source, String command, CallbackInfo ci) {
+    // performCommand is the common sink for player chat commands and performPrefixedCommand
+    @Inject(method = "performCommand", at = @At("HEAD"), cancellable = true)
+    private void onPerformCommand(ParseResults<CommandSourceStack> parseResults, String command, CallbackInfo ci) {
+        CommandSourceStack source = parseResults.getContext().getSource();
         if (source.getEntity() instanceof ServerPlayer player && LimboServerListener.shouldBlockCommand(player, command)) {
             player.sendSystemMessage(Component.literal("You cannot use commands in your current state."));
             ci.cancel();

@@ -65,21 +65,25 @@ public class GhostModeEvents {
 
     @SubscribeEvent
     public static boolean onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return false;
         return isGhost(event.getEntity());
     }
 
     @SubscribeEvent
     public static boolean onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return false;
         return isGhost(event.getEntity());
     }
 
     @SubscribeEvent
     public static boolean onAttackEntity(AttackEntityEvent event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return false;
         return isGhost(event.getEntity());
     }
 
     @SubscribeEvent
     public static boolean onItemToss(ItemTossEvent event) {
+        if (!ConfigManager.getConfig().isHrmEnabled()) return false;
         return isGhost(event.getPlayer());
     }
 
@@ -148,7 +152,7 @@ public class GhostModeEvents {
         }
         
         player.sendSystemMessage(Component.literal(GhostRestrictionLogic.RESTRICTION_MESSAGE)
-                .withStyle(net.minecraft.ChatFormatting.GRAY));
+                .withStyle(net.minecraft.ChatFormatting.GRAY), true);
     }
 
     public static void updateGhostStatus(UUID uuid, boolean isDead) {
