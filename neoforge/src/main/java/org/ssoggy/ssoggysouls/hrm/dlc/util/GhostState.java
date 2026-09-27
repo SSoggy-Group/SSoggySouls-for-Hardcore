@@ -2,16 +2,24 @@ package org.ssoggy.ssoggysouls.hrm.dlc.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -120,6 +128,11 @@ public class GhostState extends SavedData {
         if (tag.contains(DEATH_HOLDERS)) {
             CompoundTag holders = tag.getCompoundOrEmpty(DEATH_HOLDERS);
             for (String key : holders.keySet()) {
+                // Pre-26.x saves stored holders as int-array UUIDs
+                if (holders.get(key) instanceof IntArrayTag legacyUuid) {
+                    state.deathHolders.put(UUID.fromString(key), UUIDUtil.uuidFromIntArray(legacyUuid.getAsIntArray()));
+                    continue;
+                }
                 String val = holders.getStringOr(key, "");
                 if (!val.isEmpty()) {
                     state.deathHolders.put(UUID.fromString(key), UUID.fromString(val));
@@ -157,7 +170,34 @@ public class GhostState extends SavedData {
             net.minecraft.util.datafix.DataFixTypes.SAVED_DATA_COMMAND_STORAGE
     );
 
+    // Pre-26.x saved data file name (data/ssoggysouls_ghost_data.dat)
+    private static final String LEGACY_FILE_NAME = "ssoggysouls_ghost_data.dat";
+    private static MinecraftServer legacyCheckedFor;
+
     public static GhostState getServerState(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(TYPE);
+        GhostState state = server.overworld().getDataStorage().computeIfAbsent(TYPE);
+        if (legacyCheckedFor != server) {
+            legacyCheckedFor = server;
+            importLegacyData(server, state);
+        }
+        return state;
+    }
+
+    private static void importLegacyData(MinecraftServer server, GhostState state) {
+        Path legacyFile = server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(LEGACY_FILE_NAME);
+        if (!Files.exists(legacyFile)) {
+            return;
+        }
+        try {
+            CompoundTag root = NbtIo.readCompressed(legacyFile, NbtAccounter.unlimitedHeap());
+            GhostState legacy = load(root.getCompoundOrEmpty("data"));
+            legacy.deathLocations.forEach(state.deathLocations::putIfAbsent);
+            legacy.deathHolders.forEach(state.deathHolders::putIfAbsent);
+            legacy.headBlockLocations.forEach(state.headBlockLocations::putIfAbsent);
+            state.setDirty();
+            Files.move(legacyFile, legacyFile.resolveSibling(LEGACY_FILE_NAME + ".migrated"));
+        } catch (IOException e) {
+            org.slf4j.LoggerFactory.getLogger(GhostState.class).error("Failed to migrate legacy ghost data from {}", legacyFile, e);
+        }
     }
 }

@@ -22,7 +22,7 @@ This comprehensive guide covers everything you need to know to properly install 
 
 ### Server Requirements
 
-- **Minecraft Version:** 26.X (backwards compatible with 1.21.X)
+- **Minecraft Version:** 26.X
 
 - **Server Software:** Spigot, Paper, Purpur, Fabric, Forge, or NeoForge
 
@@ -34,7 +34,7 @@ This comprehensive guide covers everything you need to know to properly install 
 
 ### Backward Compatibility
 
-- **Supported Minecraft Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3) and backwards compatible with 1.21.X.
+- **Supported Minecraft Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3). Not compatible with 1.21.X.
 - **Legacy Minecraft Versions:** For 1.21.x and earlier versions, use previous builds from Modrinth version history.
 
 ### Server Setup

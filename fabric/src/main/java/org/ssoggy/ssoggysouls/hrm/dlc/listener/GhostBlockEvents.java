@@ -74,7 +74,7 @@ public class GhostBlockEvents {
                             ghost.setGameMode(GameType.SPECTATOR);
                             ghost.setCamera(serverPlayer);
                             ghost.sendSystemMessage(Component.literal("Started spectating " + serverPlayer.getScoreboardName()).withStyle(net.minecraft.ChatFormatting.GRAY));
-                            ghost.sendSystemMessage(Component.literal(serverPlayer.getScoreboardName() + " is currently carrying your playerhead...").withStyle(net.minecraft.ChatFormatting.YELLOW));
+                            ghost.sendSystemMessage(Component.literal(serverPlayer.getScoreboardName() + " is currently carrying your playerhead...").withStyle(net.minecraft.ChatFormatting.YELLOW), true);
                         }
                     });
                 }
@@ -175,7 +175,7 @@ public class GhostBlockEvents {
                         MainServerListener.setGhostModeAttributes(ghost, true);
 
                         ghost.teleportTo((ServerLevel) world, targetPos.getX() + 0.5, targetPos.getY(), targetPos.getZ() + 0.5, java.util.Set.of(), ghost.getYRot(), ghost.getXRot(), true);
-                        ghost.sendSystemMessage(Component.literal("Your head has been placed down.").withStyle(net.minecraft.ChatFormatting.GRAY));
+                        ghost.sendSystemMessage(Component.literal("Your head has been placed down.").withStyle(net.minecraft.ChatFormatting.GRAY), true);
                     }
                 });
             }

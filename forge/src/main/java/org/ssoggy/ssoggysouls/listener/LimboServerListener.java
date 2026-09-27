@@ -9,7 +9,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -81,10 +81,9 @@ public class LimboServerListener {
     }
 
     @SubscribeEvent
-    public static void onLivingDamage(LivingDamageEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
-            event.setAmount(0.0F); // Prevent damage for ghosts/dead players
-        }
+    public static boolean onLivingAttack(LivingAttackEvent event) {
+        // Cancel before hurt runs so knockback, hurt animation and thorns are skipped too
+        return event.getEntity() instanceof ServerPlayer player && player.gameMode.getGameModeForPlayer() == GameType.ADVENTURE;
     }
 
     @SubscribeEvent
