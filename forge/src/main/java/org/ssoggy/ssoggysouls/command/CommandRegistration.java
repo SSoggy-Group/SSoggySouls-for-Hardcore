@@ -10,7 +10,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
@@ -42,7 +41,6 @@ public class CommandRegistration {
         db = database;
     }
 
-    @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         if (db == null) {
             SSoggySoulsMod.LOGGER.error("Cannot register commands: DatabaseManager is null");

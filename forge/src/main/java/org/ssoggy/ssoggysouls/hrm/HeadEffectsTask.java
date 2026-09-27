@@ -8,7 +8,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,7 +24,6 @@ public class HeadEffectsTask {
         // Registered on Forge event bus
     }
 
-    @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent.Post event) {
         if (!org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHrmEnabled() || !org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().isHeadWearingEffects()) return;
 

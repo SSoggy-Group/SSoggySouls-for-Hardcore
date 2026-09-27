@@ -23,7 +23,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.listener.GhostModeEvents;
@@ -57,7 +56,6 @@ public class RevivalStructureListener {
         return PENDING_REVIVALS.remove(uuid);
     }
 
-    @SubscribeEvent
     public static boolean onBlockPlace(PlayerInteractEvent.RightClickBlock event) {
         ServerPlayer serverPlayer = org.ssoggy.ssoggysouls.util.HrmUtil.getValidServerPlayer(event, db);
         if (serverPlayer == null) {

@@ -2,8 +2,10 @@ package org.ssoggy.ssoggysouls;
 
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -25,6 +27,7 @@ import org.ssoggy.ssoggysouls.listener.LimboServerListener;
 import org.ssoggy.ssoggysouls.listener.ServerLifecycleListener;
 import org.ssoggy.ssoggysouls.util.ConfigManager;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.SchedulerManager;
 import org.ssoggy.ssoggysouls.util.ServerTransferUtil;
 import org.ssoggy.ssoggysouls.util.UpdateChecker;
 
@@ -36,8 +39,11 @@ public class SSoggySoulsMod implements PluginContext {
     private static final java.util.logging.Logger JUL_LOGGER = java.util.logging.Logger.getLogger(MODID);
 
     public SSoggySoulsMod() {
-        MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(CommandRegistration.class);
+        // EventBus 7 rejects register() on classes with a single @SubscribeEvent method,
+        // so single-listener classes are wired directly to their event's BUS.
+        ServerStartingEvent.BUS.addListener(this::onServerStarting);
+        RegisterCommandsEvent.BUS.addListener(CommandRegistration::onRegisterCommands);
+        TickEvent.ServerTickEvent.Post.BUS.addListener(SchedulerManager::onServerTick);
 
         LOGGER.info("SSoggySouls Forge is loading...");
 
@@ -72,16 +78,16 @@ public class SSoggySoulsMod implements PluginContext {
             MinecraftForge.EVENT_BUS.register(ServerLifecycleListener.class);
             ServerLifecycleListener.setDatabase(databaseManager);
 
-            MinecraftForge.EVENT_BUS.register(ExtraLifeManager.class);
+            PlayerInteractEvent.RightClickItem.BUS.addListener(ExtraLifeManager::onItemRightClick);
             ExtraLifeManager.register(databaseManager);
 
-            MinecraftForge.EVENT_BUS.register(ReviveSkullManager.class);
+            PlayerInteractEvent.RightClickItem.BUS.addListener(ReviveSkullManager::onItemRightClick);
             ReviveSkullManager.register(databaseManager);
 
-            MinecraftForge.EVENT_BUS.register(HeadEffectsTask.class);
+            TickEvent.ServerTickEvent.Post.BUS.addListener(HeadEffectsTask::onServerTick);
             HeadEffectsTask.register();
 
-            MinecraftForge.EVENT_BUS.register(RevivalStructureListener.class);
+            PlayerInteractEvent.RightClickBlock.BUS.addListener(RevivalStructureListener::onBlockPlace);
             RevivalStructureListener.register(databaseManager);
 
             MinecraftForge.EVENT_BUS.register(GhostModeEvents.class);
@@ -99,8 +105,6 @@ public class SSoggySoulsMod implements PluginContext {
         }
     }
 
-    @SubscribeEvent
-    @SuppressWarnings("unused")
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
     }
