@@ -142,6 +142,9 @@ public class CommandRegistration {
         int reviveLives = org.ssoggy.ssoggysouls.util.ConfigManager.getConfig().getOnReviveLives();
         boolean success = db.revivePlayer(targetData.getUuid(), reviveLives);
         if (success) {
+            org.ssoggy.ssoggysouls.listener.LimboServerListener.setCachedDead(targetData.getUuid(), false);
+        }
+        if (success) {
             handleReviveSuccess(targetData, source);
         }
     }
@@ -207,6 +210,8 @@ public class CommandRegistration {
                                 return;
                             }
                             db.setLives(data.getUuid(), lives);
+                            // No-op unless this is a Limbo server; applies the restriction immediately
+                            org.ssoggy.ssoggysouls.listener.LimboServerListener.setCachedDead(data.getUuid(), lives <= 0);
                             source.getServer().execute(() -> {
                                 ServerPlayer online = source.getServer().getPlayerList().getPlayer(data.getUuid());
                                 if (lives > 0) {

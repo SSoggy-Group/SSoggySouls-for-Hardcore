@@ -52,7 +52,8 @@ public class LimboServerListener {
         return DEAD_PLAYERS.contains(uuid);
     }
 
-    private static void setCachedDead(UUID uuid, boolean dead) {
+    /** Also called by /psetlives and /revive so Limbo restrictions update without waiting for a refresh. */
+    public static void setCachedDead(UUID uuid, boolean dead) {
         if (dead) {
             DEAD_PLAYERS.add(uuid);
         } else {
@@ -70,10 +71,13 @@ public class LimboServerListener {
             if (online.isEmpty()) return;
             CompletableFuture.runAsync(() -> {
                 for (UUID uuid : online) {
-                    PlayerData data = db.getPlayer(uuid);
-                    // null = missing record or DB error: keep the last known status
-                    if (data != null) {
-                        setCachedDead(uuid, data.isDead());
+                    try {
+                        // A successful read with no record is a visitor; only a failed read keeps
+                        // the last known status (otherwise a fail-closed join would stick forever)
+                        PlayerData data = db.getPlayerStrict(uuid);
+                        setCachedDead(uuid, data != null && data.isDead());
+                    } catch (java.sql.SQLException e) {
+                        // keep the last known status
                     }
                 }
             });
