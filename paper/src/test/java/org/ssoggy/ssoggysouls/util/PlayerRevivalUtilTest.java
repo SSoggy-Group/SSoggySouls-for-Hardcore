@@ -2,6 +2,7 @@ package org.ssoggy.ssoggysouls.util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.junit.jupiter.api.AfterEach;
@@ -13,6 +14,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStorage;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -38,12 +40,18 @@ class PlayerRevivalUtilTest {
         scheduler = mock(BukkitScheduler.class);
         logger = mock(Logger.class);
 
+        File testDir = new File("build/tmp/test-player-revival");
+        testDir.mkdirs();
+        when(plugin.getDataFolder()).thenReturn(testDir);
+        when(plugin.getLogger()).thenReturn(logger);
+
+        RPStatic.CLIENT = plugin;
+
         uuid = UUID.randomUUID();
         playerData = mock(PlayerData.class);
         when(playerData.getUuid()).thenReturn(uuid);
         when(playerData.getUsername()).thenReturn("TestUser");
 
-        when(plugin.getLogger()).thenReturn(logger);
         mockedBukkit.when(Bukkit::getScheduler).thenReturn(scheduler);
 
         // Immediately execute scheduled runTask calls
@@ -69,6 +77,7 @@ class PlayerRevivalUtilTest {
         if (mockedBukkit != null) {
             mockedBukkit.close();
         }
+        RPStatic.CLIENT = null;
         RPStatic.DEAD_LOCATIONS = null;
         RPStatic.DEAD_STORAGE = null;
     }
@@ -87,6 +96,7 @@ class PlayerRevivalUtilTest {
     @Test
     void testRestoreOnlineSpectator_survivalPlayer() {
         Player mockPlayer = mock(Player.class);
+        when(mockPlayer.getUniqueId()).thenReturn(uuid);
         when(mockPlayer.isOnline()).thenReturn(true);
         when(mockPlayer.getGameMode()).thenReturn(GameMode.SURVIVAL);
         mockedBukkit.when(() -> Bukkit.getPlayer(uuid)).thenReturn(mockPlayer);
@@ -100,6 +110,10 @@ class PlayerRevivalUtilTest {
     @Test
     void testRestoreOnlineSpectator_spectatorPlayer() {
         Player mockPlayer = mock(Player.class);
+        World mockWorld = mock(World.class);
+        when(mockWorld.getViewDistance()).thenReturn(10);
+        when(mockPlayer.getWorld()).thenReturn(mockWorld);
+        when(mockPlayer.getUniqueId()).thenReturn(uuid);
         when(mockPlayer.isOnline()).thenReturn(true);
         when(mockPlayer.getGameMode()).thenReturn(GameMode.SPECTATOR);
         mockedBukkit.when(() -> Bukkit.getPlayer(uuid)).thenReturn(mockPlayer);
@@ -115,6 +129,10 @@ class PlayerRevivalUtilTest {
     @Test
     void testRestoreOnlineSpectator_limboServerTransfer() {
         Player mockPlayer = mock(Player.class);
+        World mockWorld = mock(World.class);
+        when(mockWorld.getViewDistance()).thenReturn(10);
+        when(mockPlayer.getWorld()).thenReturn(mockWorld);
+        when(mockPlayer.getUniqueId()).thenReturn(uuid);
         when(mockPlayer.isOnline()).thenReturn(true);
         when(mockPlayer.getGameMode()).thenReturn(GameMode.SPECTATOR);
         when(mockPlayer.getName()).thenReturn("TestUser");
