@@ -9,7 +9,6 @@ import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 
-import java.util.Set;
 import java.util.UUID;
 public class HeadEffectsTask {
 
