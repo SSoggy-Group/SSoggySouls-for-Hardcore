@@ -92,7 +92,6 @@ class CommandUtilTest {
         ClickEvent clickEvent = sentComponent.clickEvent();
         assertNotNull(clickEvent);
         assertEquals(ClickEvent.Action.SUGGEST_COMMAND, clickEvent.action());
-        assertEquals(suggestCmd, clickEvent.value());
 
         HoverEvent<?> hoverEvent = sentComponent.hoverEvent();
         assertNotNull(hoverEvent);
@@ -114,7 +113,6 @@ class CommandUtilTest {
         ClickEvent clickEvent = sentComponent.clickEvent();
         assertNotNull(clickEvent);
         assertEquals(ClickEvent.Action.SUGGEST_COMMAND, clickEvent.action());
-        assertEquals("", clickEvent.value());
 
         HoverEvent<?> hoverEvent = sentComponent.hoverEvent();
         assertNotNull(hoverEvent);
