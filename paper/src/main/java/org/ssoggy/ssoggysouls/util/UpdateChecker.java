@@ -20,17 +20,23 @@ public class UpdateChecker {
     private static final String BORDER_TOP = "╔═════════════════════════════════════════════════════════════╗";
     private static final String BORDER_BOTTOM = "╚═════════════════════════════════════════════════════════════╝";
 
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+    private static final HttpClient DEFAULT_HTTP_CLIENT = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.NORMAL)
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
     private final Plugin plugin;
     private final String currentVersion;
+    private final HttpClient httpClient;
 
     public UpdateChecker(Plugin plugin) {
+        this(plugin, DEFAULT_HTTP_CLIENT);
+    }
+
+    public UpdateChecker(Plugin plugin, HttpClient httpClient) {
         this.plugin = plugin;
         this.currentVersion = plugin.getPluginMeta().getVersion();
+        this.httpClient = httpClient;
     }
 
     public void checkForUpdates() {
@@ -41,7 +47,7 @@ public class UpdateChecker {
                 .GET()
                 .build();
 
-        HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .whenComplete((response, throwable) -> {
                     if (throwable != null) {
                         plugin.getLogger().log(Level.WARNING, "Failed to check for updates", throwable);
@@ -57,6 +63,10 @@ public class UpdateChecker {
 
                     try {
                         JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+                        if (!json.has("tag_name")) {
+                            plugin.getLogger().warning("Update response missing 'tag_name'");
+                            return;
+                        }
                         String latestVersion = json.get("tag_name").getAsString();
 
                         if (latestVersion.startsWith("v")) {

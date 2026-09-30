@@ -18,18 +18,24 @@ public class UpdateChecker {
     private static final String BORDER_TOP = "╔═════════════════════════════════════════════════════════════╗";
     private static final String BORDER_BOTTOM = "╚═════════════════════════════════════════════════════════════╝";
 
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+    private static final HttpClient DEFAULT_HTTP_CLIENT = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.NORMAL)
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
     private final String currentVersion;
+    private final HttpClient httpClient;
 
     public UpdateChecker() {
+        this(DEFAULT_HTTP_CLIENT);
+    }
+
+    public UpdateChecker(HttpClient httpClient) {
         this.currentVersion = FabricLoader.getInstance()
                 .getModContainer(SSoggySoulsMod.MOD_ID)
                 .map(mod -> mod.getMetadata().getVersion().getFriendlyString())
                 .orElse("0.0.0");
+        this.httpClient = httpClient;
     }
 
     public void checkForUpdates() {
@@ -43,7 +49,7 @@ public class UpdateChecker {
                 .GET()
                 .build();
 
-        HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .whenComplete((response, throwable) -> {
                     if (throwable != null) {
                         SSoggySoulsMod.LOGGER.warn("Failed to check for updates", throwable);
