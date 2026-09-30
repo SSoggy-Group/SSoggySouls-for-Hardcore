@@ -39,12 +39,12 @@ subprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.toVersion(25)
-        targetCompatibility = JavaVersion.toVersion(25)
+        sourceCompatibility = JavaVersion.toVersion(21)
+        targetCompatibility = JavaVersion.toVersion(21)
     }
 
     tasks.withType(JavaCompile).configureEach {
-        options.release = 25
+        options.release = 21
         options.encoding = 'UTF-8'
     }
 
