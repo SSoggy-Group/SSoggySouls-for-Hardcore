@@ -51,7 +51,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
         try {
             return getPlayerStrict(uuid);
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player " + uuid);
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player by UUID");
             return null;
         }
     }

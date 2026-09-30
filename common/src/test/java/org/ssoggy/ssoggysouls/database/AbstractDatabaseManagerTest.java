@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.function.Supplier;
+import org.mockito.ArgumentCaptor;
 
 import javax.sql.DataSource;
 
@@ -119,7 +121,12 @@ class AbstractDatabaseManagerTest {
 
         assertNull(dbManager.getPlayer(testUuid));
 
-        verify(logger).log(eq(Level.WARNING), eq(sqlException), any(java.util.function.Supplier.class));
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Supplier<String>> supplierCaptor = ArgumentCaptor.forClass(Supplier.class);
+        verify(logger).log(eq(Level.WARNING), eq(sqlException), supplierCaptor.capture());
+        String logMessage = supplierCaptor.getValue().get();
+        assertEquals("Failed to get player by UUID", logMessage);
+        assertFalse(logMessage.contains(testUuid.toString()));
     }
 
     @Test
