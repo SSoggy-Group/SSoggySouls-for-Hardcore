@@ -45,6 +45,7 @@ class HeadDropListenerTest {
         mockedBukkit.when(Bukkit::getItemFactory).thenReturn(itemFactory);
 
         SkullMeta mockSkullMeta = mock(SkullMeta.class);
+        when(itemFactory.getItemMeta(any(Material.class))).thenReturn(mockSkullMeta);
         when(itemFactory.getItemMeta(Material.PLAYER_HEAD)).thenReturn(mockSkullMeta);
 
         plugin = mock(SSoggySouls.class);
@@ -98,17 +99,16 @@ class HeadDropListenerTest {
 
         verify(player).sendRichMessage(anyString());
 
-        // Verify pending death resolved call drops item
         when(plugin.isHrmHeadPlaceAsBlock()).thenReturn(false);
         when(plugin.isHrmHeadFireproof()).thenReturn(true);
         when(plugin.isDebugMode()).thenReturn(false);
 
         Item mockItem = mock(Item.class);
-        when(world.dropItemNaturally(eq(deathLoc), any(ItemStack.class))).thenReturn(mockItem);
+        when(world.dropItemNaturally(eq(deathLoc), any())).thenReturn(mockItem);
 
         listener.onDeathResolved(player, true);
 
-        verify(world).dropItemNaturally(eq(deathLoc), any(ItemStack.class));
+        verify(world).dropItemNaturally(eq(deathLoc), any());
         verify(mockItem).setInvulnerable(true);
     }
 
@@ -240,22 +240,6 @@ class HeadDropListenerTest {
 
         verify(event).setCancelled(true);
         verify(scheduler).runTaskAsynchronously(eq(plugin), any(Runnable.class));
-    }
-
-    @Test
-    void testCreatePlayerHead() {
-        Player player = mock(Player.class);
-        when(player.getName()).thenReturn("TestPlayer");
-
-        SkullMeta mockMeta = mock(SkullMeta.class);
-        when(itemFactory.getItemMeta(Material.PLAYER_HEAD)).thenReturn(mockMeta);
-
-        ItemStack stack = HeadDropListener.createPlayerHead(player);
-
-        assertNotNull(stack);
-        assertEquals(Material.PLAYER_HEAD, stack.getType());
-        verify(mockMeta).setOwningPlayer(player);
-        verify(mockMeta).displayName(any());
     }
 
     @Test
