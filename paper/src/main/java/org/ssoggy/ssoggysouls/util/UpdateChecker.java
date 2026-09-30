@@ -20,17 +20,23 @@ public class UpdateChecker {
     private static final String BORDER_TOP = "╔═════════════════════════════════════════════════════════════╗";
     private static final String BORDER_BOTTOM = "╚═════════════════════════════════════════════════════════════╝";
 
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+    private static final HttpClient DEFAULT_HTTP_CLIENT = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.NORMAL)
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
     private final Plugin plugin;
     private final String currentVersion;
+    private final HttpClient httpClient;
 
     public UpdateChecker(Plugin plugin) {
+        this(plugin, DEFAULT_HTTP_CLIENT);
+    }
+
+    UpdateChecker(Plugin plugin, HttpClient httpClient) {
         this.plugin = plugin;
         this.currentVersion = plugin.getPluginMeta().getVersion();
+        this.httpClient = httpClient;
     }
 
     public void checkForUpdates() {
@@ -41,7 +47,7 @@ public class UpdateChecker {
                 .GET()
                 .build();
 
-        HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .whenComplete((response, throwable) -> {
                     if (throwable != null) {
                         plugin.getLogger().log(Level.WARNING, "Failed to check for updates", throwable);
@@ -74,7 +80,7 @@ public class UpdateChecker {
                 });
     }
 
-    private boolean isNewerVersion(String latest, String current) {
+    boolean isNewerVersion(String latest, String current) {
         String[] latestParts = latest.split("\\.");
         String[] currentParts = current.split("\\.");
 
@@ -94,7 +100,7 @@ public class UpdateChecker {
         return false;
     }
 
-    private int parseVersionPart(String part) {
+    int parseVersionPart(String part) {
         try {
             return Integer.parseInt(part.replaceAll("\\D", ""));
         } catch (NumberFormatException e) {
