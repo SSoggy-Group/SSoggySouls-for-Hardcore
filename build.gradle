@@ -9,10 +9,12 @@ buildscript {
     }
 }
 
+def isJava25 = JavaVersion.current().getMajorVersion().toInteger() >= 25
+
 allprojects {
     apply plugin: 'jacoco'
     jacoco {
-        toolVersion = "0.8.12"
+        toolVersion = isJava25 ? "0.8.15" : "0.8.12"
     }
 }
 
@@ -38,13 +40,15 @@ subprojects {
         }
     }
 
+    def targetJavaVersion = isJava25 ? 25 : 21
+
     java {
-        sourceCompatibility = JavaVersion.toVersion(21)
-        targetCompatibility = JavaVersion.toVersion(21)
+        sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
+        targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
     }
 
     tasks.withType(JavaCompile).configureEach {
-        options.release = 21
+        options.release = targetJavaVersion
         options.encoding = 'UTF-8'
     }
 
