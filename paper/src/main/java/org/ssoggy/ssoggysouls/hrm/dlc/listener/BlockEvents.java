@@ -55,8 +55,9 @@ public class BlockEvents implements Listener {
             World world = skull.getWorld();
             UUID uuid = skullOwner.getUniqueId();
 
-            if (skullOwner.getPlayer() instanceof Player destroyed && GAMEMODESENUM.getPlayerGameMode(destroyed) == GAMEMODESENUM.GHOSTMODE) { // Once a bug now a feature
-                RPStatic.DEAD_LOCATIONS.remove(uuid); // Instead I'll track them by DEAD_HOLDER
+            // Feature: When a ghost player's head block is broken, transition tracking from block location to carrier
+            if (skullOwner.getPlayer() instanceof Player destroyed && GAMEMODESENUM.getPlayerGameMode(destroyed) == GAMEMODESENUM.GHOSTMODE) {
+                RPStatic.DEAD_LOCATIONS.remove(uuid); // Track ghost location by DEAD_HOLDERS (carried head)
                 RPStatic.DEAD_HOLDERS.put(uuid, destroyer.getUniqueId());
                 RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHPOS);
                 if (RPStatic.DEAD_STORAGE.setValueIfChanged(uuid.toString(), KEY_DEATHHOLDER, destroyer.getUniqueId().toString())) {
