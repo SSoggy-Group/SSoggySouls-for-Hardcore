@@ -1,5 +1,6 @@
 package org.ssoggy.ssoggysouls.hrm;
 
+import io.papermc.paper.plugin.configuration.PluginMeta;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -44,6 +45,7 @@ class ExtraLifeManagerTest {
 
     private MockedStatic<Bukkit> mockedBukkit;
     private SSoggySouls plugin;
+    private PluginMeta pluginMeta;
     private DatabaseManager db;
     private FileConfiguration config;
     private Logger logger;
@@ -181,6 +183,7 @@ class ExtraLifeManagerTest {
         mockedBukkit = mockStatic(Bukkit.class);
 
         plugin = mock(SSoggySouls.class);
+        pluginMeta = mock(PluginMeta.class);
         db = mock(DatabaseManager.class);
         config = mock(FileConfiguration.class);
         logger = mock(Logger.class);
@@ -190,6 +193,8 @@ class ExtraLifeManagerTest {
         clearInvocations(itemMeta, pdc);
 
         when(plugin.getName()).thenReturn("ssoggysouls");
+        when(pluginMeta.getName()).thenReturn("ssoggysouls");
+        when(plugin.getPluginMeta()).thenReturn(pluginMeta);
         when(plugin.getDatabaseManager()).thenReturn(db);
         when(plugin.getConfig()).thenReturn(config);
         when(plugin.getLogger()).thenReturn(logger);
