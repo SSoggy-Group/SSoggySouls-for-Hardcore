@@ -104,4 +104,21 @@ class PermissionUtilTest {
         verify(sender).sendMessage(MessageUtil.colorize("&cSecurity Error: On the Limbo server, OP status cannot be used to execute this command."));
         verify(sender).sendMessage(MessageUtil.colorize("&7Either /deop yourself on Limbo, ask an administrator to add you to the trusted admins list, or have them grant you the bypass permission &e(ssoggysouls.bypass-limbo-op-security)&7."));
     }
+
+    @Test
+    void testIsBlockedByLimboOpSecurityTrustedAdminsNotEmptyNotMatching() {
+        when(player.isOp()).thenReturn(true);
+        when(plugin.getLimboTrustedAdmins()).thenReturn(Set.of("other-admin-uuid-or-name"));
+        when(player.hasPermission("ssoggysouls.bypass-limbo-op-security")).thenReturn(false);
+
+        assertTrue(PermissionUtil.isBlockedByLimboOpSecurity(player, plugin));
+    }
+
+    @Test
+    void testSendSecurityBlockMessagePlayer() {
+        PermissionUtil.sendSecurityBlockMessage(player);
+
+        verify(player).sendMessage(MessageUtil.colorize("&cSecurity Error: On the Limbo server, OP status cannot be used to execute this command."));
+        verify(player).sendMessage(org.mockito.ArgumentMatchers.any(net.kyori.adventure.text.Component.class));
+    }
 }
