@@ -15,7 +15,6 @@ import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.database.MySQLManager;
 import org.ssoggy.ssoggysouls.database.SQLiteManager;
 import org.ssoggy.ssoggysouls.hrm.ExtraLifeManager;
-import org.ssoggy.ssoggysouls.hrm.HeadDropListener;
 import org.ssoggy.ssoggysouls.hrm.HeadEffectsTask;
 import org.ssoggy.ssoggysouls.hrm.RevivalStructureListener;
 import org.ssoggy.ssoggysouls.hrm.ReviveSkullManager;
