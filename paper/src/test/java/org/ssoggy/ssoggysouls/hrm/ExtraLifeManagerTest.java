@@ -192,9 +192,9 @@ class ExtraLifeManagerTest {
 
         clearInvocations(itemMeta, pdc);
 
-        when(plugin.getName()).thenReturn("ssoggysouls");
         when(pluginMeta.getName()).thenReturn("ssoggysouls");
         when(plugin.getPluginMeta()).thenReturn(pluginMeta);
+        when(plugin.getName()).thenReturn("ssoggysouls");
         when(plugin.getDatabaseManager()).thenReturn(db);
         when(plugin.getConfig()).thenReturn(config);
         when(plugin.getLogger()).thenReturn(logger);
