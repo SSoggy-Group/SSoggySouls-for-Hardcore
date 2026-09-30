@@ -18,9 +18,10 @@ public final class TabCompleteUtil {
      * @return list of matching player names
      */
     public static List<String> getOnlinePlayerNames(String prefix) {
+        String safePrefix = prefix == null ? "" : prefix;
         List<String> names = new ArrayList<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getName().regionMatches(true, 0, prefix, 0, prefix.length())) {
+            if (player != null && player.getName() != null && player.getName().regionMatches(true, 0, safePrefix, 0, safePrefix.length())) {
                 names.add(player.getName());
             }
         }
@@ -35,9 +36,13 @@ public final class TabCompleteUtil {
      * @return list of matching options
      */
     public static List<String> filterStartsWith(Iterable<String> options, String prefix) {
+        if (options == null) {
+            return new ArrayList<>();
+        }
+        String safePrefix = prefix == null ? "" : prefix;
         List<String> result = new ArrayList<>();
         for (String option : options) {
-            if (option.regionMatches(true, 0, prefix, 0, prefix.length())) {
+            if (option != null && option.regionMatches(true, 0, safePrefix, 0, safePrefix.length())) {
                 result.add(option);
             }
         }

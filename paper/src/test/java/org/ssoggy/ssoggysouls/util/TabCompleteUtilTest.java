@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -49,6 +50,22 @@ class TabCompleteUtilTest {
 
         // Execute
         List<String> result = TabCompleteUtil.getOnlinePlayerNames("");
+
+        // Verify
+        assertEquals(List.of("Alice", "Bob"), result);
+    }
+
+    @Test
+    void testGetOnlinePlayerNames_NullPrefix() {
+        // Setup
+        List<Player> players = List.of(
+                createMockPlayer("Alice"),
+                createMockPlayer("Bob")
+        );
+        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn(players);
+
+        // Execute
+        List<String> result = TabCompleteUtil.getOnlinePlayerNames(null);
 
         // Verify
         assertEquals(List.of("Alice", "Bob"), result);
@@ -122,6 +139,30 @@ class TabCompleteUtilTest {
         List<String> options = List.of("apple", "banana", "cherry");
         List<String> result = TabCompleteUtil.filterStartsWith(options, "");
         assertEquals(List.of("apple", "banana", "cherry"), result);
+    }
+
+    @Test
+    void testFilterStartsWith_NullPrefix() {
+        List<String> options = List.of("apple", "banana", "cherry");
+        List<String> result = TabCompleteUtil.filterStartsWith(options, null);
+        assertEquals(List.of("apple", "banana", "cherry"), result);
+    }
+
+    @Test
+    void testFilterStartsWith_NullOptions() {
+        List<String> result = TabCompleteUtil.filterStartsWith(null, "a");
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testFilterStartsWith_NullElementsInOptions() {
+        List<String> options = new ArrayList<>();
+        options.add("apple");
+        options.add(null);
+        options.add("banana");
+
+        List<String> result = TabCompleteUtil.filterStartsWith(options, "");
+        assertEquals(List.of("apple", "banana"), result);
     }
 
     @Test
