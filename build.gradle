@@ -1,6 +1,5 @@
 buildscript {
     repositories {
-        maven { url = "https://repo.papermc.io/repository/maven-public/" }
         mavenCentral()
     }
     configurations.all {
@@ -40,17 +39,16 @@ subprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.toVersion(21)
-        targetCompatibility = JavaVersion.toVersion(21)
+        sourceCompatibility = JavaVersion.toVersion(25)
+        targetCompatibility = JavaVersion.toVersion(25)
     }
 
     tasks.withType(JavaCompile).configureEach {
-        options.release = 21
+        options.release = 25
         options.encoding = 'UTF-8'
     }
 
     repositories {
-        maven { url = "https://repo.papermc.io/repository/maven-public/" }
         mavenCentral()
         maven { url = 'https://maven.fabricmc.net/' }
         maven { url = 'https://maven.minecraftforge.net/' }
