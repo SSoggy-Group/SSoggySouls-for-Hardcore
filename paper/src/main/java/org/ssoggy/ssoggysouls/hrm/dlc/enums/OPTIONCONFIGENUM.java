@@ -18,7 +18,9 @@ along with RevivePlus.  If not, see <https://www.gnu.org/licenses/>
 
 package org.ssoggy.ssoggysouls.hrm.dlc.enums;
 
-import java.util.Objects;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum OPTIONCONFIGENUM {
     STRUCTURE("STRUCTURE", (byte)1),
@@ -27,6 +29,15 @@ public enum OPTIONCONFIGENUM {
     RELOAD("RELOAD", (byte)0);
 
     public static final java.util.List<OPTIONCONFIGENUM> VALUES = java.util.Collections.unmodifiableList(java.util.Arrays.asList(values()));
+    private static final Map<String, OPTIONCONFIGENUM> BY_ID;
+
+    static {
+        Map<String, OPTIONCONFIGENUM> map = new HashMap<>();
+        for (OPTIONCONFIGENUM n : VALUES) {
+            map.put(n.id, n);
+        }
+        BY_ID = Collections.unmodifiableMap(map);
+    }
 
     public final String id;
     public final byte index;
@@ -37,21 +48,18 @@ public enum OPTIONCONFIGENUM {
     }
 
     public static byte getIndex(String opt) {
-        for (OPTIONCONFIGENUM n : VALUES) {
-            if (Objects.equals(n.id, opt)) {
-                return n.index;
-            }
+        if (opt == null) {
+            return (byte)-1;
         }
-        return (byte)-1;
+        OPTIONCONFIGENUM val = BY_ID.get(opt);
+        return val != null ? val.index : (byte)-1;
     }
 
     public static OPTIONCONFIGENUM getEnumFromVal(String opt) {
-        for (OPTIONCONFIGENUM n : VALUES) {
-            if (Objects.equals(n.id, opt)) {
-                return n;
-            }
+        if (opt == null) {
+            return null;
         }
-        return null;
+        return BY_ID.get(opt);
     }
 
     public static String getValue(byte i) {
