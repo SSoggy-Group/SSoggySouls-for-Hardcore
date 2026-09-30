@@ -32,6 +32,7 @@ import org.mockito.MockedStatic;
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
+import org.ssoggy.ssoggysouls.util.MessageUtil;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -144,7 +145,7 @@ class ReviveSkullManagerTest {
         PersistentDataContainer pdc = mock(PersistentDataContainer.class);
         when(meta.getPersistentDataContainer()).thenReturn(pdc);
         when(itemFactory.getItemMeta(Material.PLAYER_HEAD)).thenReturn(meta);
-        when(itemFactory.isApplicable(any(), any())).thenReturn(true);
+        when(itemFactory.isApplicable(any(ItemMeta.class), any(ItemStack.class))).thenReturn(true);
 
         ItemStack skull = manager.createReviveSkullItem();
         assertNotNull(skull);
@@ -261,7 +262,7 @@ class ReviveSkullManagerTest {
         when(pdc.has(eq(manager.getRecipeKey()), eq(PersistentDataType.BYTE))).thenReturn(true);
 
         UUID deadUuid = UUID.randomUUID();
-        PlayerData deadData = new PlayerData(deadUuid, "DeadPlayer", true, 0, System.currentTimeMillis());
+        PlayerData deadData = new PlayerData(deadUuid, "DeadPlayer", 0, true, System.currentTimeMillis(), System.currentTimeMillis(), 0L, 0L);
         when(dbManager.getDeadPlayers()).thenReturn(List.of(deadData));
 
         Inventory inventory = mock(Inventory.class);
