@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -58,15 +59,20 @@ class ReviveSkullManagerTest {
     private DatabaseManager dbManager;
     private BukkitScheduler scheduler;
     private ItemFactory itemFactory;
+    private Server server;
     private ReviveSkullManager manager;
 
     @BeforeEach
     void setUp() {
         mockedBukkit = mockStatic(Bukkit.class);
+        server = mock(Server.class);
         plugin = mock(SSoggySouls.class);
         dbManager = mock(DatabaseManager.class);
         scheduler = mock(BukkitScheduler.class);
         itemFactory = mock(ItemFactory.class);
+
+        mockedBukkit.when(Bukkit::getServer).thenReturn(server);
+        when(server.getItemFactory()).thenReturn(itemFactory);
 
         when(plugin.getName()).thenReturn("SSoggySouls");
         when(plugin.getDatabaseManager()).thenReturn(dbManager);
