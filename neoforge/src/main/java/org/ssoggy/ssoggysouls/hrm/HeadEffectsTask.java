@@ -8,11 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import org.ssoggy.ssoggysouls.SSoggySoulsMod;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 public class HeadEffectsTask {
 
     private static final int INFINITE_DURATION = -1;
