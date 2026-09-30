@@ -13,6 +13,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.GAMEMODESENUM;
@@ -41,6 +42,17 @@ class ReviveHelperTest {
     private Location pos;
     private Player alivePlayer;
     private Player deadPlayer;
+
+    @BeforeAll
+    static void initStaticClient() {
+        File dataDir = new File("build/tmp/test_revive_helper");
+        dataDir.mkdirs();
+
+        JavaPlugin mockPlugin = mock(JavaPlugin.class);
+        when(mockPlugin.getLogger()).thenReturn(Logger.getLogger("test"));
+        when(mockPlugin.getDataFolder()).thenReturn(dataDir);
+        RPStatic.CLIENT = mockPlugin;
+    }
 
     @BeforeEach
     void setUp() {
