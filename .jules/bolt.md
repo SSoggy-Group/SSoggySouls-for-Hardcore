@@ -1,0 +1,4 @@
+## 2026-03-29 - Dedicated DB Executor Pool to Prevent CommonPool Exhaustion
+**Performance Impact:** Isolated blocking database queries (player load, death resolution, last-seen updates) from ForkJoinPool.commonPool() to a dedicated cached thread pool with named daemon threads (`SSoggySouls-DB-IO-`).
+**Learning:** Defaulting asynchronous database tasks to `CompletableFuture.runAsync(...)` uses `ForkJoinPool.commonPool()`, which has limited worker threads (CPU cores - 1). High DB latency or concurrent player join/death queries can starve commonPool threads, blocking unrelated async tasks across the application.
+**Action:** Always pass a dedicated `ExecutorService` (e.g. `DB_EXECUTOR`) to `CompletableFuture.runAsync(...)` and `CompletableFuture.delayedExecutor(...)` for database or network I/O operations.
