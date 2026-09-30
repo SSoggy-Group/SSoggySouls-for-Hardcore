@@ -31,7 +31,6 @@ import org.ssoggy.ssoggysouls.util.ConfigManager;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
