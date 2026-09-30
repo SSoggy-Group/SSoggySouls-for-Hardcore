@@ -48,7 +48,9 @@ subprojects {
     }
 
     tasks.withType(JavaCompile).configureEach {
-        options.release = targetJavaVersion
+        if (project.name != 'forge') {
+            options.release = targetJavaVersion
+        }
         options.encoding = 'UTF-8'
     }
 
