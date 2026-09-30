@@ -2,7 +2,6 @@ package org.ssoggy.ssoggysouls.hrm.dlc.commands;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.UUID;
 import java.util.logging.Logger;
