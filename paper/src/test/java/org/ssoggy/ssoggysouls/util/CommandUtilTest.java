@@ -92,6 +92,29 @@ class CommandUtilTest {
         ClickEvent clickEvent = sentComponent.clickEvent();
         assertNotNull(clickEvent);
         assertEquals(ClickEvent.Action.SUGGEST_COMMAND, clickEvent.action());
+        assertEquals(suggestCmd, clickEvent.value());
+
+        HoverEvent<?> hoverEvent = sentComponent.hoverEvent();
+        assertNotNull(hoverEvent);
+        assertEquals(HoverEvent.Action.SHOW_TEXT, hoverEvent.action());
+    }
+
+    @Test
+    void testSendInteractiveUsage_playerSender_nullUsageAndSuggest() {
+        Player player = mock(Player.class);
+
+        CommandUtil.sendInteractiveUsage(player, null, null);
+
+        ArgumentCaptor<Component> captor = ArgumentCaptor.forClass(Component.class);
+        verify(player).sendMessage(captor.capture());
+
+        Component sentComponent = captor.getValue();
+        assertNotNull(sentComponent);
+
+        ClickEvent clickEvent = sentComponent.clickEvent();
+        assertNotNull(clickEvent);
+        assertEquals(ClickEvent.Action.SUGGEST_COMMAND, clickEvent.action());
+        assertEquals("", clickEvent.value());
 
         HoverEvent<?> hoverEvent = sentComponent.hoverEvent();
         assertNotNull(hoverEvent);
@@ -107,5 +130,14 @@ class CommandUtilTest {
         CommandUtil.sendInteractiveUsage(sender, usageText, suggestCmd);
 
         verify(sender).sendMessage(MessageUtil.colorize(usageText));
+    }
+
+    @Test
+    void testSendInteractiveUsage_nonPlayerSender_nullUsage() {
+        CommandSender sender = mock(CommandSender.class);
+
+        CommandUtil.sendInteractiveUsage(sender, null, "/test");
+
+        verify(sender).sendMessage("");
     }
 }
