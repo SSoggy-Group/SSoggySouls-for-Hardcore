@@ -164,4 +164,30 @@ class TabCompleteUtilTest {
         assertEquals(List.of("apple pie"), result1);
         assertEquals(List.of("banana-split"), result2);
     }
+
+    @Test
+    void testFilterStartsWith_EmptyStringInOptionsAndEmptyPrefix() {
+        List<String> options = List.of("", "apple", "banana");
+        List<String> result = TabCompleteUtil.filterStartsWith(options, "");
+        assertEquals(List.of("", "apple", "banana"), result);
+    }
+
+    @Test
+    void testFilterStartsWith_OptionShorterThanPrefix() {
+        List<String> options = List.of("a", "app", "apple");
+        List<String> result = TabCompleteUtil.filterStartsWith(options, "appl");
+        assertEquals(List.of("apple"), result);
+    }
+
+    @Test
+    void testGetOnlinePlayerNames_EmptyPlayerNameAndEmptyPrefix() {
+        List<Player> players = List.of(
+                createMockPlayer(""),
+                createMockPlayer("Alice")
+        );
+        mockedBukkit.when(Bukkit::getOnlinePlayers).thenReturn(players);
+
+        List<String> result = TabCompleteUtil.getOnlinePlayerNames("");
+        assertEquals(List.of("", "Alice"), result);
+    }
 }
