@@ -1,5 +1,6 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.action;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.EntityEffect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -12,7 +13,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.GAMEMODESENUM;
@@ -140,7 +140,7 @@ class ReviveHelperTest {
         boolean result = ReviveHelper.tryRevivePlayer(world, pos, deadPlayer, alivePlayer);
 
         assertFalse(result);
-        verify(alivePlayer).sendActionBar(any());
+        verify(alivePlayer).sendActionBar(any(Component.class));
         verify(world).playSound(eq(pos), eq(Sound.BLOCK_FIRE_EXTINGUISH), eq(SoundCategory.BLOCKS), eq(0.4F), eq(20.0F));
         verify(world).spawnParticle(eq(Particle.SMOKE), any(Location.class), eq(1));
     }
@@ -152,7 +152,7 @@ class ReviveHelperTest {
         boolean result = ReviveHelper.tryRevivePlayer(world, pos, deadPlayer, alivePlayer);
 
         assertFalse(result);
-        verify(alivePlayer, never()).sendActionBar(any());
+        verify(alivePlayer, never()).sendActionBar(any(Component.class));
     }
 
     @Test
@@ -162,7 +162,7 @@ class ReviveHelperTest {
         boolean result = ReviveHelper.tryRevivePlayer(world, pos, null, alivePlayer);
 
         assertFalse(result);
-        verify(alivePlayer).sendActionBar(any());
+        verify(alivePlayer).sendActionBar(any(Component.class));
     }
 
     @Test
@@ -173,7 +173,7 @@ class ReviveHelperTest {
         boolean result = ReviveHelper.tryRevivePlayer(world, pos, deadPlayer, alivePlayer);
 
         assertFalse(result);
-        verify(alivePlayer).sendActionBar(any());
+        verify(alivePlayer).sendActionBar(any(Component.class));
     }
 
     @Test
@@ -184,7 +184,7 @@ class ReviveHelperTest {
         boolean result = ReviveHelper.tryRevivePlayer(world, pos, alivePlayer, alivePlayer);
 
         assertFalse(result);
-        verify(alivePlayer, atLeastOnce()).sendActionBar(any());
+        verify(alivePlayer, atLeastOnce()).sendActionBar(any(Component.class));
     }
 
     @Test
@@ -195,7 +195,7 @@ class ReviveHelperTest {
         boolean result = ReviveHelper.tryRevivePlayer(world, pos, deadPlayer, alivePlayer);
 
         assertFalse(result);
-        verify(alivePlayer).sendActionBar(any());
+        verify(alivePlayer).sendActionBar(any(Component.class));
     }
 
     @Test
