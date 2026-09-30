@@ -1,6 +1,5 @@
 package org.ssoggy.ssoggysouls.hrm.dlc.commands;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Test;
