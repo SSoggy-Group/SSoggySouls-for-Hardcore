@@ -29,7 +29,7 @@ A hardcore lives system mod/plugin for Minecraft 26.X (Supports Spigot, Paper, P
 
 SSoggySouls supports two setups:
 
-- **Single-server (SQLite):** Everything runs on one server. Dead players enter spectator mode. No proxy, no extra servers, no MySQL, just drop the plugin in and go.
+- **Single-server (SQLite):** Everything runs on one server. Dead players enter spectator mode. No proxy, no extra servers, no MySQL — just drop the plugin in and go.
 - **Dual-server (MySQL):** Runs on two servers behind a Velocity proxy: **Main** (where you play) and **Limbo** (where you go when dead). You set up one MySQL database and put the same connection details in both server configs so they share player data.
 
 **Basic flow:**

@@ -153,29 +153,12 @@ public class LimboServerListener implements Listener {
             return;
         }
 
-        event.setCancelled(true);
-        processLimboCommand(player, rawMessage);
-    }
-
-    private void processLimboCommand(Player player, String rawMessage) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            boolean isDead = plugin.getDatabaseManager().isPlayerDead(player.getUniqueId());
-
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                if (!player.isOnline()) return;
-
-                // visitors (not dead in main) are unrestricted
-                if (!isDead) {
-                    String commandToRun = rawMessage.startsWith("/") ? rawMessage.substring(1) : rawMessage;
-                    if (!commandToRun.isBlank()) {
-                        player.performCommand(commandToRun);
-                    }
-                    return;
-                }
-
-                player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
-            });
-        });
+        // Synchronously check gameMode to prevent command execution for dead limbo players without delay or performCommand injection
+        boolean likelyLimboDead = player.getGameMode() == GameMode.ADVENTURE;
+        if (likelyLimboDead) {
+            event.setCancelled(true);
+            player.sendMessage(MessageUtil.get("limbo-cannot-leave"));
+        }
     }
 
     private static boolean isWhitelistedCommand(String command) {
