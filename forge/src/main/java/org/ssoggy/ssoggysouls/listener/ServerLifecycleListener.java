@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ServerLifecycleListener {
 
@@ -33,6 +35,12 @@ public class ServerLifecycleListener {
     // Deaths whose DB outcome is still being resolved. Respawns during that window are
     // left to finishDeath, which applies ghost state to whichever entity is current.
     private static final Set<UUID> DEATH_PENDING = ConcurrentHashMap.newKeySet();
+
+    private static final ExecutorService DB_EXECUTOR = Executors.newCachedThreadPool(r -> {
+        Thread thread = new Thread(r, "SSoggySouls-DB-IO");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     private ServerLifecycleListener() {
         // Utility class
@@ -52,7 +60,7 @@ public class ServerLifecycleListener {
         String name = player.getScoreboardName();
         MinecraftServer server = player.level().getServer();
 
-        CompletableFuture.runAsync(() -> loadOnJoin(server, uuid, name));
+        CompletableFuture.runAsync(() -> loadOnJoin(server, uuid, name), DB_EXECUTOR);
     }
 
     private static final long JOIN_RETRY_SECONDS = 5L;
@@ -66,7 +74,7 @@ public class ServerLifecycleListener {
             org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.warn("Could not load {} on join; retrying in {}s", name, JOIN_RETRY_SECONDS, e);
             CompletableFuture.runAsync(() -> {
                 if (server.getPlayerList().getPlayer(uuid) != null) loadOnJoin(server, uuid, name);
-            }, CompletableFuture.delayedExecutor(JOIN_RETRY_SECONDS, java.util.concurrent.TimeUnit.SECONDS));
+            }, CompletableFuture.delayedExecutor(JOIN_RETRY_SECONDS, java.util.concurrent.TimeUnit.SECONDS, DB_EXECUTOR));
             return;
         }
 
@@ -147,7 +155,7 @@ public class ServerLifecycleListener {
         ServerPlayer player = (ServerPlayer) event.getEntity();
         UUID uuid = player.getUUID();
         long now = System.currentTimeMillis();
-        CompletableFuture.runAsync(() -> db.setLastSeen(uuid, now));
+        CompletableFuture.runAsync(() -> db.setLastSeen(uuid, now), DB_EXECUTOR);
     }
 
     @SubscribeEvent
@@ -162,7 +170,7 @@ public class ServerLifecycleListener {
         GlobalPos deathPos = GhostState.reachableDeathPos(player.level(), player.blockPosition());
         DEATH_PENDING.add(uuid);
 
-        CompletableFuture.runAsync(() -> resolveDeath(server, player, deathPos, killer));
+        CompletableFuture.runAsync(() -> resolveDeath(server, player, deathPos, killer), DB_EXECUTOR);
     }
 
     private static final long DEATH_RETRY_SECONDS = 5L;
@@ -181,7 +189,7 @@ public class ServerLifecycleListener {
             org.ssoggy.ssoggysouls.SSoggySoulsMod.LOGGER.warn("Could not load {} to resolve their death; retrying in {}s",
                     player.getScoreboardName(), DEATH_RETRY_SECONDS, e);
             CompletableFuture.runAsync(() -> resolveDeath(server, player, deathPos, killer),
-                    CompletableFuture.delayedExecutor(DEATH_RETRY_SECONDS, java.util.concurrent.TimeUnit.SECONDS));
+                    CompletableFuture.delayedExecutor(DEATH_RETRY_SECONDS, java.util.concurrent.TimeUnit.SECONDS, DB_EXECUTOR));
             return;
         }
 
@@ -274,7 +282,7 @@ public class ServerLifecycleListener {
                     if (current != null) handleRespawnSync(current);
                 });
             }
-        });
+        }, DB_EXECUTOR);
     }
 
     private static void handleRespawnSync(ServerPlayer player) {
