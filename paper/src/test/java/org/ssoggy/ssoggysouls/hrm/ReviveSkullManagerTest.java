@@ -169,7 +169,8 @@ class ReviveSkullManagerTest {
 
         manager.registerRecipe();
 
-        mockedBukkit.verify(() -> Bukkit.removeRecipe(new NamespacedKey("hardcorelimbo", "revive_skull")));
+        NamespacedKey oldKey = new NamespacedKey("hardcorelimbo", "revive_skull");
+        mockedBukkit.verify(() -> Bukkit.removeRecipe(eq(oldKey)));
         mockedBukkit.verify(() -> Bukkit.addRecipe(any(ShapedRecipe.class)));
         verify(plugin).debug("Registered Revive Skull crafting recipe.");
     }
