@@ -1,7 +1,6 @@
 package org.ssoggy.ssoggysouls.hrm;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.PropertyMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -19,10 +18,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.model.PlayerData;
-import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 public class ReviveSkullManager {
 
