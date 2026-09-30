@@ -137,15 +137,30 @@ public class GhostModeEvents implements Listener {
             UUID holder = RPStatic.DEAD_HOLDERS.get(uuid);
             if (holder == null) return null;
 
+            Player onlineHolder = Bukkit.getPlayer(holder);
+            if (onlineHolder != null) {
+                return onlineHolder.getLocation();
+            }
             return player.getServer().getOfflinePlayer(holder).getLocation();
         }
 
         String holder = RPStatic.DEAD_STORAGE.getValue(uuid.toString(), "deathholder");
 
         if (holder != null) {
-            Location offlineLocation = Bukkit.getOfflinePlayer(UUID.fromString(holder)).getLocation();
-            if (offlineLocation != null)
-                return offlineLocation;
+            try {
+                UUID holderUuid = UUID.fromString(holder);
+                RPStatic.DEAD_HOLDERS.put(uuid, holderUuid);
+                Player onlineHolder = Bukkit.getPlayer(holderUuid);
+                if (onlineHolder != null) {
+                    return onlineHolder.getLocation();
+                }
+                Location offlineLocation = Bukkit.getOfflinePlayer(holderUuid).getLocation();
+                if (offlineLocation != null) {
+                    return offlineLocation;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Invalid UUID string in storage
+            }
         }
 
         String savedTime = RPStatic.DEAD_STORAGE.getValue(uuid.toString(), "deathtime");
