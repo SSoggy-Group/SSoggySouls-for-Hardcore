@@ -33,6 +33,7 @@ import static org.mockito.Mockito.*;
 class HeadDropListenerTest {
 
     private MockedStatic<Bukkit> mockedBukkit;
+    private MockedStatic<HeadDropListener> mockedHeadDropListener;
     private SSoggySouls plugin;
     private DatabaseManager db;
     private ItemFactory itemFactory;
@@ -41,12 +42,17 @@ class HeadDropListenerTest {
     @BeforeEach
     void setUp() {
         mockedBukkit = mockStatic(Bukkit.class);
+        mockedHeadDropListener = mockStatic(HeadDropListener.class, CALLS_REAL_METHODS);
+
         itemFactory = mock(ItemFactory.class);
         mockedBukkit.when(Bukkit::getItemFactory).thenReturn(itemFactory);
 
         SkullMeta mockSkullMeta = mock(SkullMeta.class);
         when(itemFactory.getItemMeta(any(Material.class))).thenReturn(mockSkullMeta);
         when(itemFactory.getItemMeta(Material.PLAYER_HEAD)).thenReturn(mockSkullMeta);
+
+        ItemStack mockHeadStack = mock(ItemStack.class);
+        mockedHeadDropListener.when(() -> HeadDropListener.createPlayerHead(any())).thenReturn(mockHeadStack);
 
         plugin = mock(SSoggySouls.class);
         db = mock(DatabaseManager.class);
@@ -57,6 +63,9 @@ class HeadDropListenerTest {
 
     @AfterEach
     void tearDown() {
+        if (mockedHeadDropListener != null) {
+            mockedHeadDropListener.close();
+        }
         if (mockedBukkit != null) {
             mockedBukkit.close();
         }
