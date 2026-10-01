@@ -1,5 +1,6 @@
 package org.ssoggy.ssoggysouls.hrm;
 
+import io.papermc.paper.plugin.configuration.PluginMeta;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -21,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.ssoggy.ssoggysouls.SSoggySouls;
+import org.ssoggy.ssoggysouls.database.DatabaseManager;
 import org.ssoggy.ssoggysouls.hrm.dlc.enums.GAMEMODESENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic;
 
@@ -83,12 +85,18 @@ class ExtraLifeManagerTest {
         when(itemMeta.getPersistentDataContainer()).thenReturn(pdc);
 
         plugin = mock(SSoggySouls.class);
+        PluginMeta pluginMeta = mock(PluginMeta.class);
+        when(plugin.getPluginMeta()).thenReturn(pluginMeta);
+        when(pluginMeta.getName()).thenReturn("ssoggysouls");
+
         config = mock(FileConfiguration.class);
         logger = mock(Logger.class);
+        DatabaseManager db = mock(DatabaseManager.class);
 
         when(plugin.getName()).thenReturn("SSoggySouls");
         when(plugin.getConfig()).thenReturn(config);
         when(plugin.getLogger()).thenReturn(logger);
+        when(plugin.getDatabaseManager()).thenReturn(db);
 
         manager = new ExtraLifeManager(plugin);
     }
