@@ -51,6 +51,11 @@ class ExtraLifeManagerTest {
     private PersistentDataContainer pdc;
     private ExtraLifeManager manager;
 
+    /**
+     * Prepares the ghost-player fixture and plugin required to initialize game modes.
+     *
+     * @throws Exception if the fixture file cannot be written
+     */
     @BeforeAll
     static void initGlobalStatic() throws Exception {
         File dir = new File("build/tmp/test_extralife_static");
@@ -68,6 +73,9 @@ class ExtraLifeManagerTest {
         assertNotNull(GAMEMODESENUM.SURVIVAL);
     }
 
+    /**
+     * Creates Bukkit, plugin, configuration, and item metadata mocks for each test.
+     */
     @BeforeEach
     void setUp() {
         mockedBukkit = mockStatic(Bukkit.class);
@@ -101,6 +109,9 @@ class ExtraLifeManagerTest {
         manager = new ExtraLifeManager(plugin);
     }
 
+    /**
+     * Closes the static Bukkit mock after each test.
+     */
     @AfterEach
     void tearDown() {
         if (mockedBukkit != null) {
@@ -108,6 +119,9 @@ class ExtraLifeManagerTest {
         }
     }
 
+    /**
+     * Verifies the default recipe shape and ingredients are registered with Bukkit.
+     */
     @Test
     void testRegisterRecipe_defaultIngredients() {
         when(config.getString("extra-life.recipe.row1", "GEG")).thenReturn("GEG");
@@ -135,6 +149,9 @@ class ExtraLifeManagerTest {
         }
     }
 
+    /**
+     * Verifies configured recipe rows and ingredient materials are registered with Bukkit.
+     */
     @Test
     void testRegisterRecipe_customIngredients() {
         when(config.getString("extra-life.recipe.row1", "GEG")).thenReturn("ABA");
@@ -168,6 +185,9 @@ class ExtraLifeManagerTest {
         }
     }
 
+    /**
+     * Verifies invalid ingredient keys and materials log warnings while the recipe is registered.
+     */
     @Test
     void testRegisterRecipe_invalidIngredientKeyOrMaterial() {
         when(config.getString("extra-life.recipe.row1", "GEG")).thenReturn("GEG");
@@ -198,6 +218,9 @@ class ExtraLifeManagerTest {
         }
     }
 
+    /**
+     * Verifies recipe removal uses the extra-life recipe key.
+     */
     @Test
     void testUnregisterRecipe() {
         manager.unregisterRecipe();
@@ -210,6 +233,9 @@ class ExtraLifeManagerTest {
         assertEquals("extra_life_recipe", key.getKey());
     }
 
+    /**
+     * Verifies the default extra-life item is a nether star tagged with persistent data.
+     */
     @Test
     void testCreateExtraLifeItem_defaultMaterial() {
         when(config.getString("extra-life.item-material", "NETHER_STAR")).thenReturn("NETHER_STAR");
@@ -226,6 +252,9 @@ class ExtraLifeManagerTest {
         }
     }
 
+    /**
+     * Verifies item creation returns an item for the configured diamond material.
+     */
     @Test
     void testCreateExtraLifeItem_customMaterial() {
         when(config.getString("extra-life.item-material", "NETHER_STAR")).thenReturn("DIAMOND");
@@ -241,6 +270,9 @@ class ExtraLifeManagerTest {
         }
     }
 
+    /**
+     * Verifies item creation returns a nether star when the configured material is invalid.
+     */
     @Test
     void testCreateExtraLifeItem_invalidMaterialFallback() {
         when(config.getString("extra-life.item-material", "NETHER_STAR")).thenReturn("INVALID_MATERIAL_NAME");
