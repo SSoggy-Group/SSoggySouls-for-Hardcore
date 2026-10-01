@@ -241,6 +241,7 @@ class ExtraLifeManagerTest {
         when(config.getString("extra-life.item-material", "NETHER_STAR")).thenReturn("NETHER_STAR");
 
         try (MockedConstruction<ItemStack> mockedItem = mockConstruction(ItemStack.class, (mock, context) -> {
+            assertEquals(Material.NETHER_STAR, context.arguments().get(0));
             when(mock.getType()).thenReturn(Material.NETHER_STAR);
             when(mock.getItemMeta()).thenReturn(itemMeta);
         })) {
@@ -260,6 +261,7 @@ class ExtraLifeManagerTest {
         when(config.getString("extra-life.item-material", "NETHER_STAR")).thenReturn("DIAMOND");
 
         try (MockedConstruction<ItemStack> mockedItem = mockConstruction(ItemStack.class, (mock, context) -> {
+            assertEquals(Material.DIAMOND, context.arguments().get(0));
             when(mock.getType()).thenReturn(Material.DIAMOND);
             when(mock.getItemMeta()).thenReturn(itemMeta);
         })) {
@@ -278,6 +280,7 @@ class ExtraLifeManagerTest {
         when(config.getString("extra-life.item-material", "NETHER_STAR")).thenReturn("INVALID_MATERIAL_NAME");
 
         try (MockedConstruction<ItemStack> mockedItem = mockConstruction(ItemStack.class, (mock, context) -> {
+            assertEquals(Material.NETHER_STAR, context.arguments().get(0));
             when(mock.getType()).thenReturn(Material.NETHER_STAR);
             when(mock.getItemMeta()).thenReturn(itemMeta);
         })) {

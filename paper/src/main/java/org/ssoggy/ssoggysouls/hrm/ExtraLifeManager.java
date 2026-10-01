@@ -48,8 +48,9 @@ public class ExtraLifeManager implements Listener {
     public ExtraLifeManager(SSoggySouls plugin) {
         this.plugin = plugin;
         this.db = plugin.getDatabaseManager();
-        this.extraLifeKey = new NamespacedKey(plugin, PDC_KEY_VALUE);
-        this.recipeKey = new NamespacedKey(plugin, "extra_life_recipe");
+        String ns = plugin.getName().toLowerCase(java.util.Locale.ROOT);
+        this.extraLifeKey = new NamespacedKey(ns, PDC_KEY_VALUE);
+        this.recipeKey = new NamespacedKey(ns, "extra_life_recipe");
     }
 
     public void registerRecipe() {
