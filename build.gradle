@@ -4,7 +4,7 @@ buildscript {
     }
     configurations.all {
         resolutionStrategy {
-            force 'de.siegmar:fastcsv:2.0.0'
+            force 'de.siegmar:fastcsv:4.4.0'
         }
     }
 }
@@ -34,7 +34,7 @@ subprojects {
 
     configurations.all {
         resolutionStrategy {
-            force 'de.siegmar:fastcsv:2.0.0'
+            force 'de.siegmar:fastcsv:4.4.0'
         }
     }
 
