@@ -110,7 +110,7 @@ dependencies {
     // never during compileClasspath resolution.
     bundled 'com.zaxxer:HikariCP:7.1.0'
     bundled 'org.xerial:sqlite-jdbc:3.53.4.0'
-    bundled("com.mysql:mysql-connector-j:8.0.33")
+    bundled("com.mysql:mysql-connector-j:26.7.0")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -191,8 +191,8 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.4'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.14.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
-    testImplementation 'org.mockito:mockito-core:5.23.0'
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.23.0'
+    testImplementation 'org.mockito:mockito-core:5.24.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.24.0'
 }
 
 test {
