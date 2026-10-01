@@ -250,6 +250,7 @@ class ExtraLifeManagerTest {
             assertNotNull(item);
             assertEquals(Material.NETHER_STAR, item.getType());
             verify(pdc).set(any(NamespacedKey.class), eq(PersistentDataType.BYTE), eq((byte) 1));
+            verify(item).setItemMeta(itemMeta);
         }
     }
 
