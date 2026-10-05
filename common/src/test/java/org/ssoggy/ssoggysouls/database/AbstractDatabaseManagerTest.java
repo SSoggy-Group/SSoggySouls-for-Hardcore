@@ -191,4 +191,20 @@ class AbstractDatabaseManagerTest {
         assertTrue(dbManager.isPlayerDead(testUuid));
         verify(logger).log(eq(Level.WARNING), eq(sqlException), any(java.util.function.Supplier.class));
     }
+
+    @Test
+    void testInvalidateDeathStatusCacheRemovesCachedValue() {
+        dbManager.deathStatusCache.put(testUuid, true);
+        assertEquals(Boolean.TRUE, dbManager.deathStatusCache.get(testUuid));
+
+        dbManager.invalidateDeathStatusCache(testUuid);
+
+        assertNull(dbManager.deathStatusCache.get(testUuid));
+    }
+
+    @Test
+    void testInvalidateDeathStatusCacheUncachedOrNull() {
+        assertDoesNotThrow(() -> dbManager.invalidateDeathStatusCache(UUID.randomUUID()));
+        assertDoesNotThrow(() -> dbManager.invalidateDeathStatusCache(null));
+    }
 }
