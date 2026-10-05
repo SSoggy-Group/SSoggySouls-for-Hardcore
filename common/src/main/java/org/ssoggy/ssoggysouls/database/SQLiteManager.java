@@ -93,7 +93,8 @@ public class SQLiteManager extends AbstractDatabaseManager {
     }
 
     private void createTable() throws SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " ("
+        String safeTableName = SqlSafety.requireIdentifier(tableName, "table name");
+        String sql = "CREATE TABLE IF NOT EXISTS " + safeTableName + " ("
                 + "uuid VARCHAR(36) NOT NULL PRIMARY KEY, "
                 + "username VARCHAR(16) NOT NULL, "
                 + "lives INT NOT NULL DEFAULT " + plugin.getDefaultLives() + ", "
