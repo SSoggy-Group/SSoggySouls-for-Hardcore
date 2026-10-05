@@ -9,6 +9,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -249,5 +251,26 @@ class AbstractDatabaseManagerTest {
 
         assertFalse(result);
         verify(logger).log(eq(Level.WARNING), eq(sqlException), any(java.util.function.Supplier.class));
+    }
+
+    @Test
+    void testArePlayersDeadBatch() throws SQLException {
+        UUID uuid1 = UUID.randomUUID();
+        UUID uuid2 = UUID.randomUUID();
+        Set<UUID> uuids = Set.of(uuid1, uuid2);
+
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true, true, false);
+        when(resultSet.getString("uuid")).thenReturn(uuid1.toString(), uuid2.toString());
+        when(resultSet.getBoolean("is_dead")).thenReturn(true, false);
+
+        Map<UUID, Boolean> result = dbManager.arePlayersDead(uuids);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.get(uuid1));
+        assertFalse(result.get(uuid2));
+
+        verify(connection).prepareStatement(contains("WHERE uuid IN (?,?)"));
     }
 }
