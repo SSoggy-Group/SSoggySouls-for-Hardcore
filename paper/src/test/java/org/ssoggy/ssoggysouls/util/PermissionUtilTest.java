@@ -121,4 +121,11 @@ class PermissionUtilTest {
         verify(player).sendMessage(MessageUtil.colorize("&cSecurity Error: On the Limbo server, OP status cannot be used to execute this command."));
         verify(player).sendMessage(org.mockito.ArgumentMatchers.any(net.kyori.adventure.text.Component.class));
     }
+
+    @Test
+    void testPrivateConstructor() throws Exception {
+        java.lang.reflect.Constructor<PermissionUtil> constructor = PermissionUtil.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        constructor.newInstance();
+    }
 }
