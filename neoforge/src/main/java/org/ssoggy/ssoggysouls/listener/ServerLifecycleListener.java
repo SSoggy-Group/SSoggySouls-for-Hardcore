@@ -295,6 +295,7 @@ public class ServerLifecycleListener {
         setGhostModeAttributes(player, true);
     }
 
+    @SuppressWarnings("deprecation")
     public static void setGhostModeAttributes(ServerPlayer player, boolean isGhost) {
         player.setInvisible(isGhost);
         player.setPermanentlyInvulnerable(isGhost);
