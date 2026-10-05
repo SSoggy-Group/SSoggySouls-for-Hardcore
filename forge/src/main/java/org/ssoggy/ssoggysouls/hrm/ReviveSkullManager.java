@@ -78,10 +78,7 @@ public class ReviveSkullManager {
 
                     @Override
                     public void clicked(int slotIndex, int button, ContainerInput containerInput, Player clickingPlayer) {
-                        if (slotIndex >= 0 && slotIndex < numSlots) {
-                            ItemStack clicked = this.slots.get(slotIndex).getItem();
-                            handleMenuClick(clicked, clickingPlayer);
-                        }
+                        handleSlotClick(this.slots, slotIndex, numSlots, clickingPlayer);
                     }
                 },
                 Component.literal("Revive - Select Player").withStyle(net.minecraft.ChatFormatting.DARK_PURPLE, net.minecraft.ChatFormatting.BOLD)
@@ -100,10 +97,20 @@ public class ReviveSkullManager {
         };
     }
 
-    private static void handleMenuClick(ItemStack clicked, Player clickingPlayer) {
-        if (!clicked.isEmpty() && clicked.is(Items.PLAYER_HEAD)) {
+    static void handleSlotClick(List<net.minecraft.world.inventory.Slot> slots, int slotIndex, int numSlots, Player clickingPlayer) {
+        if (slots != null && slotIndex >= 0 && slotIndex < numSlots && slotIndex < slots.size()) {
+            net.minecraft.world.inventory.Slot slot = slots.get(slotIndex);
+            if (slot != null) {
+                ItemStack clicked = slot.getItem();
+                handleMenuClick(clicked, clickingPlayer);
+            }
+        }
+    }
+
+    static void handleMenuClick(ItemStack clicked, Player clickingPlayer) {
+        if (clicked != null && !clicked.isEmpty() && clicked.is(Items.PLAYER_HEAD)) {
             ResolvableProfile profile = clicked.get(DataComponents.PROFILE);
-            if (profile != null && profile.partialProfile().id() != null) {
+            if (profile != null && profile.partialProfile() != null && profile.partialProfile().id() != null) {
                 String name = profile.name().orElse("Unknown");
                 java.util.UUID ownerUuid = profile.partialProfile().id();
                 if (!(clickingPlayer instanceof ServerPlayer spe)) {
@@ -159,7 +166,7 @@ public class ReviveSkullManager {
     }
 
     public static boolean isReviveSkull(ItemStack stack) {
-        if (stack.isEmpty() || !stack.has(DataComponents.CUSTOM_DATA)) return false;
+        if (stack == null || stack.isEmpty() || !stack.has(DataComponents.CUSTOM_DATA)) return false;
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
         return data != null && data.copyTag().contains("ReviveSkull");
     }
