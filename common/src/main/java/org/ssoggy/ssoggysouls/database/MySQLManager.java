@@ -94,7 +94,7 @@ public class MySQLManager extends AbstractDatabaseManager {
         }
     }
 
-    private void createHikariDataSource(HikariConfig config) throws DatabaseInitializationException {
+    void createHikariDataSource(HikariConfig config) throws DatabaseInitializationException {
         try {
             hikariDataSource = new HikariDataSource(config);
         } catch (RuntimeException ex) {

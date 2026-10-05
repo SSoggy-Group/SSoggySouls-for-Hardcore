@@ -485,4 +485,129 @@ class MySQLManagerTest {
         assertEquals(1, result.size());
         assertTrue(result.get(uuid1)); // Fail-safe default is true
     }
+
+    @Test
+    void testInitializeSuccess() throws Exception {
+        PluginContext plugin = mock(PluginContext.class);
+        Logger logger = Logger.getAnonymousLogger();
+        logger.setLevel(java.util.logging.Level.OFF);
+        when(plugin.getLogger()).thenReturn(logger);
+
+        when(plugin.getConfigString(eq("database.host"), anyString())).thenReturn("127.0.0.1");
+        when(plugin.getConfigInt(eq("database.port"), anyInt())).thenReturn(3306);
+        when(plugin.getConfigString(eq("database.name"), anyString())).thenReturn("test_db");
+        when(plugin.getConfigString(eq("database.username"), anyString())).thenReturn("db_user");
+        when(plugin.getConfigString(eq("database.password"), anyString())).thenReturn("secret_pass");
+        when(plugin.getConfigInt(eq("database.pool-size"), anyInt())).thenReturn(5);
+        when(plugin.getConfigString(eq("database.table-name"), anyString())).thenReturn("custom_table");
+        when(plugin.getConfigString(eq("database.ssl-mode"), anyString())).thenReturn("DISABLED");
+        when(plugin.getDefaultLives()).thenReturn(3);
+
+        Connection connection = mock(Connection.class);
+        PreparedStatement ps = mock(PreparedStatement.class);
+        when(connection.prepareStatement(anyString())).thenReturn(ps);
+
+        com.zaxxer.hikari.HikariDataSource mockHikari = mock(com.zaxxer.hikari.HikariDataSource.class);
+        when(mockHikari.getConnection()).thenReturn(connection);
+
+        MySQLManager manager = new MySQLManager(plugin) {
+            @Override
+            void createHikariDataSource(com.zaxxer.hikari.HikariConfig config) {
+                try {
+                    java.lang.reflect.Field field = MySQLManager.class.getDeclaredField("hikariDataSource");
+                    field.setAccessible(true);
+                    field.set(this, mockHikari);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+
+        assertDoesNotThrow(() -> manager.initialize());
+        assertEquals("custom_table", manager.tableName);
+        verify(ps, atLeastOnce()).executeUpdate();
+    }
+
+    @Test
+    void testInitializeEmptyPassword() {
+        PluginContext plugin = mock(PluginContext.class);
+        Logger logger = Logger.getAnonymousLogger();
+        logger.setLevel(java.util.logging.Level.OFF);
+        when(plugin.getLogger()).thenReturn(logger);
+
+        when(plugin.getConfigString(eq("database.host"), anyString())).thenReturn("localhost");
+        when(plugin.getConfigInt(eq("database.port"), anyInt())).thenReturn(3306);
+        when(plugin.getConfigString(eq("database.name"), anyString())).thenReturn("minecraft");
+        when(plugin.getConfigString(eq("database.username"), anyString())).thenReturn("minecraft");
+        when(plugin.getConfigString(eq("database.password"), anyString())).thenReturn("");
+
+        MySQLManager manager = new MySQLManager(plugin);
+
+        DatabaseInitializationException ex = assertThrows(DatabaseInitializationException.class, manager::initialize);
+        assertTrue(ex.getMessage().contains("password is empty"));
+    }
+
+    @Test
+    void testInitializeInvalidTableName() {
+        PluginContext plugin = mock(PluginContext.class);
+        Logger logger = Logger.getAnonymousLogger();
+        logger.setLevel(java.util.logging.Level.OFF);
+        when(plugin.getLogger()).thenReturn(logger);
+
+        when(plugin.getConfigString(eq("database.host"), anyString())).thenReturn("localhost");
+        when(plugin.getConfigInt(eq("database.port"), anyInt())).thenReturn(3306);
+        when(plugin.getConfigString(eq("database.name"), anyString())).thenReturn("minecraft");
+        when(plugin.getConfigString(eq("database.username"), anyString())).thenReturn("minecraft");
+        when(plugin.getConfigString(eq("database.password"), anyString())).thenReturn("password123");
+        when(plugin.getConfigInt(eq("database.pool-size"), anyInt())).thenReturn(5);
+        when(plugin.getConfigString(eq("database.table-name"), anyString())).thenReturn("invalid_table; DROP TABLE users;");
+        when(plugin.getConfigString(eq("database.ssl-mode"), anyString())).thenReturn("VERIFY_IDENTITY");
+
+        MySQLManager manager = new MySQLManager(plugin);
+
+        DatabaseInitializationException ex = assertThrows(DatabaseInitializationException.class, manager::initialize);
+        assertTrue(ex.getMessage().contains("Invalid database.table-name"));
+    }
+
+    @Test
+    void testInitializeInvalidJdbcParamHost() {
+        PluginContext plugin = mock(PluginContext.class);
+        Logger logger = Logger.getAnonymousLogger();
+        logger.setLevel(java.util.logging.Level.OFF);
+        when(plugin.getLogger()).thenReturn(logger);
+
+        when(plugin.getConfigString(eq("database.host"), anyString())).thenReturn("invalid_host; injection");
+
+        MySQLManager manager = new MySQLManager(plugin);
+
+        DatabaseInitializationException ex = assertThrows(DatabaseInitializationException.class, manager::initialize);
+        assertTrue(ex.getMessage().contains("MySQL initialization failed"));
+    }
+
+    @Test
+    void testCreateHikariDataSourceConnectionError() {
+        PluginContext plugin = mock(PluginContext.class);
+        Logger logger = Logger.getAnonymousLogger();
+        logger.setLevel(java.util.logging.Level.OFF);
+        when(plugin.getLogger()).thenReturn(logger);
+
+        when(plugin.getConfigString(eq("database.host"), anyString())).thenReturn("localhost");
+        when(plugin.getConfigInt(eq("database.port"), anyInt())).thenReturn(3306);
+        when(plugin.getConfigString(eq("database.name"), anyString())).thenReturn("minecraft");
+        when(plugin.getConfigString(eq("database.username"), anyString())).thenReturn("minecraft");
+        when(plugin.getConfigString(eq("database.password"), anyString())).thenReturn("password123");
+        when(plugin.getConfigInt(eq("database.pool-size"), anyInt())).thenReturn(5);
+        when(plugin.getConfigString(eq("database.table-name"), anyString())).thenReturn("valid_table");
+        when(plugin.getConfigString(eq("database.ssl-mode"), anyString())).thenReturn("VERIFY_IDENTITY");
+
+        MySQLManager manager = new MySQLManager(plugin) {
+            @Override
+            void createHikariDataSource(com.zaxxer.hikari.HikariConfig config) throws DatabaseInitializationException {
+                super.createHikariDataSource(config);
+            }
+        };
+
+        DatabaseInitializationException ex = assertThrows(DatabaseInitializationException.class, manager::initialize);
+        assertTrue(ex.getMessage().contains("Could not connect to MySQL database") || ex.getMessage().contains("MySQL initialization failed"));
+    }
 }
