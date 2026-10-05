@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -98,12 +99,18 @@ class RPStorageTest {
         storage.setValue("config", "version", "1.0");
         storage.saveConfig();
 
-        // Wait a brief moment for async executor in saveConfig to write file
-        Thread.sleep(200);
-
         File file = new File(tempFolder, "test.yml");
         assertTrue(file.exists());
-        String content = Files.readString(file.toPath());
-        assertTrue(content.contains("version: '1.0'") || content.contains("version: 1.0"));
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        String content = "";
+        while (System.nanoTime() < deadline) {
+            content = Files.readString(file.toPath());
+            if (content.contains("version: '1.0'") || content.contains("version: 1.0")) {
+                break;
+            }
+            Thread.sleep(10);
+        }
+        assertTrue(content.contains("version: '1.0'") || content.contains("version: 1.0"),
+                "Expected saved config content within 5 seconds");
     }
 }
