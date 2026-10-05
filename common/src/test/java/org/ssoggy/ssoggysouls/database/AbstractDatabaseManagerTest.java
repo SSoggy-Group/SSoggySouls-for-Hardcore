@@ -138,6 +138,7 @@ class AbstractDatabaseManagerTest {
 
         assertNull(dbManager.getPlayerStrict(testUuid));
     }
+
     @Test
     void testIsPlayerDeadCacheHit() throws SQLException {
         dbManager.deathStatusCache.put(testUuid, false);
@@ -206,5 +207,47 @@ class AbstractDatabaseManagerTest {
     void testInvalidateDeathStatusCacheUncachedOrNull() {
         assertDoesNotThrow(() -> dbManager.invalidateDeathStatusCache(UUID.randomUUID()));
         assertDoesNotThrow(() -> dbManager.invalidateDeathStatusCache(null));
+    }
+
+    @Test
+    void testRevivePlayerSuccess() throws SQLException {
+        when(plugin.isDebugMode()).thenReturn(true);
+        when(preparedStatement.executeUpdate()).thenReturn(1);
+
+        // Pre-populate cache with true to verify cache update
+        dbManager.deathStatusCache.put(testUuid, true);
+
+        boolean result = dbManager.revivePlayer(testUuid, 3);
+
+        assertTrue(result);
+        assertFalse(dbManager.deathStatusCache.get(testUuid));
+        verify(preparedStatement).setInt(1, 3);
+        verify(preparedStatement).setString(2, testUuid.toString());
+        verify(plugin).debug(contains("Revived player " + testUuid));
+    }
+
+    @Test
+    void testRevivePlayerFailureNoRowsAffected() throws SQLException {
+        when(preparedStatement.executeUpdate()).thenReturn(0);
+
+        dbManager.deathStatusCache.put(testUuid, true);
+
+        boolean result = dbManager.revivePlayer(testUuid, 3);
+
+        assertFalse(result);
+        assertTrue(dbManager.deathStatusCache.get(testUuid));
+        verify(preparedStatement).setInt(1, 3);
+        verify(preparedStatement).setString(2, testUuid.toString());
+    }
+
+    @Test
+    void testRevivePlayerSQLException() throws SQLException {
+        SQLException sqlException = new SQLException("Database connection error");
+        when(preparedStatement.executeUpdate()).thenThrow(sqlException);
+
+        boolean result = dbManager.revivePlayer(testUuid, 3);
+
+        assertFalse(result);
+        verify(logger).log(eq(Level.WARNING), eq(sqlException), any(java.util.function.Supplier.class));
     }
 }
