@@ -487,6 +487,13 @@ class MySQLManagerTest {
     }
 
     @Test
+    void testInvalidTableNameInConstructorThrowsException() {
+        PluginContext plugin = mock(PluginContext.class);
+        assertThrows(IllegalArgumentException.class, () ->
+                new MySQLManager(plugin, new SimpleTestDataSource(null), "invalid;table--"));
+    }
+
+    @Test
     void testInitializeSuccess() throws Exception {
         PluginContext plugin = mock(PluginContext.class);
         Logger logger = Logger.getAnonymousLogger();
