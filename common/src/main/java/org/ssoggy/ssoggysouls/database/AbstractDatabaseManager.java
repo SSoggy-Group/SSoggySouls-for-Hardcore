@@ -35,6 +35,15 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
     /** Resolved and validated table name; set during {@code initialize()}. */
     protected String tableName;
 
+    /**
+     * Returns the validated table name identifier.
+     *
+     * @return validated SQL identifier for the table name
+     */
+    protected String getTableName() {
+        return SqlSafety.requireIdentifier(this.tableName, "database.table-name");
+    }
+
     protected AbstractDatabaseManager(PluginContext plugin) {
         this.plugin = plugin;
     }
@@ -59,7 +68,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
     @Override
     public PlayerData getPlayerStrict(UUID uuid) throws SQLException {
         if (uuid == null) return null;
-        String sql = SELECT_ALL + tableName + " WHERE uuid = ?";
+        String sql = SELECT_ALL + getTableName() + " WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.setString(1, uuid.toString());
@@ -74,7 +83,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public PlayerData getPlayerByName(String username) {
-        String sql = SELECT_ALL + tableName + " WHERE LOWER(username) = LOWER(?)";
+        String sql = SELECT_ALL + getTableName() + " WHERE LOWER(username) = LOWER(?)";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.setString(1, username);
@@ -95,7 +104,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
         if (cached != null) {
             return cached;
         }
-        String sql = "SELECT is_dead FROM " + tableName + " WHERE uuid = ?";
+        String sql = "SELECT is_dead FROM " + getTableName() + " WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.setString(1, uuid.toString());
@@ -154,7 +163,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
                 String placeholders = String.join(",",
                         java.util.Collections.nCopies(batch.size(), "?"));
-                String sql = "SELECT uuid, is_dead FROM " + tableName
+                String sql = "SELECT uuid, is_dead FROM " + getTableName()
                         + " WHERE uuid IN (" + placeholders + ")";
 
                 try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
@@ -184,7 +193,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public List<PlayerData> getDeadPlayers() {
-        String sql = SELECT_ALL + tableName + " WHERE is_dead = TRUE ORDER BY username";
+        String sql = SELECT_ALL + getTableName() + " WHERE is_dead = TRUE ORDER BY username";
         List<PlayerData> result = new ArrayList<>();
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql);
@@ -204,7 +213,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public boolean revivePlayer(UUID uuid, int livesToRestore) {
-        String sql = UPDATE + tableName
+        String sql = UPDATE + getTableName()
                 + " SET is_dead = FALSE, lives = ? WHERE uuid = ? AND is_dead = TRUE";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
@@ -226,7 +235,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public boolean setLives(UUID uuid, int lives) {
-        String sql = UPDATE + tableName + " SET lives = ?, is_dead = ? WHERE uuid = ?";
+        String sql = UPDATE + getTableName() + " SET lives = ?, is_dead = ? WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             boolean dead = lives <= 0;
@@ -246,7 +255,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public void setFirstJoin(UUID uuid, long firstJoin) {
-        String sql = UPDATE + tableName + " SET first_join = ? WHERE uuid = ?";
+        String sql = UPDATE + getTableName() + " SET first_join = ? WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.setLong(1, firstJoin);
@@ -259,7 +268,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public void setLastSeen(UUID uuid, long lastSeen) {
-        String sql = UPDATE + tableName + " SET last_seen = ? WHERE uuid = ?";
+        String sql = UPDATE + getTableName() + " SET last_seen = ? WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.setLong(1, lastSeen);
@@ -272,7 +281,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public void setGraceUntil(UUID uuid, long graceUntil) {
-        String sql = UPDATE + tableName + " SET grace_until = ? WHERE uuid = ?";
+        String sql = UPDATE + getTableName() + " SET grace_until = ? WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.setLong(1, graceUntil);
@@ -285,7 +294,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
 
     @Override
     public void setUsername(UUID uuid, String username) {
-        String sql = UPDATE + tableName + " SET username = ? WHERE uuid = ?";
+        String sql = UPDATE + getTableName() + " SET username = ? WHERE uuid = ?";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.setString(1, username);
@@ -300,7 +309,7 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
     public boolean incrementLives(UUID uuid, int maxLives) {
         // Single conditional UPDATE so concurrent uses can neither lose an increment
         // nor push lives past the cap.
-        String sql = UPDATE + tableName
+        String sql = UPDATE + getTableName()
                 + " SET lives = lives + 1 WHERE uuid = ? AND is_dead = FALSE AND (? <= 0 OR lives < ?)";
         try (Connection conn = getDataSource().getConnection();
                 PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {

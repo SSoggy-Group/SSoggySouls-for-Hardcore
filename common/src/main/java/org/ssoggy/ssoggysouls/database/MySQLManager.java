@@ -117,10 +117,12 @@ public class MySQLManager extends AbstractDatabaseManager {
     }
 
     private void createTable() throws SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " ("
+        String safeTableName = getTableName();
+        int defaultLives = Math.max(0, plugin.getDefaultLives());
+        String sql = "CREATE TABLE IF NOT EXISTS " + safeTableName + " ("
                 + "uuid VARCHAR(36) NOT NULL PRIMARY KEY, "
                 + "username VARCHAR(16) NOT NULL, "
-                + "lives INT NOT NULL DEFAULT " + plugin.getDefaultLives() + ", "
+                + "lives INT NOT NULL DEFAULT " + defaultLives + ", "
                 + "is_dead BOOLEAN NOT NULL DEFAULT FALSE, "
                 + "first_join BIGINT NOT NULL, "
                 + "last_death BIGINT NOT NULL DEFAULT 0, "
@@ -133,7 +135,7 @@ public class MySQLManager extends AbstractDatabaseManager {
             ps.executeUpdate();
             ensureLastSeenColumn(conn);
             ensureGraceUntilColumn(conn);
-            plugin.debug("Table '" + tableName + "' verified/created.");
+            plugin.debug("Table '" + safeTableName + "' verified/created.");
         }
     }
 
@@ -155,10 +157,11 @@ public class MySQLManager extends AbstractDatabaseManager {
             throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + normalizedDefinition);
         }
 
-        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + safeColumnName + " " + normalizedDefinition;
+        String safeTableName = getTableName();
+        String sql = "ALTER TABLE " + safeTableName + " ADD COLUMN " + safeColumnName + " " + normalizedDefinition;
         try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
             ps.executeUpdate();
-            plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
+            plugin.debug("Added " + columnName + " column to '" + safeTableName + "'.");
         } catch (SQLException e) {
             String sqlState = e.getSQLState();
             boolean duplicateColumn = e.getErrorCode() == MYSQL_DUPLICATE_COLUMN
@@ -172,7 +175,8 @@ public class MySQLManager extends AbstractDatabaseManager {
     // MySQL-specific upsert: two parameter sets for INSERT + ON DUPLICATE KEY UPDATE
     @Override
     public void savePlayer(PlayerData data) {
-        String sql = "INSERT INTO " + tableName
+        String safeTableName = getTableName();
+        String sql = "INSERT INTO " + safeTableName
                 + " (uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
                 + "ON DUPLICATE KEY UPDATE "
