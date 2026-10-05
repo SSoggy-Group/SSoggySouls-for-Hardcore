@@ -1,12 +1,13 @@
 package org.ssoggy.ssoggysouls.hrm;
 
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ssoggy.ssoggysouls.database.DatabaseManager;
@@ -14,10 +15,10 @@ import org.ssoggy.ssoggysouls.util.ConfigManager;
 
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -29,7 +30,16 @@ class ExtraLifeManagerTest {
     private PlayerInteractEvent.RightClickItem event;
     private ServerPlayer serverPlayer;
     private Level level;
-    private ItemStack itemStack;
+
+    @BeforeAll
+    static void initMinecraft() {
+        try {
+            SharedConstants.tryDetectVersion();
+            Bootstrap.bootStrap();
+        } catch (Throwable ignored) {
+            // Handled if already bootstrapped
+        }
+    }
 
     @BeforeEach
     void setUp() {
@@ -37,7 +47,6 @@ class ExtraLifeManagerTest {
         event = mock(PlayerInteractEvent.RightClickItem.class);
         serverPlayer = mock(ServerPlayer.class);
         level = mock(Level.class);
-        itemStack = mock(ItemStack.class);
 
         ConfigManager.getConfig().setHrmEnabled(true);
         ExtraLifeManager.register(db);
@@ -45,7 +54,6 @@ class ExtraLifeManagerTest {
         when(event.getLevel()).thenReturn(level);
         when(level.isClientSide()).thenReturn(false);
         when(event.getEntity()).thenReturn(serverPlayer);
-        when(event.getItemStack()).thenReturn(itemStack);
         when(serverPlayer.getUUID()).thenReturn(UUID.randomUUID());
         when(serverPlayer.getScoreboardName()).thenReturn("TestPlayer");
     }
@@ -53,8 +61,7 @@ class ExtraLifeManagerTest {
     @Test
     void testRegister() {
         ExtraLifeManager.register(db);
-        when(level.isClientSide()).thenReturn(false);
-        when(itemStack.isEmpty()).thenReturn(true);
+        when(event.getItemStack()).thenReturn(ItemStack.EMPTY);
         ExtraLifeManager.onItemRightClick(event);
         verify(event, never()).setCanceled(true);
     }
@@ -62,6 +69,7 @@ class ExtraLifeManagerTest {
     @Test
     void testOnItemRightClick_hrmDisabled() {
         ConfigManager.getConfig().setHrmEnabled(false);
+        when(event.getItemStack()).thenReturn(ExtraLifeManager.createExtraLifeItem());
 
         ExtraLifeManager.onItemRightClick(event);
 
@@ -71,6 +79,7 @@ class ExtraLifeManagerTest {
     @Test
     void testOnItemRightClick_nullDb() {
         ExtraLifeManager.register(null);
+        when(event.getItemStack()).thenReturn(ExtraLifeManager.createExtraLifeItem());
 
         ExtraLifeManager.onItemRightClick(event);
 
@@ -80,6 +89,7 @@ class ExtraLifeManagerTest {
     @Test
     void testOnItemRightClick_clientSide() {
         when(level.isClientSide()).thenReturn(true);
+        when(event.getItemStack()).thenReturn(ExtraLifeManager.createExtraLifeItem());
 
         ExtraLifeManager.onItemRightClick(event);
 
@@ -89,6 +99,7 @@ class ExtraLifeManagerTest {
     @Test
     void testOnItemRightClick_notServerPlayer() {
         when(event.getEntity()).thenReturn(null);
+        when(event.getItemStack()).thenReturn(ExtraLifeManager.createExtraLifeItem());
 
         ExtraLifeManager.onItemRightClick(event);
 
@@ -97,59 +108,53 @@ class ExtraLifeManagerTest {
 
     @Test
     void testOnItemRightClick_notExtraLifeItem() {
-        when(itemStack.isEmpty()).thenReturn(false);
-        when(itemStack.has(DataComponents.CUSTOM_DATA)).thenReturn(false);
+        ItemStack regularItem = new ItemStack(Items.STONE, 1);
+        when(event.getItemStack()).thenReturn(regularItem);
 
         ExtraLifeManager.onItemRightClick(event);
 
-        verify(itemStack, never()).shrink(anyInt());
+        assertEquals(1, regularItem.getCount());
         verify(event, never()).setCanceled(true);
     }
 
     @Test
     void testOnItemRightClick_validItem_creative() {
-        setupMockExtraLifeItem(itemStack);
+        ItemStack extraLifeItem = ExtraLifeManager.createExtraLifeItem();
+        when(event.getItemStack()).thenReturn(extraLifeItem);
         when(serverPlayer.isCreative()).thenReturn(true);
 
         ExtraLifeManager.onItemRightClick(event);
 
-        verify(itemStack, never()).shrink(anyInt());
+        assertEquals(1, extraLifeItem.getCount());
         verify(event).setCanceled(true);
     }
 
     @Test
     void testOnItemRightClick_validItem_survival() {
-        setupMockExtraLifeItem(itemStack);
+        ItemStack extraLifeItem = ExtraLifeManager.createExtraLifeItem();
+        when(event.getItemStack()).thenReturn(extraLifeItem);
         when(serverPlayer.isCreative()).thenReturn(false);
 
         ExtraLifeManager.onItemRightClick(event);
 
-        verify(itemStack).shrink(1);
+        assertEquals(0, extraLifeItem.getCount());
         verify(event).setCanceled(true);
     }
 
     @Test
     void testIsExtraLifeItem_emptyStack() {
-        ItemStack emptyStack = mock(ItemStack.class);
-        when(emptyStack.isEmpty()).thenReturn(true);
-
-        assertFalse(ExtraLifeManager.isExtraLifeItem(emptyStack));
+        assertFalse(ExtraLifeManager.isExtraLifeItem(ItemStack.EMPTY));
     }
 
     @Test
-    void testIsExtraLifeItem_noCustomData() {
-        ItemStack stackWithoutData = mock(ItemStack.class);
-        when(stackWithoutData.isEmpty()).thenReturn(false);
-        when(stackWithoutData.has(DataComponents.CUSTOM_DATA)).thenReturn(false);
-
-        assertFalse(ExtraLifeManager.isExtraLifeItem(stackWithoutData));
+    void testIsExtraLifeItem_regularItem() {
+        ItemStack stone = new ItemStack(Items.STONE);
+        assertFalse(ExtraLifeManager.isExtraLifeItem(stone));
     }
 
     @Test
     void testIsExtraLifeItem_validCustomData() {
-        ItemStack extraLifeItem = mock(ItemStack.class);
-        setupMockExtraLifeItem(extraLifeItem);
-
+        ItemStack extraLifeItem = ExtraLifeManager.createExtraLifeItem();
         assertTrue(ExtraLifeManager.isExtraLifeItem(extraLifeItem));
     }
 
@@ -158,16 +163,5 @@ class ExtraLifeManagerTest {
         ItemStack created = ExtraLifeManager.createExtraLifeItem();
         assertNotNull(created);
         assertTrue(ExtraLifeManager.isExtraLifeItem(created));
-    }
-
-    private void setupMockExtraLifeItem(ItemStack stack) {
-        when(stack.isEmpty()).thenReturn(false);
-        when(stack.has(DataComponents.CUSTOM_DATA)).thenReturn(true);
-
-        CustomData customData = mock(CustomData.class);
-        CompoundTag compoundTag = mock(CompoundTag.class);
-        when(compoundTag.contains("ExtraLife")).thenReturn(true);
-        when(customData.copyTag()).thenReturn(compoundTag);
-        when(stack.get(DataComponents.CUSTOM_DATA)).thenReturn(customData);
     }
 }
