@@ -138,4 +138,57 @@ class AbstractDatabaseManagerTest {
 
         assertNull(dbManager.getPlayerStrict(testUuid));
     }
+    @Test
+    void testIsPlayerDeadCacheHit() throws SQLException {
+        dbManager.deathStatusCache.put(testUuid, false);
+
+        assertFalse(dbManager.isPlayerDead(testUuid));
+        verify(dataSource, never()).getConnection();
+    }
+
+    @Test
+    void testIsPlayerDeadDatabaseHitNotDead() throws SQLException {
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getBoolean("is_dead")).thenReturn(false);
+
+        assertFalse(dbManager.isPlayerDead(testUuid));
+        verify(preparedStatement).setString(1, testUuid.toString());
+
+        // Second call should hit cache without querying database connection again
+        assertFalse(dbManager.isPlayerDead(testUuid));
+        verify(dataSource, times(1)).getConnection();
+    }
+
+    @Test
+    void testIsPlayerDeadDatabaseHitDead() throws SQLException {
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getBoolean("is_dead")).thenReturn(true);
+
+        assertTrue(dbManager.isPlayerDead(testUuid));
+        verify(preparedStatement).setString(1, testUuid.toString());
+
+        // Second call should hit cache
+        assertTrue(dbManager.isPlayerDead(testUuid));
+        verify(dataSource, times(1)).getConnection();
+    }
+
+    @Test
+    void testIsPlayerDeadNotFoundDefaultsToTrue() throws SQLException {
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(false);
+
+        assertTrue(dbManager.isPlayerDead(testUuid));
+        verify(preparedStatement).setString(1, testUuid.toString());
+    }
+
+    @Test
+    void testIsPlayerDeadSQLExceptionDefaultsToTrue() throws SQLException {
+        SQLException sqlException = new SQLException("Database connection error");
+        when(preparedStatement.executeQuery()).thenThrow(sqlException);
+
+        assertTrue(dbManager.isPlayerDead(testUuid));
+        verify(logger).log(eq(Level.WARNING), eq(sqlException), any(java.util.function.Supplier.class));
+    }
 }
