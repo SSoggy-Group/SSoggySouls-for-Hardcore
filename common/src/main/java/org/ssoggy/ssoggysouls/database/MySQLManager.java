@@ -205,7 +205,7 @@ public class MySQLManager extends AbstractDatabaseManager {
             deathStatusCache.put(data.getUuid(), data.isDead());
 
             if (plugin.isDebugMode()) {
-                plugin.debug("Saved player data: " + data);
+                plugin.debug("Saved player data for UUID: " + data.getUuid());
             }
 
         } catch (SQLException e) {

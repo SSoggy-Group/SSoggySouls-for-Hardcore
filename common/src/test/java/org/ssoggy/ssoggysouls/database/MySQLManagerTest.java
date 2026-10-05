@@ -485,4 +485,16 @@ class MySQLManagerTest {
         assertEquals(1, result.size());
         assertTrue(result.get(uuid1)); // Fail-safe default is true
     }
+
+    @Test
+    void testSavePlayerDebugMode() throws SQLException {
+        PluginContext plugin = mySQLManager.plugin;
+        when(plugin.isDebugMode()).thenReturn(true);
+
+        PlayerData data = new PlayerData(testUuid, TEST_USER, 3, false, 1000L, 2000L, 3000L, 4000L);
+        mySQLManager.savePlayer(data);
+
+        verify(plugin).debug("Saved player data for UUID: " + testUuid);
+    }
+
 }

@@ -21,10 +21,17 @@ public class SQLiteManager extends AbstractDatabaseManager {
             BIGINT_NOT_NULL_DEFAULT_0
     );
 
-    private HikariDataSource dataSource;
+    private HikariDataSource hikariDataSource;
+    private javax.sql.DataSource dataSource;
 
     public SQLiteManager(PluginContext plugin) {
         super(plugin);
+    }
+
+    SQLiteManager(PluginContext plugin, javax.sql.DataSource dataSource, String tableName) {
+        super(plugin);
+        this.dataSource = dataSource;
+        this.tableName = tableName;
     }
 
     @Override
@@ -77,7 +84,8 @@ public class SQLiteManager extends AbstractDatabaseManager {
 
     private void createHikariDataSource(HikariConfig config) throws DatabaseInitializationException {
         try {
-            dataSource = new HikariDataSource(config);
+            hikariDataSource = new HikariDataSource(config);
+            dataSource = hikariDataSource;
         } catch (RuntimeException ex) {
             plugin.getLogger().log(Level.SEVERE, "SQLite connection pool error:", ex);
             throw new DatabaseInitializationException("Could not create SQLite connection pool", ex);
@@ -86,8 +94,8 @@ public class SQLiteManager extends AbstractDatabaseManager {
 
     @Override
     public void shutdown() {
-        if (dataSource != null && !dataSource.isClosed()) {
-            dataSource.close();
+        if (hikariDataSource != null && !hikariDataSource.isClosed()) {
+            hikariDataSource.close();
             plugin.getLogger().info("SQLite connection pool closed.");
         }
     }
@@ -182,7 +190,7 @@ public class SQLiteManager extends AbstractDatabaseManager {
 
             deathStatusCache.put(data.getUuid(), data.isDead());
             if (plugin.isDebugMode()) {
-                plugin.debug("Saved player data: " + data);
+                plugin.debug("Saved player data for UUID: " + data.getUuid());
             }
 
         } catch (SQLException e) {
