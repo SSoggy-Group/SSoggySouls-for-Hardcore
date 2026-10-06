@@ -35,8 +35,11 @@ public class LimboCheckTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        // Clean up offline players
-        trackedPlayers.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
+        // Clean up offline players or those already back in survival
+        trackedPlayers.removeIf(uuid -> {
+            Player p = Bukkit.getPlayer(uuid);
+            return p == null || p.getGameMode() == org.bukkit.GameMode.SURVIVAL;
+        });
 
         if (trackedPlayers.isEmpty()) return;
 
@@ -71,6 +74,7 @@ public class LimboCheckTask extends BukkitRunnable {
 
     private void releaseAll(List<UUID> uuids) {
         for (UUID uuid : uuids) {
+            trackedPlayers.remove(uuid);
             Player player = Bukkit.getPlayer(uuid);
             if (player != null && player.isOnline()) {
                 releasePlayer(player);

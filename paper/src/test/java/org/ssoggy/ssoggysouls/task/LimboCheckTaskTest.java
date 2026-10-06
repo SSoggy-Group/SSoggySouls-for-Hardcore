@@ -98,5 +98,9 @@ class LimboCheckTaskTest {
         task.run();
 
         verify(mockPlayer).setGameMode(GameMode.SURVIVAL);
+
+        // Subsequent run should not query or re-release since player was untracked
+        task.run();
+        verify(mockPlayer, times(1)).setGameMode(GameMode.SURVIVAL);
     }
 }
