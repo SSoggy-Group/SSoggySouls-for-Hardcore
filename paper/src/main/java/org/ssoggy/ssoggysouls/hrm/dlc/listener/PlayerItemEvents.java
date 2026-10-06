@@ -18,6 +18,7 @@ along with RevivePlus.  If not, see <https://www.gnu.org/licenses/>
 
 package org.ssoggy.ssoggysouls.hrm.dlc.listener;
 
+import org.ssoggy.ssoggysouls.hrm.dlc.enums.GAMEMODESENUM;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -31,7 +32,10 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.util.UUID;
 
 public class PlayerItemEvents implements Listener {
-    @EventHandler(priority = EventPriority.LOW)
+    private static final String KEY_DEATHPOS = "deathpos";
+    private static final String KEY_DEATHHOLDER = "deathholder";
+
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPlayerPickup(EntityPickupItemEvent event) {
         if (event.getEntity() instanceof Player player) {
             ItemMeta meta = event.getItem().getItemStack().getItemMeta();
@@ -40,11 +44,15 @@ public class PlayerItemEvents implements Listener {
                 if (skullOwner == null) return;
 
                 UUID skullUuid = skullOwner.getUniqueId();
-                UUID playerUuid = player.getUniqueId();
+                if (skullOwner.getPlayer() instanceof Player destroyed && GAMEMODESENUM.getPlayerGameMode(destroyed) == GAMEMODESENUM.GHOSTMODE) {
+                    UUID playerUuid = player.getUniqueId();
 
-                RPStatic.DEAD_HOLDERS.put(skullUuid, playerUuid);
-                if (RPStatic.DEAD_STORAGE.setValueIfChanged(skullUuid.toString(), "deathholder", playerUuid.toString())) {
-                    RPStatic.DEAD_STORAGE.saveConfig();
+                    RPStatic.DEAD_LOCATIONS.remove(skullUuid);
+                    RPStatic.DEAD_HOLDERS.put(skullUuid, playerUuid);
+                    RPStatic.DEAD_STORAGE.removeValue(skullUuid.toString(), KEY_DEATHPOS);
+                    if (RPStatic.DEAD_STORAGE.setValueIfChanged(skullUuid.toString(), KEY_DEATHHOLDER, playerUuid.toString())) {
+                        RPStatic.DEAD_STORAGE.saveConfig();
+                    }
                 }
             }
         }

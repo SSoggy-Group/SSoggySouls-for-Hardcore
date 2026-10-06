@@ -132,7 +132,6 @@ public class GhostModeEvents implements Listener {
     }
 
     private @Nullable Location getLocation(Pair<Location, Instant> pair, UUID uuid, Player player) {
-        if (pair != null) return pair.getLeft();
         if (RPStatic.DEAD_HOLDERS.containsKey(uuid)) {
             UUID holder = RPStatic.DEAD_HOLDERS.get(uuid);
             if (holder == null) return null;
@@ -162,6 +161,8 @@ public class GhostModeEvents implements Listener {
                 // Invalid UUID string in storage
             }
         }
+
+        if (pair != null) return pair.getLeft();
 
         String savedTime = RPStatic.DEAD_STORAGE.getValue(uuid.toString(), "deathtime");
         String savedPos = RPStatic.DEAD_STORAGE.getValue(uuid.toString(), "deathpos");
