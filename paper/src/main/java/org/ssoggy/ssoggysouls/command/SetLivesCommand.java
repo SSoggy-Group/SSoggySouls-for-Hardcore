@@ -16,6 +16,7 @@ import org.ssoggy.ssoggysouls.model.PlayerData;
 import org.ssoggy.ssoggysouls.util.CommandUtil;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.PermissionUtil;
+import org.ssoggy.ssoggysouls.util.PlayerRevivalUtil;
 import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
 import org.ssoggy.ssoggysouls.util.AdminLogger;
 
@@ -83,6 +84,11 @@ public class SetLivesCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(MessageUtil.get("lives-set",
                     "player", data.getUsername(),
                     "lives", lives));
+
+            if (data.isDead() && lives > 0) {
+                PlayerRevivalUtil.restoreOnlineSpectator(plugin, data);
+                plugin.removeDroppedHeads(data.getUuid());
+            }
         });
 
         return true;

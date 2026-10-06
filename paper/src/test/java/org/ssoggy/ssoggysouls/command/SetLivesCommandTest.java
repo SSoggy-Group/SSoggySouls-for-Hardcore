@@ -19,6 +19,7 @@ import org.ssoggy.ssoggysouls.util.AdminLogger;
 import org.ssoggy.ssoggysouls.util.CommandUtil;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.PermissionUtil;
+import org.ssoggy.ssoggysouls.util.PlayerRevivalUtil;
 import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
 
 import java.util.Arrays;
@@ -204,6 +205,7 @@ class SetLivesCommandTest {
         PlayerData data = mock(PlayerData.class);
         when(data.getUuid()).thenReturn(targetUuid);
         when(data.getUsername()).thenReturn("TargetUser");
+        when(data.isDead()).thenReturn(false);
         when(db.getPlayerByName("TargetUser")).thenReturn(data);
         when(sender.getName()).thenReturn("AdminUser");
 
@@ -213,6 +215,27 @@ class SetLivesCommandTest {
         verify(db).setLives(targetUuid, 5);
         adminLoggerMock.verify(() -> AdminLogger.log(plugin, "AdminUser", "set TargetUser's lives to 5"));
         verify(sender).sendMessage(MessageUtil.get("lives-set", "player", "TargetUser", "lives", 5));
+        verify(plugin, never()).removeDroppedHeads(any());
+    }
+
+    @Test
+    void testSetLivesRevivesDeadPlayer() {
+        UUID targetUuid = UUID.randomUUID();
+        PlayerData data = mock(PlayerData.class);
+        when(data.getUuid()).thenReturn(targetUuid);
+        when(data.getUsername()).thenReturn("DeadUser");
+        when(data.isDead()).thenReturn(true);
+        when(db.getPlayerByName("DeadUser")).thenReturn(data);
+        when(sender.getName()).thenReturn("AdminUser");
+
+        try (MockedStatic<PlayerRevivalUtil> revivalUtilMock = Mockito.mockStatic(PlayerRevivalUtil.class)) {
+            boolean result = setLivesCommand.onCommand(sender, command, "psetlives", new String[]{"DeadUser", "3"});
+
+            assertTrue(result);
+            verify(db).setLives(targetUuid, 3);
+            revivalUtilMock.verify(() -> PlayerRevivalUtil.restoreOnlineSpectator(plugin, data));
+            verify(plugin).removeDroppedHeads(targetUuid);
+        }
     }
 
     @Test
