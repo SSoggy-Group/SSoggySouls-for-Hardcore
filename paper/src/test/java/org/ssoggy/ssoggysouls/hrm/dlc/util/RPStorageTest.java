@@ -113,4 +113,25 @@ class RPStorageTest {
         assertTrue(content.contains("version: '1.0'") || content.contains("version: 1.0"),
                 "Expected saved config content within 5 seconds");
     }
+
+    @Test
+    void testSaveConfigOverwritesExistingAtomically() throws Exception {
+        storage.setValue("key", "val", "initial");
+        storage.saveConfig();
+
+        storage.setValue("key", "val", "updated");
+        storage.saveConfig();
+
+        File file = new File(tempFolder, "test.yml");
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        String content = "";
+        while (System.nanoTime() < deadline) {
+            content = Files.readString(file.toPath());
+            if (content.contains("updated")) {
+                break;
+            }
+            Thread.sleep(10);
+        }
+        assertTrue(content.contains("updated"), "Expected updated config content to be written atomically");
+    }
 }
