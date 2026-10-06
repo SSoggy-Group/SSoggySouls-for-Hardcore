@@ -17,6 +17,7 @@ import org.mockito.MockitoAnnotations;
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.AdminLogger;
 import org.ssoggy.ssoggysouls.util.CommandUtil;
+import org.ssoggy.ssoggysouls.util.PermissionUtil;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,6 +41,7 @@ class SetLimboSpawnCommandTest {
 
     private MockedStatic<Bukkit> bukkitMock;
     private MockedStatic<CommandUtil> commandUtilMock;
+    private MockedStatic<PermissionUtil> permissionUtilMock;
     private MockedStatic<AdminLogger> adminLoggerMock;
 
     private SetLimboSpawnCommand cmd;
@@ -54,6 +56,7 @@ class SetLimboSpawnCommandTest {
         bukkitMock.when(Bukkit::getScheduler).thenReturn(scheduler);
 
         commandUtilMock = Mockito.mockStatic(CommandUtil.class);
+        permissionUtilMock = Mockito.mockStatic(PermissionUtil.class);
         adminLoggerMock = Mockito.mockStatic(AdminLogger.class);
 
         doAnswer(invocation -> {
@@ -70,6 +73,9 @@ class SetLimboSpawnCommandTest {
         }
         if (commandUtilMock != null) {
             commandUtilMock.close();
+        }
+        if (permissionUtilMock != null) {
+            permissionUtilMock.close();
         }
         if (adminLoggerMock != null) {
             adminLoggerMock.close();
@@ -95,9 +101,22 @@ class SetLimboSpawnCommandTest {
     }
 
     @Test
+    void testBlockedByLimboSecurity() {
+        CommandSender sender = mock(CommandSender.class);
+        commandUtilMock.when(() -> CommandUtil.checkPermission(sender, "ssoggysouls.admin")).thenReturn(true);
+        permissionUtilMock.when(() -> PermissionUtil.isBlockedByLimboOpSecurity(sender, plugin)).thenReturn(true);
+
+        boolean result = cmd.onCommand(sender, command, "setlimbospawn", new String[0]);
+        assertTrue(result);
+        permissionUtilMock.verify(() -> PermissionUtil.sendSecurityBlockMessage(sender));
+        verify(plugin, never()).saveLimboSpawn(any());
+    }
+
+    @Test
     void testSenderNotPlayer() {
         CommandSender sender = mock(CommandSender.class);
         commandUtilMock.when(() -> CommandUtil.checkPermission(sender, "ssoggysouls.admin")).thenReturn(true);
+        permissionUtilMock.when(() -> PermissionUtil.isBlockedByLimboOpSecurity(sender, plugin)).thenReturn(false);
 
         boolean result = cmd.onCommand(sender, command, "setlimbospawn", new String[0]);
         assertFalse(result);
@@ -109,6 +128,7 @@ class SetLimboSpawnCommandTest {
     void testPlayerLocationNull() {
         Player player = mock(Player.class);
         commandUtilMock.when(() -> CommandUtil.checkPermission(player, "ssoggysouls.admin")).thenReturn(true);
+        permissionUtilMock.when(() -> PermissionUtil.isBlockedByLimboOpSecurity(player, plugin)).thenReturn(false);
         when(player.getLocation()).thenReturn(null);
 
         boolean result = cmd.onCommand(player, command, "setlimbospawn", new String[0]);
@@ -127,6 +147,7 @@ class SetLimboSpawnCommandTest {
         when(player.getName()).thenReturn("AdminPlayer");
 
         commandUtilMock.when(() -> CommandUtil.checkPermission(player, "ssoggysouls.admin")).thenReturn(true);
+        permissionUtilMock.when(() -> PermissionUtil.isBlockedByLimboOpSecurity(player, plugin)).thenReturn(false);
 
         boolean result = cmd.onCommand(player, command, "setlimbospawn", new String[0]);
         assertTrue(result);
@@ -144,6 +165,7 @@ class SetLimboSpawnCommandTest {
         when(player.getName()).thenReturn("AdminPlayer");
 
         commandUtilMock.when(() -> CommandUtil.checkPermission(player, "ssoggysouls.admin")).thenReturn(true);
+        permissionUtilMock.when(() -> PermissionUtil.isBlockedByLimboOpSecurity(player, plugin)).thenReturn(false);
 
         boolean result = cmd.onCommand(player, command, "setlimbospawn", new String[0]);
         assertTrue(result);

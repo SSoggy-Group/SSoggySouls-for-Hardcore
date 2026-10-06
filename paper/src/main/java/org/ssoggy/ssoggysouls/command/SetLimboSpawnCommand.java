@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.ssoggy.ssoggysouls.SSoggySouls;
 import org.ssoggy.ssoggysouls.util.CommandUtil;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
+import org.ssoggy.ssoggysouls.util.PermissionUtil;
 import org.ssoggy.ssoggysouls.util.AdminLogger;
 
 public class SetLimboSpawnCommand implements CommandExecutor {
@@ -27,6 +28,11 @@ public class SetLimboSpawnCommand implements CommandExecutor {
             return false;
         }
         if (!CommandUtil.checkPermission(sender, "ssoggysouls.admin")) {
+            return true;
+        }
+
+        if (PermissionUtil.isBlockedByLimboOpSecurity(sender, plugin)) {
+            PermissionUtil.sendSecurityBlockMessage(sender);
             return true;
         }
 
