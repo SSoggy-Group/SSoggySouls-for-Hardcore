@@ -42,6 +42,7 @@ import java.util.UUID;
 public class PlayerStateEvents implements Listener {
     private static final String KEY_DEATHPOS = "deathpos";
     private static final String KEY_DEATHTIME = "deathtime";
+    private static final String KEY_DEATHHOLDER = "deathholder";
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent event) {
@@ -191,11 +192,14 @@ public class PlayerStateEvents implements Listener {
             GAMEMODESENUM.setPlayerGameMode(player, GAMEMODESENUM.SURVIVAL);
             RPStatic.DEAD_LOCATIONS.remove(uuid);
             RPStatic.DEAD_HOLDERS.remove(uuid);
-            boolean c1 = RPStatic.DEAD_STORAGE.hasValue(uuid.toString(), KEY_DEATHPOS);
-            boolean c2 = RPStatic.DEAD_STORAGE.hasValue(uuid.toString(), KEY_DEATHTIME);
-            if (c1 || c2) {
-                RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHPOS);
-                RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), KEY_DEATHTIME);
+            String uuidStr = uuid.toString();
+            boolean c1 = RPStatic.DEAD_STORAGE.hasValue(uuidStr, KEY_DEATHPOS);
+            boolean c2 = RPStatic.DEAD_STORAGE.hasValue(uuidStr, KEY_DEATHTIME);
+            boolean c3 = RPStatic.DEAD_STORAGE.hasValue(uuidStr, KEY_DEATHHOLDER);
+            if (c1 || c2 || c3) {
+                RPStatic.DEAD_STORAGE.removeValue(uuidStr, KEY_DEATHPOS);
+                RPStatic.DEAD_STORAGE.removeValue(uuidStr, KEY_DEATHTIME);
+                RPStatic.DEAD_STORAGE.removeValue(uuidStr, KEY_DEATHHOLDER);
                 RPStatic.DEAD_STORAGE.saveConfig();
             }
         });

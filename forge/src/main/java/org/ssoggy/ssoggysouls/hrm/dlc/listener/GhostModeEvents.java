@@ -177,7 +177,11 @@ public class GhostModeEvents {
         else GHOST_CACHE.remove(uuid);
     }
 
-    private static boolean isGhost(Player player) {
-        return GHOST_CACHE.contains(player.getUUID());
+    public static boolean isGhost(UUID uuid) {
+        return GHOST_CACHE.contains(uuid);
+    }
+
+    public static boolean isGhost(Player player) {
+        return player != null && GHOST_CACHE.contains(player.getUUID());
     }
 }

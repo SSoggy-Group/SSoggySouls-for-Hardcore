@@ -159,16 +159,25 @@ public class GhostState extends SavedData {
         if (tag.contains(DEATH_LOCATIONS)) {
             CompoundTag locations = tag.getCompoundOrEmpty(DEATH_LOCATIONS);
             for (String key : locations.keySet()) {
-                state.deathLocations.put(UUID.fromString(key), BlockPos.of(locations.getLongOr(key, 0L)));
+                try {
+                    state.deathLocations.put(UUID.fromString(key), BlockPos.of(locations.getLongOr(key, 0L)));
+                } catch (IllegalArgumentException ignored) {
+                    // Skip corrupt entry
+                }
             }
         }
 
         if (tag.contains(DEATH_DIMENSIONS)) {
             CompoundTag dimensions = tag.getCompoundOrEmpty(DEATH_DIMENSIONS);
             for (String key : dimensions.keySet()) {
-                Identifier dimensionId = Identifier.tryParse(dimensions.getStringOr(key, ""));
-                if (dimensionId != null) {
-                    state.deathDimensions.put(UUID.fromString(key), ResourceKey.create(Registries.DIMENSION, dimensionId));
+                try {
+                    UUID uuid = UUID.fromString(key);
+                    Identifier dimensionId = Identifier.tryParse(dimensions.getStringOr(key, ""));
+                    if (dimensionId != null) {
+                        state.deathDimensions.put(uuid, ResourceKey.create(Registries.DIMENSION, dimensionId));
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Skip corrupt entry
                 }
             }
         }
@@ -176,14 +185,19 @@ public class GhostState extends SavedData {
         if (tag.contains(DEATH_HOLDERS)) {
             CompoundTag holders = tag.getCompoundOrEmpty(DEATH_HOLDERS);
             for (String key : holders.keySet()) {
-                // Pre-26.x saves stored holders as int-array UUIDs
-                if (holders.get(key) instanceof IntArrayTag legacyUuid) {
-                    state.deathHolders.put(UUID.fromString(key), UUIDUtil.uuidFromIntArray(legacyUuid.getAsIntArray()));
-                    continue;
-                }
-                String val = holders.getStringOr(key, "");
-                if (!val.isEmpty()) {
-                    state.deathHolders.put(UUID.fromString(key), UUID.fromString(val));
+                try {
+                    UUID ghostUuid = UUID.fromString(key);
+                    // Pre-26.x saves stored holders as int-array UUIDs
+                    if (holders.get(key) instanceof IntArrayTag legacyUuid) {
+                        state.deathHolders.put(ghostUuid, UUIDUtil.uuidFromIntArray(legacyUuid.getAsIntArray()));
+                        continue;
+                    }
+                    String val = holders.getStringOr(key, "");
+                    if (!val.isEmpty()) {
+                        state.deathHolders.put(ghostUuid, UUID.fromString(val));
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Skip corrupt entry
                 }
             }
         }
@@ -191,19 +205,24 @@ public class GhostState extends SavedData {
         if (tag.contains(HEAD_BLOCK_LOCATIONS)) {
             CompoundTag headLocations = tag.getCompoundOrEmpty(HEAD_BLOCK_LOCATIONS);
             for (String key : headLocations.keySet()) {
-                ListTag locations = headLocations.getListOrEmpty(key);
-                List<GlobalPos> parsedLocations = new ArrayList<>();
-                for (int i = 0; i < locations.size(); i++) {
-                    CompoundTag locationTag = locations.getCompoundOrEmpty(i);
-                    Identifier dimensionId = Identifier.tryParse(locationTag.getStringOr(HEAD_LOCATION_DIMENSION, ""));
-                    if (dimensionId == null) {
-                        continue;
+                try {
+                    UUID playerUuid = UUID.fromString(key);
+                    ListTag locations = headLocations.getListOrEmpty(key);
+                    List<GlobalPos> parsedLocations = new ArrayList<>();
+                    for (int i = 0; i < locations.size(); i++) {
+                        CompoundTag locationTag = locations.getCompoundOrEmpty(i);
+                        Identifier dimensionId = Identifier.tryParse(locationTag.getStringOr(HEAD_LOCATION_DIMENSION, ""));
+                        if (dimensionId == null) {
+                            continue;
+                        }
+                        ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, dimensionId);
+                        parsedLocations.add(GlobalPos.of(dimension, BlockPos.of(locationTag.getLongOr(HEAD_LOCATION_POS, 0L))));
                     }
-                    ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, dimensionId);
-                    parsedLocations.add(GlobalPos.of(dimension, BlockPos.of(locationTag.getLongOr(HEAD_LOCATION_POS, 0L))));
-                }
-                if (!parsedLocations.isEmpty()) {
-                    state.headBlockLocations.put(UUID.fromString(key), parsedLocations);
+                    if (!parsedLocations.isEmpty()) {
+                        state.headBlockLocations.put(playerUuid, parsedLocations);
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Skip corrupt entry
                 }
             }
         }

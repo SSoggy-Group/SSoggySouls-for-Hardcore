@@ -69,6 +69,11 @@ public class RevivalStructureListener {
             return;
         }
 
+        // In-memory ghost cache: no blocking DB query on the server thread per click
+        if (GhostModeEvents.isGhost(serverPlayer.getUUID())) {
+            return;
+        }
+
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
         if (profile == null || profile.partialProfile().id() == null) {
             return;

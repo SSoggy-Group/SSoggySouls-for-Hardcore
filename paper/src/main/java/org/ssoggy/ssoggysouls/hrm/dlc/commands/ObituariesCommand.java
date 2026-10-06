@@ -30,6 +30,7 @@ import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPUtil;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.Pair;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -67,17 +68,25 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
         StringBuilder deathListBuilder = new StringBuilder(headerText);
         for (Map.Entry<UUID, Pair<Location, Instant>> death : RPStatic.DEAD_LOCATIONS.entrySet()) {
             Pair<Location, Instant> deathDetails = death.getValue();
+            if (deathDetails == null) continue;
+
+            Location deathLocation = deathDetails.getLeft();
+            Instant deathTime = deathDetails.getRight();
+            if (deathLocation == null || deathTime == null) continue;
+
+            World world = deathLocation.getWorld();
+            String worldName = world != null ? world.getName() : "Unknown";
 
             UUID uuid = death.getKey();
+            boolean isOwnDeath = uuid.equals(player.getUniqueId());
             SOCIALENUM relationship = new RPSocial(uuid).getRelationTo(player.getUniqueId());
 
-            Instant deathTime = deathDetails.getRight();
             Instant now = Instant.now();
-            if (deathTime.isBefore(now.minusSeconds(publicAfterMin * 60))
+            if (isOwnDeath
+                    || deathTime.isBefore(now.minusSeconds(publicAfterMin * 60))
                     || (relationship == SOCIALENUM.FRIENDS && deathTime.isBefore(now.minusSeconds(friendsAfterMin * 60)))
                     || (relationship == SOCIALENUM.TRUSTED && deathTime.isBefore(now.minusSeconds(trustedAfterMin * 60)))) {
                 String username = RPUtil.getUsernameFromCache(uuid);
-                Location deathLocation = deathDetails.getLeft();
                 String coords = deathLocation.getBlockX() + " " + deathLocation.getBlockY() + " " + deathLocation.getBlockZ();
                 String escapedUsername = username != null ? net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().escapeTags(username) : "Unknown";
                 deathListBuilder.append("\n<click:suggest_command:'/pstatus ").append(escapedUsername).append("'>")
@@ -93,7 +102,7 @@ public class ObituariesCommand implements CommandExecutor, TabCompleter {
                         .append("</bold></gold>")
                         .append("</hover></click>")
                         .append("<gray> in the </gray><gold><bold>")
-                        .append(deathLocation.getWorld().getName()).append("</bold></gold>");
+                        .append(worldName).append("</bold></gold>");
             }
         }
 
