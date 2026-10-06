@@ -89,4 +89,11 @@ class DlcTrustServiceTest {
         assertEquals("You are now friends with Player", result.result().message());
         assertEquals("You are now friends with Target", result.targetMessage());
     }
+
+    @Test
+    void testSelfTarget() {
+        DlcTrustService.TrustResult result = DlcTrustService.execute(playerUuid, playerName, playerUuid, playerName, DlcTrustAction.GRANT);
+        assertEquals(DlcCommandResult.Status.FALSE, result.result().status());
+        assertEquals("You cannot target yourself", result.result().message());
+    }
 }

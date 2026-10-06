@@ -29,7 +29,7 @@ public final class DlcTrustService {
         }
 
         if (playerUuid.equals(targetUuid)) {
-            return new TrustResult(DlcCommandResult.fail("Player has you blocked"), null);
+            return new TrustResult(DlcCommandResult.fail("You cannot target yourself"), null);
         }
 
         DlcSocial social = new DlcSocial(playerUuid);

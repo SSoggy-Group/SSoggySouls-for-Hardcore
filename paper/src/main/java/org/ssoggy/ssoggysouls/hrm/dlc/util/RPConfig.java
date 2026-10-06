@@ -32,15 +32,25 @@ import org.bukkit.configuration.file.FileConfiguration;
 public class RPConfig {
     private RPConfig() {}
 
+    private static final Set<Material> DEFAULT_FENCES = Set.of(
+            Material.OAK_FENCE, Material.SPRUCE_FENCE, Material.BIRCH_FENCE,
+            Material.JUNGLE_FENCE, Material.ACACIA_FENCE, Material.DARK_OAK_FENCE,
+            Material.MANGROVE_FENCE, Material.CHERRY_FENCE, Material.BAMBOO_FENCE,
+            Material.CRIMSON_FENCE, Material.WARPED_FENCE, Material.NETHER_BRICK_FENCE
+    );
+
     private static Set<Material> getFenceBlockTagValues() {
         try {
             if (org.bukkit.Bukkit.getServer() != null && Tag.FENCES != null) {
-                return Tag.FENCES.getValues();
+                Set<Material> values = Tag.FENCES.getValues();
+                if (values != null && !values.isEmpty()) {
+                    return values;
+                }
             }
         } catch (Throwable ignored) {
             // Unbootstrapped Bukkit runtime in unit tests
         }
-        return Set.of();
+        return DEFAULT_FENCES;
     }
 
     private static final HashMap<String, Set<Material>> defaultBlockTag = new HashMap<>(Map.ofEntries(

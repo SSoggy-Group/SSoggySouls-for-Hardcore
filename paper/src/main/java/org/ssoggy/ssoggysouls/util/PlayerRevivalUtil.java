@@ -36,9 +36,13 @@ public final class PlayerRevivalUtil {
                 if (RPStatic.DEAD_LOCATIONS != null) {
                     RPStatic.DEAD_LOCATIONS.remove(uuid);
                 }
+                if (RPStatic.DEAD_HOLDERS != null) {
+                    RPStatic.DEAD_HOLDERS.remove(uuid);
+                }
                 if (RPStatic.DEAD_STORAGE != null) {
                     RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), "deathpos");
                     RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), "deathtime");
+                    RPStatic.DEAD_STORAGE.removeValue(uuid.toString(), "deathholder");
                     RPStatic.DEAD_STORAGE.saveConfig();
                 }
             } catch (Exception e) {

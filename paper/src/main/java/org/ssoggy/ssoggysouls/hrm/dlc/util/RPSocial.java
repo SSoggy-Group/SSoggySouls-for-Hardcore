@@ -59,10 +59,14 @@ public class RPSocial {
         try {
             Map<UUID, SOCIALENUM> result = Maps.newHashMap();
             RPStatic.SOCIAL_STORAGE.getTable(this.storedUuid.toString()).forEach((rawKey, rawValue) -> {
-                UUID k = UUID.fromString(rawKey);
-                SOCIALENUM v = riskyOrDefault((String) rawValue, SOCIALENUM.UNTRUSTED);
-                if (filter == null || filter.test(k, v)) {
-                    result.put(k, v);
+                try {
+                    UUID k = UUID.fromString(rawKey);
+                    SOCIALENUM v = riskyOrDefault((String) rawValue, SOCIALENUM.UNTRUSTED);
+                    if (filter == null || filter.test(k, v)) {
+                        result.put(k, v);
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Skip corrupt entries
                 }
             });
             return result;

@@ -52,4 +52,13 @@ class DlcStorageTest {
         // Test remove again when already null
         assertFalse(storage.setValueIfChanged("table", "key", null));
     }
+
+    @Test
+    void testSaveAndReload() {
+        storage.setValue("testTable", "foo", "bar");
+        storage.save();
+
+        DlcStorage reloaded = new DlcStorage(tempFolder, "test.properties", mock(Logger.class));
+        assertEquals("bar", reloaded.getValue("testTable", "foo"));
+    }
 }
