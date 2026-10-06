@@ -39,7 +39,7 @@ public final class DlcTrustService {
 
         return switch (action) {
             case BLOCK -> handleBlock(social, targetSocial, playerUuid, targetUuid, targetName, currentRelation, theirRelation);
-            case REVOKE -> handleRevoke(social, targetUuid, targetName, currentRelation);
+            case REVOKE -> handleRevoke(social, targetSocial, playerUuid, targetUuid, targetName, currentRelation, theirRelation);
             case GRANT -> handleGrant(social, targetSocial, playerUuid, targetUuid, targetName, playerName, currentRelation, theirRelation);
             case INFO -> new TrustResult(showTrustList(playerUuid), null);
         };
@@ -70,14 +70,23 @@ public final class DlcTrustService {
     }
 
     private static TrustResult handleRevoke(DlcSocial social,
+                                            DlcSocial targetSocial,
+                                            UUID playerUuid,
                                             UUID targetUuid,
                                             String targetName,
-                                            DlcRelation currentRelation) {
+                                            DlcRelation currentRelation,
+                                            DlcRelation theirRelation) {
         if (currentRelation == DlcRelation.UNTRUSTED) {
             return new TrustResult(DlcCommandResult.info("You have no relations with " + targetName), null);
         }
 
         boolean changed = social.setRelationTo(targetUuid, null);
+        if (theirRelation == DlcRelation.FRIENDS) {
+            boolean targetChanged = targetSocial.setRelationTo(playerUuid, DlcRelation.TRUSTED);
+            if (targetChanged) {
+                targetSocial.saveChanges();
+            }
+        }
         if (changed) {
             social.saveChanges();
         }

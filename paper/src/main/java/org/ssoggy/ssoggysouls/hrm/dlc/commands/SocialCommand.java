@@ -136,7 +136,7 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
                     changed = handleBlock(ctx, targetSocial, currentRelation, theirRelation);
                     break;
                 case TRUSTENUM.REVOKE:
-                    changed = handleRevoke(ctx.output, ctx.social, ctx.targetPlayer, ctx.targetPlayerUUID, currentRelation);
+                    changed = handleRevoke(ctx.output, ctx.social, targetSocial, ctx.playerUUID, ctx.targetPlayer, ctx.targetPlayerUUID, currentRelation, theirRelation);
                     break;
                 case TRUSTENUM.GRANT:
                     changed = handleGrant(ctx, targetSocial, currentRelation, theirRelation);
@@ -174,14 +174,18 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
         return changed;
     }
 
-    private boolean handleRevoke(RPCommandOutput output, RPSocial social, OfflinePlayer targetPlayer,
-                              UUID targetPlayerUUID, SOCIALENUM currentRelation) {
+    private boolean handleRevoke(RPCommandOutput output, RPSocial social, RPSocial targetSocial,
+                              UUID playerUUID, OfflinePlayer targetPlayer,
+                              UUID targetPlayerUUID, SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
         boolean changed = false;
         if (currentRelation == SOCIALENUM.UNTRUSTED) {
             output.success = COMMANDOUTPUTENUM.INFO;
             output.message = "You have no relations with " + targetPlayer.getName();
         } else {
             changed |= social.setRelationTo(targetPlayerUUID, null); // Ensures that you don't get stray "Untrusted" values (saves memory)
+            if (theirRelation == SOCIALENUM.FRIENDS) {
+                changed |= targetSocial.setRelationTo(playerUUID, SOCIALENUM.TRUSTED);
+            }
             output.message = "You no longer trust " + targetPlayer.getName();
         }
         return changed;

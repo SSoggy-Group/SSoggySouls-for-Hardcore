@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.ssoggy.ssoggysouls.hrm.dlc.enums.SOCIALENUM;
+import org.ssoggy.ssoggysouls.hrm.dlc.util.RPSocial;
 import org.ssoggy.ssoggysouls.hrm.dlc.util.RPStatic;
 import org.ssoggy.ssoggysouls.util.MessageUtil;
 import org.ssoggy.ssoggysouls.util.TabCompleteUtil;
@@ -120,6 +122,35 @@ class SocialCommandTest {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(player).sendRichMessage(captor.capture());
         assertTrue(captor.getValue().contains("Trust List"));
+    }
+
+    @Test
+    void testRevokeFriendsDemotesTargetToTrusted() {
+        Player player = mock(Player.class);
+        UUID playerUuid = UUID.randomUUID();
+        when(player.getUniqueId()).thenReturn(playerUuid);
+        when(player.getName()).thenReturn("Player1");
+
+        Player target = mock(Player.class);
+        UUID targetUuid = UUID.randomUUID();
+        when(target.getUniqueId()).thenReturn(targetUuid);
+        when(target.getName()).thenReturn("Player2");
+
+        bukkitMock.when(() -> Bukkit.getPlayerExact("Player2")).thenReturn(target);
+
+        // Pre-populate mutual friendship
+        new RPSocial(playerUuid).setRelationTo(targetUuid, SOCIALENUM.FRIENDS);
+        new RPSocial(targetUuid).setRelationTo(playerUuid, SOCIALENUM.FRIENDS);
+
+        boolean result = command.onCommand(player, mockCmd, "trust", new String[]{"revoke", "Player2"});
+        assertTrue(result);
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(player).sendRichMessage(captor.capture());
+        assertTrue(captor.getValue().contains("You no longer trust Player2"));
+
+        assertEquals(SOCIALENUM.UNTRUSTED, new RPSocial(playerUuid).getRelationTo(targetUuid));
+        assertEquals(SOCIALENUM.TRUSTED, new RPSocial(targetUuid).getRelationTo(playerUuid));
     }
 
     @Test

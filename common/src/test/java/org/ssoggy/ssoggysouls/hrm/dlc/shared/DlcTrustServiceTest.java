@@ -91,6 +91,21 @@ class DlcTrustServiceTest {
     }
 
     @Test
+    void testRevokeFriendsDemotesTargetToTrusted() {
+        // Form mutual friendship
+        DlcTrustService.execute(playerUuid, playerName, targetUuid, targetName, DlcTrustAction.GRANT);
+        DlcTrustService.execute(targetUuid, targetName, playerUuid, playerName, DlcTrustAction.GRANT);
+
+        // Player revokes friendship
+        DlcTrustService.TrustResult result = DlcTrustService.execute(playerUuid, playerName, targetUuid, targetName, DlcTrustAction.REVOKE);
+        assertEquals(DlcCommandResult.Status.TRUE, result.result().status());
+        assertEquals("You no longer trust Target", result.result().message());
+
+        assertEquals(DlcRelation.UNTRUSTED, new DlcSocial(playerUuid).getRelationTo(targetUuid));
+        assertEquals(DlcRelation.TRUSTED, new DlcSocial(targetUuid).getRelationTo(playerUuid));
+    }
+
+    @Test
     void testGrant() {
         DlcTrustService.TrustResult result = DlcTrustService.execute(playerUuid, playerName, targetUuid, targetName, DlcTrustAction.GRANT);
         assertEquals(DlcCommandResult.Status.TRUE, result.result().status());
