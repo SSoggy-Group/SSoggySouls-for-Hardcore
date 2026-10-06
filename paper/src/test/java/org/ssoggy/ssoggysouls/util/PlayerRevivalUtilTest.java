@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -91,6 +92,7 @@ class PlayerRevivalUtilTest {
         }).when(scheduler).runTaskLater(eq(plugin), any(Runnable.class), anyLong());
 
         RPStatic.DEAD_LOCATIONS = new HashMap<>();
+        RPStatic.DEAD_HOLDERS = new HashMap<>();
         RPStatic.DEAD_STORAGE = mock(RPStorage.class);
     }
 
@@ -101,17 +103,22 @@ class PlayerRevivalUtilTest {
         }
         RPStatic.CLIENT = null;
         RPStatic.DEAD_LOCATIONS = null;
+        RPStatic.DEAD_HOLDERS = null;
         RPStatic.DEAD_STORAGE = null;
     }
 
     @Test
     void testRestoreOnlineSpectator_nullOrOfflinePlayer() {
         mockedBukkit.when(() -> Bukkit.getPlayer(uuid)).thenReturn(null);
+        UUID holderUuid = UUID.randomUUID();
+        RPStatic.DEAD_HOLDERS.put(uuid, holderUuid);
 
         PlayerRevivalUtil.restoreOnlineSpectator(plugin, playerData);
 
+        assertFalse(RPStatic.DEAD_HOLDERS.containsKey(uuid));
         verify(RPStatic.DEAD_STORAGE).removeValue(uuid.toString(), "deathpos");
         verify(RPStatic.DEAD_STORAGE).removeValue(uuid.toString(), "deathtime");
+        verify(RPStatic.DEAD_STORAGE).removeValue(uuid.toString(), "deathholder");
         verify(RPStatic.DEAD_STORAGE).saveConfig();
     }
 

@@ -156,7 +156,8 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     private boolean handleBlock(SocialContext ctx, RPSocial targetSocial,
                              SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
         if (ctx.playerUUID.equals(ctx.targetPlayerUUID)) {
-            executeFail(ctx.sender, ctx.output, "You cannot target yourself");
+            ctx.output.success = COMMANDOUTPUTENUM.FALSE;
+            ctx.output.message = "You cannot target yourself";
             return false;
         }
         boolean changed = false;
@@ -189,7 +190,8 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
     private boolean handleGrant(SocialContext ctx, RPSocial targetSocial,
                              SOCIALENUM currentRelation, SOCIALENUM theirRelation) {
         if (ctx.playerUUID.equals(ctx.targetPlayerUUID)) {
-            executeFail(ctx.sender, ctx.output, "You cannot target yourself");
+            ctx.output.success = COMMANDOUTPUTENUM.FALSE;
+            ctx.output.message = "You cannot target yourself";
             return false;
         }
 
@@ -198,7 +200,8 @@ public class SocialCommand implements CommandExecutor, TabCompleter {
             ctx.output.success = COMMANDOUTPUTENUM.INFO;
             ctx.output.message = "You have already entrusted " + ctx.targetPlayer.getName();
         } else if (theirRelation == SOCIALENUM.BLOCKED) { // They Blocked you
-            executeFail(ctx.sender, ctx.output, "Player has you blocked.");
+            ctx.output.success = COMMANDOUTPUTENUM.FALSE;
+            ctx.output.message = "Player has you blocked.";
         } else if (theirRelation == SOCIALENUM.TRUSTED) { // Make Players Allies
             changed |= ctx.social.setRelationTo(ctx.targetPlayerUUID, SOCIALENUM.FRIENDS);
             changed |= targetSocial.setRelationTo(ctx.playerUUID, SOCIALENUM.FRIENDS);
