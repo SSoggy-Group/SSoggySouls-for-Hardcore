@@ -1,6 +1,7 @@
 package org.ssoggy.ssoggysouls.task;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.junit.jupiter.api.AfterEach;
@@ -14,7 +15,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class LimboCheckTaskTest {
@@ -36,6 +38,18 @@ class LimboCheckTaskTest {
         when(plugin.getDatabaseManager()).thenReturn(db);
         when(plugin.getLogger()).thenReturn(logger);
         mockedBukkit.when(Bukkit::getScheduler).thenReturn(scheduler);
+
+        doAnswer(invocation -> {
+            Runnable runnable = invocation.getArgument(1);
+            runnable.run();
+            return null;
+        }).when(scheduler).runTaskAsynchronously(eq(plugin), any(Runnable.class));
+
+        doAnswer(invocation -> {
+            Runnable runnable = invocation.getArgument(1);
+            runnable.run();
+            return null;
+        }).when(scheduler).runTask(eq(plugin), any(Runnable.class));
     }
 
     @AfterEach
@@ -65,5 +79,24 @@ class LimboCheckTaskTest {
         task.run();
 
         verify(db, times(1)).arePlayersDead(any()); // No new calls
+    }
+
+    @Test
+    void testRevivedPlayerReleased() {
+        LimboCheckTask task = new LimboCheckTask(plugin);
+        UUID uuid = UUID.randomUUID();
+
+        Player mockPlayer = mock(Player.class);
+        when(mockPlayer.getUniqueId()).thenReturn(uuid);
+        when(mockPlayer.isOnline()).thenReturn(true);
+        when(mockPlayer.getName()).thenReturn("TestUser");
+        mockedBukkit.when(() -> Bukkit.getPlayer(uuid)).thenReturn(mockPlayer);
+
+        task.addPlayer(uuid);
+
+        when(db.arePlayersDead(any())).thenReturn(Map.of(uuid, false));
+        task.run();
+
+        verify(mockPlayer).setGameMode(GameMode.SURVIVAL);
     }
 }
