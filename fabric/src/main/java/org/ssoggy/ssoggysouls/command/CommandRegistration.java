@@ -30,6 +30,11 @@ public class CommandRegistration {
 
     private static final String PLAYER = "player";
     private static final String LIVES = "lives";
+    private static final java.util.concurrent.ExecutorService DB_EXECUTOR = java.util.concurrent.Executors.newCachedThreadPool(r -> {
+        Thread thread = new Thread(r, "SSoggySouls-Cmd-DB-" + System.identityHashCode(r));
+        thread.setDaemon(true);
+        return thread;
+    });
 
     private CommandRegistration() {
         // Utility class
@@ -61,7 +66,7 @@ public class CommandRegistration {
                         source.getServer().execute(() ->
                             source.sendSuccess(() -> MessageUtil.get("status-self", LIVES, data.getLives()), false));
                     }
-                });
+                }, DB_EXECUTOR);
                 return 1;
             })
             .then(Commands.argument(PLAYER, StringArgumentType.word())
@@ -88,7 +93,7 @@ public class CommandRegistration {
                                         PLAYER, data.getUsername(),
                                         LIVES, data.getLives()), false));
                         }
-                    });
+                    }, DB_EXECUTOR);
                     return 1;
                 })
             )
@@ -117,7 +122,7 @@ public class CommandRegistration {
                         return 0;
                     }
 
-                    CompletableFuture.runAsync(() -> executeRevive(targetName, source, db));
+                    CompletableFuture.runAsync(() -> executeRevive(targetName, source, db), DB_EXECUTOR);
                     return 1;
                 })
             )
@@ -241,7 +246,7 @@ public class CommandRegistration {
                                         PLAYER, data.getUsername(), LIVES, lives), true);
                                 AdminLogger.log(source.getTextName(), "Set lives for " + data.getUsername() + " to " + lives);
                             });
-                        });
+                        }, DB_EXECUTOR);
                         return 1;
                     })
                 )
@@ -285,7 +290,7 @@ public class CommandRegistration {
                             }
                         }
                     });
-                });
+                }, DB_EXECUTOR);
                 return 1;
             })
         );
