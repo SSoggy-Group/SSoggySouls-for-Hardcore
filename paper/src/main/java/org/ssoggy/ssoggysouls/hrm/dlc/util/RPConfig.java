@@ -31,11 +31,23 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 public class RPConfig {
     private RPConfig() {}
+
+    private static Set<Material> getFenceBlockTagValues() {
+        try {
+            if (org.bukkit.Bukkit.getServer() != null && Tag.FENCES != null) {
+                return Tag.FENCES.getValues();
+            }
+        } catch (Throwable ignored) {
+            // Unbootstrapped Bukkit runtime in unit tests
+        }
+        return Set.of();
+    }
+
     private static final HashMap<String, Set<Material>> defaultBlockTag = new HashMap<>(Map.ofEntries(
             Map.entry("soul-sand-blocktag", Set.of(Material.CRYING_OBSIDIAN, Material.OBSIDIAN)),
             Map.entry("flower-blocktag", Set.of(Material.SOUL_TORCH, Material.REDSTONE_TORCH)),
             Map.entry("ore-blocktag", Set.of(Material.ENCHANTING_TABLE)),
-            Map.entry("fence-blocktag", Tag.FENCES.getValues()),
+            Map.entry("fence-blocktag", getFenceBlockTagValues()),
             Map.entry("stair-blocktag", Set.of(Material.MAGMA_BLOCK)))
     );
     private static final HashMap<String, Boolean> defaultConfigRules = new HashMap<>(Map.ofEntries(
