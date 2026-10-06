@@ -179,6 +179,13 @@ public class AdminCommand implements CommandExecutor, TabCompleter {
         if (newLives <= 0) {
             sender.sendMessage(MessageUtil.colorize(
                     "&c" + playerData.getUsername() + " is now dead (0 lives)."));
+            if (!playerData.isDead()) {
+                Player target = Bukkit.getPlayer(playerData.getUuid());
+                if (target != null && target.isOnline()) {
+                    Bukkit.getScheduler().runTask(plugin, () ->
+                            applyDeathTransition(target));
+                }
+            }
         } else if (playerData.isDead()) {
             restoreOnlineSpectator(playerData);
         }

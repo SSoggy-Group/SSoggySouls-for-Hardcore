@@ -99,7 +99,7 @@ public class ReviveHelper {
             int targetY = pos.getBlockY() + entry.dy();
             int targetZ = pos.getBlockZ() + entry.dz();
 
-            if (targetY <= world.getMinHeight() || targetY >= world.getMaxHeight()) {
+            if (targetY < world.getMinHeight() || targetY >= world.getMaxHeight()) {
                 return false;
             }
 
@@ -122,7 +122,7 @@ public class ReviveHelper {
             int targetY = pos.getBlockY() + entry.dy();
             int targetZ = pos.getBlockZ() + entry.dz();
 
-            if (targetY > world.getMinHeight() && targetY < world.getMaxHeight() && targetY <= pos.getBlockY()) {
+            if (targetY >= world.getMinHeight() && targetY < world.getMaxHeight() && targetY <= pos.getBlockY()) {
                 world.getBlockAt(targetX, targetY, targetZ).setType(Material.AIR);
             }
         }
@@ -147,11 +147,10 @@ public class ReviveHelper {
         }
 
         if (GAMEMODESENUM.getPlayerGameMode(deadPlayer) != GAMEMODESENUM.GHOSTMODE) {
-            spawnError("It appears that this player is still alive", world, pos, alivePlayer);
-
             if (deadPlayer == alivePlayer) {
                 spawnError("Oh! That's you!", world, pos, alivePlayer);
-                return false;
+            } else {
+                spawnError("It appears that this player is still alive", world, pos, alivePlayer);
             }
             return false;
         }
