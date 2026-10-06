@@ -51,22 +51,25 @@ public class MainReviveCheckTask extends BukkitRunnable {
             plugin.debug("Main revive check: scanning " + trackedSpectators.size() + " spectator(s)...");
         }
 
-        java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(trackedSpectators);
-        List<UUID> revived = new ArrayList<>();
+        Set<UUID> snapshot = new java.util.HashSet<>(trackedSpectators);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            java.util.Map<UUID, Boolean> deathStatuses = plugin.getDatabaseManager().arePlayersDead(snapshot);
+            List<UUID> revived = new ArrayList<>();
 
-        for (UUID uuid : trackedSpectators) {
-            Boolean isDead = deathStatuses.get(uuid);
-            if (isDead != null && !isDead) {
-                revived.add(uuid);
-                if (plugin.isDebugMode()) {
-                    plugin.debug("Spectator " + uuid + " is no longer dead in DB, restoring...");
+            for (UUID uuid : snapshot) {
+                Boolean isDead = deathStatuses.get(uuid);
+                if (isDead != null && !isDead) {
+                    revived.add(uuid);
+                    if (plugin.isDebugMode()) {
+                        plugin.debug("Spectator " + uuid + " is no longer dead in DB, restoring...");
+                    }
                 }
             }
-        }
 
-        if (!revived.isEmpty()) {
-            Bukkit.getScheduler().runTask(plugin, () -> restoreAll(revived));
-        }
+            if (!revived.isEmpty()) {
+                Bukkit.getScheduler().runTask(plugin, () -> restoreAll(revived));
+            }
+        });
     }
 
     private void restoreAll(List<UUID> uuids) {

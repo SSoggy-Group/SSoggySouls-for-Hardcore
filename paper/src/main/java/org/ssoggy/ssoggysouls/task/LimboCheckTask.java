@@ -45,11 +45,13 @@ public class LimboCheckTask extends BukkitRunnable {
             plugin.debug("Limbo check: scanning " + trackedPlayers.size() + " player(s)...");
         }
 
-        List<UUID> toRelease = findRevivedPlayers(trackedPlayers);
-
-        if (!toRelease.isEmpty()) {
-            Bukkit.getScheduler().runTask(plugin, () -> releaseAll(toRelease));
-        }
+        Set<UUID> snapshot = new java.util.HashSet<>(trackedPlayers);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            List<UUID> toRelease = findRevivedPlayers(snapshot);
+            if (!toRelease.isEmpty()) {
+                Bukkit.getScheduler().runTask(plugin, () -> releaseAll(toRelease));
+            }
+        });
     }
 
     private List<UUID> findRevivedPlayers(Set<UUID> onlinePlayers) {

@@ -271,7 +271,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
         int intervalSeconds = getConfig().getInt("limbo.check-interval-seconds", 3);
         long intervalTicks = intervalSeconds * 20L;
-        mainReviveCheckTask.runTaskTimerAsynchronously(this, 60L, intervalTicks);
+        mainReviveCheckTask.runTaskTimer(this, 60L, intervalTicks);
         getLogger().log(Level.INFO, "Main revive check task started (every {0}s).", intervalSeconds);
 
         if (hrmEnabled) {
@@ -313,7 +313,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
 
         int intervalSeconds = getConfig().getInt("limbo.check-interval-seconds", 3);
         long intervalTicks = intervalSeconds * 20L;
-        limboCheckTask.runTaskTimerAsynchronously(this, 60L, intervalTicks);
+        limboCheckTask.runTaskTimer(this, 60L, intervalTicks);
         getLogger().log(Level.INFO, "Limbo check task started (every {0}s).", intervalSeconds);
     }
 

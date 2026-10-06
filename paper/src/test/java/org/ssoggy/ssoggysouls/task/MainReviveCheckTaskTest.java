@@ -15,7 +15,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class MainReviveCheckTaskTest {
@@ -37,6 +39,18 @@ class MainReviveCheckTaskTest {
         when(plugin.getDatabaseManager()).thenReturn(db);
         when(plugin.getLogger()).thenReturn(logger);
         mockedBukkit.when(Bukkit::getScheduler).thenReturn(scheduler);
+
+        doAnswer(invocation -> {
+            Runnable runnable = invocation.getArgument(1);
+            runnable.run();
+            return null;
+        }).when(scheduler).runTaskAsynchronously(eq(plugin), any(Runnable.class));
+
+        doAnswer(invocation -> {
+            Runnable runnable = invocation.getArgument(1);
+            runnable.run();
+            return null;
+        }).when(scheduler).runTask(eq(plugin), any(Runnable.class));
     }
 
     @AfterEach
@@ -68,5 +82,26 @@ class MainReviveCheckTaskTest {
         task.run();
 
         verify(db, times(1)).arePlayersDead(any()); // No new calls
+    }
+
+    @Test
+    void testRevivedSpectatorRestored() {
+        MainReviveCheckTask task = new MainReviveCheckTask(plugin);
+        UUID uuid = UUID.randomUUID();
+
+        Player mockPlayer = mock(Player.class);
+        when(mockPlayer.getUniqueId()).thenReturn(uuid);
+        when(mockPlayer.isOnline()).thenReturn(true);
+        when(mockPlayer.getName()).thenReturn("SpectatorUser");
+        when(mockPlayer.getGameMode()).thenReturn(GameMode.SPECTATOR);
+        when(mockPlayer.hasPermission(anyString())).thenReturn(false);
+        mockedBukkit.when(() -> Bukkit.getPlayer(uuid)).thenReturn(mockPlayer);
+
+        task.addSpectator(uuid);
+
+        when(db.arePlayersDead(any())).thenReturn(Map.of(uuid, false));
+        task.run();
+
+        verify(mockPlayer).setGameMode(GameMode.SURVIVAL);
     }
 }
