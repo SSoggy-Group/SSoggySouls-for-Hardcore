@@ -290,7 +290,7 @@ View detailed player information including UUID, lives, death state, timestamps,
 
 === Player Information ===
 Username: YourUsername
-UUID: a1b2c3d4-e5f6-7890-abcd-ef1234.6.1990
+UUID: a1b2c3d4-e5f6-7890-abcd-ef1234.6.2090
 Lives: 2
 Status: Alive
 Last Seen: 2024-01-15 14:30:00
