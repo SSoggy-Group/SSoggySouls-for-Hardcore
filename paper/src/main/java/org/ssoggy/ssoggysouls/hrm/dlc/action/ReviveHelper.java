@@ -99,7 +99,7 @@ public class ReviveHelper {
             int targetY = pos.getBlockY() + entry.dy();
             int targetZ = pos.getBlockZ() + entry.dz();
 
-            if (targetY <= world.getMinHeight()) {
+            if (targetY <= world.getMinHeight() || targetY >= world.getMaxHeight()) {
                 return false;
             }
 
@@ -122,7 +122,7 @@ public class ReviveHelper {
             int targetY = pos.getBlockY() + entry.dy();
             int targetZ = pos.getBlockZ() + entry.dz();
 
-            if (targetY > world.getMinHeight() && targetY <= pos.getBlockY()) {
+            if (targetY > world.getMinHeight() && targetY < world.getMaxHeight() && targetY <= pos.getBlockY()) {
                 world.getBlockAt(targetX, targetY, targetZ).setType(Material.AIR);
             }
         }
