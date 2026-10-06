@@ -159,6 +159,54 @@ class ObituariesCommandTest {
     }
 
     @Test
+    void testViewerOwnDeathVisibleImmediately() {
+        Player player = mock(Player.class);
+        UUID viewerUuid = UUID.randomUUID();
+        when(player.getUniqueId()).thenReturn(viewerUuid);
+
+        World world = mock(World.class);
+        when(world.getName()).thenReturn("world");
+        Location deathLoc = new Location(world, 10, 64, 20);
+
+        // Very recent death (10 seconds ago), untrusted/no relations
+        Instant deathTime = Instant.now().minusSeconds(10);
+        RPStatic.DEAD_LOCATIONS.put(viewerUuid, Pair.of(deathLoc, deathTime));
+        RPStatic.USERNAME_CACHE.setValue("usernamecache", viewerUuid.toString(), "SelfPlayer");
+
+        boolean result = cmd.onCommand(player, command, "deathlist", new String[0]);
+        assertTrue(result);
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(player).sendRichMessage(captor.capture());
+        String msg = captor.getValue();
+        assertTrue(msg.contains("SelfPlayer"));
+        assertTrue(msg.contains("X10 Y64 Z20"));
+    }
+
+    @Test
+    void testPublicDeathsNullWorldFallback() {
+        Player player = mock(Player.class);
+        UUID viewerUuid = UUID.randomUUID();
+        when(player.getUniqueId()).thenReturn(viewerUuid);
+
+        UUID deadUuid = UUID.randomUUID();
+        Location deathLoc = new Location(null, 5, 60, -5);
+
+        Instant deathTime = Instant.now().minusSeconds(4000 * 60);
+        RPStatic.DEAD_LOCATIONS.put(deadUuid, Pair.of(deathLoc, deathTime));
+        RPStatic.USERNAME_CACHE.setValue("usernamecache", deadUuid.toString(), "UnloadedWorldPlayer");
+
+        boolean result = cmd.onCommand(player, command, "deathlist", new String[0]);
+        assertTrue(result);
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(player).sendRichMessage(captor.capture());
+        String msg = captor.getValue();
+        assertTrue(msg.contains("UnloadedWorldPlayer"));
+        assertTrue(msg.contains("Unknown"));
+    }
+
+    @Test
     void testTabComplete() {
         tabCompleteUtilMock.when(() -> TabCompleteUtil.getOnlinePlayerNames("pl"))
                 .thenReturn(List.of("player1", "player2"));
