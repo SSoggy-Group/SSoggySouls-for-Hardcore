@@ -106,6 +106,11 @@ public class RPConfigCommand implements CommandExecutor, TabCompleter {
         }
         try {
             int whoInt = Integer.parseInt(who);
+            if (whoInt < 0) {
+                result.success = COMMANDOUTPUTENUM.FALSE;
+                result.message = "Timer value must be a non-negative number.";
+                return;
+            }
             byte status = RPConfig.setConfigTimer(where, whoInt);
             result.success = COMMANDOUTPUTENUM.valueOf(status);
             result.message = (status == 1) ? "Set " + where + " to " + whoInt : "Failed to update configuration.";

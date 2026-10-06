@@ -140,6 +140,15 @@ class RPConfigCommandTest {
     }
 
     @Test
+    void testTimerNegativeNumber() {
+        cmd.onCommand(sender, command, "revivalconfig", new String[]{"timer", "test-timer", "-10"});
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(sender).sendRichMessage(captor.capture());
+        assertTrue(captor.getValue().contains("non-negative"));
+    }
+
+    @Test
     void testTimerSuccess() {
         cmd.onCommand(sender, command, "revivalconfig", new String[]{"timer", "test-timer", "200"});
 
