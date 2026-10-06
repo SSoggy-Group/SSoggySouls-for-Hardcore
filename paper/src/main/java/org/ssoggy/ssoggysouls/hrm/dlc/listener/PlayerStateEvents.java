@@ -60,7 +60,7 @@ public class PlayerStateEvents implements Listener {
         int minHeight = world.getMinHeight();
         int maxHeight = world.getMaxHeight();
         Location location = player.getLocation();
-        Location deathPos = new Location(world, location.getBlockX(), Math.clamp(location.getY(), minHeight, maxHeight),
+        Location deathPos = new Location(world, location.getBlockX(), Math.clamp(location.getY(), minHeight, maxHeight - 1),
                 location.getZ());
         String[] dimensionName = world.getKey().asString().split(":");
         if (dimensionName.length < 2) {
