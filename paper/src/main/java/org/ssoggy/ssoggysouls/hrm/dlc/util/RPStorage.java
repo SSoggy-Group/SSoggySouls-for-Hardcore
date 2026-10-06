@@ -25,7 +25,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -82,11 +86,29 @@ public class RPStorage {
             data = config.saveToString();
         }
         ioExecutor.execute(() -> {
+            Path target = file.toPath();
+            Path parent = target.getParent();
+            Path temp = null;
             try {
-                Files.writeString(file.toPath(), data);
+                if (parent != null && !Files.exists(parent)) {
+                    Files.createDirectories(parent);
+                }
+                temp = Files.createTempFile(parent != null ? parent : Path.of("."), file.getName(), ".tmp");
+                Files.writeString(temp, data);
+                try (FileChannel channel = FileChannel.open(temp, StandardOpenOption.WRITE)) {
+                    channel.force(true);
+                }
+                Files.move(temp, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Could not save configuration to {0}", file.getPath());
                 logger.log(Level.SEVERE, "Exception details:", e);
+                if (temp != null) {
+                    try {
+                        Files.deleteIfExists(temp);
+                    } catch (IOException ignored) {
+                        // ignore cleanup failure
+                    }
+                }
             }
         });
     }
