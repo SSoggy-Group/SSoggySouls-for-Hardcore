@@ -86,6 +86,13 @@ class RPSocialTest {
         Map<UUID, SOCIALENUM> filtered = social.getRelationsToAll((u, r) -> r == SOCIALENUM.FRIENDS);
         assertEquals(1, filtered.size());
         assertEquals(SOCIALENUM.FRIENDS, filtered.get(target1));
+
+        // Corrupt entry should be skipped without dropping valid entries
+        mockStorage.setValue(owner.toString(), "not-a-valid-uuid", "FRIENDS");
+        Map<UUID, SOCIALENUM> withCorrupt = social.getRelationsToAll(null);
+        assertEquals(2, withCorrupt.size());
+        assertEquals(SOCIALENUM.FRIENDS, withCorrupt.get(target1));
+        assertEquals(SOCIALENUM.BLOCKED, withCorrupt.get(target2));
     }
 
     @Test
