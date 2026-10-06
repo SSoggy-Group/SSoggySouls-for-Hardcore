@@ -42,10 +42,25 @@ public class DlcStorage {
     }
 
     public synchronized void save() {
-        try (FileOutputStream output = new FileOutputStream(file)) {
-            properties.store(output, "SSoggySouls RevivalPlus data");
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            logger.warning("Could not create RevivalPlus storage folder: " + parent.getPath());
+        }
+        File tempFile = null;
+        try {
+            tempFile = File.createTempFile(file.getName(), ".tmp", parent != null ? parent : new File("."));
+            try (FileOutputStream output = new FileOutputStream(tempFile)) {
+                properties.store(output, "SSoggySouls RevivalPlus data");
+                output.getFD().sync();
+            }
+            java.nio.file.Files.move(tempFile.toPath(), file.toPath(),
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             logger.log(Level.SEVERE, e, () -> "Could not save RevivalPlus storage " + file.getPath());
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
         }
     }
 
