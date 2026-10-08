@@ -1,6 +1,8 @@
 package org.ssoggy.ssoggysouls.database;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.ssoggy.ssoggysouls.model.PlayerData;
 
@@ -14,9 +16,10 @@ public interface DatabaseManager {
      */
     PlayerData getPlayerStrict(UUID uuid) throws java.sql.SQLException;
     PlayerData getPlayerByName(String username);
+    Map<UUID, PlayerData> loadMultiple(Set<UUID> uuids);
     void savePlayer(PlayerData data);
     boolean isPlayerDead(UUID uuid);
-    java.util.Map<UUID, Boolean> arePlayersDead(java.util.Set<UUID> uuids);
+    Map<UUID, Boolean> arePlayersDead(Set<UUID> uuids);
     boolean revivePlayer(UUID uuid, int livesToRestore);
     /** @return true if a row was updated; false if no record exists or the write failed */
     boolean setLives(UUID uuid, int lives);
