@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,6 +88,52 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
             plugin.getLogger().log(Level.WARNING, e, () -> "Failed to get player by name: " + username);
         }
         return null;
+    }
+
+    @Override
+    public Map<UUID, PlayerData> loadMultiple(Set<UUID> uuids) {
+        Map<UUID, PlayerData> result = new HashMap<>();
+        if (uuids == null || uuids.isEmpty()) return result;
+
+        List<UUID> toFetchList = new ArrayList<>(uuids.size());
+        for (UUID uuid : uuids) {
+            if (uuid != null) {
+                toFetchList.add(uuid);
+            }
+        }
+        if (toFetchList.isEmpty()) {
+            return result;
+        }
+
+        int batchSize = getBatchSize();
+        try (Connection conn = getDataSource().getConnection()) {
+            for (int start = 0; start < toFetchList.size(); start += batchSize) {
+                int end = Math.min(start + batchSize, toFetchList.size());
+                List<UUID> batch = toFetchList.subList(start, end);
+
+                String placeholders = String.join(",",
+                        java.util.Collections.nCopies(batch.size(), "?"));
+                String sql = SELECT_ALL + tableName
+                        + " WHERE uuid IN (" + placeholders + ")";
+
+                try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+                    int i = 1;
+                    for (UUID uuid : batch) {
+                        ps.setString(i++, uuid.toString());
+                    }
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            PlayerData pd = mapResultSet(rs);
+                            result.put(pd.getUuid(), pd);
+                            deathStatusCache.put(pd.getUuid(), pd.isDead());
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, e, () -> "Failed to load players in batch");
+        }
+        return result;
     }
 
     @Override

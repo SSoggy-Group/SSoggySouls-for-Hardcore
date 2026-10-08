@@ -273,4 +273,56 @@ class AbstractDatabaseManagerTest {
 
         verify(connection).prepareStatement(contains("WHERE uuid IN (?,?)"));
     }
+
+    @Test
+    void testLoadMultipleBatch() throws SQLException {
+        UUID uuid1 = UUID.randomUUID();
+        UUID uuid2 = UUID.randomUUID();
+        Set<UUID> uuids = Set.of(uuid1, uuid2);
+
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true, true, false);
+        when(resultSet.getString("uuid")).thenReturn(uuid1.toString(), uuid2.toString());
+        when(resultSet.getString("username")).thenReturn("User1", "User2");
+        when(resultSet.getInt("lives")).thenReturn(3, 2);
+        when(resultSet.getBoolean("is_dead")).thenReturn(false, true);
+        when(resultSet.getLong("first_join")).thenReturn(100L, 200L);
+        when(resultSet.getLong("last_death")).thenReturn(0L, 250L);
+        when(resultSet.getLong("last_seen")).thenReturn(300L, 400L);
+        when(resultSet.getLong("grace_until")).thenReturn(0L, 0L);
+
+        Map<UUID, PlayerData> result = dbManager.loadMultiple(uuids);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("User1", result.get(uuid1).getUsername());
+        assertEquals("User2", result.get(uuid2).getUsername());
+        assertFalse(result.get(uuid1).isDead());
+        assertTrue(result.get(uuid2).isDead());
+
+        verify(connection).prepareStatement(contains("WHERE uuid IN (?,?)"));
+    }
+
+    @Test
+    void testLoadMultipleEmptyAndNull() {
+        assertTrue(dbManager.loadMultiple(null).isEmpty());
+        assertTrue(dbManager.loadMultiple(Set.of()).isEmpty());
+
+        Set<UUID> onlyNull = new java.util.HashSet<>();
+        onlyNull.add(null);
+        assertTrue(dbManager.loadMultiple(onlyNull).isEmpty());
+    }
+
+    @Test
+    void testLoadMultipleSQLException() throws SQLException {
+        UUID uuid = UUID.randomUUID();
+        SQLException sqlException = new SQLException("Connection failed");
+        when(preparedStatement.executeQuery()).thenThrow(sqlException);
+
+        Map<UUID, PlayerData> result = dbManager.loadMultiple(Set.of(uuid));
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(logger).log(eq(Level.WARNING), eq(sqlException), any(java.util.function.Supplier.class));
+    }
 }

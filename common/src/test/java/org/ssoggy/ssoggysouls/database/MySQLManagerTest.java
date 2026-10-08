@@ -487,6 +487,54 @@ class MySQLManagerTest {
     }
 
     @Test
+    void testLoadMultipleSuccess() throws SQLException {
+        UUID uuid1 = UUID.randomUUID();
+        UUID uuid2 = UUID.randomUUID();
+
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true, true, false);
+        when(resultSet.getString("uuid")).thenReturn(uuid1.toString(), uuid2.toString());
+        when(resultSet.getString(COL_USERNAME)).thenReturn("PlayerOne", "PlayerTwo");
+        when(resultSet.getInt(COL_LIVES)).thenReturn(3, 1);
+        when(resultSet.getBoolean(COL_IS_DEAD)).thenReturn(false, true);
+        when(resultSet.getLong("first_join")).thenReturn(100L, 200L);
+        when(resultSet.getLong("last_death")).thenReturn(0L, 300L);
+        when(resultSet.getLong("last_seen")).thenReturn(400L, 500L);
+        when(resultSet.getLong("grace_until")).thenReturn(0L, 0L);
+
+        java.util.Set<UUID> uuids = new java.util.HashSet<>();
+        uuids.add(uuid1);
+        uuids.add(uuid2);
+
+        java.util.Map<UUID, PlayerData> result = mySQLManager.loadMultiple(uuids);
+
+        assertEquals(2, result.size());
+        assertEquals("PlayerOne", result.get(uuid1).getUsername());
+        assertEquals("PlayerTwo", result.get(uuid2).getUsername());
+        assertFalse(result.get(uuid1).isDead());
+        assertTrue(result.get(uuid2).isDead());
+    }
+
+    @Test
+    void testLoadMultipleEmptyAndNull() {
+        assertTrue(mySQLManager.loadMultiple(null).isEmpty());
+        assertTrue(mySQLManager.loadMultiple(java.util.Collections.emptySet()).isEmpty());
+    }
+
+    @Test
+    void testLoadMultipleDbError() throws SQLException {
+        UUID uuid1 = UUID.randomUUID();
+        when(preparedStatement.executeQuery()).thenThrow(new SQLException(MOCK_DB_ERROR));
+
+        java.util.Set<UUID> uuids = new java.util.HashSet<>();
+        uuids.add(uuid1);
+
+        java.util.Map<UUID, PlayerData> result = mySQLManager.loadMultiple(uuids);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
     void testInvalidTableNameInConstructorThrowsException() {
         PluginContext plugin = mock(PluginContext.class);
         assertThrows(IllegalArgumentException.class, () ->
