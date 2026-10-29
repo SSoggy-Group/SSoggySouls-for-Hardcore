@@ -70,7 +70,7 @@ dependencies {
             prefer '7.1.0'
         }
     }
-    jarJar(implementation('com.mysql:mysql-connector-j:26.7.0')) {
+    jarJar(implementation('com.mysql:mysql-connector-j:26.10.0')) {
         version {
             strictly '[26.7.0,27.0)'
             prefer '26.7.0'
