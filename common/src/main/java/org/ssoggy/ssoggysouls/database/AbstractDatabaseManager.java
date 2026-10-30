@@ -30,6 +30,11 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
             "SELECT uuid, username, lives, is_dead, first_join, last_death, last_seen, grace_until FROM ";
     protected static final String UPDATE = "UPDATE ";
 
+    protected static final String BIGINT_NOT_NULL_DEFAULT_0 = "BIGINT NOT NULL DEFAULT 0";
+    protected static final Set<String> ALLOWED_COLUMN_DEFINITIONS = Set.of(
+            BIGINT_NOT_NULL_DEFAULT_0
+    );
+
     protected final PluginContext plugin;
     protected final DeathStatusCache deathStatusCache = new DeathStatusCache();
 
@@ -410,6 +415,56 @@ public abstract class AbstractDatabaseManager implements DatabaseManager {
     // -------------------------------------------------------------------------
     // Shared helpers
     // -------------------------------------------------------------------------
+
+    protected void createTable() throws SQLException {
+        String safeTableName = SqlSafety.requireIdentifier(tableName, "table name");
+        String sql = getCreateTableSql(safeTableName);
+
+        try (Connection conn = getDataSource().getConnection();
+                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+            ps.executeUpdate();
+            ensureLastSeenColumn(conn);
+            ensureGraceUntilColumn(conn);
+            plugin.debug("Table '" + tableName + "' verified/created.");
+        }
+    }
+
+    protected String getCreateTableSql(String safeTableName) {
+        throw new UnsupportedOperationException("Table creation SQL not implemented");
+    }
+
+    private void ensureLastSeenColumn(Connection conn) {
+        ensureColumn(conn, "last_seen", BIGINT_NOT_NULL_DEFAULT_0);
+    }
+
+    private void ensureGraceUntilColumn(Connection conn) {
+        ensureColumn(conn, "grace_until", BIGINT_NOT_NULL_DEFAULT_0);
+    }
+
+    protected void ensureColumn(Connection conn, String columnName, String definition) {
+        String safeColumnName = SqlSafety.requireIdentifier(columnName, "column name");
+        if (definition == null) {
+            throw new IllegalArgumentException("Column definition cannot be null");
+        }
+        String normalizedDefinition = definition.trim().replaceAll("\s+", " ").toUpperCase();
+        if (!ALLOWED_COLUMN_DEFINITIONS.contains(normalizedDefinition)) {
+            throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + normalizedDefinition);
+        }
+
+        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + safeColumnName + " " + normalizedDefinition;
+        try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
+            ps.executeUpdate();
+            plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
+        } catch (SQLException e) {
+            if (!isDuplicateColumnException(e)) {
+                plugin.getLogger().log(Level.WARNING, e, () -> "Failed to ensure " + columnName + " column");
+            }
+        }
+    }
+
+    protected boolean isDuplicateColumnException(SQLException e) {
+        return false;
+    }
 
     protected PlayerData mapResultSet(ResultSet rs) throws SQLException {
         return new PlayerData(
