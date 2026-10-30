@@ -74,4 +74,15 @@ class SqlSafetyTest {
         assertEquals(stmt, result);
         verify(conn).prepareStatement(sql);
     }
+    @Test
+    void testPrivateConstructor() throws Exception {
+        java.lang.reflect.Constructor<SqlSafety> constructor = SqlSafety.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        java.lang.reflect.InvocationTargetException exception = assertThrows(
+                java.lang.reflect.InvocationTargetException.class,
+                constructor::newInstance
+        );
+        assertEquals(UnsupportedOperationException.class, exception.getCause().getClass());
+        assertEquals("Utility class", exception.getCause().getMessage());
+    }
 }
