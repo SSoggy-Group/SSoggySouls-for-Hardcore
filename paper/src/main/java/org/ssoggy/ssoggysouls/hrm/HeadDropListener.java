@@ -408,7 +408,7 @@ public class HeadDropListener implements Listener {
 
         private void processChunkTileEntities(Chunk chunk) {
             if (!chunk.isLoaded()) return;
-            for (BlockState state : chunk.getTileEntities()) {
+            for (BlockState state : chunk.getTileEntities(b -> isSkullOrContainer(b.getType()), false)) {
                 if (state instanceof InventoryHolder holder) {
                     removedCount.addAndGet(removeFromInventory(holder.getInventory(), ownerUuid));
                 }
@@ -420,6 +420,27 @@ public class HeadDropListener implements Listener {
                     }
                 }
             }
+        }
+
+        private static boolean isSkullOrContainer(Material type) {
+            return type == Material.PLAYER_HEAD || type == Material.PLAYER_WALL_HEAD || isContainerType(type);
+        }
+
+        private static boolean isContainerType(Material type) {
+            return Tag.SHULKER_BOXES.isTagged(type)
+                    || type == Material.CHEST
+                    || type == Material.TRAPPED_CHEST
+                    || type == Material.BARREL
+                    || type == Material.DISPENSER
+                    || type == Material.DROPPER
+                    || type == Material.HOPPER
+                    || type == Material.FURNACE
+                    || type == Material.BLAST_FURNACE
+                    || type == Material.SMOKER
+                    || type == Material.BREWING_STAND
+                    || type == Material.CRAFTER
+                    || type == Material.CHISELED_BOOKSHELF
+                    || type == Material.JUKEBOX;
         }
 
         private void processPlayers() {
