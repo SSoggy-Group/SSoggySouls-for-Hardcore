@@ -214,19 +214,17 @@ public class RevivalStructureListener {
     }
 
     private static void breakCorners(Level world, BlockPos headPos) {
-        for (int x = -1; x <= 1; x++) {
-            for (int z = -1; z <= 1; z++) {
-                if (Math.abs(x) == 1 && Math.abs(z) == 1) {
-                    BlockPos soulSandPos = headPos.offset(x, -2, z);
-                    BlockPos flowerPos = headPos.offset(x, -1, z);
-
-                    if (isFlower(world, flowerPos.getX(), flowerPos.getY(), flowerPos.getZ())) {
-                        world.destroyBlock(flowerPos, false);
-                    }
-                    if (isSoulSand(world, soulSandPos.getX(), soulSandPos.getY(), soulSandPos.getZ())) {
-                        world.destroyBlock(soulSandPos, false);
-                    }
-                }
+        int[][] corners = {{-1, -1}, {1, -1}, {-1, 1}, {1, 1}};
+        for (int[] offset : corners) {
+            int x = offset[0];
+            int z = offset[1];
+            BlockPos flowerPos = headPos.offset(x, -1, z);
+            if (isFlower(world, flowerPos.getX(), flowerPos.getY(), flowerPos.getZ())) {
+                world.destroyBlock(flowerPos, false);
+            }
+            BlockPos soulSandPos = headPos.offset(x, -2, z);
+            if (isSoulSand(world, soulSandPos.getX(), soulSandPos.getY(), soulSandPos.getZ())) {
+                world.destroyBlock(soulSandPos, false);
             }
         }
     }
@@ -239,14 +237,11 @@ public class RevivalStructureListener {
     }
 
     private static void breakEdges(Level world, BlockPos headPos) {
-        for (int x = -1; x <= 1; x++) {
-            for (int z = -1; z <= 1; z++) {
-                if ((Math.abs(x) == 1 && z == 0) || (x == 0 && Math.abs(z) == 1)) {
-                    BlockPos stairPos = headPos.offset(x, -2, z);
-                    if (isStair(world, stairPos.getX(), stairPos.getY(), stairPos.getZ())) {
-                        world.destroyBlock(stairPos, false);
-                    }
-                }
+        int[][] edges = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
+        for (int[] offset : edges) {
+            BlockPos stairPos = headPos.offset(offset[0], -2, offset[1]);
+            if (isStair(world, stairPos.getX(), stairPos.getY(), stairPos.getZ())) {
+                world.destroyBlock(stairPos, false);
             }
         }
     }
