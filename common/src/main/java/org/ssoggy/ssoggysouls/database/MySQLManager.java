@@ -3,7 +3,6 @@ package org.ssoggy.ssoggysouls.database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Set;
 import java.util.logging.Level;
 
 import javax.sql.DataSource;
@@ -16,10 +15,6 @@ import com.zaxxer.hikari.HikariDataSource;
 public class MySQLManager extends AbstractDatabaseManager {
 
     private static final int MYSQL_DUPLICATE_COLUMN = 1060;
-    private static final String BIGINT_NOT_NULL_DEFAULT_0 = "BIGINT NOT NULL DEFAULT 0";
-    private static final Set<String> ALLOWED_COLUMN_DEFINITIONS = Set.of(
-            BIGINT_NOT_NULL_DEFAULT_0
-    );
 
     private javax.sql.DataSource dataSource;
     private HikariDataSource hikariDataSource; // kept for shutdown()
@@ -116,9 +111,9 @@ public class MySQLManager extends AbstractDatabaseManager {
         }
     }
 
-    private void createTable() throws SQLException {
-        String safeTableName = SqlSafety.requireIdentifier(tableName, "table name");
-        String sql = "CREATE TABLE IF NOT EXISTS " + safeTableName + " ("
+    @Override
+    protected String getCreateTableSql(String safeTableName) {
+        return "CREATE TABLE IF NOT EXISTS " + safeTableName + " ("
                 + "uuid VARCHAR(36) NOT NULL PRIMARY KEY, "
                 + "username VARCHAR(16) NOT NULL, "
                 + "lives INT NOT NULL DEFAULT " + plugin.getDefaultLives() + ", "
@@ -128,46 +123,12 @@ public class MySQLManager extends AbstractDatabaseManager {
                 + "last_seen BIGINT NOT NULL DEFAULT 0, "
                 + "grace_until BIGINT NOT NULL DEFAULT 0"
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-
-        try (Connection conn = dataSource.getConnection();
-                PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-            ps.executeUpdate();
-            ensureLastSeenColumn(conn);
-            ensureGraceUntilColumn(conn);
-            plugin.debug("Table '" + tableName + "' verified/created.");
-        }
     }
 
-    private void ensureLastSeenColumn(Connection conn) {
-        ensureColumn(conn, "last_seen", BIGINT_NOT_NULL_DEFAULT_0);
-    }
-
-    private void ensureGraceUntilColumn(Connection conn) {
-        ensureColumn(conn, "grace_until", BIGINT_NOT_NULL_DEFAULT_0);
-    }
-
-    private void ensureColumn(Connection conn, String columnName, String definition) {
-        String safeColumnName = SqlSafety.requireIdentifier(columnName, "column name");
-        if (definition == null) {
-            throw new IllegalArgumentException("Column definition cannot be null");
-        }
-        String normalizedDefinition = definition.trim().replaceAll("\\s+", " ").toUpperCase();
-        if (!ALLOWED_COLUMN_DEFINITIONS.contains(normalizedDefinition)) {
-            throw new IllegalArgumentException("Column definition is not in allowed whitelist: " + normalizedDefinition);
-        }
-
-        String sql = "ALTER TABLE " + tableName + " ADD COLUMN " + safeColumnName + " " + normalizedDefinition;
-        try (PreparedStatement ps = SqlSafety.prepareStatement(conn, sql)) {
-            ps.executeUpdate();
-            plugin.debug("Added " + columnName + " column to '" + tableName + "'.");
-        } catch (SQLException e) {
-            String sqlState = e.getSQLState();
-            boolean duplicateColumn = e.getErrorCode() == MYSQL_DUPLICATE_COLUMN
-                    || "42S21".equals(sqlState);
-            if (!duplicateColumn) {
-                plugin.getLogger().log(Level.WARNING, e, () -> "Failed to ensure " + columnName + " column");
-            }
-        }
+    @Override
+    protected boolean isDuplicateColumnException(SQLException e) {
+        String sqlState = e.getSQLState();
+        return e.getErrorCode() == MYSQL_DUPLICATE_COLUMN || "42S21".equals(sqlState);
     }
 
     // MySQL-specific upsert: two parameter sets for INSERT + ON DUPLICATE KEY UPDATE
