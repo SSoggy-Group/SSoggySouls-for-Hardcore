@@ -11,6 +11,7 @@ final class SqlSafety {
     private static final Pattern JDBC_PARAM = Pattern.compile("\\A[a-zA-Z0-9_.\\-\\[\\]:]+\\z");
 
     private SqlSafety() {
+        throw new UnsupportedOperationException("Utility class");
     }
 
     static String requireValidJdbcParam(String param, String label) {
