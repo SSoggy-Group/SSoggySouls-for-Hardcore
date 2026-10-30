@@ -117,47 +117,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
     public void onEnable() {
         setInstance(this);
 
-        java.io.File configFile = new java.io.File(getDataFolder(), "config.yml");
-        if (!configFile.exists()) {
-            saveDefaultConfig();
-            getLogger().info("""
-
-                    
-
-                    ===============================================================
-
-                    
-
-                                           SSOGGY SOULS
-
-                    
-
-                    ===============================================================
-
-                    
-
-                     The plugin is using SQLite (single-server mode) by default.
-
-                     
-
-                     If you are setting up a Dual-Server Network (Main + Limbo),
-
-                     you MUST stop the server, open config.yml, and change the
-
-                     'database.type' to 'mysql', then fill in your DB details.
-
-                     
-
-                     If you are using a single server, you can ignore this message.
-
-                    
-
-                    ===============================================================
-
-                    """);
-        } else {
-            saveDefaultConfig();
-        }
+        setupConfigFile();
 
         for (World world : getServer().getWorlds()) {
             originalWorldHardcore.put(world.getName(), world.isHardcore());
@@ -168,21 +128,7 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
 
-        String dbType = databaseType;
-
-        if (isSqliteDatabaseType(dbType)) {
-            databaseManager = new org.ssoggy.ssoggysouls.database.SQLiteManager(this);
-        } else {
-            databaseManager = new org.ssoggy.ssoggysouls.database.MySQLManager(this);
-        }
-
-        try {
-            databaseManager.initialize();
-        } catch (DatabaseInitializationException e) {
-            boolean isSqlite = isSqliteDatabaseType(dbType);
-            getLogger().log(Level.SEVERE, "Failed to connect to {0}! Disabling plugin.", isSqlite ? "SQLite" : "MySQL");
-            getLogger().log(Level.SEVERE, "Initialization error details:", e);
-            getServer().getPluginManager().disablePlugin(this);
+        if (!initDatabase()) {
             return;
         }
 
@@ -197,6 +143,64 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
             enableMainMode();
         }
 
+        logStartupBanner();
+
+        if (getConfig().getBoolean("check-for-updates", true)) {
+            new UpdateChecker(this).checkForUpdates();
+        }
+    }
+
+    private void setupConfigFile() {
+        java.io.File configFile = new java.io.File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            saveDefaultConfig();
+            getLogger().info("""
+
+
+                    ===============================================================
+
+                                           SSOGGY SOULS
+
+                    ===============================================================
+
+                     The plugin is using SQLite (single-server mode) by default.
+
+                     If you are setting up a Dual-Server Network (Main + Limbo),
+                     you MUST stop the server, open config.yml, and change the
+                     'database.type' to 'mysql', then fill in your DB details.
+
+                     If you are using a single server, you can ignore this message.
+
+                    ===============================================================
+
+                    """);
+        } else {
+            saveDefaultConfig();
+        }
+    }
+
+    private boolean initDatabase() {
+        String dbType = databaseType;
+
+        if (isSqliteDatabaseType(dbType)) {
+            databaseManager = new org.ssoggy.ssoggysouls.database.SQLiteManager(this);
+        } else {
+            databaseManager = new org.ssoggy.ssoggysouls.database.MySQLManager(this);
+        }
+
+        try {
+            databaseManager.initialize();
+            return true;
+        } catch (DatabaseInitializationException e) {
+            boolean isSqlite = isSqliteDatabaseType(dbType);
+            getLogger().log(Level.SEVERE, "Failed to connect to {0}! Disabling plugin.", isSqlite ? "SQLite" : "MySQL");
+            getLogger().log(Level.SEVERE, "Initialization error details:", e);
+            getServer().getPluginManager().disablePlugin(this);
+            return false;
+        }
+    }
+
+    private void logStartupBanner() {
         String mode = isLimboServer ? "LIMBO SERVER" : "MAIN SERVER";
         String version = getPluginMeta().getVersion();
 
@@ -225,10 +229,6 @@ public final class SSoggySouls extends JavaPlugin implements Listener, PluginCon
         getLogger().info(BORDER_EMPTY);
         getLogger().info(BORDER_BOTTOM);
         getLogger().info("");
-
-        if (getConfig().getBoolean("check-for-updates", true)) {
-            new UpdateChecker(this).checkForUpdates();
-        }
     }
 
     @Override
