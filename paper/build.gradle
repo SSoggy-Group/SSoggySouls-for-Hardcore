@@ -21,8 +21,8 @@ dependencies {
     // Database dependencies — in 'bundled' so they can be merged into
     // the fat JAR without resolving runtimeClasspath during configuration.
     bundled 'com.zaxxer:HikariCP:7.1.0'
-    bundled 'com.mysql:mysql-connector-j:26.7.0'
-    bundled 'org.xerial:sqlite-jdbc:3.53.4.0'
+    bundled 'com.mysql:mysql-connector-j:26.10.0'
+    bundled 'org.xerial:sqlite-jdbc:3.54.1.0'
 
     // Testing
     testImplementation (Integer.parseInt(JavaVersion.current().getMajorVersion()) >= 25 ? 'io.papermc.paper:paper-api:26.2.build.129-stable' : 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT')
