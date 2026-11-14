@@ -27,6 +27,18 @@ class AdminLogActionTest {
     }
 
     @Test
+    void testExecute_EmptyFile() throws IOException {
+        File file = new File(tempDir, "empty.log");
+        file.createNewFile();
+
+        AdminLogAction.AdminLogResult result = AdminLogAction.execute(file, 15);
+
+        assertEquals(AdminLogAction.ResultType.SUCCESS, result.type);
+        assertNotNull(result.lines);
+        assertEquals(0, result.lines.size());
+    }
+
+    @Test
     void testExecute_Success() throws IOException {
         File file = new File(tempDir, "success.log");
         Files.write(file.toPath(), List.of("line 1", "line 2"));
