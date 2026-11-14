@@ -39,7 +39,7 @@ ______________________________________________________________________
 
 ### Q: Can I use BungeeCord instead of Velocity?
 
-**A:** Maybe. BungeeCord/Waterfall support is **untested**. If you test it, please [report your findings](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)!
+**A:** Maybe. BungeeCord/Waterfall support is **untested**. If you test it, please [report your findings](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues)!
 
 Currently supported: **Velocity (recommended)**
 
@@ -605,7 +605,7 @@ ______________________________________________________________________
 
    - Console errors/logs
 
-1. [Open an issue](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues) with details
+1. [Open an issue](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues) with details
 
 ______________________________________________________________________
 
@@ -710,7 +710,7 @@ ______________________________________________________________________
 
 - 🏗️ [Revival System Guide](revival-system)
 
-- [Report Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)
+- [Report Issues](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues)
 
 ______________________________________________________________________
 

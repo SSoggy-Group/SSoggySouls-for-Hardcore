@@ -1,7 +1,7 @@
 package org.ssoggy.ssoggysouls.database;
 
 /**
- * Ported from https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/pull/111
+ * Ported from https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/pull/111
  * so platform startup code can distinguish database initialization failures.
  */
 public class DatabaseInitializationException extends Exception {

@@ -195,7 +195,7 @@ The `pool-size` setting controls how many database connections are maintained:
 
 Get the latest version:
 
-- [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases)
+- [GitHub Releases](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/releases)
 
 - [Modrinth](https://modrinth.com/project/Pb03qu6T)
 
@@ -294,7 +294,7 @@ try = [
 
 ### For BungeeCord/Waterfall
 
-> **Note:** BungeeCord/Waterfall support is untested. Please [report](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues) if you test it!
+> **Note:** BungeeCord/Waterfall support is untested. Please [report](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues) if you test it!
 
 **In BungeeCord `config.yml`:**
 
@@ -597,7 +597,7 @@ Now that SSoggySouls is installed:
 
 - [FAQ](faq)
 
-- [Report Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)
+- [Report Issues](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues)
 
 ______________________________________________________________________
 

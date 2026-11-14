@@ -11,8 +11,8 @@ Hardcore lives system mod/plugin for Minecraft 26.X (26.1–26.3) with Limbo exi
 > **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
 [Modrinth](https://modrinth.com/project/Pb03qu6T){: .btn }
-[GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore){: .btn }
-[Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases){: .btn }
+[GitHub](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore){: .btn }
+[Releases](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/releases){: .btn }
 
 ## Overview
 
@@ -60,5 +60,5 @@ SSoggySouls is designed for Velocity proxy networks and provides a high-stakes h
 
 ## Support
 
-- [Issue Tracker](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)
-- [Project Repository](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
+- [Issue Tracker](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues)
+- [Project Repository](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore)

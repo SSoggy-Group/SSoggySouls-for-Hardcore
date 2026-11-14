@@ -2,16 +2,16 @@
 
 ![SSoggySouls Banner](https://cdn.modrinth.com/data/Pb03qu6T/images/48a03bf24103dde408dbbcad653a3936b5f5255a.png)
 
-[![Auto Bump, Build, and Release](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml)
-[![Continuous Integration](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml/badge.svg)](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/actions/workflows/ci.yml)
+[![Auto Bump, Build, and Release](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml/badge.svg)](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/actions/workflows/auto-release.yml)
+[![Continuous Integration](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/actions/workflows/ci.yml/badge.svg)](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/actions/workflows/ci.yml)
 
-**Version 4.6.24** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
+**Version 4.6.24** | [Modrinth](https://modrinth.com/project/Pb03qu6T) | [GitHub](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore)
 
 A hardcore lives system mod/plugin for Minecraft 26.X (Supports Spigot, Paper, Purpur, Fabric, Forge, and NeoForge). 1.21.X servers need an older release. When you die enough times, you get exiled to a Limbo server or stuck in spectator mode until your teammates bring you back.
 
 > **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 >
-> **[Complete Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Installation guides, configuration reference, commands, troubleshooting, and more!
+> **[Complete Documentation Wiki →](https://SSoggyTacoMan.github.io/SSoggySouls-for-Hardcore/)** - Installation guides, configuration reference, commands, troubleshooting, and more!
 
 ## Features
 
@@ -221,7 +221,7 @@ Living players can check out Limbo using `/limbo`.
 ### Backward Compatibility
 
 - **Supported Minecraft Versions:** Minecraft 26.X (including 26.1, 26.2, 26.3) across all loaders (Spigot, Paper, Purpur, Fabric, Forge, and NeoForge).
-- **Legacy 1.21.x Releases:** If you are running a 1.21.X server, prior releases remain available on [Modrinth Version History](https://modrinth.com/project/Pb03qu6T/versions) and [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
+- **Legacy 1.21.x Releases:** If you are running a 1.21.X server, prior releases remain available on [Modrinth Version History](https://modrinth.com/project/Pb03qu6T/versions) and [GitHub Releases](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/releases).
 
 > **Important:** Do NOT enable `hardcore=true` in `server.properties` on either server. Keep it `false`. The plugin handles hardcore stuff internally - if you turn on actual hardcore mode it'll break things. If you already did, either delete your world or look up how to edit the game files.
 >
@@ -235,7 +235,7 @@ This project uses Gradle with separate platform modules. Use Java 25, then build
 
 ```bash
 # Clone and enter the repo
-git clone https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore.git
+git clone https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore.git
 cd SSoggySouls-for-Hardcore
 
 # Build one platform
@@ -306,13 +306,13 @@ After setup, test everything:
 4. Run `/psadmin revive <player>` from Main console
 5. Check that you got sent back to Main
 
-> **Note:** BungeeCord/Waterfall not tested but might work. Let us know if you try it! [Open an issue](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)
+> **Note:** BungeeCord/Waterfall not tested but might work. Let us know if you try it! [Open an issue](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues)
 
 ## Installation
 
 ### Step 1: Download
 
-Download the latest release (`SSoggySouls-4.6.24.jar`) from the [Releases page](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases).
+Download the latest release (`SSoggySouls-4.6.24.jar`) from the [Releases page](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/releases).
 
 ### Step 2: Install Plugin
 
@@ -399,7 +399,7 @@ Adjust settings in `config.yml` to match your server's needs:
 - Extra Life recipe
 - Messages and colors
 
-The `config.yml` includes detailed comments explaining each setting. If you need help, feel free to reach out via [GitHub Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues).
+The `config.yml` includes detailed comments explaining each setting. If you need help, feel free to reach out via [GitHub Issues](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues).
 
 ## Config
 
@@ -727,7 +727,7 @@ If issues persist:
 1. Enable debug mode: `debug: true` in config
 2. Restart servers and reproduce the issue
 3. Check console logs for errors
-4. [Open an issue](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues) with:
+4. [Open an issue](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues) with:
    - SSoggySouls version
    - Minecraft version
    - Proxy type (Velocity/BungeeCord)
@@ -755,7 +755,7 @@ SSoggySouls includes automatic update checking via Modrinth:
 - **Auto-build workflow** - GitHub Actions now builds the JAR automatically on every push.
 - **Rename: PolarSouls to SSoggySouls** - Finished renaming everything internally. No config changes needed.
 
-**Full Changelog:** [v1...v4.6.24](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/compare/v1...v4.6.24)
+**Full Changelog:** [v1...v4.6.24](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/compare/v1...v4.6.24)
 
 ## Credits
 
@@ -767,8 +767,8 @@ SSoggySouls includes automatic update checking via Modrinth:
 
 Issues, suggestions, and pull requests are welcome!
 
-- Report bugs: [GitHub Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)
-- Feature requests: [GitHub Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)
+- Report bugs: [GitHub Issues](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues)
+- Feature requests: [GitHub Issues](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues)
 
 ## License
 

@@ -1,8 +1,8 @@
 # Jekyll Configuration for SSoggySouls Documentation
 title: SSoggySouls Documentation
 description: Comprehensive hardcore lives system plugin for Minecraft 26.X
-baseurl: "/SSoggySouls-for-Hardcore"
-url: "https://SSoggy-Group.github.io"
+baseurl: ""
+url: "https://ssoggysouls-docs.vercel.app"
 theme: jekyll-theme-cayman
 
 plugins:

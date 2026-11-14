@@ -6,7 +6,7 @@
 A hardcore lives system plugin. When you die enough times, you get exiled to a Limbo server (multi-server) or enter spectator mode (single-server) until your teammates revive you.
 > **Note:** Fabric, Forge, and NeoForge versions are currently in an early testing phase. Expect frequent updates and please report any bugs you find!
 
-> **[Read the Full Documentation Wiki →](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** - Complete installation guides, configuration reference, troubleshooting, and more!
+> **[Read the Full Documentation Wiki →](https://SSoggyTacoMan.github.io/SSoggySouls-for-Hardcore/)** - Complete installation guides, configuration reference, troubleshooting, and more!
 
 ---
 
@@ -71,7 +71,7 @@ Wearing a dead player's head grants Health Boost V and Resistance (at the cost o
 4. **If using two servers**, set `is-limbo-server: false` on Main and `true` on Limbo.
 5. **Restart and test!**
 
-For the full, detailed step-by-step setup (including proxy configuration and Limbo spawn setting), refer to our **[Quick Start Guide on the Wiki!](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/quick-start) This is also where you can find other detailed guides about installing, configurating, troubleshooting, and more.**
+For the full, detailed step-by-step setup (including proxy configuration and Limbo spawn setting), refer to our **[Quick Start Guide on the Wiki!](https://SSoggyTacoMan.github.io/SSoggySouls-for-Hardcore/quick-start) This is also where you can find other detailed guides about installing, configurating, troubleshooting, and more.**
 
 ---
 
@@ -79,12 +79,12 @@ For the full, detailed step-by-step setup (including proxy configuration and Lim
 
 To save space and avoid cluttering this page, the full configuration files, installation steps, and command lists have been moved to our comprehensive wiki.
 
-Please visit the **[SSoggySouls Wiki](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/)** for:
+Please visit the **[SSoggySouls Wiki](https://SSoggyTacoMan.github.io/SSoggySouls-for-Hardcore/)** for:
 
-- [Quick Start Guide](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/quick-start)
-- [Configuration Reference](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/configuration)
-- [Commands & Permissions](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/commands)
-- [Troubleshooting & FAQ](https://SSoggy-Group.github.io/SSoggySouls-for-Hardcore/faq)
+- [Quick Start Guide](https://SSoggyTacoMan.github.io/SSoggySouls-for-Hardcore/quick-start)
+- [Configuration Reference](https://SSoggyTacoMan.github.io/SSoggySouls-for-Hardcore/configuration)
+- [Commands & Permissions](https://SSoggyTacoMan.github.io/SSoggySouls-for-Hardcore/commands)
+- [Troubleshooting & FAQ](https://SSoggyTacoMan.github.io/SSoggySouls-for-Hardcore/faq)
 
 ---
 
@@ -92,4 +92,4 @@ Please visit the **[SSoggySouls Wiki](https://SSoggy-Group.github.io/SSoggySouls
 
 - Revival mechanics heavily inspired by and adapted from the [Hardcore Revive Mod](https://modrinth.com/plugin/hardcore-revive-mod) by JakeCCz.
 - Author: SSoggyTacoMan
-- GitHub: [SSoggy-Group/SSoggySouls-for-Hardcore](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore)
+- GitHub: [SSoggyTacoMan/SSoggySouls-for-Hardcore](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore)

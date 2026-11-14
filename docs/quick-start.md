@@ -29,7 +29,7 @@ This guide will help you get SSoggySouls up and running in 8 simple steps. For m
 
 Download the latest `SSoggySouls-4.6.24.jar` from:
 
-- [GitHub Releases](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/releases)
+- [GitHub Releases](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/releases)
 
 - [Modrinth](https://modrinth.com/project/Pb03qu6T)
 
@@ -220,7 +220,7 @@ For the complete command list, see [Commands](commands).
 
 - [FAQ](faq)
 
-- [Report Issues](https://github.com/SSoggy-Group/SSoggySouls-for-Hardcore/issues)
+- [Report Issues](https://github.com/SSoggyTacoMan/SSoggySouls-for-Hardcore/issues)
 
 ______________________________________________________________________
 

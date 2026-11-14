@@ -12,7 +12,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 public class UpdateChecker {
-    private static final String GITHUB_API = "https://api.github.com/repos/SSoggy-Group/SSoggySouls-for-Hardcore/releases/latest";
+    private static final String GITHUB_API = "https://api.github.com/repos/SSoggyTacoMan/SSoggySouls-for-Hardcore/releases/latest";
     private static final String DOWNLOAD_PAGE = "https://modrinth.com/project/Pb03qu6T";
     private static final String BORDER_EMPTY = "║                                                             ║";
     private static final String BORDER_TOP = "╔═════════════════════════════════════════════════════════════╗";
