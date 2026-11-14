@@ -52,8 +52,8 @@ public class SQLiteManager extends AbstractDatabaseManager {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(jdbcUrl);
             config.setDriverClassName("org.sqlite.JDBC");
-        // Keep SQLite pool configurable: writes are serialized, but a larger pool can
-        // reduce read-side contention under concurrent access patterns.
+            // Keep SQLite pool configurable: writes are serialized, but a larger pool can
+            // reduce read-side contention under concurrent access patterns.
             int maxPoolSize = Math.max(1, plugin.getConfigInt("database.max-pool-size", 1));
             config.setMaximumPoolSize(maxPoolSize);
             config.setConnectionTimeout(10_000);
